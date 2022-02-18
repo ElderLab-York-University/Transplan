@@ -21,16 +21,17 @@ from detectron2.data import MetadataCatalog, DatasetCatalog
 # choose to run on CPU to GPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 device_name = "cuda:0" if torch.cuda.is_available() else "cpu"
+print(f'device: {device_name}')
 
 # os.system(f'wget http://images.cocodataset.org/val2017/000000439715.jpg -q -O input.jpg')
 # im = cv2.imread("./input.jpg")
 # cv2.imshow("just a test",im)
 # cv2.waitKey()
-config_path = "/home/sajjad/Desktop/Transplan/TransPlan Project/TransPlan Local/detectron2-main/configs/COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"
-model_weight_path = "/home/sajjad/Desktop/Transplan/TransPlan Project/TransPlan Local/model_final_280758.pkl"
-video_path = "/home/sajjad/Desktop/Transplan/TransPlan Project/Dataset/GX010069.MP4"
-annotated_video_path = "/home/sajjad/Desktop/Transplan/TransPlan Project/Results/GX010069_detectron2_annotated_only_test.MP4"
-text_result_path = "/home/sajjad/Desktop/Transplan/TransPlan Project/Results/detection_result_detectron2_only_test.txt"
+config_path = "./detectron2-main/configs/COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"
+model_weight_path = "./model_final_280758.pkl"
+video_path = "./../Dataset/GX010069.MP4"
+annotated_video_path = "./../Results/GX010069_detections_detectron2.MP4"
+text_result_path = "./../Results/GX010069_detections_detectron2.txt"
 
 with open(text_result_path, "w") as text_file:
   text_file.write("--------------------------------\n")
