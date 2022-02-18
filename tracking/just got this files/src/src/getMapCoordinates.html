@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Transplan</h1>
+<button type="button" onclick="runScript();">Run extrinsics calculation</button>
+<br>
+<br>
+<br>
+<div>
+<div style="width:49%;float:left" clear="left">
+  <input type="text" placeholder="Type something..." id="myInput">
+  <button type="button" onclick="getInputValue();">Search</button>
+  <div id="googleMap" style="height:600px;"></div>
+  <label id="coordinates"></label>
+</div>
+<div style="width:49%;float:right" clear="right">
+	<input type="file" onchange="previewFile()"><br>
+  <img src="" width="796;" height="540;" alt="Image preview..." id="localimg" onclick="point_it(event);">
+  <canvas width="796;" height="540;" id="imgcanvas" onclick="point_it(event);"></canvas><br>
+	<label id="impixels"></label>
+</div>
+</div>
+
+<script>
+//////////////////////////////////////////////////////////////////////////////////////////////
+function previewFile() {
+  
+    // Where you will display your image
+    //var preview = document.querySelector('img');
+	var preview = document.getElementById("localimg");
+  var c = document.getElementById("imgcanvas");
+  c.style.position = "absolute";
+  c.style.left = preview.offsetLeft+"px";
+  c.style.top = preview.offsetTop+"px";
+    // The button where the user chooses the local image to display
+    var file = document.querySelector('input[type=file]').files[0];
+    // FileReader instance
+    var reader  = new FileReader();
+
+    // When the image is loaded we will set it as source of
+    // our img tag
+    reader.onloadend = function () {
+      preview.src = reader.result;
+    }
+
+    
+    if (file) {
+      // Load image as a base64 encoded URI
+      reader.readAsDataURL(file);
+    } else {
+      preview.src = "";
+    }
+  }
+  
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+var impixels=""
+var imageptnum = 1
+function point_it(event) {
+  var c = document.getElementById("imgcanvas");
+  var ctx = c.getContext("2d");
+  
+	pos_x = event.offsetX ? (event.offsetX) : event.pageX - document.getElementById("localimg").offsetLeft;
+	pos_y = event.offsetY ? (event.offsetY) : event.pageY - document.getElementById("localimg").offsetTop;
+	if (impixels == "") {
+      impixels = '('+pos_x+', '+ pos_y+')';
+  }
+  else {
+    impixels = impixels + ',<br/>' + '('+pos_x+', '+ pos_y+')';
+  }
+  document.getElementById('impixels').innerHTML = impixels;
+  ctx.beginPath();
+  ctx.arc(pos_x, pos_y, 5, 0, Math.PI * 2, true);
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.font = "bold 16px Arial";
+  ctx.fillText(imageptnum.toString(), pos_x+5, pos_y+5);
+  imageptnum = imageptnum+1;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+var address = "Essa Road Gowan Street"
+var coordinates = ""
+var elevations = ""
+var markertitle = 1
+
+function getInputValue(){
+          // Selecting the input element and get its value 
+          var inputVal = document.getElementById("myInput").value;
+          
+          // Displaying the value
+          //alert(inputVal);
+          address = inputVal;
+          myMap();
+      }
+function myMap() {
+geocoder = new google.maps.Geocoder();
+var mapProp= {
+	mapTypeId: 'satellite',
+  zoom:20,
+};
+var map = new google.maps.Map(document.getElementById("googleMap"),mapProp);
+map.setTilt(0);
+if (geocoder) {
+    geocoder.geocode({
+      'address': address
+    }, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        if (status != google.maps.GeocoderStatus.ZERO_RESULTS) {
+          map.setCenter(results[0].geometry.location);
+
+          var infowindow = new google.maps.InfoWindow({
+            content: '<b>' + address + '</b>',
+            //size: new google.maps.Size(150, 50)
+          });
+
+        } else {
+          alert("No results found");
+        }
+      } else {
+        alert("Geocode was not successful for the following reason: " + status);
+      }
+    });
+	}
+var elevator = new google.maps.ElevationService;
+google.maps.event.addListener(map, 'click', function(event) {
+
+    marker = new google.maps.Marker({position: event.latLng, map: map,label:markertitle.toString()});
+    markertitle = markertitle+1;
+    if (coordinates == "") {
+      coordinates = event.latLng;
+    }
+    else {
+      coordinates = coordinates + ',<br/>' + event.latLng;
+    }
+    document.getElementById('coordinates').innerHTML = coordinates;
+	  //alert(event.latLng);
+});
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////
+function runScript(){
+  var shell = WScript.CreateObject("WScript.Shell");
+  shell.Run("python trials2.py");
+}
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdh4Lum-3V_XyZemkjY6pCiLUi3Skg9M8&callback=myMap"></script>
+
+</body>
+</html>

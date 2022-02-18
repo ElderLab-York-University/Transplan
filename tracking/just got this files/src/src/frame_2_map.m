@@ -1,0 +1,21 @@
+function [ ] = frame_2_map(homography_matrix_fname, detection_filename)
+
+detections = readtable(detection_filename);
+if isempty(detections)
+    quit
+end
+
+homography_matrix = load(homography_matrix_fname)
+detections.Properties.VariableNames={'fname','tractorid','x','y','w','h','a','b','c'};
+
+centroids = detections_to_centroids(detections,'GoProHero8CameraParams.mat', homography_matrix);
+
+disp(centroids)
+
+
+frame_num_centroids = [detections.fname detections.tractorid centroids detections.x detections.y detections.w detections.h];
+
+save('frame_num_centroids','frame_num_centroids');
+
+%C = {detections.fname,detections.tractorid, centroids, detections.x, detections.y, detections.w, detections.h};   % Creating the list of variables
+
