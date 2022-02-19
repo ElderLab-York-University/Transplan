@@ -1,14 +1,11 @@
-from sort import *
+from sort.sort import *
 from tqdm import tqdm
 
-detection_file = "/home/sajjad/Desktop/Transplan/TransPlan Project/Results/detection_result_detectron2_modified.txt"
-output_file = "/home/sajjad/Desktop/Transplan/TransPlan Project/Results/trackinig_result.txt"
-
+detection_file = "./../Results/GX010069_detections_detectron2_modified.txt"
+output_file = "./../Results/GX010069_tracking_sort.txt"
 
 total_time = 0.0
 total_frames = 0
-
-
 
 mot_tracker = Sort() #create instance of the SORT tracker
 seq_dets = np.loadtxt(detection_file, delimiter=' ')
