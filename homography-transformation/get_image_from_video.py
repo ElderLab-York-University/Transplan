@@ -1,4 +1,5 @@
 # create the VideoCapture Object
+# captures a specific frame on a videl file and stores it in the determined destination
 # Some basic setup:
 import os
 from tqdm import tqdm
@@ -7,8 +8,8 @@ import numpy as np
 import os, json, cv2, random
 
 chosen_frame = 4400
-video_path = "/home/sajjad/Desktop/Transplan/TransPlan Project/Dataset/GX010069.MP4"
-image_out_path = f"/home/sajjad/Desktop/Transplan/TransPlan Project/Dataset/GX010069_frame_{chosen_frame}.png"
+video_path = "./../Dataset/GX010069.MP4"
+image_out_path = f"./../Dataset/GX010069_frame_{chosen_frame}.png"
 # Opens the Video file
 cap = cv2.VideoCapture(video_path)
 # Check if camera opened successfully
