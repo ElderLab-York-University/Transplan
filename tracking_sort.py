@@ -23,6 +23,6 @@ with open(output_file,'w') as out_file:
         total_time += cycle_time
 
         for d in trackers:
-            print('%d,%d,%.2f,%.2f,%.2f,%.2f,1,-1,-1,-1'%(frame+1,d[4],d[0],d[1],d[2],d[3]),file=out_file)
+            print('%d,%d,%.2f,%.2f,%.2f,%.2f'%(frame+1,d[4],d[0],d[1],d[2],d[3]),file=out_file)
 
 print("Total Tracking took: %.3f seconds for %d frames or %.1f FPS" % (total_time, total_frames, total_frames / total_time))

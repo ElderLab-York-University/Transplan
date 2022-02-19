@@ -1,13 +1,14 @@
+# uses the homograpy matrix to reproject the tracking points
 import numpy as np
 import cv2 as cv
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-first_image_path = "/home/sajjad/Desktop/Transplan/TransPlan Project/Dataset/GX010069_frame_4400.png"
-second_image_path = "/home/sajjad/Desktop/Transplan/TransPlan Project/Dataset/DundasStAtNinthLine.jpg"
-homography_path = "/home/sajjad/Desktop/Transplan/TransPlan Project/TransPlan Local/homography-gui/homography.npy"
-tracks_path = "/home/sajjad/Desktop/Transplan/TransPlan Project/Results/trackinig_result_centeroids.txt"
-out_path = "/home/sajjad/Desktop/Transplan/TransPlan Project/Results/trackinig_result_centeroids_transformed.txt"
+first_image_path = "./../Dataset/GX010069_frame_4400.png"
+second_image_path = "./../Dataset/DundasStAtNinthLine.jpg"
+homography_path = "./homography-gui/homography.npy"
+tracks_path = "./../Results/GX010069_tracking_sort.txt"
+out_path = "./../Results/GX010069_tracking_sort_reprojected.txt"
 
 tracks = np.loadtxt(tracks_path, delimiter=",")
 transformed_tracks = np.zeros_like(tracks)
@@ -19,7 +20,7 @@ M = np.load(homography_path, allow_pickle=True)[0]
 img12 = cv.warpPerspective(img1, M, (cols2, rows2))
 
 for index, track in tqdm(enumerate(tracks)):
-    fn, idd, x, y = track[0], track[1], track[2], track[3]
+    fn, idd, x, y = track[0], track[1], (track[2] + track[4]/2), (track[3] + track[5])/2
     transformed_tracks[index, 0] = fn
     transformed_tracks[index, 1] = idd 
     point = np.array([x, y, 1])
