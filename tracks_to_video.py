@@ -7,12 +7,13 @@ import numpy as np
 import os, json, cv2, random
 
 
-video_path = "/home/sajjad/Desktop/Transplan/TransPlan Project/Dataset/GX010069.MP4"
-annotated_video_path = "/home/sajjad/Desktop/Transplan/TransPlan Project/Results/GX010069_sort_annotated.MP4"
-tracks_path = "/home/sajjad/Desktop/Transplan/TransPlan Project/Results/trackinig_result.txt"
+video_path = "./../Dataset/GX010069.MP4"
+annotated_video_path = "./../Results/GX010069_tracking_sort.MP4"
+tracks_path = "./../Results/GX010069_tracking_sort.txt"
 
 color = (0, 0, 102)
 
+# load tracks
 tracks = np.loadtxt(tracks_path, delimiter=',')
 
 
