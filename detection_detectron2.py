@@ -29,7 +29,7 @@ print(f'device: {device_name}')
 # cv2.waitKey()
 config_path = "./detectron2-main/configs/COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"
 model_weight_path = "./model_final_280758.pkl"
-video_path = "./../Dataset/GX010069.MP4"
+video_path = "./../Dataset/GX010069.avi"
 annotated_video_path = "./../Results/GX010069_detections_detectron2.MP4"
 text_result_path = "./../Results/GX010069_detections_detectron2.txt"
 
