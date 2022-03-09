@@ -10,7 +10,7 @@ from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtOpenGL
-from PyQt5 import QtWebEngineWidgets
+# from PyQt5 import QtWebEngineWidgets
 import matplotlib
 from matplotlib import cm
 norm = matplotlib.colors.Normalize(vmin=0, vmax=50)
@@ -20,7 +20,7 @@ import cv2
 import csv
 import scipy.io
 from pymatreader import read_mat
-from counting import Counting
+# from counting import Counting
 
 
 cam_mois = [4, 4, 4, 12, 12, 12, 12, 6, 12, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2]
