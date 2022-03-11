@@ -8,7 +8,7 @@ import numpy as np
 import os, json, cv2, random
 
 chosen_frame = 4400
-video_path = "./../Dataset/GX010069.MP4"
+video_path = "./../Dataset/GX010069.avi"
 image_out_path = f"./../Dataset/GX010069_frame_{chosen_frame}.png"
 # Opens the Video file
 cap = cv2.VideoCapture(video_path)
