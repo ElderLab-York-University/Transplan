@@ -33,11 +33,11 @@ video_path = "./../Dataset/GX010069.avi"
 annotated_video_path = "./../Results/GX010069_detections_detectron2.MP4"
 text_result_path = "./../Results/GX010069_detections_detectron2.txt"
 
-with open(text_result_path, "w") as text_file:
-  text_file.write("--------------------------------\n")
-  text_file.write("video path: " + video_path + "\n")
-  text_file.write("frame# class# score x1 y1 x2 y2 \n")
-  text_file.write("--------------------------------\n")
+# with open(text_result_path, "w") as text_file:
+#   text_file.write("--------------------------------\n")
+#   text_file.write("video path: " + video_path + "\n")
+#   text_file.write("frame# class# score x1 y1 x2 y2 \n")
+#   text_file.write("--------------------------------\n")
 
 cfg = get_cfg()
 # add project-specific config (e.g., TensorMask) here if you're not running a model in detectron2's core library

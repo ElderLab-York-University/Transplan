@@ -7,7 +7,7 @@ import numpy as np
 import os, json, cv2, random
 
 
-video_path = "./../Dataset/GX010069.MP4"
+video_path = "./../Dataset/GX010069.avi"
 annotated_video_path = "./../Results/GX010069_tracking_sort.MP4"
 tracks_path = "./../Results/GX010069_tracking_sort.txt"
 
