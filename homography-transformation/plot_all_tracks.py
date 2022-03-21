@@ -27,7 +27,7 @@ for  track_id in tqdm(unique_track_ids):
 
     for i, track in enumerate(tracks_id):
         x, y = int((track[2] + track[4])/2), int((track[3]+track[5])/2)
-        img1 = cv.circle(img1, (x,y), radius=1, color=(int(i/len(tracks_id)*255), 70, int(255 - i/len(tracks_id)*255)), thickness=1)
+        img1 = cv.circle(img1, (x,y), radius=5, color=(int(i/len(tracks_id)*255), 70, int(255 - i/len(tracks_id)*255)), thickness=4)
 
     for i, track in enumerate(transformed_tracks_id):
         x, y = int(track[2]), int(track[3])

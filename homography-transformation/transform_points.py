@@ -20,7 +20,8 @@ M = np.load(homography_path, allow_pickle=True)[0]
 img12 = cv.warpPerspective(img1, M, (cols2, rows2))
 
 for index, track in tqdm(enumerate(tracks)):
-    fn, idd, x, y = track[0], track[1], (track[2] + track[4]/2), (track[3] + track[5])/2
+    # fn, idd, x, y = track[0], track[1], (track[2] + track[4]/2), (track[3] + track[5])/2
+    fn, idd, x, y = track[0], track[1], track[4], (track[3] + track[5])/2
     transformed_tracks[index, 0] = fn
     transformed_tracks[index, 1] = idd 
     point = np.array([x, y, 1])
