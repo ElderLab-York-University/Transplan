@@ -20,8 +20,25 @@ import cv2
 import csv
 import scipy.io
 from pymatreader import read_mat
+from tqdm import tqdm 
 # from counting import Counting
 
+tracks_path = "/home/savoji/Desktop/TransPlan Project/Results/GX010069_tracking_sort_reprojected.txt"
+def group_tracks_by_id(tracks_path):
+    tracks = np.loadtxt(tracks_path, delimiter=",")
+    all_ids = np.unique(tracks[:, 1])
+    data = {"id":[], "trajectory":[], "frames":[]}
+    for idd in tqdm(all_ids):
+        mask = tracks[:, 1]==idd
+        selected_tracks = tracks[mask]
+        frames = [selected_tracks[: ,0]]
+        id = selected_tracks[0][1]
+        trajectory = selected_tracks[:, 2:4]
+        data["id"].append(id)
+        data["frames"].append(frames)
+        data["trajectory"].append(trajectory)
+    df = pd.DataFrame(data)
+    return df
 
 cam_mois = [4, 4, 4, 12, 12, 12, 12, 6, 12, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2]
 class ui_func(QMainWindow):
@@ -274,12 +291,13 @@ class ui_func(QMainWindow):
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)", options=options)
         self.tracks_file = fileName#'D:/projects/aicitychallenge/data/AIC21_Track1_Vehicle_Counting/AIC21_Track1_Vehicle_Counting/screen_shot_with_roi_and_movement/cam_5_3000.txt'
-        data = read_mat(self.tracks_file)
-        # self.df = pd.DataFrame(data['recorded_tracks'])
-        self.df1 = pd.DataFrame(data['recorded_tracks'])
-        self.df = self.df1[['id', 'trajectory']]
-        self.df.columns = ['id', 'trajectory']
-        # self.df = pd.read_csv(self.tracks_file,names=['f','id','x','y','w','h','e1','e2','e3'])
+        # data = read_mat(self.tracks_file)
+        # # self.df = pd.DataFrame(data['recorded_tracks'])
+        # self.df1 = pd.DataFrame(data['recorded_tracks'])
+        # self.df = self.df1[['id', 'trajectory']]
+        # self.df.columns = ['id', 'trajectory']
+        # # self.df = pd.read_csv(self.tracks_file,names=['f','id','x','y','w','h','e1','e2','e3'])
+        self.df = group_tracks_by_id(self.tracks_file)
         self.tids = np.unique(self.df['id'].tolist())
         self.id_index = 0
         self.plot_next_track()
