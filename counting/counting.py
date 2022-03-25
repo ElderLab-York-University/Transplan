@@ -8,31 +8,48 @@ import time
 import json
 import ctypes
 from collections import defaultdict
-
 import cv2
 import matplotlib
 import numpy as np
 from pymatreader import read_mat
 import pandas as pd
 from matplotlib import cm
-
-
 from resample_gt_MOI.resample_typical_tracks import track_resample
+from tqdm import tqdm
 
+
+def group_tracks_by_id(tracks_path):
+    # this function was writtern for grouping the tracks with the same id
+    # usinig this one can load the data from a .txt file rather than .mat file
+    tracks = np.loadtxt(tracks_path, delimiter=",")
+    all_ids = np.unique(tracks[:, 1])
+    data = {"id":[], "trajectory":[], "frames":[]}
+    for idd in tqdm(all_ids):
+        mask = tracks[:, 1]==idd
+        selected_tracks = tracks[mask]
+        frames = [selected_tracks[: ,0]]
+        id = selected_tracks[0][1]
+        trajectory = selected_tracks[:, 2:4]
+        data["id"].append(id)
+        data["frames"].append(frames)
+        data["trajectory"].append(trajectory)
+    df = pd.DataFrame(data)
+    return df
 class Counting:
     def __init__(self):
         #ground truth labelled trajactories
-        jsonFile = 'tracks_labelling_gui-master/Dundas_Street_at_Ninth_Line/NMSvalidated_trajectories.csv'
+        # validated tracks with moi labels
+        validated_trakcs_path = "./../../Results/GX010069_tracking_sort_reprojected.pkl"
 
-        DF = pd.read_csv(jsonFile, sep=',', usecols= ['id', 'trajectory', 'moi'])
+        df = pd.read_pickle(validated_trakcs_path)
         self.typical_mois = defaultdict(list)
-        for index, row in DF.iterrows():
-            a = self.decode_sring(row['trajectory'])
-            self.typical_mois[row['moi']].append(a)
+        for index, row in df.iterrows():
+            self.typical_mois[row['moi']].append(row["trajectory"])
 
         ################ CMM LIB init ################################
         # 0. find the shared library, you need to do first: "python setup.py build", and you will get it from the build folder
-        libfile = 'York/Elderlab/yorku_pipeline_deepsort_features/yorku_pipeline_deepsort_features/cmm_truncate_linux/build/lib.linux-x86_64-3.7/cmm.cpython-37m-x86_64-linux-gnu.so'
+        libfile = "./cmm_truncate_linux/build/lib.linux-x86_64-3.7/cmm.cpython-37m-x86_64-linux-gnu.so"
+        # libfile = 'York/Elderlab/yorku_pipeline_deepsort_features/yorku_pipeline_deepsort_features/cmm_truncate_linux/build/lib.linux-x86_64-3.7/cmm.cpython-37m-x86_64-linux-gnu.so'
         self.cmmlib = ctypes.CDLL(libfile)
 
         # 2. tell Python the argument and result types of function cmm
@@ -46,25 +63,25 @@ class Counting:
         self.traject_couter = 0
         self.tem = []
 
-    def decode_sring(self, aa):
-        res = []
-        my_list = aa.split("\n")[1: -1]
-        for tem in my_list:
-            # tem = tem.replace("' [", "'[")
-            # tem = tem.replace("[ ", "[")
-            tem = tem[2: -2]
-            tem = re.sub("\s+", ",", tem)
-            tem = tem.split(",")
-            # print(tem)
-            cur_tem = []
-            for item in tem:
-                if item != '':
-                    cur_tem.append(float(item))
-            # print(cur_tem)
-            if cur_tem:
-                res.append(cur_tem)
-        arr_res = np.array(res)
-        return arr_res
+    # def decode_sring(self, aa):
+    #     res = []
+    #     my_list = aa.split("\n")[1: -1]
+    #     for tem in my_list:
+    #         # tem = tem.replace("' [", "'[")
+    #         # tem = tem.replace("[ ", "[")
+    #         tem = tem[2: -2]
+    #         tem = re.sub("\s+", ",", tem)
+    #         tem = tem.split(",")
+    #         # print(tem)
+    #         cur_tem = []
+    #         for item in tem:
+    #             if item != '':
+    #                 cur_tem.append(float(item))
+    #         # print(cur_tem)
+    #         if cur_tem:
+    #             res.append(cur_tem)
+    #     arr_res = np.array(res)
+    #     return arr_res
 
 
 
@@ -106,7 +123,8 @@ class Counting:
             self.traject_couter += 1
 
     def draw_trajectory(self):
-        img_path = 'York/Elderlab/tracks_labelling_gui-master/Dundas_Street_at_Ninth_Line/Dundas Street at Ninth Line.jpg'
+        img_path = "./../../Dataset/DundasStAtNinthLine.jpg"
+        # img_path = 'York/Elderlab/tracks_labelling_gui-master/Dundas_Street_at_Ninth_Line/Dundas Street at Ninth Line.jpg'
         norm = matplotlib.colors.Normalize(vmin=0, vmax=50)
         frame = cv2.imread(img_path)
         for track_num, track in enumerate(self.tem):
@@ -124,10 +142,9 @@ class Counting:
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
     def main(self, filename):
-        data = read_mat(filename)
-        df1 = pd.DataFrame(data['recorded_tracks'])
-        df = df1[['id', 'trajectory']]
-        df.columns = ['id', 'trajectory']
+        # file_path to all trajectories .txt file(at the moment
+        # ** do not confuse it with selected trajectories
+        df = group_tracks_by_id(filename)
         tids = np.unique(df['id'].tolist())
         for idx in tids:
             current_track = df[df['id'] == idx]
@@ -138,11 +155,7 @@ class Counting:
         print(self.traject_couter)
 
 if __name__ == "__main__":
-
     ob1 = Counting()
+    trajectory_path = "./../../Results/GX010069_tracking_sort_reprojected.txt"
     # input Trajectory_path
-    print(ob1.main(Trajectory_path))
-
-
-
-
+    ob1.main(trajectory_path)
