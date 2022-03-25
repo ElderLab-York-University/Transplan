@@ -588,9 +588,9 @@ class ui_func(QMainWindow):
 
     def c_pushButton_export(self):
         # fname = self.tracks_file.replace(".txt",".csv")
-        fname = self.tracks_file.replace(".txt", ".csv")
+        fname = self.tracks_file.replace(".txt", ".pkl")
         writedf = pd.concat(self.tracks_df)
-        writedf.to_csv(fname, sep=',', index=False)
+        writedf.to_pickle(fname)
         # with open(fname, 'w') as f: 
         #     # using csv.writer method from CSV package 
         #     write = csv.writer(f)
