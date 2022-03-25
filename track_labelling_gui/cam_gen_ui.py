@@ -25,6 +25,8 @@ from tqdm import tqdm
 
 tracks_path = "/home/savoji/Desktop/TransPlan Project/Results/GX010069_tracking_sort_reprojected.txt"
 def group_tracks_by_id(tracks_path):
+    # this function was writtern for grouping the tracks with the same id
+    # usinig this one can load the data from a .txt file rather than .mat file
     tracks = np.loadtxt(tracks_path, delimiter=",")
     all_ids = np.unique(tracks[:, 1])
     data = {"id":[], "trajectory":[], "frames":[]}
@@ -133,8 +135,8 @@ class ui_func(QMainWindow):
         self.pushButton_undo.clicked.connect(self.delete_last_trajectory)
         # self.pushButton_undo.clicked.connect(self.plot_typical)
 
-        self.pushButton_undo = self.findChild(QPushButton,name='pushButton_next')
-        self.pushButton_undo.clicked.connect(self.select_next)
+        self.pushButton_next = self.findChild(QPushButton,name='pushButton_next')
+        self.pushButton_next.clicked.connect(self.c_pushButton_next)
 
 
         self.all_labels = []
@@ -181,7 +183,7 @@ class ui_func(QMainWindow):
         self.current_track = self.df[self.df['id'] == self.current_id]
         if self.id_index < len(self.tids) - 1:
 
-            while len(list(self.current_track['trajectory'])[0]) < 80:
+            while len(list(self.current_track['trajectory'])[0]) < 100:
                 self.id_index = self.id_index + 1
                 self.current_id = self.tids[self.id_index]
                 self.current_track = self.df[self.df['id'] == self.current_id]
@@ -205,7 +207,7 @@ class ui_func(QMainWindow):
 
 
 
-            if len(list(self.current_track['trajectory'])[0]) > 80:
+            if len(list(self.current_track['trajectory'])[0]) > 100:
                 print(self.current_id)
                 self.temp_img = self.img.copy()
                 colormap = cm.get_cmap('rainbow', len(self.current_track))
@@ -239,10 +241,10 @@ class ui_func(QMainWindow):
                 pix = QtGui.QPixmap.fromImage(self.image)
                 self.image_frame.setPixmap(
                     pix.scaled(self.image_frame.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                    
             self.id_index = self.id_index + 1
             self.current_id = self.tids[self.id_index]
             self.current_track = self.df[self.df['id'] == self.current_id]
-
 
 
 
@@ -261,7 +263,7 @@ class ui_func(QMainWindow):
             # camnum = int(strcamnum)
             # self.nummoi = cam_mois[camnum-1]
             self.nummoi = cam_mois[3]
-        for i in range(self.nummoi):
+        for i in range(12):
             self.pushButtons[i].setEnabled(True)
             self.pushButtons[i].setHidden(False)
             self.all_labels[i].setHidden(False)
@@ -352,7 +354,7 @@ class ui_func(QMainWindow):
             self.image_frame.setPixmap(pix.scaled(self.image_frame.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
             self.id_index = self.id_index + 1
         else:
-            fname = self.tracks_file.replace(".mat", ".csv")
+            fname = self.tracks_file.replace(".txt", ".csv")
             writedf = pd.concat(self.tracks_df)
             writedf.to_csv(fname, sep=',')
             QMessageBox.information(self, 'Last trajectory saved', 'Exported to ' + fname)
@@ -562,10 +564,6 @@ class ui_func(QMainWindow):
         self.plot_next_track()
 
     def c_pushButton_12(self):
-        """
-        ["trajectory", 'moi']
-        ['[][][][]...[], 12']
-        """
         self.count_12 = self.count_12 + 1
         self.label_12.setText(str(self.count_12))
         #add another column
@@ -590,9 +588,9 @@ class ui_func(QMainWindow):
 
     def c_pushButton_export(self):
         # fname = self.tracks_file.replace(".txt",".csv")
-        fname = self.tracks_file.replace(".mat", ".csv")
+        fname = self.tracks_file.replace(".txt", ".csv")
         writedf = pd.concat(self.tracks_df)
-        writedf.to_csv(fname, sep=',')
+        writedf.to_csv(fname, sep=',', index=False)
         # with open(fname, 'w') as f: 
         #     # using csv.writer method from CSV package 
         #     write = csv.writer(f)
@@ -600,5 +598,8 @@ class ui_func(QMainWindow):
         QMessageBox.information(self, 'File saved', 'Exported to '+fname)
 
     def c_pushButton_skip(self):
+        self.plot_next_track()
+
+    def c_pushButton_next(self):
         self.plot_next_track()
 
