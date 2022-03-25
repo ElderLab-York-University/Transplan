@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from pymatreader import read_mat
-file_path = "/home/savoji/Desktop/TransPlan Project/Transplan/track_labelling_gui/kalman_trajectories.mat"
+file_path = "/home/savoji/Desktop/TransPlan Project/Results/GX010069_tracking_sort_reprojected.csv"
 data = read_mat(file_path)
 df1 = pd.DataFrame(data['recorded_tracks'])
 df = df1[['id', 'trajectory']]

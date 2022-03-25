@@ -14,6 +14,7 @@ tracks = pd.read_pickle(labeled_trakcs_path)
 tracks = tracks.sort_values("moi")
 second_image_path = "./../../Dataset/DundasStAtNinthLine.jpg"
 
+
 img2 = cv.imread(second_image_path)
 rows2, cols2, dim2 = img2.shape
 for i in range(len(tracks)):
