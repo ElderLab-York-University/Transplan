@@ -16,6 +16,12 @@ import pandas as pd
 from matplotlib import cm
 from resample_gt_MOI.resample_typical_tracks import track_resample
 from tqdm import tqdm
+import cv2 as cv
+
+#  Hyperparameters
+MIN_TRAJ_POINTS = 10
+MIN_TRAJ_Length = 50
+MAX_MATCHED_Distance = 90
 
 
 def group_tracks_by_id(tracks_path):
@@ -63,27 +69,6 @@ class Counting:
         self.traject_couter = 0
         self.tem = []
 
-    # def decode_sring(self, aa):
-    #     res = []
-    #     my_list = aa.split("\n")[1: -1]
-    #     for tem in my_list:
-    #         # tem = tem.replace("' [", "'[")
-    #         # tem = tem.replace("[ ", "[")
-    #         tem = tem[2: -2]
-    #         tem = re.sub("\s+", ",", tem)
-    #         tem = tem.split(",")
-    #         # print(tem)
-    #         cur_tem = []
-    #         for item in tem:
-    #             if item != '':
-    #                 cur_tem.append(float(item))
-    #         # print(cur_tem)
-    #         if cur_tem:
-    #             res.append(cur_tem)
-    #     arr_res = np.array(res)
-    #     return arr_res
-
-
 
     def counting(self, current_trajectory, cmmlib):
         counting_start_time = time.time()
@@ -91,12 +76,12 @@ class Counting:
 
         # distance = pow(pow(resampled_trajectory[0][0] - resampled_trajectory[-1][0], 2) + pow(resampled_trajectory[0][1] - resampled_trajectory[-1][1], 2), 0.5)
         distance = abs(resampled_trajectory[0][0] - resampled_trajectory[-1][0]) + abs(resampled_trajectory[0][1] - resampled_trajectory[-1][1])
-        print(distance)
+        # print(distance)
 
         # if 65< distance < 100:
         #     self.tem.append(current_trajectory)
 
-        if len(current_trajectory) > 35 and distance > 65:
+        if len(current_trajectory) > MIN_TRAJ_POINTS and distance > MIN_TRAJ_Length:
             min_c = float('inf')
             matched_id = -1
             tem = []
@@ -110,36 +95,58 @@ class Counting:
                     else:
                         c = cmmlib.cmm_truncate_sides(traj_b[:, 0], traj_b[:, 1], traj_a[:, 0], traj_a[:, 1], traj_b.shape[0],
                                                       traj_a.shape[0])
+
+                    c = np.abs(c)
                     tem.append(c)
                     key.append(keys)
                     if c < min_c:
                         min_c = c
                         matched_id = keys
-            print(matched_id)
-            if min_c < 99:
+
+            for t , k in zip(tem, key):
+                print(f"tem = {t}, key = {k}")
+            self.viz_CMM(current_trajectory)
+    
+            if min_c < MAX_MATCHED_Distance:
                 if self.counter[matched_id] == 0:
                     self.tem.append(current_trajectory)
                 self.counter[matched_id] += 1
             self.traject_couter += 1
 
-    def draw_trajectory(self):
-        img_path = "./../../Dataset/DundasStAtNinthLine.jpg"
-        # img_path = 'York/Elderlab/tracks_labelling_gui-master/Dundas_Street_at_Ninth_Line/Dundas Street at Ninth Line.jpg'
-        norm = matplotlib.colors.Normalize(vmin=0, vmax=50)
-        frame = cv2.imread(img_path)
-        for track_num, track in enumerate(self.tem):
-            trajectory = track
-            color = (
-            np.random.randint(low=0, high=128), np.random.randint(low=0, high=128), np.random.randint(low=0, high=128))
-            index = 0
-            for i, pt in enumerate(trajectory):
-                rgba_color = cm.rainbow(norm(index), bytes=True)[0:3]
-                if pt[0] < 0 or pt[1] < 0 or pt[0] >= frame.shape[1] or pt[1] >= frame.shape[0]:
-                    continue
-                index += 1
-                cv2.circle(frame, (int(pt[0]), int(pt[1])), 3,
-                           (int(rgba_color[0]), int(rgba_color[1]), int(rgba_color[2])), -1)
-            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    def viz_CMM(self, current_track):
+        image_path = "./../../Dataset/DundasStAtNinthLine.jpg"
+        img = cv.imread(image_path)
+        rows, cols, dim = img.shape
+        for keys, values in self.typical_mois.items():
+            for gt_trajectory in values:
+                for p in gt_trajectory:
+                    x, y = int(p[0]), int(p[1])
+                    img = cv.circle(img, (x,y), radius=2, color=(int(keys/12*255), 70, int(255 - keys/12*255)), thickness=2)
+        for p in current_track:
+            x, y = int(p[0]), int(p[1])
+            img = cv.circle(img, (x,y), radius=2, color=(70, 255, 70), thickness=2)
+        cv.imshow('image',img)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
+
+    # def draw_trajectory(self):
+    #     img_path = "./../../Dataset/DundasStAtNinthLine.jpg"
+    #     # img_path = 'York/Elderlab/tracks_labelling_gui-master/Dundas_Street_at_Ninth_Line/Dundas Street at Ninth Line.jpg'
+    #     norm = matplotlib.colors.Normalize(vmin=0, vmax=50)
+    #     frame = cv2.imread(img_path)
+    #     for track_num, track in enumerate(self.tem):
+    #         trajectory = track
+    #         color = (
+    #         np.random.randint(low=0, high=128), np.random.randint(low=0, high=128), np.random.randint(low=0, high=128))
+    #         index = 0
+    #         for i, pt in enumerate(trajectory):
+    #             rgba_color = cm.rainbow(norm(index), bytes=True)[0:3]
+    #             if pt[0] < 0 or pt[1] < 0 or pt[0] >= frame.shape[1] or pt[1] >= frame.shape[0]:
+    #                 continue
+    #             index += 1
+    #             cv2.circle(frame, (int(pt[0]), int(pt[1])), 3,
+    #                        (int(rgba_color[0]), int(rgba_color[1]), int(rgba_color[2])), -1)
+    #         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
     def main(self, filename):
         # file_path to all trajectories .txt file(at the moment
@@ -149,9 +156,13 @@ class Counting:
         for idx in tids:
             current_track = df[df['id'] == idx]
             a = current_track['trajectory'].values.tolist()
-            if a[0].shape[0] > 30:
+            if a[0].shape[0] > 50:
                 self.counting(a[0], self.cmmlib)
-        print(self.counter)
+                # print(f"couning a[0] with shape {a[0].shape}")
+
+        for i in range(12):
+            print(f"{i+1}: {self.counter[i+1]}")
+        # print(self.counter)
         print(self.traject_couter)
 
 if __name__ == "__main__":
