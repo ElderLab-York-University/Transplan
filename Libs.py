@@ -1,12 +1,4 @@
+# Author: Sajjad P. Savaoji April 27 2022
+# This py file contains all the ncessary libraries and packages for the pipeline
 import argparse
-
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+import os

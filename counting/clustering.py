@@ -141,14 +141,20 @@ M = None
 with open("pairdistances.npy", "rb") as f:
     M = np.load(f)
 
-clt = DBSCAN(eps = 10, min_samples=5, metric="precomputed")
-labels = clt.fit_predict(M)
-sns.histplot(labels)
-print(np.unique(labels))
-plt.show()
-print(labels)
-viz_all_tracks(df["trajectory"], labels, save_path = "./../../Results/DBSCAN.png")
+# clt = DBSCAN(eps = 10, min_samples=5, metric="precomputed")
+# labels = clt.fit_predict(M)
+# sns.histplot(labels)
+# print(np.unique(labels))
+# plt.show()
+# print(labels)
+# viz_all_tracks(df["trajectory"], labels, save_path = "./../../Results/DBSCAN.png")
 
+# center_indexes = find_centers_MNAVG(df, labels, M)
+# viz_all_tracks(df["trajectory"].iloc[center_indexes], labels[center_indexes], save_path = "./../../Results/DBSCAN_centers_MAVD.png")
+# center_indexes = find_centers_MXLEN(df, labels, M)
+# viz_all_tracks(df["trajectory"].iloc[center_indexes], labels[center_indexes], save_path = "./../../Results/DBSCAN_centers_MXLN.png")
+
+##### Agglomorative Clustering
 # clt = AgglomerativeClustering(n_clusters = 12, affinity="precomputed", linkage='average')
 # labels = clt.fit_predict(M)
 # sns.histplot(labels)
@@ -157,22 +163,27 @@ viz_all_tracks(df["trajectory"], labels, save_path = "./../../Results/DBSCAN.png
 # print(labels)
 # viz_all_tracks(df["trajectory"], labels, save_path = "./../../Results/Agglomorattive.png")
 
-# clt = AffinityPropagation(damping =0.9 , affinity="precomputed", max_iter=2000)
-# labels = clt.fit_predict(M)
-# sns.histplot(labels)
-# print(np.unique(labels))
-# plt.show()
-# print(labels)
-# viz_all_tracks(df["trajectory"], labels, save_path = "./../../Results/AffinityPropagation.png")
+# center_indexes = find_centers_MNAVG(df, labels, M)
+# viz_all_tracks(df["trajectory"].iloc[center_indexes], labels[center_indexes], save_path = "./../../Results/Agglomorative_centers_MAVD.png")
+# center_indexes = find_centers_MXLEN(df, labels, M)
+# viz_all_tracks(df["trajectory"].iloc[center_indexes], labels[center_indexes], save_path = "./../../Results/Agglomorative_centers_MXLN.png")
+
+#### Affinity Propagation 
+clt = AffinityPropagation(damping =0.5 , affinity="precomputed", max_iter=2000)
+labels = clt.fit_predict(M)
+sns.histplot(labels)
+print(np.unique(labels))
+plt.show()
+print(labels)
+viz_all_tracks(df["trajectory"], labels, save_path = "./../../Results/AffinityPropagation.png")
+center_indexes = find_centers_MNAVG(df, labels, M)
+viz_all_tracks(df["trajectory"].iloc[center_indexes], labels[center_indexes], save_path = "./../../Results/Agglomorative_centers_MAVD.png")
+center_indexes = find_centers_MXLEN(df, labels, M)
+viz_all_tracks(df["trajectory"].iloc[center_indexes], labels[center_indexes], save_path = "./../../Results/Agglomorative_centers_MXLN.png")
+
 
 # how to find cluster centers ??
 # idea 1: for each cluster find the trajectory that has the least average distance from all the other clusters
-center_indexes = find_centers_MNAVG(df, labels, M)
-viz_all_tracks(df["trajectory"].iloc[center_indexes], labels[center_indexes], save_path = "./../../Results/DBSCAN_centers_MAVD.png")
-
-# longest in the cluster
-center_indexes = find_centers_MXLEN(df, labels, M)
-viz_all_tracks(df["trajectory"].iloc[center_indexes], labels[center_indexes], save_path = "./../../Results/DBSCAN_centers_MXLN.png")
 
 
 

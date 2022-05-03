@@ -9,15 +9,17 @@
 # import libs
 from Libs import *
 from Utils import *
+from Detect import *
 
 def Preprocess(args):
     if args.Preprocess:
-        raise NotImplemented
+        print(FailLog("Preprocessing part should be done in MARLAB for now"))
     else: print(WarningLog("skipped preprocess subtask"))
 
 def Detect(args):
     if args.Detect:
-        raise NotImplemented
+        log = detect(args)
+        print(log)
     else: print(WarningLog("skipped detection subtask"))
 
 def Track(args):
@@ -54,6 +56,8 @@ def main(args):
 if __name__ == "__main__":
     # ferch the arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument("--Dataset", help="Path to a rep containing video files", type=str)
+    parser.add_argument("--Video", help="a list of video pathes in one repo", type=list)
     parser.add_argument("--Preprocess", help="If preprocess inputs first", action="store_true")
     parser.add_argument("--Detect", help="If perform detection", action="store_true")
     parser.add_argument("--Track", help="If perform tracking", action="store_true")
@@ -61,6 +65,10 @@ if __name__ == "__main__":
     parser.add_argument("--TrackLabelingGUI", help="If pop-up Track Labeling GUI", action="store_true")
     parser.add_argument("--Homography", help="If perform backkprojection using homography matrix", action="store_true")
     parser.add_argument("--Count", help="If count the objects for each MOI", action="store_true")
+    parser.add_argument("--Detector", help="Name of Detector to be used", type=str)
     args = parser.parse_args()
+
+    args = complete_args(args)
+    check_config(args)
 
     main(args)
