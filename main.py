@@ -18,9 +18,17 @@ def Preprocess(args):
 
 def Detect(args):
     if args.Detect:
+        print(ProcLog("Detection in Process"))
         log = detect(args)
         print(log)
     else: print(WarningLog("skipped detection subtask"))
+
+def VisDetect(args):
+    if args.VisDetect:
+        print(ProcLog("Viz-Detection in Process"))
+        log = visdetect(args)
+        print(log)
+    else: print(WarningLog("skipped viz-detection subtask"))
 
 def Track(args):
     if args.Track:
@@ -49,7 +57,7 @@ def Count(args):
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess, Detect, Track, HomographyGUI, Homography, TrackLabelingGUI, Count]
+    subtasks = [Preprocess, Detect, VisDetect, Track, HomographyGUI, Homography, TrackLabelingGUI, Count]
     for subtask in subtasks:
         subtask(args)
     
@@ -60,6 +68,7 @@ if __name__ == "__main__":
     parser.add_argument("--Video", help="a list of video pathes in one repo", type=list)
     parser.add_argument("--Preprocess", help="If preprocess inputs first", action="store_true")
     parser.add_argument("--Detect", help="If perform detection", action="store_true")
+    parser.add_argument("--VisDetect", help="If create video of detections", action="store_true")
     parser.add_argument("--Track", help="If perform tracking", action="store_true")
     parser.add_argument("--HomographyGUI", help="If pop-up homography GUI", action="store_true")
     parser.add_argument("--TrackLabelingGUI", help="If pop-up Track Labeling GUI", action="store_true")

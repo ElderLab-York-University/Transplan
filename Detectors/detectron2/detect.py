@@ -18,6 +18,7 @@ from detectron2.engine import DefaultPredictor
 from detectron2.config import get_cfg
 from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog, DatasetCatalog
+import pandas as pd
 
 # choose to run on CPU to GPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -27,6 +28,24 @@ print(f'device: {device_name}')
 config_path = "./Detectors/detectron2/detectron2-main/configs/COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"
 model_weight_path = "./Detectors/detectron2/model_final_280758.pkl"
 
+def df(file_path):
+  num_header_lines = 3
+  data = {}
+  data["fn"], data["class"], data["score"], data["x1"], data["y1"], data["x2"], data["y2"] = [], [], [], [], [], [], []
+  with open(file_path, "r") as f:
+    lines = f.readlines()
+    for line in lines[num_header_lines::]:
+      splits = line.split()
+      fn , clss, score, x1, y1, x2, y2 = int(splits[0]), int(splits[1]), float(splits[2]), float(splits[3]), float(splits[4]), float(splits[5]), float(splits[6])
+      data["fn"].append(fn)
+      data["class"].append(clss)
+      data["score"].append(score)
+      data["x1"].append(x1)
+      data["y1"].append(y1)
+      data["x2"].append(x2)
+      data["y2"].append(y2)
+  return pd.DataFrame.from_dict(data)
+    
 def detect(args):
   video_path = args.Video
   text_result_path = args.DetectionPath
@@ -92,8 +111,8 @@ def detect(args):
   os.system(f"cp {text_result_path} {args.DetectionDetectorPath}")
 
   # # When everything done, release the video capture object
-  # cap.release()
+  cap.release()
   # out_cap.release()
 
   # # Closes all the frames
-  # cv2.destroyAllWindows()
+  cv2.destroyAllWindows()

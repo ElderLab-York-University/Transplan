@@ -14,19 +14,23 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 class Tags:
-    WARNING = "[Warning]"
-    FAIL    = "[ Error ]"
+    WARNING = "[Warning ]"
+    FAIL    = "[Error   ]"
+    PROC    = "[Proccess]"
+    SUCC    = "[Success ]"
 
 class SubTaskExt:
     Detection = "txt"
+    VisDetection="MP4"
 
 class SubTaskMarker:
     Detection = "detection"
+    VisDetection = "visdetection"
 
 class Puncuations:
     Dot = "."
 
-SupportedVideoExts = [".MP4"]
+SupportedVideoExts = [".MP4", ".mp4"]
 
 class Log(object):
     def __init__(self, message, bcolor, tag) -> None:
@@ -44,6 +48,13 @@ class FailLog(Log):
     def __init__(self, message) -> None:
         super().__init__(message, bcolors.FAIL, Tags.FAIL)
 
+class ProcLog(Log):
+    def __init__(self, message) -> None:
+        super().__init__(message, bcolors.OKCYAN, Tags.PROC)
+class SucLog(Log):
+    def __init__(self, message) -> None:
+        super().__init__(message, bcolors.OKGREEN, Tags.SUCC)
+
 def get_detection_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -54,11 +65,22 @@ def get_detection_path_with_detector_from_args(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot +SubTaskExt.Detection)
 
+def get_vis_detection_path_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.VisDetection + Puncuations.Dot + args.Detector + Puncuations.Dot +SubTaskExt.VisDetection)
+
+
 def add_detection_pathes_to_args(args):
     d_path = get_detection_path_from_args(args)
     d_d_path = get_detection_path_with_detector_from_args(args)
     args.DetectionPath = d_path
     args.DetectionDetectorPath = d_d_path
+    return args
+
+def add_vis_detection_path_to_args(args):
+    vis_detection_path = get_vis_detection_path_from_args(args)
+    args.VisDetectionPth = vis_detection_path
     return args
 
 def videos_from_dataset(args):
@@ -76,9 +98,11 @@ def add_videos_to_args(args):
     return args
 
 def complete_args(args):
-    args = add_videos_to_args(args)
-    print(args)
+    if args.Video is None:
+        # if Video path was not specified by the user grab a video from dataset
+        args = add_videos_to_args(args)
     args = add_detection_pathes_to_args(args)
+    args = add_vis_detection_path_to_args(args)
     return args
 
 def check_config(args):
