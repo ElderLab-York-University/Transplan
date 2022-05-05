@@ -24,7 +24,7 @@ def visdetect(args):
     if args.Detector is None:
         return FailLog("To interpret detections you should specify detector")
     # parse detection df using detector module
-    detection_df = detectors[args.Detector].df(args.DetectionDetectorPath)
+    detection_df = detectors[args.Detector].df(args)
 
     # open the original video and process it
     cap = cv2.VideoCapture(args.Video)
@@ -57,6 +57,3 @@ def draw_box_on_image(img, x1, y1, x2, y2, c=(255, 0, 0), thickness=2):
     end_point = (int(x2), int(y2))
     img = cv2.rectangle(img, sta_point, end_point, c, thickness)
     return img
-
-
-

@@ -28,7 +28,8 @@ print(f'device: {device_name}')
 config_path = "./Detectors/detectron2/detectron2-main/configs/COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"
 model_weight_path = "./Detectors/detectron2/model_final_280758.pkl"
 
-def df(file_path):
+def df(args):
+  file_path = args.DetectionDetectorPath
   num_header_lines = 3
   data = {}
   data["fn"], data["class"], data["score"], data["x1"], data["y1"], data["x2"], data["y2"] = [], [], [], [], [], [], []

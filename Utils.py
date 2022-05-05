@@ -20,12 +20,16 @@ class Tags:
     SUCC    = "[Success ]"
 
 class SubTaskExt:
-    Detection = "txt"
-    VisDetection="MP4"
+    Detection    = "txt"
+    VisDetection = "MP4"
+    Tracking     = "txt"
+    VisTracking  = "MP4"
 
 class SubTaskMarker:
-    Detection = "detection"
+    Detection    = "detection"
     VisDetection = "visdetection"
+    Tracking     = "tracking"
+    VisTracking  = "vistracking"
 
 class Puncuations:
     Dot = "."
@@ -70,6 +74,17 @@ def get_vis_detection_path_from_args(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.VisDetection + Puncuations.Dot + args.Detector + Puncuations.Dot +SubTaskExt.VisDetection)
 
+def get_tracking_path_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Tracking)
+
+def get_vis_tracking_path_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.VisTracking + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
+
+
 
 def add_detection_pathes_to_args(args):
     d_path = get_detection_path_from_args(args)
@@ -97,20 +112,39 @@ def add_videos_to_args(args):
     args.Video = video_file
     return args
 
+def add_tracking_path_to_args(args):
+    tracking_path = get_tracking_path_from_args(args)
+    args.TrackingPth = tracking_path
+    return args
+
+def add_vis_tracking_path_to_args(args):
+    vis_tracking_pth = get_vis_tracking_path_from_args(args)
+    args.VisTrackingPth = vis_tracking_pth
+    return args
+
 def complete_args(args):
     if args.Video is None:
         # if Video path was not specified by the user grab a video from dataset
         args = add_videos_to_args(args)
     args = add_detection_pathes_to_args(args)
     args = add_vis_detection_path_to_args(args)
+    args = add_tracking_path_to_args(args)
+    args = add_vis_tracking_path_to_args(args)
     return args
 
 def check_config(args):
     # check if args passed are valid
     # create Results folders Accordigly
     # check if Resutls folder is in the dataset location
-    if "Results" not in os.listdir(args.Dataset):
-        results_path= os.path.join(args.Dataset, "Results")
-        detection_path = os.path.join(results_path, "Detection")
-        os.system(f"mkdir {results_path}")
-        os.system(f"mkdir {detection_path}")
+    results_path= os.path.join(args.Dataset, "Results")
+    detection_path = os.path.join(results_path, "Detection")
+    tracking_path = os.path.join(results_path, "Tracking")
+
+    try:    os.system(f"mkdir {results_path}")
+    except: pass
+
+    try:    os.system(f"mkdir {detection_path}")
+    except: pass
+
+    try:    os.system(f"mkdir {tracking_path}")
+    except: pass
