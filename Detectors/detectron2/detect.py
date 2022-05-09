@@ -26,7 +26,11 @@ device_name = "cuda:0" if torch.cuda.is_available() else "cpu"
 print(f'device: {device_name}')
 
 config_path = "./Detectors/detectron2/detectron2-main/configs/COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"
-model_weight_path = "./Detectors/detectron2/model_final_280758.pkl"
+
+model_weight_url = detectron2.model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
+if "model_temp_280758.pkl" not in os.listdir("./Detectors/detectron2/"):
+  os.system(f"wget {model_weight_url} -O ./Detectors/detectron2/model_temp_280758.pkl")
+model_weight_path = "./Detectors/detectron2/model_temp_280758.pkl"
 
 def df(args):
   file_path = args.DetectionDetectorPath
