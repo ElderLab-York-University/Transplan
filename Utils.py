@@ -126,10 +126,12 @@ def complete_args(args):
     if args.Video is None:
         # if Video path was not specified by the user grab a video from dataset
         args = add_videos_to_args(args)
-    args = add_detection_pathes_to_args(args)
-    args = add_vis_detection_path_to_args(args)
-    args = add_tracking_path_to_args(args)
-    args = add_vis_tracking_path_to_args(args)
+    if not args.Detector is None:
+        args = add_detection_pathes_to_args(args)
+        args = add_vis_detection_path_to_args(args)
+    if not args.Tracker is None:
+        args = add_tracking_path_to_args(args)
+        args = add_vis_tracking_path_to_args(args)
     return args
 
 def check_config(args):
