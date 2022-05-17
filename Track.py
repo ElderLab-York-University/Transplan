@@ -5,12 +5,15 @@ from Utils import *
 from Detect import *
 
 # import all detectros here
+# And add their names to the "trackers" dictionary
 # -------------------------- 
 import Trackers.sort.track
+import Trackers.CenterTrack.track
 # --------------------------
-
 trackers = {}
 trackers["sort"] = Trackers.sort.track
+trackers["CenterTrack"] = Trackers.CenterTrack.track
+# --------------------------
 
 def track(args):
     if args.Tracker not in os.listdir("./Trackers/"):
@@ -19,7 +22,6 @@ def track(args):
     current_tracker = trackers[args.Tracker]
     current_tracker.track(args, detectors)
     return SucLog("Tracking files stored")
-
 
 
 def vistrack(args):

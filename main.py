@@ -9,8 +9,8 @@
 # import libs
 from Libs import *
 from Utils import *
-from Detect import *
-from Track import *
+from Detect import detect, visdetect
+from Track import track, vistrack
 
 def Preprocess(args):
     if args.Preprocess:

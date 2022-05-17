@@ -150,3 +150,26 @@ def check_config(args):
 
     try:    os.system(f"mkdir {tracking_path}")
     except: pass
+
+def get_conda_envs():
+    stream = os.popen("conda env list")
+    output = stream.read()
+    return output.split()[7::2]
+
+def make_conda_env(env_name, libs=""):
+    os.system(f"conda create -n {env_name} -y "+libs)
+
+def activate_conda_env(env_name):
+    os.system(f"conda activate {env_name}")
+
+def deactivate_conda_env(env_name):
+    os.system(f"conda deactivate")
+
+def conda_pyrun(env_name, exec_file, args):
+    os.system(f"conda run -n {env_name} python3 \"{exec_file}\" '{json.dumps(dict(vars(args)))}'")
+
+def download_url_to(url, path):
+    # make sure that path is valid
+    r = requests.get(url, allow_redirects=True)
+    open(path, 'wb').write(r.content)
+
