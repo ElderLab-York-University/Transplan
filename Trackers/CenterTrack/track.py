@@ -8,7 +8,19 @@ def track(args, *oargs):
     conda_pyrun(env_name, exec_path, args)
 
 def df(args):
-    raise NotImplemented
+    # fn,id,class,score,bbox(4 numbers)
+    data = {}
+    tracks_path = args.TrackingPth
+    tracks = np.loadtxt(tracks_path, delimiter=',')
+    data["fn"]    = tracks[:, 0]
+    data["id"]    = tracks[:, 1]
+    data["class"] = tracks[:, 2]
+    data["score"] = tracks[:, 3]
+    data["x1"]    = tracks[:, 4]
+    data["y1"]    = tracks[:, 5]
+    data["x2"]    = tracks[:, 6]
+    data["y2"]    = tracks[:, 7]
+    return pd.DataFrame.from_dict(data)
 
 def setup(args):
     env_name = args.Tracker
