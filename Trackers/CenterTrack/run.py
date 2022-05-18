@@ -1,4 +1,3 @@
-print("I am here in the run.py file; hopefully this work for you")
 import sys
 import pickle as pkl
 import json

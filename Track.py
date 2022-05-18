@@ -41,7 +41,7 @@ def vistrack(args):
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 
-    out_cap = cv2.VideoWriter(annotated_video_path,cv2.VideoWriter_fourcc('X','2','6','4'), fps, (frame_width,frame_height))
+    out_cap = cv2.VideoWriter(annotated_video_path,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
 
     # Read until video is completed
     for frame_num in tqdm(range(frames)):
