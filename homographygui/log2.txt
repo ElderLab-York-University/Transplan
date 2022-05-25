@@ -1,0 +1,991 @@
+Script started on 2022-05-18 20:06:56-04:00 [TERM="xterm-256color" TTY="/dev/pts/2" COLUMNS="144" LINES="37"]
+[33mThe `[1m[33mcopydir[0m[33m` plugin is deprecated. Use the `[1m[33mcopypath[0m[33m` plugin instead.[39m
+[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;32m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[32ml[39m[32ml[39m[90ms[39m[32ml[32md[39m[90md /usr/local/lib/python3.8/dist-packages/PyQt5/Qt5/plugins/platforms/libqxcb.so[39m[79D[32ml[32md[32md[39m[39m [39m/[39m [39m  [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [80D/home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/libqxcb.s[82D[1m[31m/[1m[31mh[1m[31mo[1m[31mm[1m[31me[1m[31m/[1m[31ms[1m[31ma[1m[31mv[1m[31mo[1m[31mj[1m[31mi[1m[31m/[1m[31m.[1m[31ml[1m[31mo[1m[31mc[1m[31ma[1m[31ml[1m[31m/[1m[31ml[1m[31mi[1m[31mb[1m[31m/[1m[31mp[1m[31my[1m[31mt[1m[31mh[1m[31mo[1m[31mn[1m[31m3[1m[31m.[1m[31m8[1m[31m/[1m[31ms[1m[31mi[1m[31mt[1m[31me[1m[31m-[1m[31mp[1m[31ma[1m[31mc[1m[31mk[1m[31ma[1m[31mg[1m[31me[1m[31ms[1m[31m/[1m[31mc[1m[31mv[1m[31m2[1m[31m/[1m[31mq[1m[31mt[1m[31m/[1m[31mp[1m[31ml[1m[31mu[1m[31mg[1m[31mi[1m[31mn[1m[31ms[1m[31m/[1m[31mp[1m[31ml[1m[31ma[1m[31mt[1m[31mf[1m[31mo[1m[31mr[1m[31mm[1m[31ms[1m[31m/[1m[31ml[1m[31mi[1m[31mb[1m[31mq[1m[31mx[1m[31mc[1m[31mb[1m[31m.[1m[31ms[1m[31mo[0m[39m[83D[0m[39ml[0m[39md[0m[39md[0m[39m [0m[39m[7m/[0m[39m[7mh[0m[39m[7mo[0m[39m[7mm[0m[39m[7me[0m[39m[7m/[0m[39m[7ms[0m[39m[7ma[0m[39m[7mv[0m[39m[7mo[0m[39m[7mj[0m[39m[7mi[0m[39m[7m/[0m[39m[7m.[0m[39m[7ml[0m[39m[7mo[0m[39m[7mc[0m[39m[7ma[0m[39m[7ml[0m[39m[7m/[0m[39m[7ml[0m[39m[7mi[0m[39m[7mb[0m[39m[7m/[0m[39m[7mp[0m[39m[7my[0m[39m[7mt[0m[39m[7mh[0m[39m[7mo[0m[39m[7mn[0m[39m[7m3[0m[39m[7m.[0m[39m[7m8[0m[39m[7m/[0m[39m[7ms[0m[39m[7mi[0m[39m[7mt[0m[39m[7me[0m[39m[7m-[0m[39m[7mp[0m[39m[7ma[0m[39m[7mc[0m[39m[7mk[0m[39m[7ma[0m[39m[7mg[0m[39m[7me[0m[39m[7ms[0m[39m[7m/[0m[39m[7mc[0m[39m[7mv[0m[39m[7m2[0m[39m[7m/[0m[39m[7mq[0m[39m[7mt[0m[39m[7m/[0m[39m[7mp[0m[39m[7ml[0m[39m[7mu[0m[39m[7mg[0m[39m[7mi[0m[39m[7mn[0m[39m[7ms[0m[39m[7m/[0m[39m[7mp[0m[39m[7ml[0m[39m[7ma[0m[39m[7mt[0m[39m[7mf[0m[39m[7mo[0m[39m[7mr[0m[39m[7mm[0m[39m[7ms[0m[39m[7m/[0m[39m[7ml[0m[39m[7mi[0m[39m[7mb[0m[39m[7mq[0m[39m[7mx[0m[39m[7mc[7mb.so[27m[83D[27m/[27mh[27mo[27mm[27me[27m/[27ms[27ma[27mv[27mo[27mj[27mi[27m/[27m.[27ml[27mo[27mc[27ma[27ml[27m/[27ml[27mi[27mb[27m/[27mp[27my[27mt[27mh[27mo[27mn[27m3[27m.[27m8[27m/[27ms[27mi[27mt[27me[27m-[27mp[27ma[27mc[27mk[27ma[27mg[27me[27ms[27m/[27mc[27mv[27m2[27m/[27mq[27mt[27m/[27mp[27ml[27mu[27mg[27mi[27mn[27ms[27m/[27mp[27ml[27ma[27mt[27mf[27mo[27mr[27mm[27ms[27m/[27ml[27mi[27mb[27mq[27mx[27mc[27mb[27m.[27ms[27mo[90m/usr/local/lib/python3.8/d[90mi[90mst-packages/PyQt5/Qt5/plugins/platforms/libqxcb.so[39m[K[A[67C[87D[32ml[32md[32md[39m[84C[39m/[39mu[39ms[39mr[39m/[39ml[39mo[39mc[39ma[39ml[39m/[39ml[39mi[39mb[39m/[39mp[39my[39mt[39mh[39mo[39mn[39m3[39m.[39m8[39m/[39mdi[39ms[39mt[39m-[39mp[39ma[39mc[39mk[39ma[39mg[39me[39ms[39m/[39mP[39my[39mQ[39mt[39m5[39m/[39mQ[39mt[39m5[39m/[39mp[39ml[39mu[39mg[39mi[39mn[39ms[39m/[39mp[39ml[39ma[39mt[39mf[39mo[39mr[39mm[39ms[39m/[39ml[39mi[39mb[39mq[39mx[39mc[39mb[39m.[39ms[39mo[1C[?2004l
+
+[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;31m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[?2004l
+
+[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;31m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[?2004l
+
+[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;31m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[32ml[39m[32ml[39m[90ms[39m[32ml[32md[39m[90md /usr/local/lib/python3.8/dist-packages/PyQt5/Qt5/plugins/platforms/libqxcb.so[39m[79D[32ml[32md[32md[39m[39m [39m/[39m [39m  [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [80D/home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/libqxcb.s[82D[1m[31m/[1m[31mh[1m[31mo[1m[31mm[1m[31me[1m[31m/[1m[31ms[1m[31ma[1m[31mv[1m[31mo[1m[31mj[1m[31mi[1m[31m/[1m[31m.[1m[31ml[1m[31mo[1m[31mc[1m[31ma[1m[31ml[1m[31m/[1m[31ml[1m[31mi[1m[31mb[1m[31m/[1m[31mp[1m[31my[1m[31mt[1m[31mh[1m[31mo[1m[31mn[1m[31m3[1m[31m.[1m[31m8[1m[31m/[1m[31ms[1m[31mi[1m[31mt[1m[31me[1m[31m-[1m[31mp[1m[31ma[1m[31mc[1m[31mk[1m[31ma[1m[31mg[1m[31me[1m[31ms[1m[31m/[1m[31mc[1m[31mv[1m[31m2[1m[31m/[1m[31mq[1m[31mt[1m[31m/[1m[31mp[1m[31ml[1m[31mu[1m[31mg[1m[31mi[1m[31mn[1m[31ms[1m[31m/[1m[31mp[1m[31ml[1m[31ma[1m[31mt[1m[31mf[1m[31mo[1m[31mr[1m[31mm[1m[31ms[1m[31m/[1m[31ml[1m[31mi[1m[31mb[1m[31mq[1m[31mx[1m[31mc[1m[31mb[1m[31m.[1m[31ms[1m[31mo[0m[39m[83D[0m[39ml[0m[39md[0m[39md[0m[39m [0m[39m[7m/[0m[39m[7mh[0m[39m[7mo[0m[39m[7mm[0m[39m[7me[0m[39m[7m/[0m[39m[7ms[0m[39m[7ma[0m[39m[7mv[0m[39m[7mo[0m[39m[7mj[0m[39m[7mi[0m[39m[7m/[0m[39m[7m.[0m[39m[7ml[0m[39m[7mo[0m[39m[7mc[0m[39m[7ma[0m[39m[7ml[0m[39m[7m/[0m[39m[7ml[0m[39m[7mi[0m[39m[7mb[0m[39m[7m/[0m[39m[7mp[0m[39m[7my[0m[39m[7mt[0m[39m[7mh[0m[39m[7mo[0m[39m[7mn[0m[39m[7m3[0m[39m[7m.[0m[39m[7m8[0m[39m[7m/[0m[39m[7ms[0m[39m[7mi[0m[39m[7mt[0m[39m[7me[0m[39m[7m-[0m[39m[7mp[0m[39m[7ma[0m[39m[7mc[0m[39m[7mk[0m[39m[7ma[0m[39m[7mg[0m[39m[7me[0m[39m[7ms[0m[39m[7m/[0m[39m[7mc[0m[39m[7mv[0m[39m[7m2[0m[39m[7m/[0m[39m[7mq[0m[39m[7mt[0m[39m[7m/[0m[39m[7mp[0m[39m[7ml[0m[39m[7mu[0m[39m[7mg[0m[39m[7mi[0m[39m[7mn[0m[39m[7ms[0m[39m[7m/[0m[39m[7mp[0m[39m[7ml[0m[39m[7ma[0m[39m[7mt[0m[39m[7mf[0m[39m[7mo[0m[39m[7mr[0m[39m[7mm[0m[39m[7ms[0m[39m[7m/[0m[39m[7ml[0m[39m[7mi[0m[39m[7mb[0m[39m[7mq[0m[39m[7mx[0m[39m[7mc[7mb.so[27m[83D[27m/[27mh[27mo[27mm[27me[27m/[27ms[27ma[27mv[27mo[27mj[27mi[27m/[27m.[27ml[27mo[27mc[27ma[27ml[27m/[27ml[27mi[27mb[27m/[27mp[27my[27mt[27mh[27mo[27mn[27m3[27m.[27m8[27m/[27ms[27mi[27mt[27me[27m-[27mp[27ma[27mc[27mk[27ma[27mg[27me[27ms[27m/[27mc[27mv[27m2[27m/[27mq[27mt[27m/[27mp[27ml[27mu[27mg[27mi[27mn[27ms[27m/[27mp[27ml[27ma[27mt[27mf[27mo[27mr[27mm[27ms[27m/[27ml[27mi[27mb[27mq[27mx[27mc[27mb[27m.[27ms[27mo[90m/usr/local/lib/python3.8/d[90mi[90mst-packages/PyQt5/Qt5/plugins/platforms/libqxcb.so[39m[K[A[67C[87D[32ml[32md[32md[39m [4m/[4mh[4mo[4mm[4me[4m/[4ms[4ma[4mv[4mo[4mj[4mi[4m/[4m.[4ml[4mo[4mc[4ma[4ml[4m/[4ml[4mi[4mb[4m/[4mp[4my[4mt[4mh[4mo[4mn[4m3[4m.[4m8[4m/[4ms[4mi[4mt[4me[4m-[4mp[4ma[4mc[4mk[4ma[4mg[4me[4ms[4m/[4mc[4mv[4m2[4m/[4mq[4mt[4m/[4mp[4ml[4mu[4mg[4mi[4mn[4ms[4m/[4mp[4ml[4ma[4mt[4mf[4mo[4mr[4mm[4ms[4m/[4ml[4mi[4mb[4mq[4mx[4mc[4mb[4m.[4ms[4mo[24m[K[1B
+[K[A[119C[4ms[24m[24m [4m.[24m[24m [4mb[24m[24m [4mc[24m[24m [4mx[24m[24m [4mq[24m[24m [4mb[24m[24m [4mi[24m[24m [4ml[24m[24m [4m/[24m[24m [4ms[24m[24m [4mm[24m[24m [4mr[24m[24m [?2004l[1B
+[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;31m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[?2004l
+
+[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;31m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[?2004l
+
+[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;31m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[32ml[39m[32ml[39m[90ms[39m[32ml[32md[39m[90md /usr/local/lib/python3.8/dist-packages/PyQt5/Qt5/plugins/platforms/libqxcb.so[39m[79D[32ml[32md[32md[39m[39m [39m/[39m [39m  [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [80D/home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/libqxcb.s[82D[1m[31m/[1m[31mh[1m[31mo[1m[31mm[1m[31me[1m[31m/[1m[31ms[1m[31ma[1m[31mv[1m[31mo[1m[31mj[1m[31mi[1m[31m/[1m[31m.[1m[31ml[1m[31mo[1m[31mc[1m[31ma[1m[31ml[1m[31m/[1m[31ml[1m[31mi[1m[31mb[1m[31m/[1m[31mp[1m[31my[1m[31mt[1m[31mh[1m[31mo[1m[31mn[1m[31m3[1m[31m.[1m[31m8[1m[31m/[1m[31ms[1m[31mi[1m[31mt[1m[31me[1m[31m-[1m[31mp[1m[31ma[1m[31mc[1m[31mk[1m[31ma[1m[31mg[1m[31me[1m[31ms[1m[31m/[1m[31mc[1m[31mv[1m[31m2[1m[31m/[1m[31mq[1m[31mt[1m[31m/[1m[31mp[1m[31ml[1m[31mu[1m[31mg[1m[31mi[1m[31mn[1m[31ms[1m[31m/[1m[31mp[1m[31ml[1m[31ma[1m[31mt[1m[31mf[1m[31mo[1m[31mr[1m[31mm[1m[31ms[1m[31m/[1m[31ml[1m[31mi[1m[31mb[1m[31mq[1m[31mx[1m[31mc[1m[31mb[1m[31m.[1m[31ms[1m[31mo[0m[39m[83D[0m[39ml[0m[39md[0m[39md[0m[39m [0m[39m[7m/[0m[39m[7mh[0m[39m[7mo[0m[39m[7mm[0m[39m[7me[0m[39m[7m/[0m[39m[7ms[0m[39m[7ma[0m[39m[7mv[0m[39m[7mo[0m[39m[7mj[0m[39m[7mi[0m[39m[7m/[0m[39m[7m.[0m[39m[7ml[0m[39m[7mo[0m[39m[7mc[0m[39m[7ma[0m[39m[7ml[0m[39m[7m/[0m[39m[7ml[0m[39m[7mi[0m[39m[7mb[0m[39m[7m/[0m[39m[7mp[0m[39m[7my[0m[39m[7mt[0m[39m[7mh[0m[39m[7mo[0m[39m[7mn[0m[39m[7m3[0m[39m[7m.[0m[39m[7m8[0m[39m[7m/[0m[39m[7ms[0m[39m[7mi[0m[39m[7mt[0m[39m[7me[0m[39m[7m-[0m[39m[7mp[0m[39m[7ma[0m[39m[7mc[0m[39m[7mk[0m[39m[7ma[0m[39m[7mg[0m[39m[7me[0m[39m[7ms[0m[39m[7m/[0m[39m[7mc[0m[39m[7mv[0m[39m[7m2[0m[39m[7m/[0m[39m[7mq[0m[39m[7mt[0m[39m[7m/[0m[39m[7mp[0m[39m[7ml[0m[39m[7mu[0m[39m[7mg[0m[39m[7mi[0m[39m[7mn[0m[39m[7ms[0m[39m[7m/[0m[39m[7mp[0m[39m[7ml[0m[39m[7ma[0m[39m[7mt[0m[39m[7mf[0m[39m[7mo[0m[39m[7mr[0m[39m[7mm[0m[39m[7ms[0m[39m[7m/[0m[39m[7ml[0m[39m[7mi[0m[39m[7mb[0m[39m[7mq[0m[39m[7mx[0m[39m[7mc[7mb.so[27m[83D[27m/[27mh[27mo[27mm[27me[27m/[27ms[27ma[27mv[27mo[27mj[27mi[27m/[27m.[27ml[27mo[27mc[27ma[27ml[27m/[27ml[27mi[27mb[27m/[27mp[27my[27mt[27mh[27mo[27mn[27m3[27m.[27m8[27m/[27ms[27mi[27mt[27me[27m-[27mp[27ma[27mc[27mk[27ma[27mg[27me[27ms[27m/[27mc[27mv[27m2[27m/[27mq[27mt[27m/[27mp[27ml[27mu[27mg[27mi[27mn[27ms[27m/[27mp[27ml[27ma[27mt[27mf[27mo[27mr[27mm[27ms[27m/[27ml[27mi[27mb[27mq[27mx[27mc[27mb[27m.[27ms[27mo[90m/usr/local/lib/python3.8/d[90mi[90mst-packages/PyQt5/Qt5/plugins/platforms/libqxcb.so[39m[K[A[67C[87D[32ml[32md[32md[39m [4m/[4mh[4mo[4mm[4me[4m/[4ms[4ma[4mv[4mo[4mj[4mi[4m/[4m.[4ml[4mo[4mc[4ma[4ml[4m/[4ml[4mi[4mb[4m/[4mp[4my[4mt[4mh[4mo[4mn[4m3[4m.[4m8[4m/[4ms[4mi[4mt[4me[4m-[4mp[4ma[4mc[4mk[4ma[4mg[4me[4ms[4m/[4mc[4mv[4m2[4m/[4mq[4mt[4m/[4mp[4ml[4mu[4mg[4mi[4mn[4ms[4m/[4mp[4ml[4ma[4mt[4mf[4mo[4mr[4mm[4ms[4m/[4ml[4mi[4mb[4mq[4mx[4mc[4mb[4m.[4ms[4mo[24m[K[1B
+[K[A[118C[?1l>[?2004l[1B
+]2;ldd ]1;ldd	linux-vdso.so.1 (0x00007ffc3f5f8000)
+	libQt5XcbQpa-ca221f44.so.5.15.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libQt5XcbQpa-ca221f44.so.5.15.0 (0x00007fb4b46bc000)
+	libfreetype-c0e61f0c.so.6.14.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libfreetype-c0e61f0c.so.6.14.0 (0x00007fb4b43f0000)
+	libz.so.1 => /lib/x86_64-linux-gnu/libz.so.1 (0x00007fb4b43b5000)
+	libQt5Gui-ba0a2070.so.5.15.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libQt5Gui-ba0a2070.so.5.15.0 (0x00007fb4b3aad000)
+	libQt5Core-39545cc7.so.5.15.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libQt5Core-39545cc7.so.5.15.0 (0x00007fb4b33aa000)
+	libGL.so.1 => /lib/x86_64-linux-gnu/libGL.so.1 (0x00007fb4b3320000)
+	libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007fb4b32fd000)
+	libX11-xcb-69166bdf.so.1.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libX11-xcb-69166bdf.so.1.0.0 (0x00007fb4b30fa000)
+	libxcb-icccm-413c9f41.so.4.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libxcb-icccm-413c9f41.so.4.0.0 (0x00007fb4b2ef4000)
+	libxcb-image-e82a276d.so.0.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libxcb-image-e82a276d.so.0.0.0 (0x00007fb4b2cec000)
+	libxcb-shm-7a199f70.so.0.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libxcb-shm-7a199f70.so.0.0.0 (0x00007fb4b2ae4000)
+	libxcb-keysyms-21015570.so.1.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libxcb-keysyms-21015570.so.1.0.0 (0x00007fb4b28e0000)
+	libxcb-randr-a96a5a87.so.0.1.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libxcb-randr-a96a5a87.so.0.1.0 (0x00007fb4b26c9000)
+	libxcb-render-util-43ce00f5.so.0.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libxcb-render-util-43ce00f5.so.0.0.0 (0x00007fb4b24c3000)
+	libxcb-render-637b984a.so.0.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libxcb-render-637b984a.so.0.0.0 (0x00007fb4b22af000)
+	libxcb-shape-25c2b258.so.0.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libxcb-shape-25c2b258.so.0.0.0 (0x00007fb4b20a7000)
+	libxcb-sync-89374f40.so.1.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libxcb-sync-89374f40.so.1.0.0 (0x00007fb4b1e9e000)
+	libxcb-xfixes-9be3ba6f.so.0.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libxcb-xfixes-9be3ba6f.so.0.0.0 (0x00007fb4b1c92000)
+	libxcb-xinerama-ae147f87.so.0.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libxcb-xinerama-ae147f87.so.0.0.0 (0x00007fb4b1a8d000)
+	libxcb-xkb-9ba31ab3.so.1.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libxcb-xkb-9ba31ab3.so.1.0.0 (0x00007fb4b1866000)
+	libxcb.so.1 => /lib/x86_64-linux-gnu/libxcb.so.1 (0x00007fb4b183a000)
+	libXext.so.6 => /lib/x86_64-linux-gnu/libXext.so.6 (0x00007fb4b1825000)
+	libX11.so.6 => /lib/x86_64-linux-gnu/libX11.so.6 (0x00007fb4b16e8000)
+	libSM.so.6 => /lib/x86_64-linux-gnu/libSM.so.6 (0x00007fb4b16dd000)
+	libICE.so.6 => /lib/x86_64-linux-gnu/libICE.so.6 (0x00007fb4b16bf000)
+	libxkbcommon-x11-c65ed502.so.0.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libxkbcommon-x11-c65ed502.so.0.0.0 (0x00007fb4b14b2000)
+	libxkbcommon-71ae2972.so.0.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libxkbcommon-71ae2972.so.0.0.0 (0x00007fb4b126f000)
+	libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007fb4b1269000)
+	libstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007fb4b1087000)
+	libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fb4b0f38000)
+	libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007fb4b0f1d000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fb4b0d2b000)
+	libgthread-2.0.so.0 => /lib/x86_64-linux-gnu/libgthread-2.0.so.0 (0x00007fb4b0d24000)
+	libglib-2.0.so.0 => /lib/x86_64-linux-gnu/libglib-2.0.so.0 (0x00007fb4b0bfb000)
+	libbz2-a273e504.so.1.0.6 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libbz2-a273e504.so.1.0.6 (0x00007fb4b09ea000)
+	libpng15-ce838cd1.so.15.13.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libpng15-ce838cd1.so.15.13.0 (0x00007fb4b07bd000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007fb4b494a000)
+	libGLdispatch.so.0 => /lib/x86_64-linux-gnu/libGLdispatch.so.0 (0x00007fb4b0705000)
+	libGLX.so.0 => /lib/x86_64-linux-gnu/libGLX.so.0 (0x00007fb4b06cf000)
+	libxcb-util-4d666913.so.1.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libxcb-util-4d666913.so.1.0.0 (0x00007fb4b04c8000)
+	libXau-00ec42fe.so.6.0.0 => /home/savoji/.local/lib/python3.8/site-packages/cv2/qt/plugins/platforms/../../../../opencv_python.libs/libXau-00ec42fe.so.6.0.0 (0x00007fb4b02c3000)
+	libXau.so.6 => /lib/x86_64-linux-gnu/libXau.so.6 (0x00007fb4b02bd000)
+	libXdmcp.so.6 => /lib/x86_64-linux-gnu/libXdmcp.so.6 (0x00007fb4b02b5000)
+	libuuid.so.1 => /lib/x86_64-linux-gnu/libuuid.so.1 (0x00007fb4b02aa000)
+	libbsd.so.0 => /lib/x86_64-linux-gnu/libbsd.so.0 (0x00007fb4b0290000)
+	libpcre.so.3 => /lib/x86_64-linux-gnu/libpcre.so.3 (0x00007fb4b021d000)
+[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;32m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[1m[31ms[0m[39m[1m[31ms[0m[39m[90mcript log2.txt[39m[14D[0m[32ms[32mu[39m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [13D[90mdo apt-get install python3-opengl[39m[33D[1m[31ms[1m[31mu[1m[31md[0m[39m[0m[4m[32ms[0m[4m[32mu[0m[4m[32md[4m[32mo[24m[39m[39m [1m[31mp[0m[39m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [29D[90mip3 install PyQt5[39m[17D[1m[31mp[1m[31ma[0m[39m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [16D[1m[31ma[1m[31mc[0m[39m[1m[31mc[1m[31mm[0m[39m[1m[31mm[1m[31ma[0m[39m[1m[31ma[1m[31mn[0m[39m [1m[31ma[0m[39m[0m[39m [1m[31mm[0m[39m[0m[39m [1m[31mc[0m[39m[0m[39m [1m[31ma[0m[39m[0m[39m [1m[31mp[0m[39m[0m[39m [90mip3 install PyQt5[39m[17D[0m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [18D[90mapt-get install python3-opengl[39m[30D[1m[31mp[0m[39m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [29D[90mip3 install PyQt5[39m[17D[1m[31mp[1m[31ma[0m[39m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [16D[1m[31ma[1m[31mc[0m[39m[1m[31mc[1m[31mm[0m[39m[1m[31mm[1m[31ma[0m[39m[1m[31ma[1m[31mn[0m[39m[1m[31ma[0m[39m[0m[39m [1m[31mm[0m[39m[0m[39m [1m[31mc[0m[39m[0m[39m [1m[31ma[0m[39m[0m[39m [1m[31mp[0m[39m[0m[39m [90mip3 install PyQt5[39m[17D[0m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [18D[90mapt-get install python3-opengl[39m[30D[1m[31ma[0m[39m[1m[31ma[1m[31mp[0m[39m[0m[32ma[0m[32mp[32mt[39m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [26D[90minstall python3-pyqt5[39m[21D[39mi[39mn[11D[24m[39ms[24m[39mu[24m[39md[24m[39mo [39ma[39mp[39mt[3C[39ms[90ms[90mt[90ma[90ml[90ml[90m [90mp[90my[90mt[90mh[90mo[90mn[90m3[90m-[90mp[90my[90mq[90mt[90m5[39m[19D[12D[4m[32ms[4m[32mu[4m[32md[4m[32mo[24m[39m [32ma[32mp[32mt[39m[4C[39mt[90ms[90mt[90ma[90ml[90ml[90m [90mp[90my[90mt[90mh[90mo[90mn[90m3[90m-[90mp[90my[90mq[90mt[90m5[39m[19D[39ma[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [18D[90mll python3-pyqt5[39m[16D[39ml[39ml[39m [39m[4ml[24m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [12D[90mibxcb-util-dev[39m[14D[24ml[39mi[39mb[39mx[39mc[39mb[39m [39m [39m [39m [39m [39m [39m [39m [39m [8D[90m-util-dev[39m[9D[39m [39m [39m [39m [39m [39m [39m [39m [39m [8D[?1l>[?2004l
+
+]2;sudo apt install libxcb]1;apt[sudo] password for savoji: 
+
+Reading package lists... 0%
+
+Reading package lists... 100%
+
+Reading package lists... Done
+
+
+Building dependency tree... 0%
+
+Building dependency tree... 0%
+
+Building dependency tree... 50%
+
+Building dependency tree... 50%
+
+Building dependency tree       
+
+
+Reading state information... 0%
+
+Reading state information... 0%
+
+Reading state information... Done
+
+[1;31mE: [0mUnable to locate package libxcb[0m
+[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;31m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[1m[31ma[0m[39m[1m[31ma[0m[39m[90mpt-get install python3-pyqt5[39m[28D[1m[31ma[1m[31mp[0m[39m[0m[32ma[0m[32mp[32mt[39m[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [25D[90minstall python3-pyqt5[39m[21D[39ms[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [20D[90mearch libxcb[39m[12D[39me[39ma[39mr[39mc[39mh[39m [39m[4ml[24m[24ml[39mi[39mb[39mx[39mc[39mb[?1l>[?2004l
+
+]2;apt search libxcb]1;apt
+Sorting... 0%
+
+Sorting... 0%
+
+Sorting... 0%
+
+Sorting... Done
+
+
+Full Text Search... 50%
+
+Full Text Search... 50%
+
+Full Text Search... Done
+
+[32mlibpthread-stubs0-dev[0m/focal,now 0.4-1 amd64 [installed,automatic]
+  pthread stubs not provided by native libc, development files
+
+[32mlibx11-xcb-perl[0m/focal 0.18-1build1 amd64
+  perl bindings for libxcb
+
+[32mlibxcb-composite0[0m/focal 1.14-2 amd64
+  X C Binding, composite extension
+
+[32mlibxcb-composite0-dev[0m/focal 1.14-2 amd64
+  X C Binding, composite extension, development files
+
+[32mlibxcb-cursor-dev[0m/focal 0.1.1-4ubuntu1 amd64
+  utility libraries for X C Binding -- cursor, development files
+
+[32mlibxcb-cursor0[0m/focal 0.1.1-4ubuntu1 amd64
+  utility libraries for X C Binding -- cursor
+
+[32mlibxcb-damage0[0m/focal 1.14-2 amd64
+  X C Binding, damage extension
+
+[32mlibxcb-damage0-dev[0m/focal 1.14-2 amd64
+  X C Binding, damage extension, development files
+
+[32mlibxcb-doc[0m/focal,focal 1.14-2 all
+  X C Binding, development documentation
+
+[32mlibxcb-dpms0[0m/focal 1.14-2 amd64
+  X C Binding, dpms extension
+
+[32mlibxcb-dpms0-dev[0m/focal 1.14-2 amd64
+  X C Binding, dpms extension, development files
+
+[32mlibxcb-dri2-0[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, dri2 extension
+
+[32mlibxcb-dri2-0-dev[0m/focal 1.14-2 amd64
+  X C Binding, dri2 extension, development files
+
+[32mlibxcb-dri3-0[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, dri3 extension
+
+[32mlibxcb-dri3-dev[0m/focal 1.14-2 amd64
+  X C Binding, dri3 extension, development files
+
+[32mlibxcb-ewmh-dev[0m/focal 0.4.1-1.1 amd64
+  utility libraries for X C Binding -- ewmh, development files
+
+[32mlibxcb-ewmh2[0m/focal 0.4.1-1.1 amd64
+  utility libraries for X C Binding -- ewmh
+
+[32mlibxcb-glx0[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, glx extension
+
+[32mlibxcb-glx0-dev[0m/focal 1.14-2 amd64
+  X C Binding, glx extension, development files
+
+[32mlibxcb-icccm4[0m/focal,now 0.4.1-1.1 amd64 [installed,automatic]
+  utility libraries for X C Binding -- icccm
+
+[32mlibxcb-icccm4-dev[0m/focal 0.4.1-1.1 amd64
+  utility libraries for X C Binding -- icccm, development files
+
+[32mlibxcb-image0[0m/focal,now 0.4.0-1build1
+  utility libraries for X C Binding -- image
+
+[32mlibxcb-image0-dev[0m/focal 0.4.0-1build1 amd64
+  utility libraries for X C Binding -- image, development files
+
+[32mlibxcb-imdkit-dev[0m/focal 0~20190825+ds1-2 amd64
+  XIM protocol implementation in XCB (development files)
+
+[32mlibxcb-imdkit0[0m/focal 0~20190825+ds1-2 amd64
+  XIM protocol implementation in XCB
+
+[32mlibxcb-keysyms1[0m/focal,now 0.4.0-1build1 amd64 [installed,automatic]
+  utility libraries for X C Binding -- keysyms
+
+[32mlibxcb-keysyms1-dev[0m/focal 0.4.0-1build1 amd64
+  utility libraries for X C Binding -- keysyms, development files
+
+[32mlibxcb-present-dev[0m/focal 1.14-2 amd64
+  X C Binding, present extension, development files
+
+[32mlibxcb-present0[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, present extension
+
+[32mlibxcb-randr0[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, randr extension
+
+[32mlibxcb-randr0-dev[0m/focal 1.14-2 amd64
+  X C Binding, randr extension, development files
+
+[32mlibxcb-record0[0m/focal 1.14-2 amd64
+  X C Binding, record extension
+
+[32mlibxcb-record0-dev[0m/focal 1.14-2 amd64
+  X C Binding, record extension, development files
+
+[32mlibxcb-render-util0[0m/focal,now 0.3.9-1build1 amd64 [installed,automatic]
+  utility libraries for X C Binding -- render-util
+
+[32mlibxcb-render-util0-dev[0m/focal 0.3.9-1build1 amd64
+  utility libraries for X C Binding -- render-util
+
+[32mlibxcb-render0[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, render extension
+
+[32mlibxcb-render0-dev[0m/focal 1.14-2 amd64
+  X C Binding, render extension, development files
+
+[32mlibxcb-res0[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, res extension
+
+[32mlibxcb-res0-dev[0m/focal 1.14-2 amd64
+  X C Binding, res extension, development files
+
+[32mlibxcb-screensaver0[0m/focal 1.14-2 amd64
+  X C Binding, screensaver extension
+
+[32mlibxcb-screensaver0-dev[0m/focal 1.14-2 amd64
+  X C Binding, screensaver extension, development files
+
+[32mlibxcb-shape0[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, shape extension
+
+[32mlibxcb-shape0-dev[0m/focal 1.14-2 amd64
+  X C Binding, shape extension, development files
+
+[32mlibxcb-shm0[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, shm extension
+
+[32mlibxcb-shm0-dev[0m/focal 1.14-2 amd64
+  X C Binding, shm extension, development files
+
+[32mlibxcb-sync-dev[0m/focal 1.14-2 amd64
+  X C Binding, sync extension, development files
+
+[32mlibxcb-sync1[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, sync extension
+
+[32mlibxcb-util-dev[0m/focal,now 0.4.0-0ubuntu3 amd64 [installed]
+  utility libraries for X C Binding -- atom, aux and event
+
+[32mlibxcb-util0-dev[0m/focal 0.4.0-0ubuntu3 amd64
+  dummy transitional package for utility libraries for X C Binding -- atom, aux and event
+
+[32mlibxcb-util1[0m/focal,now 0.4.0-0ubuntu3 amd64 [installed,automatic]
+  utility libraries for X C Binding -- atom, aux and event
+
+[32mlibxcb-xf86dri0[0m/focal 1.14-2 amd64
+  X C Binding, xf86dri extension
+
+[32mlibxcb-xf86dri0-dev[0m/focal 1.14-2 amd64
+  X C Binding, xf86dri extension, development files
+
+[32mlibxcb-xfixes0[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, xfixes extension
+
+[32mlibxcb-xfixes0-dev[0m/focal 1.14-2 amd64
+  X C Binding, xfixes extension, development files
+
+[32mlibxcb-xinerama0[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, xinerama extension
+
+[32mlibxcb-xinerama0-dev[0m/focal 1.14-2 amd64
+  X C Binding, xinerama extension, development files
+
+[32mlibxcb-xinput-dev[0m/focal 1.14-2 amd64
+  X C Binding, xinput extension, development files
+
+[32mlibxcb-xinput0[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, xinput extension
+
+[32mlibxcb-xkb-dev[0m/focal 1.14-2 amd64
+  X C Binding, XKEYBOARD extension, development files
+
+[32mlibxcb-xkb1[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, XKEYBOARD extension
+
+[32mlibxcb-xrm-dev[0m/focal 1.0-3 amd64
+  utility functions for the X resource manager, development files
+
+[32mlibxcb-xrm0[0m/focal 1.0-3 amd64
+  utility functions for the X resource manager
+
+[32mlibxcb-xtest0[0m/focal 1.14-2 amd64
+  X C Binding, xtest extension
+
+[32mlibxcb-xtest0-dev[0m/focal 1.14-2 amd64
+  X C Binding, xtest extension, development files
+
+[32mlibxcb-xv0[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, xv extension
+
+[32mlibxcb-xv0-dev[0m/focal 1.14-2 amd64
+  X C Binding, xv extension, development files
+
+[32mlibxcb-xvmc0[0m/focal 1.14-2 amd64
+  X C Binding, xvmc extension
+
+[32mlibxcb-xvmc0-dev[0m/focal 1.14-2 amd64
+  X C Binding, xvmc extension, development files
+
+[32mlibxcb1[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding
+
+[32mlibxcb1-dev[0m/focal,now 1.14-2 amd64 [installed,automatic]
+  X C Binding, development files
+
+[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;32m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[1m[31ms[0m[39m[1m[31ms[0m[39m[90mudo apt install libxcb [39m[23D[0m[32ms[32mu[39m[1m[31ms[1m[31mu[1m[31md[0m[39m[0m[4m[32ms[0m[4m[32mu[0m[4m[32md[4m[32mo[24m[39m[39m [1m[31ma[0m[39m[1m[31ma[1m[31mp[0m[39m[0m[32ma[0m[32mp[32mt[39m[39m [39mi[39mn[39ms[39mt[39ma[39ml[39ml[39m [17D[24m[39ml[24m[39m [24m[39m [24m[39m  [39m [39m [39m          [39m [39m [39m [39m [39m [39m [39m [23Dlibpthread-stubs0-de[20D[1m[31ml[1m[31mi[1m[31mb[1m[31mp[1m[31mt[1m[31mh[1m[31mr[1m[31me[1m[31ma[1m[31md[1m[31m-[1m[31ms[1m[31mt[1m[31mu[1m[31mb[1m[31ms[1m[31m0[1m[31m-[1m[31md[1m[31me[1m[31mv[0m[39m[21D[0m[39ms[0m[39mu[0m[39md[0m[39mo[0m[39m [0m[39ma[0m[39mp[0m[39mt[0m[39m [0m[39mi[0m[39mn[0m[39ms[0m[39mt[0m[39ma[0m[39ml[0m[39ml[0m[39m [0m[39m[7ml[0m[39m[7mi[0m[39m[7mb[0m[39m[7mp[7mthread-stubs0-dev[27m[21D[27ml[27mi[27mb[27mp[27mt[27mh[27mr[27me[27ma[27md[27m-[27ms[27mt[27mu[27mb[27ms[27m0[27m-[27md[27me[27mv[90mlibxcb [39m[38D[4m[32ms[4m[32mu[4m[32md[4m[32mo[24m[39m [32ma[32mp[32mt[39m[30C[39m [39m [39m [39m [39m [39m [39m [?1l>[?2004l
+
+]2;sudo apt install libpthread-stubs0-dev]1;apt
+Reading package lists... 0%
+
+Reading package lists... 100%
+
+Reading package lists... Done
+
+
+Building dependency tree... 0%
+
+Building dependency tree... 0%
+
+Building dependency tree... 50%
+
+Building dependency tree... 50%
+
+Building dependency tree       
+
+
+Reading state information... 0%
+
+Reading state information... 0%
+
+Reading state information... Done
+
+libpthread-stubs0-dev is already the newest version (0.4-1).
+libpthread-stubs0-dev set to manually installed.
+0 upgraded, 0 newly installed, 0 to remove and 73 not upgraded.
+[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;32m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[4m[32msudo[24m[39m [32mapt[39m install libpthread-stubs0-devrinstall libpthread-stubs0-dev[29Deinstall libpthread-stubs0-dev[29D[?1l>[?2004l
+
+]2;sudo apt reinstall libpthread-stubs0-dev]1;apt
+Reading package lists... 0%
+
+Reading package lists... 100%
+
+Reading package lists... Done
+
+
+Building dependency tree... 0%
+
+Building dependency tree... 0%
+
+Building dependency tree... 50%
+
+Building dependency tree... 50%
+
+Building dependency tree       
+
+
+Reading state information... 0%
+
+Reading state information... 0%
+
+Reading state information... Done
+
+0 upgraded, 0 newly installed, 1 reinstalled, 0 to remove and 73 not upgraded.
+Need to get 5,384 B of archives.
+After this operation, 0 B of additional disk space will be used.
+[33m
+0% [Working][0m
+            
+Get:1 http://ca.archive.ubuntu.com/ubuntu focal/main amd64 libpthread-stubs0-dev amd64 0.4-1 [5,384 B]
+[33m
+80% [1 libpthread-stubs0-dev 5,384 B/5,384 B 100%][0m[33m
+                                                  
+100% [Working][0m
+              
+Fetched 5,384 B in 0s (20.0 kB/s)
+
+7[0;36r8[1A(Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 214029 files and directories currently installed.)
+Preparing to unpack .../libpthread-stubs0-dev_0.4-1_amd64.deb ...
+7[37;0f[42m[30mProgress: [  0%][49m[39m [..........................................................................................................................] 87[37;0f[42m[30mProgress: [ 20%][49m[39m [########################..................................................................................................] 8Unpacking libpthread-stubs0-dev:amd64 (0.4-1) over (0.4-1) ...
+7[37;0f[42m[30mProgress: [ 40%][49m[39m [################################################..........................................................................] 8Setting up libpthread-stubs0-dev:amd64 (0.4-1) ...
+7[37;0f[42m[30mProgress: [ 60%][49m[39m [#########################################################################.................................................] 87[37;0f[42m[30mProgress: [ 80%][49m[39m [#################################################################################################.........................] 8
+7[0;37r8[1A[J[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;32m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[4m[32msudo[24m[39m [32mapt[39m reinstall libpthread-stubs0-dev [90mv[39m [39m [90mev[39m [39m [39m [90mdev[39m [39m [39m [39m [90m-dev[39m [39m [39m [39m [39m [90m0-dev[39m [39m [39m [39m [39m [39m [90ms0-dev[39m [39m [39m [39m [39m [39m [39m [90mbs0-dev[39m [39m [39m [39m [39m [39m [39m [39m [8D[90mubs0-dev[39m[8D [39m [39m [39m [39m [39m [39m [39m [39m [9D[90mtubs0-dev[39m[9D [39m [39m [39m [39m [39m [39m [39m [39m [39m [10D[90mstubs0-dev[39m[10D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [11D[90m-stubs0-dev[39m[11D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [12D[90md-stubs0-dev[39m[12D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [13D[90mad-stubs0-dev[39m[13D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [14D[90mead-stubs0-dev[39m[14D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [15D[90mread-stubs0-dev[39m[15D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [16D[90mhread-stubs0-dev[39m[16D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [17D[90mthread-stubs0-dev[39m[17D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [18D[90mpthread-stubs0-dev[39m[18D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [19D[90mbpthread-stubs0-dev[39m[19D[4ml[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [20D[90mibpthread-stubs0-dev[39m[20D[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [21D[90mlibpthread-stubs0-dev[39m[21D[19D[24m[39ml[24m[39m [24m[39m [24m[39m  [39m [39m [39m            [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39Dlibxcb-dri2-[12D[1m[31ml[1m[31mi[1m[31mb[1m[31mx[1m[31mc[1m[31mb[1m[31m-[1m[31md[1m[31mr[1m[31mi[1m[31m2[1m[31m-[1m[31m0[0m[39m[13D[0m[39ms[0m[39mu[0m[39md[0m[39mo[0m[39m [0m[39ma[0m[39mp[0m[39mt[0m[39m [0m[39mr[0m[39me[0m[39mi[0m[39mnstall [7mlibxcb-dri2-0[27m[13D[27ml[27mi[27mb[27mx[27mc[27mb[27m-[27md[27mr[27mi[27m2[27m-[27m0[90mlibpthread-stubs0-dev[39m[21D[32D[4m[32ms[4m[32mu[4m[32md[4m[32mo[24m[39m [32ma[32mp[32mt[39m[24C[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [21D[?1l>[?2004l
+
+]2;sudo apt reinstall libxcb-dri2-0]1;apt
+Reading package lists... 0%
+
+Reading package lists... 100%
+
+Reading package lists... Done
+
+
+Building dependency tree... 0%
+
+Building dependency tree... 0%
+
+Building dependency tree... 50%
+
+Building dependency tree... 50%
+
+Building dependency tree       
+
+
+Reading state information... 0%
+
+Reading state information... 0%
+
+Reading state information... Done
+
+0 upgraded, 0 newly installed, 2 reinstalled, 0 to remove and 73 not upgraded.
+Need to get 14.2 kB of archives.
+After this operation, 0 B of additional disk space will be used.
+Do you want to continue? [Y/n] 
+[33m
+0% [Working][0m
+            
+Get:1 http://ca.archive.ubuntu.com/ubuntu focal/main amd64 libxcb-dri2-0 amd64 1.14-2 [6,920 B]
+[33m
+39% [1 libxcb-dri2-0 6,920 B/6,920 B 100%][0m[33m
+                                          
+49% [Working][0m
+             
+Get:2 http://ca.archive.ubuntu.com/ubuntu focal/main i386 libxcb-dri2-0 i386 1.14-2 [7,268 B]
+[33m
+90% [2 libxcb-dri2-0:i386 7,268 B/7,268 B 100%][0m[33m
+                                               
+100% [Working][0m
+              
+Fetched 14.2 kB in 0s (187 kB/s)
+
+7[0;36r8[1A(Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 214029 files and directories currently installed.)
+Preparing to unpack .../libxcb-dri2-0_1.14-2_amd64.deb ...
+7[37;0f[42m[30mProgress: [  0%][49m[39m [..........................................................................................................................] 87[37;0f[42m[30mProgress: [ 11%][49m[39m [#############.............................................................................................................] 8Unpacking libxcb-dri2-0:amd64 (1.14-2) over (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 22%][49m[39m [###########################...............................................................................................] 8Preparing to unpack .../libxcb-dri2-0_1.14-2_i386.deb ...
+7[37;0f[42m[30mProgress: [ 33%][49m[39m [########################################..................................................................................] 8Unpacking libxcb-dri2-0:i386 (1.14-2) over (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 44%][49m[39m [######################################################....................................................................] 8Setting up libxcb-dri2-0:amd64 (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 56%][49m[39m [###################################################################.......................................................] 87[37;0f[42m[30mProgress: [ 67%][49m[39m [#################################################################################.........................................] 8Setting up libxcb-dri2-0:i386 (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 78%][49m[39m [##############################################################################################............................] 87[37;0f[42m[30mProgress: [ 89%][49m[39m [############################################################################################################..............] 8Processing triggers for libc-bin (2.31-0ubuntu9.7) ...
+
+7[0;37r8[1A[J[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;32m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[4m[32msudo[24m[39m [32mapt[39m reinstall libxcb-dri2-0 [90m0[39m [39m [90m-0[39m[90m-[90m0[39m[39m  [39m [39m [90mi2-0[39m [39m [39m [39m [39m [90mri2-0[39m [39m [39m [39m [39m [39m [90mdri2-0[39m [39m [39m [39m [39m [39m [39m [90m-dri2-0[39m [39m [39m [39m [39m [39m [39m [39m [8D[90mb-dri2-0[39m[8D [39m [39m [39m [39m [39m [39m [39m [39m [9D[90mcb-dri2-0[39m[9D [39m [39m [39m [39m [39m [39m [39m [39m [39m [10D[90mxcb-dri2-0[39m[10D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [11D[90mbxcb-dri2-0[39m[11D[4ml[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [12D[90mibxcb-dri2-0[39m[12D[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [13D[90mlibxcb-dri2-0[39m[13D[19D[24m[39ml[24m[39m [24m[39m [24m[39m  [39m [39m [39m            [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [31Dlibxcb-dri3-[12D[1m[31ml[1m[31mi[1m[31mb[1m[31mx[1m[31mc[1m[31mb[1m[31m-[1m[31md[1m[31mr[1m[31mi[1m[31m3[1m[31m-[1m[31m0[0m[39m[13D[0m[39ms[0m[39mu[0m[39md[0m[39mo[0m[39m [0m[39ma[0m[39mp[0m[39mt[0m[39m [0m[39mr[0m[39me[0m[39mi[0m[39mnstall [7mlibxcb-dri3-0[27m[13D[27ml[27mi[27mb[27mx[27mc[27mb[27m-[27md[27mr[27mi[27m3[27m-[27m0[90mlibxcb-dri2-0[39m[13D[32D[4m[32ms[4m[32mu[4m[32md[4m[32mo[24m[39m [32ma[32mp[32mt[39m[24C[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [13D[?1l>[?2004l
+
+]2;sudo apt reinstall libxcb-dri3-0]1;apt
+Reading package lists... 0%
+
+Reading package lists... 100%
+
+Reading package lists... Done
+
+
+Building dependency tree... 0%
+
+Building dependency tree... 0%
+
+Building dependency tree... 50%
+
+Building dependency tree... 50%
+
+Building dependency tree       
+
+
+Reading state information... 0%
+
+Reading state information... 0%
+
+Reading state information... Done
+
+0 upgraded, 0 newly installed, 2 reinstalled, 0 to remove and 73 not upgraded.
+Need to get 13.6 kB of archives.
+After this operation, 0 B of additional disk space will be used.
+Do you want to continue? [Y/n] 
+[33m
+0% [Working][0m
+            
+Get:1 http://ca.archive.ubuntu.com/ubuntu focal/main amd64 libxcb-dri3-0 amd64 1.14-2 [6,552 B]
+[33m
+39% [1 libxcb-dri3-0 6,552 B/6,552 B 100%][0m[33m
+                                          
+49% [Working][0m
+             
+Get:2 http://ca.archive.ubuntu.com/ubuntu focal/main i386 libxcb-dri3-0 i386 1.14-2 [7,048 B]
+[33m
+64% [2 libxcb-dri3-0:i386 2,616 B/7,048 B 37%][0m[33m
+                                              
+100% [Working][0m
+              
+Fetched 13.6 kB in 0s (67.2 kB/s)
+
+7[0;36r8[1A(Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 214029 files and directories currently installed.)
+Preparing to unpack .../libxcb-dri3-0_1.14-2_amd64.deb ...
+7[37;0f[42m[30mProgress: [  0%][49m[39m [..........................................................................................................................] 87[37;0f[42m[30mProgress: [ 11%][49m[39m [#############.............................................................................................................] 8Unpacking libxcb-dri3-0:amd64 (1.14-2) over (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 22%][49m[39m [###########################...............................................................................................] 8Preparing to unpack .../libxcb-dri3-0_1.14-2_i386.deb ...
+7[37;0f[42m[30mProgress: [ 33%][49m[39m [########################################..................................................................................] 8Unpacking libxcb-dri3-0:i386 (1.14-2) over (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 44%][49m[39m [######################################################....................................................................] 8Setting up libxcb-dri3-0:amd64 (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 56%][49m[39m [###################################################################.......................................................] 87[37;0f[42m[30mProgress: [ 67%][49m[39m [#################################################################################.........................................] 8Setting up libxcb-dri3-0:i386 (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 78%][49m[39m [##############################################################################################............................] 87[37;0f[42m[30mProgress: [ 89%][49m[39m [############################################################################################################..............] 8Processing triggers for libc-bin (2.31-0ubuntu9.7) ...
+
+7[0;37r8[1A[J[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;32m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[4m[32msudo[24m[39m [32mapt[39m reinstall libxcb-dri3-0\\\\     [90m0[39m [39m [90m-0[39m [39m [39m [90m3-0[39m [39m [39m [39m [90mi3-0[39m [39m [39m [39m [39m [90mri3-0[39m [39m [39m [39m [39m [39m [90mdri3-0[39m [39m [39m [39m [39m [39m [39m [90m-dri3-0[39m [39m [39m [39m [39m [39m [39m [39m [8D[90mb-dri3-0[39m[8D [39m [39m [39m [39m [39m [39m [39m [39m [9D[90mcb-dri3-0[39m[9D [39m [39m [39m [39m [39m [39m [39m [39m [39m [10D[90mxcb-dri3-0[39m[10D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [11D[90mbxcb-dri3-0[39m[11D[4ml[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [12D[90mibxcb-dri3-0[39m[12D[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [13D[90mlibxcb-dri3-0[39m[13D[19D[24m[39ml[24m[39m [24m[39m [24m[39m  [39m [39m [39m            [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [31Dlibxcb-glx[10D[1m[31ml[1m[31mi[1m[31mb[1m[31mx[1m[31mc[1m[31mb[1m[31m-[1m[31mg[1m[31ml[1m[31mx[1m[31m0[0m[39m[11D[0m[39ms[0m[39mu[0m[39md[0m[39mo[0m[39m [0m[39ma[0m[39mp[0m[39mt[0m[39m [0m[39mr[0m[39meinstall [7mlibxcb-glx0[27m[11D[27ml[27mi[27mb[27mx[27mc[27mb[27m-[27mg[27ml[27mx[27m0[90mlibxcb-dri3-0[39m[13D[30D[4m[32ms[4m[32mu[4m[32md[4m[32mo[24m[39m [32ma[32mp[32mt[39m[22C[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [13D[?1l>[?2004l
+
+]2;sudo apt reinstall libxcb-glx0]1;apt
+Reading package lists... 0%
+
+Reading package lists... 100%
+
+Reading package lists... Done
+
+
+Building dependency tree... 0%
+
+Building dependency tree... 0%
+
+Building dependency tree... 50%
+
+Building dependency tree... 50%
+
+Building dependency tree       
+
+
+Reading state information... 0%
+
+Reading state information... 0%
+
+Reading state information... Done
+
+0 upgraded, 0 newly installed, 2 reinstalled, 0 to remove and 73 not upgraded.
+Need to get 45.8 kB of archives.
+After this operation, 0 B of additional disk space will be used.
+Do you want to continue? [Y/n] 
+[33m
+0% [Working][0m
+            
+Get:1 http://ca.archive.ubuntu.com/ubuntu focal/main amd64 libxcb-glx0 amd64 1.14-2 [22.1 kB]
+[33m
+25% [1 libxcb-glx0 14.2 kB/22.1 kB 64%][0m[33m
+                                       
+49% [Working][0m
+             
+Get:2 http://ca.archive.ubuntu.com/ubuntu focal/main i386 libxcb-glx0 i386 1.14-2 [23.8 kB]
+[33m
+58% [2 libxcb-glx0:i386 5,511 B/23.8 kB 23%][0m[33m
+                                            
+100% [Working][0m
+              
+Fetched 45.8 kB in 0s (463 kB/s)
+
+7[0;36r8[1A(Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 214029 files and directories currently installed.)
+Preparing to unpack .../libxcb-glx0_1.14-2_amd64.deb ...
+7[37;0f[42m[30mProgress: [  0%][49m[39m [..........................................................................................................................] 87[37;0f[42m[30mProgress: [ 11%][49m[39m [#############.............................................................................................................] 8Unpacking libxcb-glx0:amd64 (1.14-2) over (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 22%][49m[39m [###########################...............................................................................................] 8Preparing to unpack .../libxcb-glx0_1.14-2_i386.deb ...
+7[37;0f[42m[30mProgress: [ 33%][49m[39m [########################################..................................................................................] 8Unpacking libxcb-glx0:i386 (1.14-2) over (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 44%][49m[39m [######################################################....................................................................] 8Setting up libxcb-glx0:amd64 (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 56%][49m[39m [###################################################################.......................................................] 87[37;0f[42m[30mProgress: [ 67%][49m[39m [#################################################################################.........................................] 8Setting up libxcb-glx0:i386 (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 78%][49m[39m [##############################################################################################............................] 87[37;0f[42m[30mProgress: [ 89%][49m[39m [############################################################################################################..............] 8Processing triggers for libc-bin (2.31-0ubuntu9.7) ...
+
+7[0;37r8[1A[J[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;32m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[4m[32msudo[24m[39m [32mapt[39m reinstall libxcb-glx0 [90m0[39m [39m [90mx0[39m [39m [39m [90mlx0[39m [39m [39m [39m [90mglx0[39m [39m [39m [39m [39m [90m-glx0[39m [39m [39m [39m [39m [39m [90mb-glx0[39m [39m [39m [39m [39m [39m [39m [90mcb-glx0[39m [39m [39m [39m [39m [39m [39m [39m [8D[90mxcb-glx0[39m[8D [39m [39m [39m [39m [39m [39m [39m [39m [9D[90mbxcb-glx0[39m[9D[4ml[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [10D[90mibxcb-glx0[39m[10D[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [11D[90mlibxcb-glx0[39m[11D[19D[24m[39ml[24m[39m [24m[39m [24m[39m  [39m [39m [39m            [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [29Dlibxcb-icccm[12D[1m[31ml[1m[31mi[1m[31mb[1m[31mx[1m[31mc[1m[31mb[1m[31m-[1m[31mi[1m[31mc[1m[31mc[1m[31mc[1m[31mm[1m[31m4[0m[39m[13D[0m[39ms[0m[39mu[0m[39md[0m[39mo[0m[39m [0m[39ma[0m[39mp[0m[39mt[0m[39m [0m[39mr[0m[39me[0m[39mi[0m[39mnstall [7mlibxcb-icccm4[27m[13D[27ml[27mi[27mb[27mx[27mc[27mb[27m-[27mi[27mc[27mc[27mc[27mm[27m4[90mlibxcb-glx0[39m[11D[32D[4m[32ms[4m[32mu[4m[32md[4m[32mo[24m[39m [32ma[32mp[32mt[39m[24C[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [11D[?1l>[?2004l
+
+]2;sudo apt reinstall libxcb-icccm4]1;apt
+Reading package lists... 0%
+
+Reading package lists... 100%
+
+Reading package lists... Done
+
+
+Building dependency tree... 0%
+
+Building dependency tree... 0%
+
+Building dependency tree... 50%
+
+Building dependency tree... 50%
+
+Building dependency tree       
+
+
+Reading state information... 0%
+
+Reading state information... 0%
+
+Reading state information... Done
+
+0 upgraded, 0 newly installed, 1 reinstalled, 0 to remove and 73 not upgraded.
+Need to get 10.8 kB of archives.
+After this operation, 0 B of additional disk space will be used.
+[33m
+0% [Working][0m
+            
+Get:1 http://ca.archive.ubuntu.com/ubuntu focal/main amd64 libxcb-icccm4 amd64 0.4.1-1.1 [10.8 kB]
+[33m
+80% [1 libxcb-icccm4 10.8 kB/10.8 kB 100%][0m[33m
+                                          
+100% [Working][0m
+              
+Fetched 10.8 kB in 0s (280 kB/s)
+
+7[0;36r8[1A(Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 214029 files and directories currently installed.)
+Preparing to unpack .../libxcb-icccm4_0.4.1-1.1_amd64.deb ...
+7[37;0f[42m[30mProgress: [  0%][49m[39m [..........................................................................................................................] 87[37;0f[42m[30mProgress: [ 20%][49m[39m [########################..................................................................................................] 8Unpacking libxcb-icccm4:amd64 (0.4.1-1.1) over (0.4.1-1.1) ...
+7[37;0f[42m[30mProgress: [ 40%][49m[39m [################################################..........................................................................] 8Setting up libxcb-icccm4:amd64 (0.4.1-1.1) ...
+7[37;0f[42m[30mProgress: [ 60%][49m[39m [#########################################################################.................................................] 87[37;0f[42m[30mProgress: [ 80%][49m[39m [#################################################################################################.........................] 8Processing triggers for libc-bin (2.31-0ubuntu9.7) ...
+
+7[0;37r8[1A[J[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;32m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[4m[32msudo[24m[39m [32mapt[39m reinstall libxcb-icccm4 [90m4[39m [39m [90mm4[39m [39m [39m [90mcm4[39m [39m [39m [39m [90mccm4[39m [39m [39m [39m [39m [90mcccm4[39m [39m [39m [39m [39m [39m [90micccm4[39m [39m [39m [39m [39m [39m [39m [90m-icccm4[39m [39m [39m [39m [39m [39m [39m [39m [8D[90mb-icccm4[39m[8D [39m [39m [39m [39m [39m [39m [39m [39m [9D[90mcb-icccm4[39m[9D [39m [39m [39m [39m [39m [39m [39m [39m [39m [10D[90mxcb-icccm4[39m[10D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [11D[90mbxcb-icccm4[39m[11D[4ml[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [12D[90mibxcb-icccm4[39m[12D[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [13D[90mlibxcb-icccm4[39m[13D[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [14D[90m libxcb-icccm4[39m[14D[39m [19D[24m[39ml[24m[39m [24m[39m [24m[39m  [39m [39m [39m            [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [31Dlibxcb-image[12D[1m[31ml[1m[31mi[1m[31mb[1m[31mx[1m[31mc[1m[31mb[1m[31m-[1m[31mi[1m[31mm[1m[31ma[1m[31mg[1m[31me[1m[31m0[0m[39m[13D[0m[39ms[0m[39mu[0m[39md[0m[39mo[0m[39m [0m[39ma[0m[39mp[0m[39mt[0m[39m [0m[39mr[0m[39me[0m[39mi[0m[39mnstall [7mlibxcb-image0[27m[13D[27ml[27mi[27mb[27mx[27mc[27mb[27m-[27mi[27mm[27ma[27mg[27me[27m0[90mlibxcb-icccm4[39m[13D[32D[4m[32ms[4m[32mu[4m[32md[4m[32mo[24m[39m [32ma[32mp[32mt[39m[24C[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [13D[?1l>[?2004l
+
+]2;sudo apt reinstall libxcb-image0]1;apt
+Reading package lists... 0%
+
+Reading package lists... 100%
+
+Reading package lists... Done
+
+
+Building dependency tree... 0%
+
+Building dependency tree... 0%
+
+Building dependency tree... 50%
+
+Building dependency tree... 50%
+
+Building dependency tree       
+
+
+Reading state information... 0%
+
+Reading state information... 0%
+
+Reading state information... Done
+
+0 upgraded, 0 newly installed, 1 reinstalled, 0 to remove and 73 not upgraded.
+Need to get 12.3 kB of archives.
+After this operation, 0 B of additional disk space will be used.
+[33m
+0% [Working][0m
+            
+Get:1 http://ca.archive.ubuntu.com/ubuntu focal/main amd64 libxcb-image0 amd64 0.4.0-1build1 [12.3 kB]
+[33m
+80% [1 libxcb-image0 12.3 kB/12.3 kB 100%][0m[33m
+                                          
+100% [Working][0m
+              
+Fetched 12.3 kB in 0s (74.2 kB/s)
+
+7[0;36r8[1A(Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 214029 files and directories currently installed.)
+Preparing to unpack .../libxcb-image0_0.4.0-1build1_amd64.deb ...
+7[37;0f[42m[30mProgress: [  0%][49m[39m [..........................................................................................................................] 87[37;0f[42m[30mProgress: [ 20%][49m[39m [########################..................................................................................................] 8Unpacking libxcb-image0:amd64 (0.4.0-1build1) over (0.4.0-1build1) ...
+7[37;0f[42m[30mProgress: [ 40%][49m[39m [################################################..........................................................................] 8Setting up libxcb-image0:amd64 (0.4.0-1build1) ...
+7[37;0f[42m[30mProgress: [ 60%][49m[39m [#########################################################################.................................................] 87[37;0f[42m[30mProgress: [ 80%][49m[39m [#################################################################################################.........................] 8Processing triggers for libc-bin (2.31-0ubuntu9.7) ...
+
+7[0;37r8[1A[J[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;32m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[4m[32msudo[24m[39m [32mapt[39m reinstall libxcb-image0 [90m0[39m [39m [90me0[39m [39m [39m [90mge0[39m [39m [39m [39m [90mage0[39m [39m [39m [39m [39m [90mmage0[39m [39m [39m [39m [39m [39m [90mimage0[39m [39m [39m [39m [39m [39m [39m [90m-image0[39m [39m [39m [39m [39m [39m [39m [39m [8D[90mb-image0[39m[8D [39m [39m [39m [39m [39m [39m [39m [39m [9D[90mcb-image0[39m[9D [39m [39m [39m [39m [39m [39m [39m [39m [39m [10D[90mxcb-image0[39m[10D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [11D[90mbxcb-image0[39m[11D[4ml[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [12D[90mibxcb-image0[39m[12D[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [13D[90mlibxcb-image0[39m[13D[19D[24m[39ml[24m[39m [24m[39m [24m[39m  [39m [39m [39m            [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [31Dlibxcb-keysyms[14D[1m[31ml[1m[31mi[1m[31mb[1m[31mx[1m[31mc[1m[31mb[1m[31m-[1m[31mk[1m[31me[1m[31my[1m[31ms[1m[31my[1m[31mm[1m[31ms[1m[31m1[0m[39m[15D[0m[39ms[0m[39mu[0m[39md[0m[39mo[0m[39m [0m[39ma[0m[39mp[0m[39mt[0m[39m [0m[39mr[0m[39me[0m[39mi[0m[39mn[0m[39ms[0m[39mtall [7mlibxcb-keysyms1[27m[15D[27ml[27mi[27mb[27mx[27mc[27mb[27m-[27mk[27me[27my[27ms[27my[27mm[27ms[27m1[90mlibxcb-image0[39m[13D[34D[4m[32ms[4m[32mu[4m[32md[4m[32mo[24m[39m [32ma[32mp[32mt[39m[26C[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [13D[?1l>[?2004l
+
+]2;sudo apt reinstall libxcb-keysyms1]1;apt
+Reading package lists... 0%
+
+Reading package lists... 100%
+
+Reading package lists... Done
+
+
+Building dependency tree... 0%
+
+Building dependency tree... 0%
+
+Building dependency tree... 50%
+
+Building dependency tree... 50%
+
+Building dependency tree       
+
+
+Reading state information... 0%
+
+Reading state information... 0%
+
+Reading state information... Done
+
+0 upgraded, 0 newly installed, 1 reinstalled, 0 to remove and 73 not upgraded.
+Need to get 8,452 B of archives.
+After this operation, 0 B of additional disk space will be used.
+[33m
+0% [Working][0m
+            
+Get:1 http://ca.archive.ubuntu.com/ubuntu focal/main amd64 libxcb-keysyms1 amd64 0.4.0-1build1 [8,452 B]
+[33m
+80% [1 libxcb-keysyms1 8,452 B/8,452 B 100%][0m[33m
+                                            
+100% [Working][0m
+              
+Fetched 8,452 B in 0s (219 kB/s)
+
+7[0;36r8[1A(Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 214029 files and directories currently installed.)
+Preparing to unpack .../libxcb-keysyms1_0.4.0-1build1_amd64.deb ...
+7[37;0f[42m[30mProgress: [  0%][49m[39m [..........................................................................................................................] 87[37;0f[42m[30mProgress: [ 20%][49m[39m [########################..................................................................................................] 8Unpacking libxcb-keysyms1:amd64 (0.4.0-1build1) over (0.4.0-1build1) ...
+7[37;0f[42m[30mProgress: [ 40%][49m[39m [################################################..........................................................................] 8Setting up libxcb-keysyms1:amd64 (0.4.0-1build1) ...
+7[37;0f[42m[30mProgress: [ 60%][49m[39m [#########################################################################.................................................] 87[37;0f[42m[30mProgress: [ 80%][49m[39m [#################################################################################################.........................] 8Processing triggers for libc-bin (2.31-0ubuntu9.7) ...
+
+7[0;37r8[1A[J[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J[01;32m➜  [36mhomography-gui[00m [01;34mgit:([31mmain[34m) [33m✗[00m [K[?1h=[?2004h[4m[32msudo[24m[39m [32mapt[39m reinstall libxcb-keysyms1\  [90m1[39m [39m [90ms1[39m [39m [39m [90mms1[39m [39m [39m [39m [90myms1[39m [39m [39m [39m [39m [90msyms1[39m [39m [39m [39m [39m [39m [90mysyms1[39m [39m [39m [39m [39m [39m [39m [90meysyms1[39m [39m [39m [39m [39m [39m [39m [39m [8D[90mkeysyms1[39m[8D [39m [39m [39m [39m [39m [39m [39m [39m [9D[90m-keysyms1[39m[9D [39m [39m [39m [39m [39m [39m [39m [39m [39m [10D[90mb-keysyms1[39m[10D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [11D[90mcb-keysyms1[39m[11D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [12D[90mxcb-keysyms1[39m[12D [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [13D[90mbxcb-keysyms1[39m[13D[4ml[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [14D[90mibxcb-keysyms1[39m[14D[24m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [15D[90mlibxcb-keysyms1[39m[15D[19D[24m[39ml[24m[39m [24m[39m [24m[39m  [39m [39m [39m            [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [33Dlibxcb-present[14D[1m[31ml[1m[31mi[1m[31mb[1m[31mx[1m[31mc[1m[31mb[1m[31m-[1m[31mp[1m[31mr[1m[31me[1m[31ms[1m[31me[1m[31mn[1m[31mt[1m[31m0[0m[39m[15D[0m[39ms[0m[39mu[0m[39md[0m[39mo[0m[39m [0m[39ma[0m[39mp[0m[39mt[0m[39m [0m[39mr[0m[39me[0m[39mi[0m[39mn[0m[39ms[0m[39mtall [7mlibxcb-present0[27m[15D[27ml[27mi[27mb[27mx[27mc[27mb[27m-[27mp[27mr[27me[27ms[27me[27mn[27mt[27m0[90mlibxcb-keysyms1[39m[15D[34D[4m[32ms[4m[32mu[4m[32md[4m[32mo[24m[39m [32ma[32mp[32mt[39m[26C[39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [39m [15D[?1l>[?2004l
+
+]2;sudo apt reinstall libxcb-present0]1;apt
+Reading package lists... 0%
+
+Reading package lists... 100%
+
+Reading package lists... Done
+
+
+Building dependency tree... 0%
+
+Building dependency tree... 0%
+
+Building dependency tree... 50%
+
+Building dependency tree... 50%
+
+Building dependency tree       
+
+
+Reading state information... 0%
+
+Reading state information... 0%
+
+Reading state information... Done
+
+0 upgraded, 0 newly installed, 2 reinstalled, 0 to remove and 73 not upgraded.
+Need to get 11.3 kB of archives.
+After this operation, 0 B of additional disk space will be used.
+Do you want to continue? [Y/n] 
+[33m
+0% [Working][0m
+            
+Get:1 http://ca.archive.ubuntu.com/ubuntu focal/main amd64 libxcb-present0 amd64 1.14-2 [5,560 B]
+[33m
+39% [1 libxcb-present0 5,560 B/5,560 B 100%][0m[33m
+                                            
+49% [Working][0m
+             
+Get:2 http://ca.archive.ubuntu.com/ubuntu focal/main i386 libxcb-present0 i386 1.14-2 [5,748 B]
+[33m
+90% [2 libxcb-present0:i386 5,748 B/5,748 B 100%][0m[33m
+                                                 
+100% [Working][0m
+              
+Fetched 11.3 kB in 0s (60.2 kB/s)
+
+7[0;36r8[1A(Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 214029 files and directories currently installed.)
+Preparing to unpack .../libxcb-present0_1.14-2_amd64.deb ...
+7[37;0f[42m[30mProgress: [  0%][49m[39m [..........................................................................................................................] 87[37;0f[42m[30mProgress: [ 11%][49m[39m [#############.............................................................................................................] 8Unpacking libxcb-present0:amd64 (1.14-2) over (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 22%][49m[39m [###########################...............................................................................................] 8Preparing to unpack .../libxcb-present0_1.14-2_i386.deb ...
+7[37;0f[42m[30mProgress: [ 33%][49m[39m [########################################..................................................................................] 8Unpacking libxcb-present0:i386 (1.14-2) over (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 44%][49m[39m [######################################################....................................................................] 8Setting up libxcb-present0:amd64 (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 56%][49m[39m [###################################################################.......................................................] 87[37;0f[42m[30mProgress: [ 67%][49m[39m [#################################################################################.........................................] 8Setting up libxcb-present0:i386 (1.14-2) ...
+7[37;0f[42m[30mProgress: [ 78%][49m[39m [##############################################################################################............................] 87[37;0f[42m[30mProgress: [ 89%][49m[39m [############################################################################################################..............] 8Processing triggers for libc-bin (2.31-0ubuntu9.7) ...
+
+7[0;37r8[1A[J[1m[7m%[27m[1m[0m                                                                                                                                               
+ 
+]2;savoji@savoji:~/Desktop/TransPlan Project/Transplan/homography-gui]1;..omography-gui
+[0m[27m[24m[J
