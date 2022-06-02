@@ -8,11 +8,12 @@ from Utils import *
 # import Detectors.detectron2.detect
 import Detectors.OpenMM.detect
 import Detectors.YOLOv5.detect
+import Detectors.detectron2.detect
 
 # --------------------------
 
 detectors = {}
-# detectors["detectron2"] = Detectors.detectron2.detect
+detectors["detectron2"] = Detectors.detectron2.detect
 detectors["OpenMM"] = Detectors.OpenMM.detect
 detectors["YOLOv5"] = Detectors.YOLOv5.detect
 
