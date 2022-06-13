@@ -13,6 +13,7 @@ from Detect import detect, visdetect
 from Track import track, vistrack
 from Homography import homographygui
 from Homography import reproject
+from Homography import vishomographygui
 
 def Preprocess(args):
     if args.Preprocess:
@@ -54,6 +55,13 @@ def HomographyGUI(args):
         return log
     else: return WarningLog("skipped homography GUI subtask")
 
+def VisHomographyGUI(args):
+    if args.VisHomographyGUI:
+        print(ProcLog("Homography GUI in Process"))
+        log = vishomographygui(args)
+        return log
+    else: return WarningLog("skipped vis homography GUI subtask")
+
 def Homography(args):
     if args.Homography:
         print(ProcLog("Homography reprojection in Process"))
@@ -74,7 +82,7 @@ def Count(args):
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess, Detect, VisDetect, Track, VisTrack, HomographyGUI, Homography, TrackLabelingGUI, Count]
+    subtasks = [Preprocess, Detect, VisDetect, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, TrackLabelingGUI, Count]
     for subtask in subtasks:
         log = subtask(args)
         print(log)
@@ -90,6 +98,7 @@ if __name__ == "__main__":
     parser.add_argument("--Track", help="If perform tracking", action="store_true")
     parser.add_argument("--VisTrack", help="If create video visualization of tracking", action="store_true")
     parser.add_argument("--HomographyGUI", help="If pop-up homography GUI", action="store_true")
+    parser.add_argument("--VisHomographyGUI", help="to visualize homography-gui results", action="store_true")
     parser.add_argument("--TrackLabelingGUI", help="If pop-up Track Labeling GUI", action="store_true")
     parser.add_argument("--Homography", help="If perform backkprojection using homography matrix", action="store_true")
     parser.add_argument("--Count", help="If count the objects for each MOI", action="store_true")
