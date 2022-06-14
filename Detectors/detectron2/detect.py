@@ -43,17 +43,16 @@ def df(args):
 def setup(args):
     env_name = args.Detector
     src_url = "https://github.com/facebookresearch/detectron2.git"
-    rep_path = "./Detectors/detectron2/detectron2"
+    rep_path = "./Detectors/detectron2/detectron2-main"
     # checkpoint_name="faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth"
 
     print(env_name)
-    if not "detectron2" in os.listdir("./Detectors/detectron2/"):
+    if not "detectron2-main" in os.listdir("./Detectors/detectron2/"):
       os.system(f"git clone {src_url} {rep_path}")
     if not env_name in get_conda_envs():
         make_conda_env(env_name, libs="python=3.7")
         # install library on conda env
         print("here I am 1")
-        os.system(f"conda install -n {env_name} pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch -y")
         os.system(f"conda run -n {env_name} pip install torch==1.9.0+cu102 torchvision==0.10.0+cu102 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html")
         print("here I am 1.5")
 
@@ -61,12 +60,7 @@ def setup(args):
         # os.system(f"conda clean --packages --tarballs")
         print("here I am 2")
         os.system(f"conda run -n {args.Detector} python -m pip install pyyaml==5.1 opencv-python cython pandas tqdm")
-        print("here I am 2.5")
-        cwd = os.getcwd()
-        os.chdir("./Detectors/detectron2")
-        os.system(f"conda run -n {args.Detector} python -m pip install -e detectron2")
-        os.chdir(cwd)
-        # os.system(f"conda run -n {args.Detector} python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'")        
+        os.system(f"conda run -n {args.Detector} python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'")        
         print("here I am 3")
         # os.system(f"conda run -n {args.Detector} mim install mmcv-full")
         # print("here I am 4")
