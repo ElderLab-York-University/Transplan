@@ -89,7 +89,7 @@ if __name__ == "__main__":
           classes = outputs['instances'].pred_classes.to("cpu")
           scores = outputs["instances"].scores.to("cpu")
           boxes = outputs['instances'].pred_boxes.to("cpu")
-          with open(text_result_path, "a") as text_file:
+          with open(text_result_path, "w") as text_file:
             for clss, score, box in zip(classes, scores, boxes):
               text_file.write(f"{frame_num} {clss} {score} " + " ".join(map(str, box.numpy())) + "\n")
 

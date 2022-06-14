@@ -53,7 +53,10 @@ def setup(args):
         make_conda_env(env_name, libs="python=3.7")
         # install library on conda env
         print("here I am 1")
-        os.system(f"conda install -n {env_name} pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch -y")
+        # os.system(f"conda run -n {env_name} pip3 install pytorch torchvision torchaudio -c pytorch -y")
+        os.system(f"conda run -n {env_name} pip install torch==1.9.0+cu102 torchvision==0.10.0+cu102 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html")
+        
+        os.system(f'conda install -n {env_name} cudatoolkit=10.2 -y')
         # os.system(f"conda clean --packages --tarballs")
         print("here I am 2")
         os.system(f"conda run -n {args.Detector} python -m pip install pyyaml==5.1 opencv-python cython pandas tqdm")
