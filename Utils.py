@@ -193,7 +193,7 @@ def complete_args(args):
         args = add_tracking_path_to_args(args)
         args = add_vis_tracking_path_to_args(args)
 
-    if args.HomographyGUI or args.Homography or arg.VisHomographyGUI:
+    if args.HomographyGUI or args.Homography or args.VisHomographyGUI:
         args = add_homographygui_related_path_to_args(args)
     if args.Homography:
         args = add_homography_related_path_to_args(args)

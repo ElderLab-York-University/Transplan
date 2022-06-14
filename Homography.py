@@ -89,6 +89,6 @@ def vishomographygui(args):
     ax3.imshow(cv.cvtColor(img12, cv.COLOR_BGR2RGB))
     ax3.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB), alpha=0.3)
     ax3.set_title("camera view reprojected on top view")
-
-
     plt.savefig(save_path)
+
+    return SucLog("Vis Homography executed successfully") 

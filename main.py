@@ -57,7 +57,7 @@ def HomographyGUI(args):
 
 def VisHomographyGUI(args):
     if args.VisHomographyGUI:
-        print(ProcLog("Homography GUI in Process"))
+        print(ProcLog("VisHomography GUI in Process"))
         log = vishomographygui(args)
         return log
     else: return WarningLog("skipped vis homography GUI subtask")
