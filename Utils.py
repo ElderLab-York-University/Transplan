@@ -30,11 +30,13 @@ class SubTaskMarker:
     VisDetection = "visdetection"
     Tracking     = "tracking"
     VisTracking  = "vistracking"
+    Homography   = "homography"
+    VisHomography = "vishomography"
 
 class Puncuations:
     Dot = "."
 
-SupportedVideoExts = [".MP4", ".mp4"]
+SupportedVideoExts = [".MP4", ".mp4", ".avi", ".AVI"]
 
 class Log(object):
     def __init__(self, message, bcolor, tag) -> None:
@@ -84,7 +86,40 @@ def get_vis_tracking_path_from_args(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.VisTracking + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
 
+def get_homography_streetview_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + SubTaskMarker.Homography + Puncuations.Dot + "street" + Puncuations.Dot + "png")
 
+def get_homography_topview_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + SubTaskMarker.Homography + Puncuations.Dot + "top" + Puncuations.Dot + "png")
+
+def get_homography_txt_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Homography",file_name + Puncuations.Dot + SubTaskMarker.Homography + Puncuations.Dot + "txt")
+
+def get_homography_npy_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Homography",file_name + Puncuations.Dot + SubTaskMarker.Homography + Puncuations.Dot + "npy")
+
+def get_homography_csv_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Homography",file_name + Puncuations.Dot + SubTaskMarker.Homography + Puncuations.Dot + "csv")
+
+def get_reprojection_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+SubTaskExt.Tracking)
+
+def get_vishomography_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Homography",file_name + Puncuations.Dot + SubTaskMarker.VisHomography + Puncuations.Dot + "png")
 
 def add_detection_pathes_to_args(args):
     d_path = get_detection_path_from_args(args)
@@ -122,6 +157,31 @@ def add_vis_tracking_path_to_args(args):
     args.VisTrackingPth = vis_tracking_pth
     return args
 
+
+
+def add_homographygui_related_path_to_args(args):
+    streetview = get_homography_streetview_path(args)
+    topview = get_homography_topview_path(args)
+    txt = get_homography_txt_path(args)
+    npy = get_homography_npy_path(args)
+    csv = get_homography_csv_path(args)
+    args.HomographyStreetView = streetview
+    args.HomographyTopView = topview
+    args.HomographyTXT = txt
+    args.HomographyNPY = npy
+    args.HomographyCSV = csv
+    return args
+
+def add_homography_related_path_to_args(args):
+    reprojected_path = get_reprojection_path(args)
+    args.ReprojectedPoints = reprojected_path
+    return args
+
+def add_vishomography_path_to_args(args):
+    vishomographypth = get_vishomography_path(args)
+    args.VisHomographyPth = vishomographypth
+    return args
+
 def complete_args(args):
     if args.Video is None:
         # if Video path was not specified by the user grab a video from dataset
@@ -132,6 +192,14 @@ def complete_args(args):
     if not args.Tracker is None:
         args = add_tracking_path_to_args(args)
         args = add_vis_tracking_path_to_args(args)
+
+    if args.HomographyGUI or args.Homography or arg.VisHomographyGUI:
+        args = add_homographygui_related_path_to_args(args)
+    if args.Homography:
+        args = add_homography_related_path_to_args(args)
+    if args.VisHomographyGUI:
+        args = add_vishomography_path_to_args(args)
+
     return args
 
 def check_config(args):
@@ -141,6 +209,7 @@ def check_config(args):
     results_path= os.path.join(args.Dataset, "Results")
     detection_path = os.path.join(results_path, "Detection")
     tracking_path = os.path.join(results_path, "Tracking")
+    homography_path = os.path.join(results_path, "Homography")
 
     try:    os.system(f"mkdir {results_path}")
     except: pass
@@ -149,6 +218,9 @@ def check_config(args):
     except: pass
 
     try:    os.system(f"mkdir {tracking_path}")
+    except: pass
+
+    try:    os.system(f"mkdir {homography_path}")
     except: pass
 
 def get_conda_envs():
@@ -172,4 +244,29 @@ def download_url_to(url, path):
     # make sure that path is valid
     r = requests.get(url, allow_redirects=True)
     open(path, 'wb').write(r.content)
+
+def save_frame_from_video(video_path, image_out_path):
+    chosen_frame = 1 # leave it this way for now
+    # Opens the Video file
+    cap = cv2.VideoCapture(video_path)
+    # Check if camera opened successfully
+    if (cap.isOpened()== False): 
+        print("Error opening video stream or file")
+
+    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+
+    for frame_num in tqdm(range(frames)):
+        if (not cap.isOpened()):
+            break
+        # Capture frame-by-frame
+        ret, frame = cap.read()
+        if ret and (frame_num == chosen_frame):
+            cv2.imwrite(image_out_path,frame)
+            break
+    cap.release()
+    cv2.destroyAllWindows()
+        
 
