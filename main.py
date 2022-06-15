@@ -14,6 +14,7 @@ from Track import track, vistrack
 from Homography import homographygui
 from Homography import reproject
 from Homography import vishomographygui
+from TrackLabeling import tracklabelinggui
 
 def Preprocess(args):
     if args.Preprocess:
@@ -71,7 +72,8 @@ def Homography(args):
 
 def TrackLabelingGUI(args):
     if args.TrackLabelingGUI:
-        raise NotImplemented
+        log = tracklabelinggui(args)
+        return log
     else: return WarningLog("skipped track labelling subtask")
 
 def Count(args):

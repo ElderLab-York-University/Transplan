@@ -10,7 +10,8 @@ from Track import *
     # args.HomographyNPY
     # args.HomographyCSV
     # args.ReprojectedPoints
-    #args.VisHomographyPth
+    # args.VisHomographyPth
+    # args.ReprojectedPkl
 
 def homographygui(args):
     # assume homography repo is made in results
@@ -53,7 +54,13 @@ def reproject(args):
             new_point = M.dot(point)
             new_point /= new_point[2]
             print(f'{int(fn)},{int(idd)},{new_point[0]},{new_point[1]}', file=out_file)
-    return SucLog("Homography reprojection executed successfully")   
+
+    store_to_pickle(args)
+    return SucLog("Homography reprojection executed successfully")
+
+def store_to_pickle(args):
+    df = reprojected_df(args)
+    df.to_pickle(args.ReprojectedPkl)   
 
 def reprojected_df(args):
     in_path = args.ReprojectedPoints 

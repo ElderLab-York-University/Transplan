@@ -127,6 +127,16 @@ def get_reprojection_path(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+SubTaskExt.Tracking)
 
+def get_tracklabelling_export_pth(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+ "labelled" + Puncuations.Dot+ SubTaskExt.Pkl)
+
+def get_reprojection_pkl(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+SubTaskExt.Pkl)
+
 def get_vishomography_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -191,12 +201,19 @@ def add_homographygui_related_path_to_args(args):
 
 def add_homography_related_path_to_args(args):
     reprojected_path = get_reprojection_path(args)
+    reprojected_pkl = get_reprojection_pkl(args)
     args.ReprojectedPoints = reprojected_path
+    args.ReprojectedPkl = reprojected_pkl
     return args
 
 def add_vishomography_path_to_args(args):
     vishomographypth = get_vishomography_path(args)
     args.VisHomographyPth = vishomographypth
+    return args
+
+def add_tracklabelling_export_to_args(args):
+    export_pth = get_tracklabelling_export_pth(args)
+    args.TrackLabellingExportPth = export_pth
     return args
 
 def complete_args(args):
@@ -218,6 +235,8 @@ def complete_args(args):
         args = add_homography_related_path_to_args(args)
     if args.VisHomographyGUI:
         args = add_vishomography_path_to_args(args)
+    if args.TrackLabelingGUI:
+        args = add_tracklabelling_export_to_args(args)
 
     return args
 
