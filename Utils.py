@@ -21,6 +21,7 @@ class Tags:
 
 class SubTaskExt:
     Detection    = "txt"
+    Pkl          = "pkl"
     VisDetection = "MP4"
     Tracking     = "txt"
     VisTracking  = "MP4"
@@ -71,6 +72,11 @@ def get_detection_path_with_detector_from_args(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot +SubTaskExt.Detection)
 
+def get_detection_pkl(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot +SubTaskExt.Pkl)
+
 def get_vis_detection_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -80,6 +86,11 @@ def get_tracking_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Tracking)
+
+def get_tracking_pkl_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Pkl)
 
 def get_vis_tracking_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -124,8 +135,10 @@ def get_vishomography_path(args):
 def add_detection_pathes_to_args(args):
     d_path = get_detection_path_from_args(args)
     d_d_path = get_detection_path_with_detector_from_args(args)
+    d_pkl = get_detection_pkl(args)
     args.DetectionPath = d_path
     args.DetectionDetectorPath = d_d_path
+    args.DetectionPkl = d_pkl
     return args
 
 def add_vis_detection_path_to_args(args):
@@ -152,11 +165,15 @@ def add_tracking_path_to_args(args):
     args.TrackingPth = tracking_path
     return args
 
+def add_tracking_pkl_to_args(args):
+    tracking_pkl = get_tracking_pkl_from_args(args)
+    args.TrackingPkl = tracking_pkl
+    return args
+
 def add_vis_tracking_path_to_args(args):
     vis_tracking_pth = get_vis_tracking_path_from_args(args)
     args.VisTrackingPth = vis_tracking_pth
     return args
-
 
 
 def add_homographygui_related_path_to_args(args):
@@ -189,9 +206,11 @@ def complete_args(args):
     if not args.Detector is None:
         args = add_detection_pathes_to_args(args)
         args = add_vis_detection_path_to_args(args)
+
     if not args.Tracker is None:
         args = add_tracking_path_to_args(args)
         args = add_vis_tracking_path_to_args(args)
+        args = add_tracking_pkl_to_args(args)
 
     if args.HomographyGUI or args.Homography or args.VisHomographyGUI:
         args = add_homographygui_related_path_to_args(args)
