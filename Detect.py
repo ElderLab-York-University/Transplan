@@ -25,7 +25,12 @@ def detect(args):
 
     current_detector = detectors[args.Detector]
     current_detector.detect(args)
+    store_df_pickle(args)
     return SucLog("Detection files stored")
+
+def store_df_pickle(args):
+    df = detectors[args.Detector].df(args)
+    df.to_pickle(args.DetectionPkl)
 
 def visdetect(args):
     if args.Detector is None:

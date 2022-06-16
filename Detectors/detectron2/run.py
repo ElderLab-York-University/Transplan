@@ -67,7 +67,8 @@ if __name__ == "__main__":
   frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 
   # out_cap = cv2.VideoWriter(annotated_video_path,cv2.VideoWriter_fourcc('X','2','6','4'), fps, (frame_width,frame_height))
-  
+  with open(text_result_path, "w") as text_file:
+    pass
   # Read until video is completed
   for frame_num in tqdm(range(frames)):
       if (not cap.isOpened()):
@@ -88,7 +89,7 @@ if __name__ == "__main__":
           classes = outputs['instances'].pred_classes.to("cpu")
           scores = outputs["instances"].scores.to("cpu")
           boxes = outputs['instances'].pred_boxes.to("cpu")
-          with open(text_result_path, "w") as text_file:
+          with open(text_result_path, "a") as text_file:
             for clss, score, box in zip(classes, scores, boxes):
               text_file.write(f"{frame_num} {clss} {score} " + " ".join(map(str, box.numpy())) + "\n")
 

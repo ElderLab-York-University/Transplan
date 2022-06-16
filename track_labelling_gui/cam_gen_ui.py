@@ -23,10 +23,27 @@ from pymatreader import read_mat
 from tqdm import tqdm 
 # from counting import Counting
 
-tracks_path = "/home/savoji/Desktop/TransPlan Project/Results/GX010069_tracking_sort_reprojected.txt"
-def group_tracks_by_id(tracks_path):
+def df_from_pickle(pickle_path):
+    return pd.read_pickle(pickle_path)
+
+# tracks_path = "/home/savoji/Desktop/TransPlan Project/Results/GX010069_tracking_sort_reprojected.txt"
+def group_tracks_by_id(df):
     # this function was writtern for grouping the tracks with the same id
     # usinig this one can load the data from a .txt file rather than .mat file
+    all_ids = np.unique(df['id'].to_numpy(dtype=np.int64))
+    data = {"id":[], "trajectory":[], "frames":[]}
+    for idd in tqdm(all_ids):
+        frames = df[df['id']==idd]["fn"].to_numpy(np.float32)
+        id = idd
+        trajectory = df[df['id']==idd][["x", "y"]].to_numpy(np.float32)
+        
+        data["id"].append(id)
+        data["frames"].append(frames)
+        data["trajectory"].append(trajectory)
+    df2 = pd.DataFrame(data)
+    return df2
+    
+    ###
     tracks = np.loadtxt(tracks_path, delimiter=",")
     all_ids = np.unique(tracks[:, 1])
     data = {"id":[], "trajectory":[], "frames":[]}
@@ -44,8 +61,10 @@ def group_tracks_by_id(tracks_path):
 
 cam_mois = [4, 4, 4, 12, 12, 12, 12, 6, 12, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2]
 class ui_func(QMainWindow):
-    def __init__(self):
+    def __init__(self, export_path):
         super(ui_func, self).__init__()
+        # should be a pickle path
+        self.export_path = export_path
         uic.loadUi('cam_gen.ui',self)
         # self.Cnt = Counting()
 
@@ -299,7 +318,7 @@ class ui_func(QMainWindow):
         # self.df = self.df1[['id', 'trajectory']]
         # self.df.columns = ['id', 'trajectory']
         # # self.df = pd.read_csv(self.tracks_file,names=['f','id','x','y','w','h','e1','e2','e3'])
-        self.df = group_tracks_by_id(self.tracks_file)
+        self.df = group_tracks_by_id(df_from_pickle(self.tracks_file))
         self.tids = np.unique(self.df['id'].tolist())
         self.id_index = 0
         self.plot_next_track()
@@ -588,7 +607,7 @@ class ui_func(QMainWindow):
 
     def c_pushButton_export(self):
         # fname = self.tracks_file.replace(".txt",".csv")
-        fname = self.tracks_file.replace(".txt", ".pkl")
+        fname = self.export_path
         writedf = pd.concat(self.tracks_df)
         writedf.to_pickle(fname)
         # with open(fname, 'w') as f: 

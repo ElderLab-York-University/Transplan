@@ -8,12 +8,20 @@ from PyQt5 import uic
 
 import OpenGL.GL as gl        # python wrapping of OpenGL
 from OpenGL import GLU        # OpenGL Utility Library, extends OpenGL functionality
+import argparse
 
 
 import cam_gen_ui as tui
+
+# get export path usig argparse
 app = QApplication(sys.argv)
 
-myapp = tui.ui_func()
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--Export", help="pkl path for exporting common trajectories", type=str)
+args = parser.parse_args()
+
+myapp = tui.ui_func(args.Export)
 #myapp.setupUi(self)
 #myapp.showMaximized()
 myapp.show()
