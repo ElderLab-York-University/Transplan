@@ -15,3 +15,7 @@ def tracklabelinggui(args):
     if ret==0:
         return SucLog("track labelling executed successfully")
     return FailLog("track labelling ended with non-zero return value")
+
+
+def vislabelledtracks(args):
+    raise NotImplemented
