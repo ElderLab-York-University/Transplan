@@ -27,12 +27,13 @@ class SubTaskExt:
     VisTracking  = "MP4"
 
 class SubTaskMarker:
-    Detection    = "detection"
-    VisDetection = "visdetection"
-    Tracking     = "tracking"
-    VisTracking  = "vistracking"
-    Homography   = "homography"
+    Detection     = "detection"
+    VisDetection  = "visdetection"
+    Tracking      = "tracking"
+    VisTracking   = "vistracking"
+    Homography    = "homography"
     VisHomography = "vishomography"
+    MetaData      = "metadata" 
 
 class Puncuations:
     Dot = "."
@@ -101,6 +102,11 @@ def get_homography_streetview_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, file_name + Puncuations.Dot + SubTaskMarker.Homography + Puncuations.Dot + "street" + Puncuations.Dot + "png")
+
+def get_metadata_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + SubTaskMarker.MetaData + Puncuations.Dot + "json")
 
 def get_homography_topview_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -216,6 +222,12 @@ def add_tracklabelling_export_to_args(args):
     args.TrackLabellingExportPth = export_pth
     return args
 
+def add_metadata_to_args(args):
+    meta_path = get_metadata_path(args)
+    with open(meta_path) as f:
+        args.MetaData = json.load(f)
+    return args
+
 def complete_args(args):
     if args.Video is None:
         # if Video path was not specified by the user grab a video from dataset
@@ -229,6 +241,7 @@ def complete_args(args):
         args = add_vis_tracking_path_to_args(args)
         args = add_tracking_pkl_to_args(args)
 
+    args = add_metadata_to_args(args)
     if args.HomographyGUI or args.Homography or args.VisHomographyGUI:
         args = add_homographygui_related_path_to_args(args)
     if args.Homography:

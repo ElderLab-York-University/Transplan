@@ -1,6 +1,7 @@
 from Utils import *
 from Libs import *
 from Track import *
+import Maps
 # import homographygui.tabbed_ui_func as tui
 
 #hints the vars set for homography are 
@@ -17,15 +18,23 @@ def homographygui(args):
     # assume homography repo is made in results
     # check if homography pair pictures are available with the video
     if not os.path.exists(args.HomographyTopView):
-        return FailLog(f"intersection top view view is missing {args.HomographyTopView}")
+        print(ProcLog("intersection topview is not given; will fetch from gmaps"))
+        download_top_view_image(args)
+        
     if not os.path.exists(args.HomographyStreetView):
         print(ProcLog("intersection streetview is not given; will choose videos first frame"))
         save_frame_from_video(args.Video, args.HomographyStreetView)
+        
 
     # lunch homography gui
     lunch_homographygui(args)
     return SucLog("Homography GUI executed successfully")    
     # if all good lunch homographGUI
+
+def download_top_view_image(args):
+    center = args.MetaData['center']
+    file_name = args.HomographyTopView
+    Maps.download_image(center=center, file_name=file_name)
 
 def lunch_homographygui(args):
     street = os.path.abspath(args.HomographyStreetView)
