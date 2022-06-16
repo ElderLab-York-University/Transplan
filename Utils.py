@@ -26,6 +26,7 @@ class SubTaskExt:
     Tracking     = "txt"
     VisTracking  = "MP4"
     VisTrajectories = "png"
+    VisLTrajectories = "png"
 
 class SubTaskMarker:
     Detection     = "detection"
@@ -36,6 +37,7 @@ class SubTaskMarker:
     VisHomography = "vishomography"
     MetaData      = "metadata"
     VisTrajectories = "vistraj"
+    VisLTrajectories = "vislabelledtraj"
  
 
 class Puncuations:
@@ -105,6 +107,11 @@ def get_plot_all_traj_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.VisTrajectories + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTrajectories)
+
+def get_vis_labelled_tracks_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.VisLTrajectories + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisLTrajectories)
 
 
 def get_homography_streetview_path(args):
@@ -242,6 +249,11 @@ def add_plot_all_traj_pth_to_args(args):
     args.PlotAllTrajPth = path
     return args
 
+def add_vis_labelled_tracks_pth_to_args(args):
+    path = get_vis_labelled_tracks_path(args)
+    args.VisLabelledTracksPth = path
+    return args
+
 def complete_args(args):
     if args.Video is None:
         # if Video path was not specified by the user grab a video from dataset
@@ -256,16 +268,19 @@ def complete_args(args):
         args = add_tracking_pkl_to_args(args)
 
     args = add_metadata_to_args(args)
-    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories:
+    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories:
         args = add_homographygui_related_path_to_args(args)
-    if args.Homography or args.VisTrajectories:
+
+    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories:
         args = add_homography_related_path_to_args(args)
-    if args.VisHomographyGUI:
+    if args.VisHomographyGUI or args.VisLabelledTrajectories:
         args = add_vishomography_path_to_args(args)
-    if args.TrackLabelingGUI:
+    if args.TrackLabelingGUI or args.VisLabelledTrajectories:
         args = add_tracklabelling_export_to_args(args)
     if args.VisTrajectories:
         args = add_plot_all_traj_pth_to_args(args)
+    if args.VisLabelledTrajectories:
+        args = add_vis_labelled_tracks_pth_to_args(args)
 
     return args
 

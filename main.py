@@ -15,7 +15,7 @@ from Homography import homographygui
 from Homography import reproject
 from Homography import vishomographygui
 from Homography import vis_reprojected_tracks
-from TrackLabeling import tracklabelinggui
+from TrackLabeling import tracklabelinggui, vis_labelled_tracks
 
 def Preprocess(args):
     if args.Preprocess:
@@ -82,7 +82,12 @@ def VisTrajectories(args):
         log = vis_reprojected_tracks(args)
         return log
     else: return WarningLog("skipped plotting all tracks")
-        
+
+def VisLabelledTrajectories(args):
+    if args.VisLabelledTrajectories:
+        log = vis_labelled_tracks(args)
+        return log
+    else: return WarningLog("skipped plotting labelled tracks")
 
 def Count(args):
     if args.Count:
@@ -92,7 +97,7 @@ def Count(args):
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess, Detect, VisDetect, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, TrackLabelingGUI, VisTrajectories, Count]
+    subtasks = [Preprocess, Detect, VisDetect, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, TrackLabelingGUI, VisTrajectories, VisLabelledTrajectories, Count]
     for subtask in subtasks:
         log = subtask(args)
         print(log)
@@ -112,6 +117,7 @@ if __name__ == "__main__":
     parser.add_argument("--TrackLabelingGUI", help="If pop-up Track Labeling GUI", action="store_true")
     parser.add_argument("--Homography", help="If perform backkprojection using homography matrix", action="store_true")
     parser.add_argument("--VisTrajectories", help="If plot all the tracks", action="store_true")
+    parser.add_argument("--VisLabelledTrajectories", help="If plot labelled tracks", action="store_true")
     parser.add_argument("--Count", help="If count the objects for each MOI", action="store_true")
     parser.add_argument("--Detector", help="Name of detector to be used", type=str)
     parser.add_argument("--Tracker", help="Name of tracker to be used", type=str)
