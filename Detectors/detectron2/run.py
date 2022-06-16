@@ -1,5 +1,4 @@
 # Some basic setup:
-import numpy
 import torch
 import os
 from tqdm import tqdm

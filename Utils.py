@@ -226,7 +226,9 @@ def check_config(args):
 def get_conda_envs():
     stream = os.popen("conda env list")
     output = stream.read()
-    return output.split()[7::2]
+    a=output.split()
+    a.remove("*")
+    return output.split()[4::2]
 
 def make_conda_env(env_name, libs=""):
     os.system(f"conda create -n {env_name} -y "+libs)
