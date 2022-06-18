@@ -16,6 +16,7 @@ from Homography import reproject
 from Homography import vishomographygui
 from Homography import vis_reprojected_tracks
 from TrackLabeling import tracklabelinggui, vis_labelled_tracks
+from Maps import pix2meter
 
 def Preprocess(args):
     if args.Preprocess:
@@ -89,6 +90,12 @@ def VisLabelledTrajectories(args):
         return log
     else: return WarningLog("skipped plotting labelled tracks")
 
+def Pix2Meter(args):
+    if args.Meter:
+        log = pix2meter(args)
+        return log
+    else: return WarningLog("skipped changing pixel values to meter values")
+
 def Count(args):
     if args.Count:
         raise NotImplemented
@@ -97,7 +104,7 @@ def Count(args):
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess, Detect, VisDetect, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, TrackLabelingGUI, VisTrajectories, VisLabelledTrajectories, Count]
+    subtasks = [Preprocess, Detect, VisDetect, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, TrackLabelingGUI, VisTrajectories, VisLabelledTrajectories, Pix2Meter, Count]
     for subtask in subtasks:
         log = subtask(args)
         print(log)
@@ -121,6 +128,7 @@ if __name__ == "__main__":
     parser.add_argument("--Count", help="If count the objects for each MOI", action="store_true")
     parser.add_argument("--Detector", help="Name of detector to be used", type=str)
     parser.add_argument("--Tracker", help="Name of tracker to be used", type=str)
+    parser.add_argument("--Meter", help="convert reprojected track coordinated into meter", action="store_true")
 
     args = parser.parse_args()
 
