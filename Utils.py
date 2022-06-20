@@ -26,6 +26,8 @@ class SubTaskExt:
     Tracking     = "txt"
     VisTracking  = "MP4"
     VisTrajectories = "png"
+    VisLTrajectories = "png"
+    Json = "json"
 
 class SubTaskMarker:
     Detection     = "detection"
@@ -36,6 +38,8 @@ class SubTaskMarker:
     VisHomography = "vishomography"
     MetaData      = "metadata"
     VisTrajectories = "vistraj"
+    VisLTrajectories = "vislabelledtraj"
+    Counting = "counting"
  
 
 class Puncuations:
@@ -84,28 +88,32 @@ def get_detection_pkl(args):
 def get_vis_detection_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.VisDetection + Puncuations.Dot + args.Detector + Puncuations.Dot +SubTaskExt.VisDetection)
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisDetection + Puncuations.Dot + args.Detector + Puncuations.Dot +SubTaskExt.VisDetection)
 
 def get_tracking_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Tracking)
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Tracking)
 
 def get_tracking_pkl_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Pkl)
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector +Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Pkl)
 
 def get_vis_tracking_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.VisTracking + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisTracking + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
 
 def get_plot_all_traj_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.VisTrajectories + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTrajectories)
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisTrajectories + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTrajectories)
 
+def get_vis_labelled_tracks_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisLTrajectories + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisLTrajectories)
 
 def get_homography_streetview_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -140,23 +148,39 @@ def get_homography_csv_path(args):
 def get_reprojection_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+SubTaskExt.Tracking)
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+SubTaskExt.Tracking)
 
 def get_tracklabelling_export_pth(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+ "labelled" + Puncuations.Dot+ SubTaskExt.Pkl)
+    return os.path.join(args.Dataset, "Results/Annotation",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector + Puncuations.Dot +args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+ "labelled" + Puncuations.Dot+ SubTaskExt.Pkl)
+
+def get_tracklabelling_export_pth_meter(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Annotation",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector + Puncuations.Dot +args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+ "labelled" + Puncuations.Dot+ "meter" + Puncuations.Dot+SubTaskExt.Pkl)
 
 def get_reprojection_pkl(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+SubTaskExt.Pkl)
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+SubTaskExt.Pkl)
+
+def get_reprojection_pkl_meter(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+"meter"+ Puncuations.Dot+SubTaskExt.Pkl)
 
 def get_vishomography_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Homography",file_name + Puncuations.Dot + SubTaskMarker.VisHomography + Puncuations.Dot + "png")
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisHomography + Puncuations.Dot + "png")
 
+def get_counting_res_pth(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Counting",file_name + Puncuations.Dot + SubTaskMarker.Counting + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Json)
+
+    
 def add_detection_pathes_to_args(args):
     d_path = get_detection_path_from_args(args)
     d_d_path = get_detection_path_with_detector_from_args(args)
@@ -242,6 +266,24 @@ def add_plot_all_traj_pth_to_args(args):
     args.PlotAllTrajPth = path
     return args
 
+def add_vis_labelled_tracks_pth_to_args(args):
+    path = get_vis_labelled_tracks_path(args)
+    args.VisLabelledTracksPth = path
+    return args
+
+def add_meter_path_to_args(args):
+    reprojected_meter_path = get_reprojection_pkl_meter(args)
+    labeled_meter_path = get_tracklabelling_export_pth_meter(args)
+
+    args.ReprojectedPklMeter = reprojected_meter_path
+    args.TrackLabellingExportPthMeter = labeled_meter_path
+    return args
+
+def add_count_path_to_args(args):
+    counting_result_path = get_counting_res_pth(args)
+    args.CountingResPth = counting_result_path
+    return args
+
 def complete_args(args):
     if args.Video is None:
         # if Video path was not specified by the user grab a video from dataset
@@ -256,16 +298,22 @@ def complete_args(args):
         args = add_tracking_pkl_to_args(args)
 
     args = add_metadata_to_args(args)
-    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories:
+    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories:
         args = add_homographygui_related_path_to_args(args)
-    if args.Homography or args.VisTrajectories:
+    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter:
         args = add_homography_related_path_to_args(args)
-    if args.VisHomographyGUI:
+    if args.VisHomographyGUI or args.VisLabelledTrajectories:
         args = add_vishomography_path_to_args(args)
-    if args.TrackLabelingGUI:
+    if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter:
         args = add_tracklabelling_export_to_args(args)
     if args.VisTrajectories:
         args = add_plot_all_traj_pth_to_args(args)
+    if args.VisLabelledTrajectories:
+        args = add_vis_labelled_tracks_pth_to_args(args)
+    if args.Meter or args.Count:
+        args = add_meter_path_to_args(args)
+    if args.Count:
+        args = add_count_path_to_args(args)
 
     return args
 
@@ -277,17 +325,23 @@ def check_config(args):
     detection_path = os.path.join(results_path, "Detection")
     tracking_path = os.path.join(results_path, "Tracking")
     homography_path = os.path.join(results_path, "Homography")
+    Vis_path = os.path.join(results_path, "Visualization")
+    Annotation_path = os.path.join(results_path, "Annotation")
+    counting_path = os.path.join(results_path, "Counting")
 
-    try:    os.system(f"mkdir {results_path}")
+    try: os.system(f"mkdir {results_path}")
     except: pass
-
-    try:    os.system(f"mkdir {detection_path}")
+    try: os.system(f"mkdir {detection_path}")
     except: pass
-
-    try:    os.system(f"mkdir {tracking_path}")
+    try: os.system(f"mkdir {tracking_path}")
     except: pass
-
-    try:    os.system(f"mkdir {homography_path}")
+    try: os.system(f"mkdir {homography_path}")
+    except: pass
+    try: os.system(f"mkdir {Vis_path}")
+    except: pass
+    try: os.system(f"mkdir {counting_path}")
+    except: pass
+    try: os.system(f"mkdir {Annotation_path}")
     except: pass
 
 def get_conda_envs():
@@ -337,5 +391,3 @@ def save_frame_from_video(video_path, image_out_path):
             break
     cap.release()
     cv2.destroyAllWindows()
-        
-

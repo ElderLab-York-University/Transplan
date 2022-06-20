@@ -14,9 +14,11 @@ import numpy as np
 from pymatreader import read_mat
 import pandas as pd
 from matplotlib import cm
-from resample_gt_MOI.resample_typical_tracks import track_resample
+from .resample_gt_MOI.resample_typical_tracks import track_resample
 from tqdm import tqdm
 import cv2 as cv
+
+from Utils import *
 
 #  Hyperparameters
 MIN_TRAJ_POINTS = 10
@@ -24,28 +26,48 @@ MIN_TRAJ_Length = 50
 MAX_MATCHED_Distance = 90
 
 
-def group_tracks_by_id(tracks_path):
+# def group_tracks_by_id(tracks_path):
+#     # this function was writtern for grouping the tracks with the same id
+#     # usinig this one can load the data from a .txt file rather than .mat file
+#     tracks = np.loadtxt(tracks_path, delimiter=",")
+#     all_ids = np.unique(tracks[:, 1])
+#     data = {"id":[], "trajectory":[], "frames":[]}
+#     for idd in tqdm(all_ids):
+#         mask = tracks[:, 1]==idd
+#         selected_tracks = tracks[mask]
+#         frames = [selected_tracks[: ,0]]
+#         id = selected_tracks[0][1]
+#         trajectory = selected_tracks[:, 2:4]
+#         data["id"].append(id)
+#         data["frames"].append(frames)
+#         data["trajectory"].append(trajectory)
+#     df = pd.DataFrame(data)
+#     return df
+
+def group_tracks_by_id(df):
     # this function was writtern for grouping the tracks with the same id
     # usinig this one can load the data from a .txt file rather than .mat file
-    tracks = np.loadtxt(tracks_path, delimiter=",")
-    all_ids = np.unique(tracks[:, 1])
+    all_ids = np.unique(df['id'].to_numpy(dtype=np.int64))
     data = {"id":[], "trajectory":[], "frames":[]}
     for idd in tqdm(all_ids):
-        mask = tracks[:, 1]==idd
-        selected_tracks = tracks[mask]
-        frames = [selected_tracks[: ,0]]
-        id = selected_tracks[0][1]
-        trajectory = selected_tracks[:, 2:4]
+        frames = df[df['id']==idd]["fn"].to_numpy(np.float32)
+        id = idd
+        trajectory = df[df['id']==idd][["x", "y"]].to_numpy(np.float32)
+        
         data["id"].append(id)
         data["frames"].append(frames)
         data["trajectory"].append(trajectory)
-    df = pd.DataFrame(data)
-    return df
+    df2 = pd.DataFrame(data)
+    return df2
+
 class Counting:
-    def __init__(self):
+    def __init__(self, args):
         #ground truth labelled trajactories
         # validated tracks with moi labels
-        validated_trakcs_path = "./../../Results/GX010069_tracking_sort_reprojected.pkl"
+        # args.ReprojectedPklMeter
+        # args.TrackLabellingExportPthMeter
+        self.args = args
+        validated_trakcs_path = self.args.TrackLabellingExportPthMeter
 
         df = pd.read_pickle(validated_trakcs_path)
         self.typical_mois = defaultdict(list)
@@ -54,7 +76,7 @@ class Counting:
 
         ################ CMM LIB init ################################
         # 0. find the shared library, you need to do first: "python setup.py build", and you will get it from the build folder
-        libfile = "./cmm_truncate_linux/build/lib.linux-x86_64-3.7/cmm.cpython-37m-x86_64-linux-gnu.so"
+        libfile = "./counting/cmm_truncate_linux/build/lib.linux-x86_64-3.7/cmm.cpython-37m-x86_64-linux-gnu.so"
         # libfile = 'York/Elderlab/yorku_pipeline_deepsort_features/yorku_pipeline_deepsort_features/cmm_truncate_linux/build/lib.linux-x86_64-3.7/cmm.cpython-37m-x86_64-linux-gnu.so'
         self.cmmlib = ctypes.CDLL(libfile)
 
@@ -75,13 +97,14 @@ class Counting:
         resampled_trajectory = track_resample(np.array(current_trajectory, dtype=np.float64))
 
         # distance = pow(pow(resampled_trajectory[0][0] - resampled_trajectory[-1][0], 2) + pow(resampled_trajectory[0][1] - resampled_trajectory[-1][1], 2), 0.5)
-        distance = abs(resampled_trajectory[0][0] - resampled_trajectory[-1][0]) + abs(resampled_trajectory[0][1] - resampled_trajectory[-1][1])
+        # distance = abs(resampled_trajectory[0][0] - resampled_trajectory[-1][0]) + abs(resampled_trajectory[0][1] - resampled_trajectory[-1][1])
         # print(distance)
 
         # if 65< distance < 100:
         #     self.tem.append(current_trajectory)
 
-        if len(current_trajectory) > MIN_TRAJ_POINTS and distance > MIN_TRAJ_Length:
+        # if len(current_trajectory) > MIN_TRAJ_POINTS and distance > MIN_TRAJ_Length:
+        if True:
             min_c = float('inf')
             matched_id = -1
             tem = []
@@ -105,12 +128,13 @@ class Counting:
 
             for t , k in zip(tem, key):
                 print(f"tem = {t}, key = {k}")
-            self.viz_CMM(current_trajectory)
-    
-            if min_c < MAX_MATCHED_Distance:
-                if self.counter[matched_id] == 0:
-                    self.tem.append(current_trajectory)
-                self.counter[matched_id] += 1
+            # self.viz_CMM(current_trajectory)
+
+            # having this threshold allows classification rejection
+            # if min_c < MAX_MATCHED_Distance:
+            if self.counter[matched_id] == 0:
+                self.tem.append(current_trajectory)
+            self.counter[matched_id] += 1
             self.traject_couter += 1
 
     def viz_CMM(self, current_track):
@@ -148,10 +172,14 @@ class Counting:
     #                        (int(rgba_color[0]), int(rgba_color[1]), int(rgba_color[2])), -1)
     #         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-    def main(self, filename):
+    def main(self):
         # file_path to all trajectories .txt file(at the moment
         # ** do not confuse it with selected trajectories
-        df = group_tracks_by_id(filename)
+        file_name = self.args.ReprojectedPklMeter
+        result_paht = self.args.CountingResPth
+
+        df_temp = pd.read_pickle(file_name)
+        df = group_tracks_by_id(df_temp)
         tids = np.unique(df['id'].tolist())
         for idx in tids:
             current_track = df[df['id'] == idx]
@@ -164,9 +192,26 @@ class Counting:
             print(f"{i+1}: {self.counter[i+1]}")
         # print(self.counter)
         print(self.traject_couter)
+        with open(result_paht, "w") as f:
+            json.dump(self.counter, f, indent=2)
 
-if __name__ == "__main__":
-    ob1 = Counting()
-    trajectory_path = "./../../Results/GX010069_tracking_sort_reprojected.txt"
+    def arc_length(self, track):
+        """
+        :param track: input track numpy array (M, 2)
+        :return: the estimated arc length of the track
+        """
+        assert track.shape[1] == 2
+        accum_dist = 0
+        for i in range(1, track.shape[0]):
+            dist_ = np.sqrt(np.sum((track[i] - track[i - 1]) ** 2))
+            accum_dist += dist_
+        return accum_dist
+
+def main(args):
+    # some relative path form the args
+        # args.ReprojectedPklMeter
+        # args.TrackLabellingExportPthMeter
+    counter = Counting(args)
     # input Trajectory_path
-    ob1.main(trajectory_path)
+    counter.main()
+    return SucLog("counting part executed successfully")
