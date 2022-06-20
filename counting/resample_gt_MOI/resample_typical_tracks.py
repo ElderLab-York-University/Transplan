@@ -63,7 +63,7 @@ camera_info = {
 }
 
 
-def track_resample(track, threshold=5):
+def track_resample(track, threshold=4):
     """
     :param track: input track numpy array (M, 2)
     :param threshold: default 20 pixel interval for neighbouring points

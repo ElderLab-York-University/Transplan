@@ -17,6 +17,7 @@ from Homography import vishomographygui
 from Homography import vis_reprojected_tracks
 from TrackLabeling import tracklabelinggui, vis_labelled_tracks
 from Maps import pix2meter
+from counting import counting
 
 def Preprocess(args):
     if args.Preprocess:
@@ -98,7 +99,8 @@ def Pix2Meter(args):
 
 def Count(args):
     if args.Count:
-        raise NotImplemented
+        log = counting.main(args)
+        return log
     else: return WarningLog("skipped counting subtask")
 
 def main(args):
