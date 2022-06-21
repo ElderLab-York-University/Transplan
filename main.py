@@ -139,6 +139,7 @@ if __name__ == "__main__":
     parser.add_argument("--Tracker", help="Name of tracker to be used", type=str)
     parser.add_argument("--Meter", help="convert reprojected track coordinated into meter", action="store_true")
     parser.add_argument("--Cluster", help="if to perform clustering", action="store_true")
+    parser.add_argument("--ClusteringAlgo", help="name of the clustering algorithm to be performed",type=str)
 
     args = parser.parse_args()
 

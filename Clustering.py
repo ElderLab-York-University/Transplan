@@ -24,6 +24,12 @@ from sklearn.cluster import DBSCAN, AgglomerativeClustering, AffinityPropagation
 import pickle as pkl
 import copy
 
+# add your clustering algorithms here
+# follow a sklearn-like API for consistency
+# this means that your clustering object should have the fit_predict method
+
+clusterers = {}
+clusterers["DBSCAN"] = DBSCAN(eps = 5, min_samples=2, metric="precomputed")
 
 
 def viz_CMM(current_track):
@@ -38,9 +44,9 @@ def viz_CMM(current_track):
     cv.destroyAllWindows()
 
 def viz_all_tracks(all_tracks, labels, save_path, image_path):
-    print(image_path)
     img = cv.imread(image_path)
     rows, cols, dim = img.shape
+
     for current_track, current_label in zip(all_tracks, labels):
         if current_label<0: continue
         for p in current_track:
@@ -48,9 +54,20 @@ def viz_all_tracks(all_tracks, labels, save_path, image_path):
             np.random.seed(int(current_label))
             color = (np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255))
             img = cv.circle(img, (x,y), radius=2, color=color, thickness=2)
-    # cv.imshow('image',img)
-    cv.waitKey(0)
+
+    total_clusters = int(len(np.unique(labels)) - 1)
+    # add description for the visualization on the top part of image
+    text = f"{total_clusters} clusters annotated with different colors"
+    coordinates = (15,15)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    fontScale = 0.5
+    color = (0,0,0)
+    thickness = 1
+    img = cv2.putText(img, text, coordinates, font, fontScale, color, thickness, cv2.LINE_AA)
+    
     cv.destroyAllWindows()
+    if os.path.exists(save_path):
+        os.remove(save_path)
     cv2.imwrite(save_path, img)
 
 
@@ -162,7 +179,7 @@ def cluster(args):
         with open(args.ClusteringDistanceMatrix, "wb") as f:
             np.save(f, M)
 
-    clt = DBSCAN(eps = 0.5, min_samples=5, metric="precomputed")
+    clt = clusterers[args.ClusteringAlgo]
     labels = clt.fit_predict(M)
     sns.histplot(labels)
     print(np.unique(labels))
