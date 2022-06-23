@@ -9,7 +9,7 @@ from Libs import *
 def tracklabelinggui(args):
     export_path = os.path.abspath(args.TrackLabellingExportPth)
     cwd = os.getcwd()
-    os.chdir("./track_labelling_gui/")
+    os.chdir("./cluster_labelling_gui/")
     ret = os.system(f"sudo python3 cam_gen.py --Export='{export_path}'")
     os.chdir(cwd)
 

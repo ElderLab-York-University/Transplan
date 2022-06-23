@@ -113,7 +113,7 @@ def Cluster(args):
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess, Detect, VisDetect, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, TrackLabelingGUI, VisTrajectories, VisLabelledTrajectories, Pix2Meter, Count, Cluster]
+    subtasks = [Preprocess, Detect, VisDetect, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, Cluster, TrackLabelingGUI, VisTrajectories, VisLabelledTrajectories, Count]
     for subtask in subtasks:
         log = subtask(args)
         print(log)
