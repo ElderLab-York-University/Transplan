@@ -9,10 +9,12 @@ from Detect import *
 # -------------------------- 
 import Trackers.sort.track
 import Trackers.CenterTrack.track
+import Trackers.DeepSort.track
 # --------------------------
 trackers = {}
 trackers["sort"] = Trackers.sort.track
 trackers["CenterTrack"] = Trackers.CenterTrack.track
+trackers["DeepSort"] = Trackers.DeepSort.track
 # --------------------------
 
 def track(args):

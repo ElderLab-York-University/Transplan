@@ -2,7 +2,8 @@ import sys
 # import pickle as pkl
 import json
 import pickle5 as pickle
-import pandas as pd
+# import pickle
+# import pandas as pd
 
 from DeepSort.deep_sort import nn_matching
 from DeepSort.deep_sort.detection import Detection
@@ -48,6 +49,10 @@ if __name__ == "__main__":
             if (not cap.isOpened()):
                 break
             ret, frame=cap.read()
+            print("!!!!!!!!!!!!!!!!")
+            print(args["DetectionPkl"])
+            print("________!!!!!!!!!!________")
+
             with open(args["DetectionPkl"],"rb") as f:
                 detections=pickle.load(f)
 

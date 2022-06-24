@@ -38,5 +38,7 @@ def setup(args):
     
     if not env_name in get_conda_envs():
         make_conda_env(env_name, libs="python=3.6")
-        os.system(f"conda run -n {args.Tracker} pip3 install tensorflow==1.15.5 opencv-python numpy scikit-learn==0.22.2 tqdm pickle5")
-        os.system(f"conda run -n {args.Tracker} pip3 install wheel pandas==1.1.5")
+        os.system(f"conda run -n {args.Tracker} pip3 install tensorflow==1.15.5 opencv-python numpy scikit-learn==0.22.2 tqdm")
+        os.system(f"conda run -n {args.Tracker} pip3 install wheel")
+        os.system(f"conda run -n {args.Tracker} pip3 install pickle5 pandas")
+        print("______++++++++++++________")
