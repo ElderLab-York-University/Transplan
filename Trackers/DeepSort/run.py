@@ -88,7 +88,7 @@ if __name__ == "__main__":
                 results.append([frame_num, track.track_id, bbox[0], bbox[1], bbox[2], bbox[3]])
 
         for row in results:
-            print("YOO")
+            # print("YOO")
             print('%d,%d,%f,%f,%f,%f'%
             (row[0]+1, row[1], row[2], row[3], row[2]+row[4], row[3]+row[5]),file=out_file)
 
