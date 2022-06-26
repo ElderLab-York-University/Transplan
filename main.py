@@ -18,6 +18,7 @@ from Homography import vis_reprojected_tracks
 from TrackLabeling import tracklabelinggui, vis_labelled_tracks
 from Maps import pix2meter
 from counting import counting
+from Clustering import cluster
 
 def Preprocess(args):
     if args.Preprocess:
@@ -103,10 +104,16 @@ def Count(args):
         return log
     else: return WarningLog("skipped counting subtask")
 
+def Cluster(args):
+    if args.Cluster:
+        log = cluster(args)
+        return log
+    else: return WarningLog("skipped clustering subtask")
+
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess, Detect, VisDetect, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, TrackLabelingGUI, VisTrajectories, VisLabelledTrajectories, Pix2Meter, Count]
+    subtasks = [Preprocess, Detect, VisDetect, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, Cluster, TrackLabelingGUI, VisTrajectories, VisLabelledTrajectories, Count]
     for subtask in subtasks:
         log = subtask(args)
         print(log)
@@ -131,6 +138,8 @@ if __name__ == "__main__":
     parser.add_argument("--Detector", help="Name of detector to be used", type=str)
     parser.add_argument("--Tracker", help="Name of tracker to be used", type=str)
     parser.add_argument("--Meter", help="convert reprojected track coordinated into meter", action="store_true")
+    parser.add_argument("--Cluster", help="if to perform clustering", action="store_true")
+    parser.add_argument("--ClusteringAlgo", help="name of the clustering algorithm to be performed",type=str)
 
     args = parser.parse_args()
 

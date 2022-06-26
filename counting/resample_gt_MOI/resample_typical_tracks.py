@@ -63,21 +63,36 @@ camera_info = {
 }
 
 
+# def _track_resample(track, threshold=4):
+#     """
+#     :param track: input track numpy array (M, 2)
+#     :param threshold: default 20 pixel interval for neighbouring points
+#     :return:
+#     """
+#     assert track.shape[1] == 2
+#     accum_dist = 0
+#     index_keep = [0]
+#     for i in range(1, track.shape[0]):
+#         dist_ = np.sqrt(np.sum((track[i] - track[i - 1]) ** 2))
+#         if dist_ >= 1.0:
+#             accum_dist += dist_
+#             if accum_dist >= threshold:
+#                 index_keep.append(i)
+#                 accum_dist = 0
+
+#     return track[index_keep, :]
+
 def track_resample(track, threshold=4):
     """
     :param track: input track numpy array (M, 2)
-    :param threshold: default 20 pixel interval for neighbouring points
-    :return:
+    :param threshold: default 4 meters interval for neighbouring points
+    :return: resampled track with uniform samples in space rather than time
     """
     assert track.shape[1] == 2
-    accum_dist = 0
     index_keep = [0]
     for i in range(1, track.shape[0]):
-        dist_ = np.sqrt(np.sum((track[i] - track[i - 1]) ** 2))
-        if dist_ >= 1.0:
-            accum_dist += dist_
-            if accum_dist >= threshold:
-                index_keep.append(i)
-                accum_dist = 0
+        dist_ = np.sqrt(np.sum((track[i] - track[index_keep[-1]]) ** 2))
+        if dist_ >= threshold:
+            index_keep.append(i)
 
     return track[index_keep, :]

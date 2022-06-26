@@ -28,6 +28,7 @@ class SubTaskExt:
     VisTrajectories = "png"
     VisLTrajectories = "png"
     Json = "json"
+    Npy = "npy"
 
 class SubTaskMarker:
     Detection     = "detection"
@@ -40,6 +41,7 @@ class SubTaskMarker:
     VisTrajectories = "vistraj"
     VisLTrajectories = "vislabelledtraj"
     Counting = "counting"
+    Clustering = "clustering"
  
 
 class Puncuations:
@@ -284,6 +286,40 @@ def add_count_path_to_args(args):
     args.CountingResPth = counting_result_path
     return args
 
+def get_reprojected_meter_cluster_pkl(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Clustering",file_name + Puncuations.Dot + SubTaskMarker.Clustering + Puncuations.Dot + args.ClusteringAlgo + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+"meter"+ Puncuations.Dot+SubTaskExt.Pkl)
+
+def get_reprojected_reg_cluster_pkl(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Clustering",file_name + Puncuations.Dot + SubTaskMarker.Clustering + Puncuations.Dot + args.ClusteringAlgo + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot + Puncuations.Dot+SubTaskExt.Pkl)
+
+def get_distance_matrix_pth(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Clustering",file_name + Puncuations.Dot + SubTaskMarker.Clustering + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected"+ Puncuations.Dot+ "DistanceMatrix" + Puncuations.Dot+SubTaskExt.Npy)
+
+
+def get_vis_clustering_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.Clustering + Puncuations.Dot + args.ClusteringAlgo+ Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected"+ Puncuations.Dot+ "vis" + Puncuations.Dot+"png")
+
+
+def add_clustering_related_pth_to_args(args):
+    meter_clustered = get_reprojected_meter_cluster_pkl(args)
+    reg_clustered = get_reprojected_reg_cluster_pkl(args)
+    distance_matrix = get_distance_matrix_pth(args)
+    vis_path = get_vis_clustering_path(args)
+
+    args.ReprojectedPklMeterCluster = meter_clustered
+    args.ReprojectedPklCluster = reg_clustered
+    args.ClusteringDistanceMatrix = distance_matrix
+    args.ClusteringVis = vis_path
+    return args
+
 def complete_args(args):
     if args.Video is None:
         # if Video path was not specified by the user grab a video from dataset
@@ -298,9 +334,9 @@ def complete_args(args):
         args = add_tracking_pkl_to_args(args)
 
     args = add_metadata_to_args(args)
-    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories:
+    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster:
         args = add_homographygui_related_path_to_args(args)
-    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter:
+    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster:
         args = add_homography_related_path_to_args(args)
     if args.VisHomographyGUI or args.VisLabelledTrajectories:
         args = add_vishomography_path_to_args(args)
@@ -310,10 +346,12 @@ def complete_args(args):
         args = add_plot_all_traj_pth_to_args(args)
     if args.VisLabelledTrajectories:
         args = add_vis_labelled_tracks_pth_to_args(args)
-    if args.Meter or args.Count:
+    if args.Meter or args.Count or args.Cluster:
         args = add_meter_path_to_args(args)
     if args.Count:
         args = add_count_path_to_args(args)
+    if args.Cluster:
+        args = add_clustering_related_pth_to_args(args)
 
     return args
 
@@ -328,6 +366,7 @@ def check_config(args):
     Vis_path = os.path.join(results_path, "Visualization")
     Annotation_path = os.path.join(results_path, "Annotation")
     counting_path = os.path.join(results_path, "Counting")
+    clustering_path = os.path.join(results_path, "Clustering")
 
     try: os.system(f"mkdir {results_path}")
     except: pass
@@ -342,6 +381,8 @@ def check_config(args):
     try: os.system(f"mkdir {counting_path}")
     except: pass
     try: os.system(f"mkdir {Annotation_path}")
+    except: pass
+    try: os.system(f"mkdir {clustering_path}")
     except: pass
 
 def get_conda_envs():

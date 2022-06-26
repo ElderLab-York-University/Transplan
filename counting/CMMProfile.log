@@ -1,0 +1,72 @@
+profiling for trajectory length 10.0
+         28 function calls in 0.000 seconds
+
+   Ordered by: standard name
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.000    0.000 <string>:1(<module>)
+        1    0.000    0.000    0.000    0.000 CMMProfile.py:25(cmm_distance)
+        4    0.000    0.000    0.000    0.000 __init__.py:506(cast)
+        4    0.000    0.000    0.000    0.000 _internal.py:250(__init__)
+        4    0.000    0.000    0.000    0.000 _internal.py:267(data_as)
+        4    0.000    0.000    0.000    0.000 _internal.py:345(_as_parameter_)
+        4    0.000    0.000    0.000    0.000 ctypeslib.py:184(from_param)
+        1    0.000    0.000    0.000    0.000 {built-in method builtins.exec}
+        4    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+
+
+profiling for trajectory length 100.0
+         28 function calls in 0.000 seconds
+
+   Ordered by: standard name
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.000    0.000 <string>:1(<module>)
+        1    0.000    0.000    0.000    0.000 CMMProfile.py:25(cmm_distance)
+        4    0.000    0.000    0.000    0.000 __init__.py:506(cast)
+        4    0.000    0.000    0.000    0.000 _internal.py:250(__init__)
+        4    0.000    0.000    0.000    0.000 _internal.py:267(data_as)
+        4    0.000    0.000    0.000    0.000 _internal.py:345(_as_parameter_)
+        4    0.000    0.000    0.000    0.000 ctypeslib.py:184(from_param)
+        1    0.000    0.000    0.000    0.000 {built-in method builtins.exec}
+        4    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+
+
+profiling for trajectory length 1000.0
+         28 function calls in 0.030 seconds
+
+   Ordered by: standard name
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.030    0.030 <string>:1(<module>)
+        1    0.030    0.030    0.030    0.030 CMMProfile.py:25(cmm_distance)
+        4    0.000    0.000    0.000    0.000 __init__.py:506(cast)
+        4    0.000    0.000    0.000    0.000 _internal.py:250(__init__)
+        4    0.000    0.000    0.000    0.000 _internal.py:267(data_as)
+        4    0.000    0.000    0.000    0.000 _internal.py:345(_as_parameter_)
+        4    0.000    0.000    0.000    0.000 ctypeslib.py:184(from_param)
+        1    0.000    0.000    0.030    0.030 {built-in method builtins.exec}
+        4    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+
+
+profiling for trajectory length 10000.0
+         28 function calls in 2.731 seconds
+
+   Ordered by: standard name
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    2.731    2.731 <string>:1(<module>)
+        1    2.731    2.731    2.731    2.731 CMMProfile.py:25(cmm_distance)
+        4    0.000    0.000    0.000    0.000 __init__.py:506(cast)
+        4    0.000    0.000    0.000    0.000 _internal.py:250(__init__)
+        4    0.000    0.000    0.000    0.000 _internal.py:267(data_as)
+        4    0.000    0.000    0.000    0.000 _internal.py:345(_as_parameter_)
+        4    0.000    0.000    0.000    0.000 ctypeslib.py:184(from_param)
+        1    0.000    0.000    2.731    2.731 {built-in method builtins.exec}
+        4    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+
+
