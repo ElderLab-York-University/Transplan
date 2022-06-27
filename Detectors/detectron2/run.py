@@ -20,6 +20,12 @@ import cv2
 import pandas as pd
 # from mmdet.apis import init_detector, inference_detector
 
+# see the list of MS_COCO class dict in the link below 
+# https://gist.github.com/AruniRC/7b3dadd004da04c80198557db5da4bda
+# the output of detectron2 is the class numbers + 1
+classes_to_keep = [2, 5, 7] #3-1:car, 6-1:bus, 8-1:truck
+
+
 
 if __name__ == "__main__":
   # choose to run on CPU to GPU
@@ -53,7 +59,8 @@ if __name__ == "__main__":
   cfg.merge_from_file(config_path)
   cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5  # set threshold for this model
   cfg.MODEL.WEIGHTS = model_weight_path
-  cfg.MODEL.DEVICE= device_name 
+  cfg.MODEL.DEVICE= device_name
+
   predictor = DefaultPredictor(cfg)
 
   # create the VideoCapture Object
@@ -92,7 +99,8 @@ if __name__ == "__main__":
           boxes = outputs['instances'].pred_boxes.to("cpu")
           with open(text_result_path, "a") as text_file:
             for clss, score, box in zip(classes, scores, boxes):
-              text_file.write(f"{frame_num} {clss} {score} " + " ".join(map(str, box.numpy())) + "\n")
+              if clss in classes_to_keep:
+                text_file.write(f"{frame_num} {clss} {score} " + " ".join(map(str, box.numpy())) + "\n")
 
           # Display the resulting frame
           # cv2.imshow('Frame',annotated_frame)
