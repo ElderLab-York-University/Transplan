@@ -11,6 +11,8 @@ import cv2
 import pandas as pd
 from mmdet.apis import init_detector, inference_detector
 import mmcv
+classes_to_keep = [2, 5, 7] #3-1:car, 6-1:bus, 8-1:truck
+
 
 if __name__ == "__main__":
   config_file = './Detectors/OpenMM/mmdetection/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py'
@@ -34,7 +36,7 @@ if __name__ == "__main__":
           for res in result:
               # print(res)
               for r in res:
-                  if(r[4]>0.5):
+                  if(r[4]>0.5 and a in classes_to_keep):
                     #   print(str(i) + " " + str(a) + " " + str(r[4]) + " " + str(r[0])+ " " + str(r[1]) + " " + str(r[2])+ " " + str(r[3]))
                       f.write(str(i) + " " + str(a) + " " + str(r[4]) + " " + str(r[0])+ " " + str(r[1]) + " " + str(r[2])+ " " + str(r[3]) +'\n')
               a=a+1

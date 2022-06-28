@@ -13,6 +13,7 @@ import pandas as pd
 # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # device_name = "cuda:0" if torch.cuda.is_available() else "cpu"
 # print(f'device: {device_name}')
+classes_to_keep = [2, 5, 7] #3-1:car, 6-1:bus, 8-1:truck
 
 
 if __name__=="__main__":
@@ -38,19 +39,21 @@ if __name__=="__main__":
             f=open(file)
             for line in f:
                 nums=line.split(" ")
-                center_x=float(nums[1])*width
-                center_y=float(nums[2])*height
-                size_x=float(nums[3])*width
-                size_y=float(nums[4])*height
+                
+                if(int(nums[0]) in classes_to_keep):
+                    center_x=float(nums[1])*width
+                    center_y=float(nums[2])*height
+                    size_x=float(nums[3])*width
+                    size_y=float(nums[4])*height
 
-                x_1=round(center_x-size_x/2,5)
-                y_1=round(center_y-size_y/2,5)
-                x_2=round(center_x+size_x/2,5)
-                y_2=round(center_y+size_y/2,5)
+                    x_1=round(center_x-size_x/2,5)
+                    y_1=round(center_y-size_y/2,5)
+                    x_2=round(center_x+size_x/2,5)
+                    y_2=round(center_y+size_y/2,5)
 
-                l=str(i) +" " + str(nums[0]) + " " + str(nums[-1][0:-2])+" "+ str(x_1) + " " + str(y_1) + " " + str(x_2) + " " + str(y_2)+"\n"
-                print(l)
-                text_file.write(l)
+                    l=str(i) +" " + str(nums[0]) + " " + str(nums[-1][0:-2])+" "+ str(x_1) + " " + str(y_1) + " " + str(x_2) + " " + str(y_2)+"\n"
+                    print(l)
+                    text_file.write(l)
                 # print(str(i)+" " +line)
             i=i+1
 
