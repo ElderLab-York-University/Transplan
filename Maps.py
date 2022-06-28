@@ -34,10 +34,11 @@ def pix2meter(args):
     df.to_pickle(args.ReprojectedPklMeter)
 
     # 2. labeled trackes: args.TrackLabellingExportPth -> args.TrackLabellingExportPthMeter
-    df = pd.read_pickle(args.TrackLabellingExportPth)
-    scale_function = lambda x: np.array([[r*xi[0],r*xi[1]] for xi in x])
-    df['trajectory'] = df['trajectory'].apply(scale_function)
-    df.to_pickle(args.TrackLabellingExportPthMeter)
+    if os.path.exists(args.TrackLabellingExportPth):
+        df = pd.read_pickle(args.TrackLabellingExportPth)
+        scale_function = lambda x: np.array([[r*xi[0],r*xi[1]] for xi in x])
+        df['trajectory'] = df['trajectory'].apply(scale_function)
+        df.to_pickle(args.TrackLabellingExportPthMeter)
 
     return SucLog("pixel cordinates changed to meter cordinates")
 

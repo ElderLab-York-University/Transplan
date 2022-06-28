@@ -138,13 +138,17 @@ def vis_reprojected_tracks(args):
         cam_df_id = cam_df[cam_df['id']==track_id]
         ground_df_id = ground_df[ground_df['id']==track_id]
         
+        c = 0
         for i, row in cam_df_id.iterrows():
             x, y = int(row['x2']), int((row['y1']+row['y2'])/2)
-            img1 = cv.circle(img1, (x,y), radius=5, color=(int(i/len(cam_df_id)*255), 70, int(255 - i/len(cam_df_id)*255)), thickness=4)
+            img1 = cv.circle(img1, (x,y), radius=4, color=(int(c/len(cam_df_id)*255), 70, int(255 - c/len(cam_df_id)*255)), thickness=3)
+            c+=1
 
+        c=0
         for i, row in ground_df_id.iterrows():
             x, y = int(row['x']), int(row['y'])
-            img2 = cv.circle(img2, (x,y), radius=1, color=(int(i/len(ground_df_id)*255), 70, int(255 - i/len(ground_df_id)*255)), thickness=1)
+            img2 = cv.circle(img2, (x,y), radius=1, color=(int(c/len(ground_df_id)*255), 70, int(255 - c/len(ground_df_id)*255)), thickness=1)
+            c+=1
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
     ax1.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
