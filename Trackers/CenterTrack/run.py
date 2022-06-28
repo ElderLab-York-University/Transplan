@@ -20,9 +20,11 @@ if __name__ == "__main__":
     GPUS = "0" if torch.cuda.is_available() else "-1" # if gpu is available use it
     print(f"device:{GPUS} in CenterTrack")
 
-
+    print("this is for debugging 1")
     opt = opts().init('{} --load_model {} --gpus {}'.format(TASK, MODEL_PATH, GPUS).split(' '))
+    
     detector = Detector(opt)
+    print("this is for debugging 2")
 
     cap = cv2.VideoCapture(video_path)
     if (cap.isOpened()== False): 

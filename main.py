@@ -76,36 +76,42 @@ def Homography(args):
 
 def TrackLabelingGUI(args):
     if args.TrackLabelingGUI:
+        print(ProcLog("Track Labeling GUI in Process"))
         log = tracklabelinggui(args)
         return log
     else: return WarningLog("skipped track labelling subtask")
 
 def VisTrajectories(args):
     if args.VisTrajectories:
+        print(ProcLog("VisTrajectories in Process"))
         log = vis_reprojected_tracks(args)
         return log
     else: return WarningLog("skipped plotting all tracks")
 
 def VisLabelledTrajectories(args):
     if args.VisLabelledTrajectories:
+        print(ProcLog("Vis Labeled trajectories in Process"))
         log = vis_labelled_tracks(args)
         return log
     else: return WarningLog("skipped plotting labelled tracks")
 
 def Pix2Meter(args):
     if args.Meter:
+        print(ProcLog("Converting to meter in Process"))
         log = pix2meter(args)
         return log
     else: return WarningLog("skipped changing pixel values to meter values")
 
 def Count(args):
     if args.Count:
+        print(ProcLog("Counting in Process"))
         log = counting.main(args)
         return log
     else: return WarningLog("skipped counting subtask")
 
 def Cluster(args):
     if args.Cluster:
+        print(ProcLog("Clustering in Process"))
         log = cluster(args)
         return log
     else: return WarningLog("skipped clustering subtask")
