@@ -368,21 +368,21 @@ def check_config(args):
     counting_path = os.path.join(results_path, "Counting")
     clustering_path = os.path.join(results_path, "Clustering")
 
-    try: os.system(f"mkdir {results_path}")
+    try: os.system(f"mkdir -p {results_path}")
     except: pass
-    try: os.system(f"mkdir {detection_path}")
+    try: os.system(f"mkdir -p {detection_path}")
     except: pass
-    try: os.system(f"mkdir {tracking_path}")
+    try: os.system(f"mkdir -p {tracking_path}")
     except: pass
-    try: os.system(f"mkdir {homography_path}")
+    try: os.system(f"mkdir -p {homography_path}")
     except: pass
-    try: os.system(f"mkdir {Vis_path}")
+    try: os.system(f"mkdir -p {Vis_path}")
     except: pass
-    try: os.system(f"mkdir {counting_path}")
+    try: os.system(f"mkdir -p {counting_path}")
     except: pass
-    try: os.system(f"mkdir {Annotation_path}")
+    try: os.system(f"mkdir -p {Annotation_path}")
     except: pass
-    try: os.system(f"mkdir {clustering_path}")
+    try: os.system(f"mkdir -p {clustering_path}")
     except: pass
 
 def get_conda_envs():
