@@ -21,6 +21,7 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.cluster import DBSCAN, AgglomerativeClustering, AffinityPropagation
+from sklearn.cluster import SpectralClustering
 import pickle as pkl
 import copy
 
@@ -29,8 +30,8 @@ import copy
 # this means that your clustering object should have the fit_predict method
 
 clusterers = {}
-clusterers["DBSCAN"] = DBSCAN(eps = 5, min_samples=2, metric="precomputed")
-
+clusterers["DBSCAN"] = DBSCAN(eps = 0.8, min_samples=2, metric="precomputed")
+clusterers["Spectral"] = SpectralClustering(affinity="precomputed_nearest_neighbors", n_clusters=36)
 
 def viz_CMM(current_track):
     image_path = "./../../Dataset/DundasStAtNinthLine.jpg"
