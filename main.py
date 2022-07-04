@@ -9,7 +9,7 @@
 # import libs
 from Libs import *
 from Utils import *
-from Detect import detect, visdetect
+from Detect import detect, visdetect,detectpostproc
 from Track import track, vistrack
 from Homography import homographygui
 from Homography import reproject
@@ -31,6 +31,13 @@ def Detect(args):
         log = detect(args)
         return log
     else: return WarningLog("skipped detection subtask")
+
+def DetPostProc(args):
+    if args.DetPostProc:
+        print(ProcLog("Detection post processing in execution"))
+        log = detectpostproc(args)
+        return log
+    else: return WarningLog("skipped Detection post processing subtask")
 
 def VisDetect(args):
     if args.VisDetect:
@@ -119,7 +126,7 @@ def Cluster(args):
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess, Detect, VisDetect, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, Cluster, TrackLabelingGUI, VisTrajectories, VisLabelledTrajectories, Count]
+    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, Cluster, TrackLabelingGUI, VisTrajectories, VisLabelledTrajectories, Count]
     for subtask in subtasks:
         log = subtask(args)
         print(log)
@@ -146,6 +153,8 @@ if __name__ == "__main__":
     parser.add_argument("--Meter", help="convert reprojected track coordinated into meter", action="store_true")
     parser.add_argument("--Cluster", help="if to perform clustering", action="store_true")
     parser.add_argument("--ClusteringAlgo", help="name of the clustering algorithm to be performed",type=str)
+    parser.add_argument("--DetPostProc", help="if to perform detection post processings", action="store_true")
+    parser.add_argument("--DetTh", help="the threshold for detection post processing", type=float)
 
     args = parser.parse_args()
 
