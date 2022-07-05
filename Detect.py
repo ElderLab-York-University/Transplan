@@ -97,3 +97,28 @@ def draw_box_on_image(img, x1, y1, x2, y2, c=(255, 0, 0), thickness=2):
     end_point = (int(x2), int(y2))
     img = cv2.rectangle(img, sta_point, end_point, c, thickness)
     return img
+
+def detectpostproc(args):
+    # args to use in this function
+        # args.DetPostProc
+        # args.DetTh
+
+    # 0. load the pklfile first
+    df = pd.read_pickle(args.DetectionPkl)
+
+    # 1. condition on the post processing flags
+    if not args.DetTh is None:
+        df = detectionth(df, args)
+
+    # add other post processing steps
+    
+    # store the edited df as txt
+    detectors[args.Detector].df_txt(df, args.DetectionDetectorPath)
+    # store the new txt as pkl
+    store_df_pickle(args)
+    return SucLog("detection post processing done")
+
+
+def detectionth(df, args):
+    df = df[df["score"] >= args.DetTh]
+    return df

@@ -30,7 +30,7 @@ def df(args):
     lines = f.readlines()
     for line in lines[num_header_lines::]:
       splits = line.split()
-      fn , clss, score, x1, y1, x2, y2 = int(splits[0]), int(splits[1]), float(splits[2]), float(splits[3]), float(splits[4]), float(splits[5]), float(splits[6])
+      fn , clss, score, x1, y1, x2, y2 = int(float(splits[0])), int(float(splits[1])), float(splits[2]), float(splits[3]), float(splits[4]), float(splits[5]), float(splits[6])
       data["fn"].append(fn)
       data["class"].append(clss)
       data["score"].append(score)
@@ -39,6 +39,16 @@ def df(args):
       data["x2"].append(x2)
       data["y2"].append(y2)
   return pd.DataFrame.from_dict(data)
+
+def df_txt(df,text_result_path):
+  # store a modified version of detection df to the same txt file
+  # used in the post processig part of the detection
+  # df is in the same format specified in the df function
+
+  with open(text_result_path, "a") as text_file:
+    for i, row in df.iterrows():
+      frame_num, clss, score, x1, y1, x2, y2 = row["fn"], row['class'], row["score"], row["x1"], row["y1"], row["x2"], row["y2"]
+      text_file.write(f"{frame_num} {clss} {score} {x1} {y1} {x2} {y2}\n")
     
 def setup(args):
     env_name = args.Detector

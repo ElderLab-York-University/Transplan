@@ -56,7 +56,7 @@ if __name__ == "__main__":
   # Find a model from detectron2's model zoo. You can use the https://dl.fbaipublicfiles... url as well
   cfg = get_cfg()
   cfg.merge_from_file(config_path)
-  cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5  # set threshold for this model
+  cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.8  # set threshold for this model
   cfg.MODEL.WEIGHTS = model_weight_path
   cfg.MODEL.DEVICE= device_name
 

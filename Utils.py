@@ -324,7 +324,8 @@ def complete_args(args):
     if args.Video is None:
         # if Video path was not specified by the user grab a video from dataset
         args = add_videos_to_args(args)
-    if not args.Detector is None:
+
+    if (not args.Detector is None) or args.DetPostProc:
         args = add_detection_pathes_to_args(args)
         args = add_vis_detection_path_to_args(args)
 
