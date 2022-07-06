@@ -24,6 +24,7 @@ from sklearn.cluster import DBSCAN, AgglomerativeClustering, AffinityPropagation
 from sklearn.cluster import SpectralClustering
 import pickle as pkl
 import copy
+import sys
 
 # add your clustering algorithms here
 # follow a sklearn-like API for consistency
@@ -31,8 +32,54 @@ import copy
 
 clusterers = {}
 clusterers["DBSCAN"] = DBSCAN(eps = 0.8, min_samples=2, metric="precomputed")
-clusterers["Spectral"] = SpectralClustering(affinity="precomputed_nearest_neighbors", n_clusters=36)
+clusterers["SpectralKNN"] = SpectralClustering(affinity="precomputed_nearest_neighbors", n_clusters=36)
+clusterers["SpectralFull"] = SpectralClustering(affinity="precomputed", n_clusters=36)
 
+# can be used for calculating descrete diff of a trajectory
+def diff_traj(traj):
+    V = []
+    # skip the first point
+    for i in range(1, len(traj)):
+        # assuming traj[index] is np array
+        p1, p2 = traj[i-1], traj[i]
+        v = p2-p1
+        V.append(v)
+    return V
+
+def accelate_vector(traj_a):
+    v_a = diff_traj(traj_a)
+    a_a = diff_traj(v_a)
+    a_a = np.mean(a_a, axis=0)
+    if np.linalg.norm(a_a)>0:
+        a_a = a_a/np.linalg.norm(a_a)
+    return a_a
+
+def direction_vector(traj_a):
+    x = traj_a[-1] - traj_a[0]
+    if np.linalg.norm(x) > 0:
+        return x/np.linalg.norm(x)
+    else:
+        return x
+
+def cosine_distance(v1, v2):
+    if np.linalg.norm(v1) > 0:
+        v1 = v1/np.linalg.norm(v1)
+    if np.linalg.norm(v2)>0:
+        v2 = v2 / np.linalg.norm(v2)
+    return  1 - np.dot(v1, v2)
+
+def myd(index_1, index_2, df, cmmlib):
+    index_1, index_2 = int(index_1), int(index_2)
+    traj_a, traj_b = df['trajectory'].iloc[index_1], df['trajectory'].iloc[index_2]
+    if len(traj_a) < 4 or len(traj_b)<4:
+        return sys.float_info.max / 2
+    cmmd = cmm_distance(traj_a, traj_b, cmmlib)
+    a_a , a_b = accelate_vector(traj_a), accelate_vector(traj_b)
+    x_a, x_b = direction_vector(traj_a), direction_vector(traj_b)
+    ad = cosine_distance(a_a, a_b)
+    xd = cosine_distance(x_a, x_b)
+    return cmmd + ad*cmmd + xd*cmmd
+    
 def viz_CMM(current_track):
     image_path = "./../../Dataset/DundasStAtNinthLine.jpg"
     img = cv.imread(image_path)
@@ -175,12 +222,15 @@ def cluster(args):
         for i in tqdm(indexes):
             for j in range(int(i)+1, len(indexes)):
                 c =  np.abs(cmm_ref_distance(i, j, df_meter_resampled, cmmlib))
+                # c =  np.abs(myd(i, j, df_meter_resampled, cmmlib))
                 M[int(i), int(j)] = c
                 M[int(j), int(i)] = c
         with open(args.ClusteringDistanceMatrix, "wb") as f:
             np.save(f, M)
 
     clt = clusterers[args.ClusteringAlgo]
+    if args.ClusteringAlgo == "SpectralFull":
+        M = np.exp(-1*M)
     labels = clt.fit_predict(M)
     sns.histplot(labels)
     print(np.unique(labels))
