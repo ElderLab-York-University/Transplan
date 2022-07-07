@@ -155,6 +155,7 @@ if __name__ == "__main__":
     parser.add_argument("--ClusteringAlgo", help="name of the clustering algorithm to be performed",type=str)
     parser.add_argument("--DetPostProc", help="if to perform detection post processings", action="store_true")
     parser.add_argument("--DetTh", help="the threshold for detection post processing", type=float)
+    parser.add_argument("--DetMask", help="if to remove bboxes out of ROI", action="store_true")
 
     args = parser.parse_args()
 

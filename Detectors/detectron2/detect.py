@@ -44,6 +44,8 @@ def df_txt(df,text_result_path):
   # store a modified version of detection df to the same txt file
   # used in the post processig part of the detection
   # df is in the same format specified in the df function
+  with open(text_result_path, "w") as text_file:
+    pass
 
   with open(text_result_path, "a") as text_file:
     for i, row in df.iterrows():

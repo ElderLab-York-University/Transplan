@@ -25,7 +25,6 @@ def detect(args):
 
     current_detector = detectors[args.Detector]
     current_detector.detect(args)
-    remove_extraneous_boxes(args)
     store_df_pickle(args)
     return SucLog("Detection files stored")
 
@@ -33,32 +32,17 @@ def store_df_pickle(args):
     df = detectors[args.Detector].df(args)
     df.to_pickle(args.DetectionPkl)
 
-def remove_extraneous_boxes(args):
-    # detection_box=[[588.280087527352, 2028-619.126914660832], [1585.43544857768, 2028-628.317286652079],[2603.26914660832, 2028-638.75],[6.98905908096299, 2028-1526.67614879650],[588.280087527352, 2028-619.126914660832]]
-    detection_box=[[509.75, 2028-602.75], [1637.75, 2028-515.75],[2672.75, 2028-626.75],[2.75, 2028-1550.75],[509.75, 2028-602.75]]
-    
-    poly_path = mplPath.Path(np.array(detection_box))    
-
-    text_result_path = args.DetectionDetectorPath
-    newLines=[]
-    with open(text_result_path, 'r') as f:
-            lines=f.readlines()        
-            for line in lines:
-                lineArr=line.split(" ")
-                [x1 , y1 , x2 , y2]= lineArr[3:]
-                point1=[float(x1), 2028-float(y1)]
-                point2=[float(x2), 2028-float(y2)]
-                if poly_path.contains_point(point1) or poly_path.contains_point(point2): 
-                    newLines.append(line.rstrip('\n'))  
-             
-    with open (text_result_path,"w") as f: 
-        for line in newLines:
-            print(line, file=f)
-
-# 509.75	602.75
-# 1637.75	515.75
-# 2672.75	626.75
-# 2.75	1550.75    
+def remove_out_of_ROI(df, roi):
+    poly_path = mplPath.Path(np.array(roi))
+    mask = []
+    print(len(mask), len(df))
+    for i, row in tqdm(df.iterrows(), total=len(df)):
+        x1, y1, x2, y2 = row["x1"], row["y1"], row["x2"], row["y2"]
+        p = [[x1, y1], [x1, y2], [x2, y1], [x2, y2]]
+        if poly_path.contains_point(p[0]) or poly_path.contains_point(p[1]) or poly_path.contains_point(p[2]) or poly_path.contains_point(p[3]):
+            mask.append(True)
+        else: mask.append(False)
+    return df[mask]  
 
 def visdetect(args):
     if args.Detector is None:
@@ -102,15 +86,15 @@ def detectpostproc(args):
     # args to use in this function
         # args.DetPostProc
         # args.DetTh
+        # args.DetMask
 
     # 0. load the pklfile first
     df = pd.read_pickle(args.DetectionPkl)
-
     # 1. condition on the post processing flags
     if not args.DetTh is None:
         df = detectionth(df, args)
-
-    # add other post processing steps
+    if args.DetMask:
+        df = remove_out_of_ROI(df, args.MetaData["roi"])
     
     # store the edited df as txt
     detectors[args.Detector].df_txt(df, args.DetectionDetectorPath)
