@@ -126,8 +126,8 @@ class Counting:
                         min_c = c
                         matched_id = keys
 
-            for t , k in zip(tem, key):
-                print(f"tem = {t}, key = {k}")
+            # for t , k in zip(tem, key):
+            #     print(f"tem = {t}, key = {k}")
             # self.viz_CMM(current_trajectory)
 
             # having this threshold allows classification rejection

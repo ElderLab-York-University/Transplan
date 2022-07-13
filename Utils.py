@@ -321,6 +321,10 @@ def add_clustering_related_pth_to_args(args):
     return args
 
 def complete_args(args):
+
+    if args.TrackLabelingGUI:
+        args.Meter=True
+        
     if args.Video is None:
         # if Video path was not specified by the user grab a video from dataset
         args = add_videos_to_args(args)
