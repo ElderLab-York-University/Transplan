@@ -32,8 +32,8 @@ import sys
 
 clusterers = {}
 clusterers["DBSCAN"] = DBSCAN(eps = 0.8, min_samples=2, metric="precomputed")
-clusterers["SpectralKNN"] = SpectralClustering(affinity="precomputed_nearest_neighbors", n_clusters=36)
-clusterers["SpectralFull"] = SpectralClustering(affinity="precomputed", n_clusters=36)
+clusterers["SpectralKNN"] = SpectralClustering(affinity="precomputed_nearest_neighbors", n_clusters=24)
+clusterers["SpectralFull"] = SpectralClustering(affinity="precomputed", n_clusters=24)
 
 # can be used for calculating descrete diff of a trajectory
 def diff_traj(traj):
@@ -67,6 +67,20 @@ def cosine_distance(v1, v2):
     if np.linalg.norm(v2)>0:
         v2 = v2 / np.linalg.norm(v2)
     return  1 - np.dot(v1, v2)
+
+def diirection_d(index_1,index_2, df):
+    index_1, index_2 = int(index_1), int(index_2)
+    traj_a, traj_b = df['trajectory'].iloc[index_1], df['trajectory'].iloc[index_2]
+    d_a = traj_a[-1] - traj_a[0]
+    d_b = traj_b[-1] - traj_b[0]
+    
+    if np.linalg.norm(d_a) > 0:
+        d_a = d_a / np.linalg.norm(d_a)
+
+    if np.linalg.norm(d_b) > 0:
+        d_b = d_b / np.linalg.norm(d_b)
+
+    return cosine_distance(d_a, d_b)
 
 def myd(index_1, index_2, df, cmmlib):
     index_1, index_2 = int(index_1), int(index_2)
@@ -221,8 +235,8 @@ def cluster(args):
         M = np.zeros(shape=(len(indexes), len(indexes)))
         for i in tqdm(indexes):
             for j in range(int(i)+1, len(indexes)):
-                c =  np.abs(cmm_ref_distance(i, j, df_meter_resampled, cmmlib))
-                # c =  np.abs(myd(i, j, df_meter_resampled, cmmlib))
+                # c =  np.abs(cmm_ref_distance(i, j, df_meter_resampled, cmmlib))
+                c =  np.abs(diirection_d(i, j, df_meter_resampled))
                 M[int(i), int(j)] = c
                 M[int(j), int(i)] = c
         with open(args.ClusteringDistanceMatrix, "wb") as f:
@@ -280,9 +294,3 @@ def cluster(args):
 
 # how to find cluster centers ??
 # idea 1: for each cluster find the trajectory that has the least average distance from all the other clusters
-
-
-
-
-
-

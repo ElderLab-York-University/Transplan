@@ -391,7 +391,11 @@ def get_conda_envs():
     output = stream.read()
     a=output.split()
     a.remove("*")
-    return output.split()[4::2]
+    a.remove("#")
+    a.remove("#")
+    a.remove("conda")
+    a.remove("environments:")
+    return a[::2]
 
 def make_conda_env(env_name, libs=""):
     os.system(f"conda create -n {env_name} -y "+libs)
