@@ -321,10 +321,9 @@ def add_clustering_related_pth_to_args(args):
     return args
 
 def complete_args(args):
-
     if args.TrackLabelingGUI:
         args.Meter=True
-        
+
     if args.Video is None:
         # if Video path was not specified by the user grab a video from dataset
         args = add_videos_to_args(args)
@@ -339,9 +338,9 @@ def complete_args(args):
         args = add_tracking_pkl_to_args(args)
 
     args = add_metadata_to_args(args)
-    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster:
+    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc:
         args = add_homographygui_related_path_to_args(args)
-    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster:
+    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc:
         args = add_homography_related_path_to_args(args)
     if args.VisHomographyGUI or args.VisLabelledTrajectories:
         args = add_vishomography_path_to_args(args)
@@ -351,7 +350,7 @@ def complete_args(args):
         args = add_plot_all_traj_pth_to_args(args)
     if args.VisLabelledTrajectories:
         args = add_vis_labelled_tracks_pth_to_args(args)
-    if args.Meter or args.Count or args.Cluster:
+    if args.Meter or args.Count or args.Cluster or args.TrackPostProc:
         args = add_meter_path_to_args(args)
     if args.Count:
         args = add_count_path_to_args(args)

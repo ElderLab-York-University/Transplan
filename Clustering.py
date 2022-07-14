@@ -32,8 +32,8 @@ import sys
 
 clusterers = {}
 clusterers["DBSCAN"] = DBSCAN(eps = 0.8, min_samples=2, metric="precomputed")
-clusterers["SpectralKNN"] = SpectralClustering(affinity="precomputed_nearest_neighbors", n_clusters=24)
-clusterers["SpectralFull"] = SpectralClustering(affinity="precomputed", n_clusters=24)
+clusterers["SpectralKNN"] = SpectralClustering(affinity="precomputed_nearest_neighbors", n_clusters=12)
+clusterers["SpectralFull"] = SpectralClustering(affinity="precomputed", n_clusters=36, n_components=100)
 
 # can be used for calculating descrete diff of a trajectory
 def diff_traj(traj):

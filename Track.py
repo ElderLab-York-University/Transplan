@@ -3,6 +3,7 @@
 from Libs import *
 from Utils import *
 from Detect import *
+from counting.resample_gt_MOI.resample_typical_tracks import track_resample
 
 # import all detectros here
 # And add their names to the "trackers" dictionary
@@ -75,3 +76,76 @@ def vistrack(args):
     # Closes all the frames
     cv2.destroyAllWindows()
     return SucLog("Vis Tracking file stored")
+
+def trackpostproc(args):
+    df_meter_ungrouped = pd.read_pickle(args.ReprojectedPklMeter)
+    df_reg_ungrouped   = pd.read_pickle(args.ReprojectedPkl)
+    df_meter = group_tracks_by_id(df_meter_ungrouped)
+    df_reg   = group_tracks_by_id(df_reg_ungrouped)
+
+    # apply postprocessing on args.ReprojectedPkLMeter and ReprojectedPkl
+    if not args.TrackTh is None:
+        df_meter_ungrouped, df_reg_ungrouped, df_meter, df_reg = remove_short_tracks(args.TrackTh, df_meter_ungrouped, df_reg_ungrouped, df_meter, df_reg)
+
+    # save updated 
+    pd.to_pickle(df_meter_ungrouped, args.ReprojectedPklMeter)
+    pd.to_pickle(df_reg_ungrouped, args.ReprojectedPkl)
+    return SucLog("track post processing executed with no error")
+
+
+def remove_short_tracks(th, df_meter_ungrouped, df_reg_ungrouped, df_meter, df_reg):
+    to_remove_ids = []
+    # resample tracks
+    df_meter['trajectory'] = df_meter['trajectory'].apply(lambda x: track_resample(x))
+    # df_reg['trajectory'] = df_reg['trajectory'].apply(lambda x: track_resample(x))
+    for i, row in df_meter.iterrows():
+        if arc_length(row['trajectory']) < th:
+            to_remove_ids.append(row['id'])
+
+    mask = []
+    for i, row in df_meter.iterrows():
+        if row['id'] in to_remove_ids:
+            mask.append(False)
+        else: mask.append(True)
+
+    df_meter = df_meter[mask]
+    df_reg = df_reg[mask]
+
+    mask = []
+    for i, row in df_meter_ungrouped.iterrows():
+        if row['id'] in to_remove_ids:
+            mask.append(False)
+        else: mask.append(True)
+    df_meter_ungrouped = df_meter_ungrouped[mask]
+    df_reg_ungrouped = df_reg_ungrouped[mask]
+        
+    return df_meter_ungrouped, df_reg_ungrouped, df_meter, df_reg
+    
+
+def group_tracks_by_id(df):
+    # this function was writtern for grouping the tracks with the same id
+    # usinig this one can load the data from a .txt file rather than .mat file
+    all_ids = np.unique(df['id'].to_numpy(dtype=np.int64))
+    data = {"id":[], "trajectory":[], "frames":[]}
+    for idd in tqdm(all_ids):
+        frames = df[df['id']==idd]["fn"].to_numpy(np.float32)
+        id = idd
+        trajectory = df[df['id']==idd][["x", "y"]].to_numpy(np.float32)
+        
+        data["id"].append(id)
+        data["frames"].append(frames)
+        data["trajectory"].append(trajectory)
+    df2 = pd.DataFrame(data)
+    return df2
+
+def arc_length(track):
+        """
+        :param track: input track numpy array (M, 2)
+        :return: the estimated arc length of the track
+        """
+        assert track.shape[1] == 2
+        accum_dist = 0
+        for i in range(1, track.shape[0]):
+            dist_ = np.sqrt(np.sum((track[i] - track[i - 1]) ** 2))
+            accum_dist += dist_
+        return accum_dist

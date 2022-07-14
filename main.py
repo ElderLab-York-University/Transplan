@@ -10,7 +10,7 @@
 from Libs import *
 from Utils import *
 from Detect import detect, visdetect,detectpostproc
-from Track import track, vistrack
+from Track import track, vistrack, trackpostproc
 from Homography import homographygui
 from Homography import reproject
 from Homography import vishomographygui
@@ -109,6 +109,13 @@ def Pix2Meter(args):
         return log
     else: return WarningLog("skipped changing pixel values to meter values")
 
+def TrackPostProc(args):
+    if args.TrackPostProc:
+        print(ProcLog("Track Post Processing in execution"))
+        log = trackpostproc(args)
+        return log
+    else: return WarningLog("skipped track post processing")
+
 def Count(args):
     if args.Count:
         print(ProcLog("Counting in Process"))
@@ -126,7 +133,7 @@ def Cluster(args):
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, Cluster, TrackLabelingGUI, VisTrajectories, VisLabelledTrajectories, Count]
+    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, TrackPostProc, VisTrajectories, Cluster, TrackLabelingGUI, VisLabelledTrajectories, Count]
     for subtask in subtasks:
         log = subtask(args)
         print(log)
@@ -156,6 +163,8 @@ if __name__ == "__main__":
     parser.add_argument("--DetPostProc", help="if to perform detection post processings", action="store_true")
     parser.add_argument("--DetTh", help="the threshold for detection post processing", type=float)
     parser.add_argument("--DetMask", help="if to remove bboxes out of ROI", action="store_true")
+    parser.add_argument("--TrackPostProc", help="if to perform tracking post processings", action="store_true")
+    parser.add_argument("--TrackTh", help="the threshold for short track removal in meter", type=float)
 
     args = parser.parse_args()
 
