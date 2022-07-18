@@ -19,11 +19,28 @@ from tqdm import tqdm
 import cv2 as cv
 
 from Utils import *
+from Maps import *
+from Libs import *
 
 #  Hyperparameters
 MIN_TRAJ_POINTS = 10
 MIN_TRAJ_Length = 50
 MAX_MATCHED_Distance = 90
+
+color_dict = {
+    1:(128, 0, 0),
+    2:(230, 25, 75),
+    3:(250, 190, 212),
+    4:(170, 110, 40),
+    5:(245, 130, 48),
+    6:(255, 215, 180),
+    7:(128, 128, 0),
+    8:(255, 255, 25),
+    9:(210, 245, 60),
+    10:(0, 0, 128),
+    11:(70, 240, 240),
+    12:(0, 130, 200),
+}
 
 
 # def group_tracks_by_id(tracks_path):
@@ -70,6 +87,9 @@ class Counting:
         validated_trakcs_path = self.args.TrackLabellingExportPthMeter
 
         df = pd.read_pickle(validated_trakcs_path)
+        # print(len(df))
+        df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x))
+
         self.typical_mois = defaultdict(list)
         for index, row in df.iterrows():
             self.typical_mois[row['moi']].append(row["trajectory"])
@@ -91,9 +111,33 @@ class Counting:
         self.traject_couter = 0
         self.tem = []
 
+    # def viscount(self, current_trajectory, cmmlib):
+    #     counting_start_time = time.time()
+    #     resampled_trajectory = track_resample(np.array(current_trajectory, dtype=np.float64))
+
+    #     tem = []
+    #     key = []
+    #     for keys, values in self.typical_mois.items():
+    #         for gt_trajectory in values:
+    #             traj_a, traj_b = gt_trajectory, resampled_trajectory
+    #             if traj_a.shape[0] >= traj_b.shape[0]:
+    #                 c = cmmlib.cmm_truncate_sides(traj_a[:, 0], traj_a[:, 1], traj_b[:, 0], traj_b[:, 1], traj_a.shape[0],
+    #                                                 traj_b.shape[0])
+    #             else:
+    #                 c = cmmlib.cmm_truncate_sides(traj_b[:, 0], traj_b[:, 1], traj_a[:, 0], traj_a[:, 1], traj_b.shape[0],
+    #                                                 traj_a.shape[0])
+
+    #             c = np.abs(c)
+    #             tem.append(c)
+    #             key.append(keys)
+
+    #     #visualize the tracks
+    #     self.vis_CMM(current_trajectory)
+                
+        
 
     def counting(self, current_trajectory, cmmlib):
-        counting_start_time = time.time()
+        # counting_start_time = time.time()
         resampled_trajectory = track_resample(np.array(current_trajectory, dtype=np.float64))
 
         # distance = pow(pow(resampled_trajectory[0][0] - resampled_trajectory[-1][0], 2) + pow(resampled_trajectory[0][1] - resampled_trajectory[-1][1], 2), 0.5)
@@ -104,6 +148,7 @@ class Counting:
         #     self.tem.append(current_trajectory)
 
         # if len(current_trajectory) > MIN_TRAJ_POINTS and distance > MIN_TRAJ_Length:
+
         if True:
             min_c = float('inf')
             matched_id = -1
@@ -122,36 +167,79 @@ class Counting:
                     c = np.abs(c)
                     tem.append(c)
                     key.append(keys)
-                    if c < min_c:
-                        min_c = c
-                        matched_id = keys
+                    # if c < min_c:
+                    #     min_c = c
+                    #     matched_id = keys
+
+            tem = np.array(tem)
+            key = np.array(key)
+            idxs = np.argpartition(tem, 1)
+            votes = key[idxs[:1]]
+            matched_id = int(np.argmax(np.bincount(votes)))
+
+
 
             # for t , k in zip(tem, key):
             #     print(f"tem = {t}, key = {k}")
-            # self.viz_CMM(current_trajectory)
+            # print(f"matched id:{matched_id}")
+            # self.viz_CMM(resampled_trajectory, matched_id=matched_id)
 
             # having this threshold allows classification rejection
             # if min_c < MAX_MATCHED_Distance:
-            if self.counter[matched_id] == 0:
-                self.tem.append(current_trajectory)
             self.counter[matched_id] += 1
             self.traject_couter += 1
 
-    def viz_CMM(self, current_track):
-        image_path = "./../../Dataset/DundasStAtNinthLine.jpg"
+    def viz_CMM(self, current_track, alpha=0.3, matched_id=0):
+        r = meter_per_pixel(self.args.MetaData['center'])
+        image_path = self.args.HomographyTopView
         img = cv.imread(image_path)
+        back_ground = cv.imread(image_path)
         rows, cols, dim = img.shape
         for keys, values in self.typical_mois.items():
             for gt_trajectory in values:
-                for p in gt_trajectory:
-                    x, y = int(p[0]), int(p[1])
-                    img = cv.circle(img, (x,y), radius=2, color=(int(keys/12*255), 70, int(255 - keys/12*255)), thickness=2)
+                if not keys == matched_id:
+                    for i in range(1, len(gt_trajectory)):
+                        p1 = gt_trajectory[i-1]
+                        p2 = gt_trajectory[i]
+                        x1, y1 = int(p1[0]/r), int(p1[1]/r)
+                        x2, y2 = int(p2[0]/r), int(p2[1]/r)
+                        c = color_dict[keys]
+                        img = cv2.line(img, (x1, y1), (x2, y2), c, thickness=1) 
+                    for p in gt_trajectory:
+                        x, y = int(p[0]/r), int(p[1]/r)
+                        c = color_dict[keys]
+                        img = cv.circle(img, (x,y), radius=1, color=c, thickness=1)
+                else: 
+                    for i in range(1, len(gt_trajectory)):
+                        p1 = gt_trajectory[i-1]
+                        p2 = gt_trajectory[i]
+                        x1, y1 = int(p1[0]/r), int(p1[1]/r)
+                        x2, y2 = int(p2[0]/r), int(p2[1]/r)
+                        c = color_dict[keys]
+                        back_ground = cv2.line(back_ground, (x1, y1), (x2, y2), c, thickness=2) 
+
+                    for p in gt_trajectory:
+                        x, y = int(p[0]/r), int(p[1]/r)
+                        c = color_dict[keys]
+                        back_ground = cv.circle(back_ground, (x,y), radius=2, color=c, thickness=2)
+
+        for i in range(1, len(current_track)):
+            p1 = current_track[i-1]
+            p2 = current_track[i]
+            x1, y1 = int(p1[0]/r), int(p1[1]/r)
+            x2, y2 = int(p2[0]/r), int(p2[1]/r)
+            back_ground = cv2.line(back_ground, (x1, y1), (x2, y2), (240, 50, 230), thickness=2) 
+
         for p in current_track:
-            x, y = int(p[0]), int(p[1])
-            img = cv.circle(img, (x,y), radius=2, color=(70, 255, 70), thickness=2)
-        cv.imshow('image',img)
-        cv.waitKey(0)
-        cv.destroyAllWindows()
+            x, y = int(p[0]/r), int(p[1]/r)
+            back_ground = cv.circle(back_ground, (x,y), radius=2, color=(240, 50, 230), thickness=2)
+
+        img_new = cv2.addWeighted(img, alpha, back_ground, 1 - alpha, 0)
+        img_new = cv.cvtColor(img_new, cv.COLOR_BGR2RGB)
+        plt.imshow(img_new)
+        plt.show()
+        # cv.waitKey(0)
+        # cv.destroyAllWindows()
 
     # def draw_trajectory(self):
     #     img_path = "./../../Dataset/DundasStAtNinthLine.jpg"
@@ -181,11 +269,10 @@ class Counting:
         df_temp = pd.read_pickle(file_name)
         df = group_tracks_by_id(df_temp)
         tids = np.unique(df['id'].tolist())
-        for idx in tids:
+        for idx in tqdm(tids):
             current_track = df[df['id'] == idx]
             a = current_track['trajectory'].values.tolist()
-            if a[0].shape[0] > 50:
-                self.counting(a[0], self.cmmlib)
+            self.counting(a[0], self.cmmlib)
                 # print(f"couning a[0] with shape {a[0].shape}")
 
         for i in range(12):

@@ -2,6 +2,21 @@
 # This py file contains some helper functions for the pipeline
 
 from Libs import *
+
+moi_color_dict = {
+    1:(128, 0, 0),
+    2:(230, 25, 75),
+    3:(250, 190, 212),
+    4:(170, 110, 40),
+    5:(245, 130, 48),
+    6:(255, 215, 180),
+    7:(128, 128, 0),
+    8:(255, 255, 25),
+    9:(210, 245, 60),
+    10:(0, 0, 128),
+    11:(70, 240, 240),
+    12:(0, 130, 200),
+}
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -338,7 +353,7 @@ def complete_args(args):
         args = add_tracking_pkl_to_args(args)
 
     args = add_metadata_to_args(args)
-    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc:
+    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count:
         args = add_homographygui_related_path_to_args(args)
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc:
         args = add_homography_related_path_to_args(args)
