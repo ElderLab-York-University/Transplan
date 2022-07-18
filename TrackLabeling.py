@@ -32,7 +32,8 @@ def vis_labelled_tracks(args):
         moi = track["moi"]
         for j , p in enumerate(traj):
             x , y = int(p[0]), int(p[1])
-            img2 = cv.circle(img2, (x,y), radius=2, color=(int(i/len(tracks)*255), int(moi/12*255), int(255 - j/len(traj)*255)), thickness=2)
+            c = moi_color_dict[moi]
+            img2 = cv.circle(img2, (x,y), radius=2, color=c, thickness=2)
 
     plt.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
     plt.savefig(save_path)
