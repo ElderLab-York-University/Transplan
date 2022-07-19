@@ -54,20 +54,6 @@ def accelate_vector(traj_a):
         a_a = a_a/np.linalg.norm(a_a)
     return a_a
 
-def direction_vector(traj_a):
-    x = traj_a[-1] - traj_a[0]
-    if np.linalg.norm(x) > 0:
-        return x/np.linalg.norm(x)
-    else:
-        return x
-
-def cosine_distance(v1, v2):
-    if np.linalg.norm(v1) > 0:
-        v1 = v1/np.linalg.norm(v1)
-    if np.linalg.norm(v2)>0:
-        v2 = v2 / np.linalg.norm(v2)
-    return  1 - np.dot(v1, v2)
-
 def diirection_d(index_1,index_2, df):
     index_1, index_2 = int(index_1), int(index_2)
     traj_a, traj_b = df['trajectory'].iloc[index_1], df['trajectory'].iloc[index_2]

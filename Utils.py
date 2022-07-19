@@ -195,7 +195,7 @@ def get_vishomography_path(args):
 def get_counting_res_pth(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Counting",file_name + Puncuations.Dot + SubTaskMarker.Counting + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Json)
+    return os.path.join(args.Dataset, "Results/Counting",file_name + Puncuations.Dot + SubTaskMarker.Counting + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + args.CountMetric +Puncuations.Dot +SubTaskExt.Json)
 
     
 def add_detection_pathes_to_args(args):
@@ -455,3 +455,17 @@ def save_frame_from_video(video_path, image_out_path):
             break
     cap.release()
     cv2.destroyAllWindows()
+
+def direction_vector(traj_a):
+    x = traj_a[-1] - traj_a[0]
+    if np.linalg.norm(x) > 0:
+        return x/np.linalg.norm(x)
+    else:
+        return x
+
+def cosine_distance(v1, v2):
+    if np.linalg.norm(v1) > 0:
+        v1 = v1/np.linalg.norm(v1)
+    if np.linalg.norm(v2)>0:
+        v2 = v2 / np.linalg.norm(v2)
+    return  1 - np.dot(v1, v2)

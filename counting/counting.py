@@ -61,6 +61,7 @@ color_dict = {
 #     df = pd.DataFrame(data)
 #     return df
 
+
 def group_tracks_by_id(df):
     # this function was writtern for grouping the tracks with the same id
     # usinig this one can load the data from a .txt file rather than .mat file
@@ -83,6 +84,11 @@ class Counting:
         # validated tracks with moi labels
         # args.ReprojectedPklMeter
         # args.TrackLabellingExportPthMeter
+        Metric_Dict = {
+            "cmm": self.cmm_dist,
+            "ccmm": self.cmmc_dist
+        }
+        self.metric = Metric_Dict[args.CountMetric]
         self.args = args
         validated_trakcs_path = self.args.TrackLabellingExportPthMeter
 
@@ -134,7 +140,27 @@ class Counting:
     #     #visualize the tracks
     #     self.vis_CMM(current_trajectory)
                 
-        
+    def cmm_dist(self, traj_a, traj_b):
+        if traj_a.shape[0] >= traj_b.shape[0]:
+            c = self.cmmlib.cmm_truncate_sides(traj_a[:, 0], traj_a[:, 1], traj_b[:, 0], traj_b[:, 1], traj_a.shape[0],
+                                            traj_b.shape[0])
+        else:
+            c = self.cmmlib.cmm_truncate_sides(traj_b[:, 0], traj_b[:, 1], traj_a[:, 0], traj_a[:, 1], traj_b.shape[0],
+                                            traj_a.shape[0])
+
+        c = np.abs(c)
+        return c
+
+    def dc_dist(self, traj_a, traj_b):
+        d_a = direction_vector(traj_a)
+        d_b = direction_vector(traj_b)
+        return cosine_distance(d_a, d_b)
+
+    def cmmc_dist(self, traj_a, traj_b):
+        c1 = self.cmm_dist(traj_a, traj_b)
+        c2 = self.dc_dist(traj_a, traj_b)
+        return c1*c2
+
 
     def counting(self, current_trajectory, cmmlib):
         # counting_start_time = time.time()
@@ -157,14 +183,9 @@ class Counting:
             for keys, values in self.typical_mois.items():
                 for gt_trajectory in values:
                     traj_a, traj_b = gt_trajectory, resampled_trajectory
-                    if traj_a.shape[0] >= traj_b.shape[0]:
-                        c = cmmlib.cmm_truncate_sides(traj_a[:, 0], traj_a[:, 1], traj_b[:, 0], traj_b[:, 1], traj_a.shape[0],
-                                                      traj_b.shape[0])
-                    else:
-                        c = cmmlib.cmm_truncate_sides(traj_b[:, 0], traj_b[:, 1], traj_a[:, 0], traj_a[:, 1], traj_b.shape[0],
-                                                      traj_a.shape[0])
-
-                    c = np.abs(c)
+                    c = self.metric(traj_a, traj_b)
+                    # c = self.dc_dist(traj_a, traj_b)
+                    # c = self.cmm_dist(traj_a, traj_b)
                     tem.append(c)
                     key.append(keys)
                     # if c < min_c:
@@ -178,11 +199,11 @@ class Counting:
             matched_id = int(np.argmax(np.bincount(votes)))
 
 
-
-            # for t , k in zip(tem, key):
-            #     print(f"tem = {t}, key = {k}")
-            # print(f"matched id:{matched_id}")
-            # self.viz_CMM(resampled_trajectory, matched_id=matched_id)
+            if self.args.CountVisPrompt:
+                for t , k in zip(tem, key):
+                    print(f"tem = {t}, key = {k}")
+                print(f"matched id:{matched_id}")
+                self.viz_CMM(resampled_trajectory, matched_id=matched_id)
 
             # having this threshold allows classification rejection
             # if min_c < MAX_MATCHED_Distance:
