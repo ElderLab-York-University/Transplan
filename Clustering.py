@@ -33,7 +33,7 @@ import sys
 clusterers = {}
 clusterers["DBSCAN"] = DBSCAN(eps = 0.8, min_samples=2, metric="precomputed")
 clusterers["SpectralKNN"] = SpectralClustering(affinity="precomputed_nearest_neighbors", n_clusters=12)
-clusterers["SpectralFull"] = SpectralClustering(affinity="precomputed", n_clusters=36, n_components=100)
+clusterers["SpectralFull"] = SpectralClustering(affinity="precomputed", n_clusters=12)
 
 # can be used for calculating descrete diff of a trajectory
 def diff_traj(traj):
@@ -53,32 +53,6 @@ def accelate_vector(traj_a):
     if np.linalg.norm(a_a)>0:
         a_a = a_a/np.linalg.norm(a_a)
     return a_a
-
-def diirection_d(index_1,index_2, df):
-    index_1, index_2 = int(index_1), int(index_2)
-    traj_a, traj_b = df['trajectory'].iloc[index_1], df['trajectory'].iloc[index_2]
-    d_a = traj_a[-1] - traj_a[0]
-    d_b = traj_b[-1] - traj_b[0]
-    
-    if np.linalg.norm(d_a) > 0:
-        d_a = d_a / np.linalg.norm(d_a)
-
-    if np.linalg.norm(d_b) > 0:
-        d_b = d_b / np.linalg.norm(d_b)
-
-    return cosine_distance(d_a, d_b)
-
-def myd(index_1, index_2, df, cmmlib):
-    index_1, index_2 = int(index_1), int(index_2)
-    traj_a, traj_b = df['trajectory'].iloc[index_1], df['trajectory'].iloc[index_2]
-    if len(traj_a) < 4 or len(traj_b)<4:
-        return sys.float_info.max / 2
-    cmmd = cmm_distance(traj_a, traj_b, cmmlib)
-    a_a , a_b = accelate_vector(traj_a), accelate_vector(traj_b)
-    x_a, x_b = direction_vector(traj_a), direction_vector(traj_b)
-    ad = cosine_distance(a_a, a_b)
-    xd = cosine_distance(x_a, x_b)
-    return cmmd + ad*cmmd + xd*cmmd
     
 def viz_CMM(current_track):
     image_path = "./../../Dataset/DundasStAtNinthLine.jpg"
@@ -119,12 +93,6 @@ def viz_all_tracks(all_tracks, labels, save_path, image_path):
     cv2.imwrite(save_path, img)
 
 
-def cmm_ref_distance(index_1, index_2, df, cmmlib):
-    index_1, index_2 = int(index_1), int(index_2)
-    traj_a, traj_b = df['trajectory'].iloc[index_1], df['trajectory'].iloc[index_2]
-    return cmm_distance(traj_a, traj_b, cmmlib)
-
-
 def group_tracks_by_id(df):
     # this function was writtern for grouping the tracks with the same id
     # usinig this one can load the data from a .txt file rather than .mat file
@@ -141,16 +109,16 @@ def group_tracks_by_id(df):
     df2 = pd.DataFrame(data)
     return df2
 
-def cmm_distance(traj_a, traj_b, cmmlib):
-    traj_a = traj_a.astype(np.float64)
-    traj_b = traj_b.astype(np.float64)
-    if traj_a.shape[0] >= traj_b.shape[0]:
-        c = cmmlib.cmm_truncate_sides(traj_a[:, 0], traj_a[:, 1], traj_b[:, 0], traj_b[:, 1], traj_a.shape[0],
-                                        traj_b.shape[0])
-    else:
-        c = cmmlib.cmm_truncate_sides(traj_b[:, 0], traj_b[:, 1], traj_a[:, 0], traj_a[:, 1], traj_b.shape[0],
-                                        traj_a.shape[0])
-    return c
+# def cmm_distance(traj_a, traj_b, cmmlib):
+#     traj_a = traj_a.astype(np.float64)
+#     traj_b = traj_b.astype(np.float64)
+#     if traj_a.shape[0] >= traj_b.shape[0]:
+#         c = cmmlib.cmm_truncate_sides(traj_a[:, 0], traj_a[:, 1], traj_b[:, 0], traj_b[:, 1], traj_a.shape[0],
+#                                         traj_b.shape[0])
+#     else:
+#         c = cmmlib.cmm_truncate_sides(traj_b[:, 0], traj_b[:, 1], traj_a[:, 0], traj_a[:, 1], traj_b.shape[0],
+#                                         traj_a.shape[0])
+#     return c
 
 
 def find_centers_MNAVG(df, labels, M):
@@ -180,25 +148,16 @@ def cluster(args):
     # variables to be used from the args
         # args.ReprojectedPklMeter
         # args.ReprojectedPkl
-
-    df_meter_ungrouped = pd.read_pickle(args.ReprojectedPklMeter)
-    df_reg_ungrouped   = pd.read_pickle(args.ReprojectedPkl)
-
+        # args.ClusterMetric
     # save clustering result to the following args variables 
         # args.ReprojectedPklMeterCluster
         # args.ReprojectedPklCluster
         # args.ClusteringDistanceMatrix
         # args.ClusteringVis
 
-    libfile = "./counting/cmm_truncate_linux/build/lib.linux-x86_64-3.7/cmm.cpython-37m-x86_64-linux-gnu.so"
-    cmmlib = ctypes.CDLL(libfile)
-    # 2. tell Python the argument and result types of function cmm
-    cmmlib.cmm_truncate_sides.restype = ctypes.c_double
-    cmmlib.cmm_truncate_sides.argtypes = [np.ctypeslib.ndpointer(dtype=np.float64),
-                                                np.ctypeslib.ndpointer(dtype=np.float64),
-                                                np.ctypeslib.ndpointer(dtype=np.float64),
-                                                np.ctypeslib.ndpointer(dtype=np.float64),
-                                                ctypes.c_int, ctypes.c_int]
+    metric = Metric_Dict[args.ClusterMetric]
+    df_meter_ungrouped = pd.read_pickle(args.ReprojectedPklMeter)
+    df_reg_ungrouped   = pd.read_pickle(args.ReprojectedPkl)
 
     df_meter = group_tracks_by_id(df_meter_ungrouped)
     df_reg   = group_tracks_by_id(df_reg_ungrouped)
@@ -206,8 +165,8 @@ def cluster(args):
     df_meter_resampled = copy.deepcopy(df_meter)
     df_reg_resampled   = copy.deepcopy(df_reg)
 
-    df_meter_resampled['trajectory'] = df_meter_resampled['trajectory'].apply(lambda x: track_resample(x))
-    df_reg_resampled['trajectory'] = df_reg_resampled['trajectory'].apply(lambda x: track_resample(x))
+    df_meter_resampled['trajectory'] = df_meter_resampled['trajectory'].apply(lambda x: track_resample(x).astype("float64"))
+    df_reg_resampled['trajectory'] = df_reg_resampled['trajectory'].apply(lambda x: track_resample(x).astype("float64"))
 
     indexes = np.array([i for i in range(len(df_meter))]).reshape(-1, 1)
 
@@ -221,8 +180,9 @@ def cluster(args):
         M = np.zeros(shape=(len(indexes), len(indexes)))
         for i in tqdm(indexes):
             for j in range(int(i)+1, len(indexes)):
-                # c =  np.abs(cmm_ref_distance(i, j, df_meter_resampled, cmmlib))
-                c =  np.abs(diirection_d(i, j, df_meter_resampled))
+                traj_a = df_meter_resampled['trajectory'].iloc[int(i)]
+                traj_b = df_meter_resampled['trajectory'].iloc[int(j)]
+                c =  metric(traj_a, traj_b)
                 M[int(i), int(j)] = c
                 M[int(j), int(i)] = c
         with open(args.ClusteringDistanceMatrix, "wb") as f:
@@ -234,7 +194,6 @@ def cluster(args):
     labels = clt.fit_predict(M)
     sns.histplot(labels)
     print(np.unique(labels))
-
 
     # save clustered trackes with labels for both meter and regular
     df_meter['cid'] = labels

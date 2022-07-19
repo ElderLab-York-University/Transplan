@@ -164,6 +164,7 @@ if __name__ == "__main__":
     parser.add_argument("--EvalCount", help="Evaluate the Counting Result you got from Counting part", action="store_true")
     parser.add_argument("--Meter", help="convert reprojected track coordinated into meter", action="store_true")
     parser.add_argument("--Cluster", help="if to perform clustering", action="store_true")
+    parser.add_argument("--ClusterMetric", help="The name of the distance metric used to compute the similarity metrics",type=str)
     parser.add_argument("--ClusteringAlgo", help="name of the clustering algorithm to be performed",type=str)
     parser.add_argument("--DetPostProc", help="if to perform detection post processings", action="store_true")
     parser.add_argument("--DetTh", help="the threshold for detection post processing", type=float)

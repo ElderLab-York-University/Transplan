@@ -311,23 +311,23 @@ def add_count_path_to_args(args):
 def get_reprojected_meter_cluster_pkl(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Clustering",file_name + Puncuations.Dot + SubTaskMarker.Clustering + Puncuations.Dot + args.ClusteringAlgo + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+"meter"+ Puncuations.Dot+SubTaskExt.Pkl)
+    return os.path.join(args.Dataset, "Results/Clustering",file_name + Puncuations.Dot + SubTaskMarker.Clustering + Puncuations.Dot + args.ClusteringAlgo + Puncuations.Dot + args.ClusterMetric + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+"meter"+ Puncuations.Dot+SubTaskExt.Pkl)
 
 def get_reprojected_reg_cluster_pkl(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Clustering",file_name + Puncuations.Dot + SubTaskMarker.Clustering + Puncuations.Dot + args.ClusteringAlgo + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot + Puncuations.Dot+SubTaskExt.Pkl)
+    return os.path.join(args.Dataset, "Results/Clustering",file_name + Puncuations.Dot + SubTaskMarker.Clustering + Puncuations.Dot + args.ClusteringAlgo + Puncuations.Dot + args.ClusterMetric + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot + Puncuations.Dot+SubTaskExt.Pkl)
 
 def get_distance_matrix_pth(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Clustering",file_name + Puncuations.Dot + SubTaskMarker.Clustering + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected"+ Puncuations.Dot+ "DistanceMatrix" + Puncuations.Dot+SubTaskExt.Npy)
+    return os.path.join(args.Dataset, "Results/Clustering",file_name + Puncuations.Dot + SubTaskMarker.Clustering + Puncuations.Dot + args.ClusterMetric + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected"+ Puncuations.Dot+ "DistanceMatrix" + Puncuations.Dot+SubTaskExt.Npy)
 
 
 def get_vis_clustering_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.Clustering + Puncuations.Dot + args.ClusteringAlgo+ Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected"+ Puncuations.Dot+ "vis" + Puncuations.Dot+"png")
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.Clustering + Puncuations.Dot + args.ClusteringAlgo+ Puncuations.Dot + args.ClusterMetric + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected"+ Puncuations.Dot+ "vis" + Puncuations.Dot+"png")
 
 
 def add_clustering_related_pth_to_args(args):
@@ -335,7 +335,6 @@ def add_clustering_related_pth_to_args(args):
     reg_clustered = get_reprojected_reg_cluster_pkl(args)
     distance_matrix = get_distance_matrix_pth(args)
     vis_path = get_vis_clustering_path(args)
-
     args.ReprojectedPklMeterCluster = meter_clustered
     args.ReprojectedPklCluster = reg_clustered
     args.ClusteringDistanceMatrix = distance_matrix
@@ -476,3 +475,62 @@ def cosine_distance(v1, v2):
     if np.linalg.norm(v2)>0:
         v2 = v2 / np.linalg.norm(v2)
     return  1 - np.dot(v1, v2)
+
+# Similarity Metrics (used in counting and clustering
+class CMMClass(object):
+    def __init__(self):
+        libfile = "./counting/cmm_truncate_linux/build/lib.linux-x86_64-3.7/cmm.cpython-37m-x86_64-linux-gnu.so"
+        self.cmmlib = ctypes.CDLL(libfile)
+        # 2. tell Python the argument and result types of function cmm
+        self.cmmlib.cmm_truncate_sides.restype = ctypes.c_double
+        self.cmmlib.cmm_truncate_sides.argtypes = [np.ctypeslib.ndpointer(dtype=np.float64),
+                                                    np.ctypeslib.ndpointer(dtype=np.float64),
+                                                    np.ctypeslib.ndpointer(dtype=np.float64),
+                                                    np.ctypeslib.ndpointer(dtype=np.float64),
+                                                    ctypes.c_int, ctypes.c_int]
+    def cmm_dist(self, traj_a, traj_b):
+        if traj_a.shape[0] >= traj_b.shape[0]:
+            c = self.cmmlib.cmm_truncate_sides(traj_a[:, 0], traj_a[:, 1], traj_b[:, 0], traj_b[:, 1], traj_a.shape[0],
+                                            traj_b.shape[0])
+        else:
+            c = self.cmmlib.cmm_truncate_sides(traj_b[:, 0], traj_b[:, 1], traj_a[:, 0], traj_a[:, 1], traj_b.shape[0],
+                                            traj_a.shape[0])
+
+        c = np.abs(c)
+        return c
+CMM = CMMClass()
+
+def dc_dist(traj_a, traj_b):
+    d_a = direction_vector(traj_a)
+    d_b = direction_vector(traj_b)
+    return cosine_distance(d_a, d_b)
+
+def ccmm_dist(traj_a, traj_b):
+    c1 = CMM.cmm_dist(traj_a, traj_b)
+    c2 = dc_dist(traj_a, traj_b)
+    return c1*c2
+
+def tccmm_dist(traj_a, traj_b):
+    c1 = CMM.cmm_dist(traj_a, traj_b)
+    cmix =tc_dist(traj_a, traj_b)
+    return c1*cmix
+
+def tc_dist(traj_a, traj_b):
+    c2 = dc_dist(traj_a, traj_b)
+    traj_a_mid = traj_a[int(len(traj_a)/2)]
+    traj_b_mid = traj_b[int(len(traj_b)/2)]
+    traj_a_1 = traj_a_mid - traj_a[0]
+    traj_a_2 = traj_a[-1] - traj_a_mid
+    traj_b_1 = traj_b_mid - traj_b[0]
+    traj_b_2 = traj_b[-1] - traj_b_mid
+    c3 = cosine_distance(traj_a_1, traj_b_1)
+    c4 = cosine_distance(traj_a_2, traj_b_2)
+    return c2+c3+c4
+
+Metric_Dict = {
+    "cmm":     CMM.cmm_dist,
+    "ccmm":    ccmm_dist,
+    "tccmm":   tccmm_dist,
+    "cos":     dc_dist,
+    "tcos":    tc_dist
+    }

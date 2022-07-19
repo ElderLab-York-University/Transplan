@@ -70,13 +70,7 @@ class Counting:
         # validated tracks with moi labels
         # args.ReprojectedPklMeter
         # args.TrackLabellingExportPthMeter
-        Metric_Dict = {
-            "cmm":     self.cmm_dist,
-            "ccmm":    self.ccmm_dist,
-            "tccmm":   self.tccmm_dist,
-            "cos":     self.dc_dist,
-            "tcos":    self.tc_dist
-        }
+        
         self.metric = Metric_Dict[args.CountMetric]
         self.args = args
         validated_trakcs_path = self.args.TrackLabellingExportPthMeter
@@ -89,96 +83,13 @@ class Counting:
         for index, row in df.iterrows():
             self.typical_mois[row['moi']].append(row["trajectory"])
 
-        ################ CMM LIB init ################################
-        # 0. find the shared library, you need to do first: "python setup.py build", and you will get it from the build folder
-        libfile = "./counting/cmm_truncate_linux/build/lib.linux-x86_64-3.7/cmm.cpython-37m-x86_64-linux-gnu.so"
-        # libfile = 'York/Elderlab/yorku_pipeline_deepsort_features/yorku_pipeline_deepsort_features/cmm_truncate_linux/build/lib.linux-x86_64-3.7/cmm.cpython-37m-x86_64-linux-gnu.so'
-        self.cmmlib = ctypes.CDLL(libfile)
-
-        # 2. tell Python the argument and result types of function cmm
-        self.cmmlib.cmm_truncate_sides.restype = ctypes.c_double
-        self.cmmlib.cmm_truncate_sides.argtypes = [np.ctypeslib.ndpointer(dtype=np.float64),
-                                                   np.ctypeslib.ndpointer(dtype=np.float64),
-                                                   np.ctypeslib.ndpointer(dtype=np.float64),
-                                                   np.ctypeslib.ndpointer(dtype=np.float64),
-                                                   ctypes.c_int, ctypes.c_int]
         self.counter = defaultdict(int)
         self.traject_couter = 0
-        self.tem = []
+        self.tem = []       
 
-    # def viscount(self, current_trajectory, cmmlib):
-    #     counting_start_time = time.time()
-    #     resampled_trajectory = track_resample(np.array(current_trajectory, dtype=np.float64))
-
-    #     tem = []
-    #     key = []
-    #     for keys, values in self.typical_mois.items():
-    #         for gt_trajectory in values:
-    #             traj_a, traj_b = gt_trajectory, resampled_trajectory
-    #             if traj_a.shape[0] >= traj_b.shape[0]:
-    #                 c = cmmlib.cmm_truncate_sides(traj_a[:, 0], traj_a[:, 1], traj_b[:, 0], traj_b[:, 1], traj_a.shape[0],
-    #                                                 traj_b.shape[0])
-    #             else:
-    #                 c = cmmlib.cmm_truncate_sides(traj_b[:, 0], traj_b[:, 1], traj_a[:, 0], traj_a[:, 1], traj_b.shape[0],
-    #                                                 traj_a.shape[0])
-
-    #             c = np.abs(c)
-    #             tem.append(c)
-    #             key.append(keys)
-
-    #     #visualize the tracks
-    #     self.vis_CMM(current_trajectory)
-                
-    def cmm_dist(self, traj_a, traj_b):
-        if traj_a.shape[0] >= traj_b.shape[0]:
-            c = self.cmmlib.cmm_truncate_sides(traj_a[:, 0], traj_a[:, 1], traj_b[:, 0], traj_b[:, 1], traj_a.shape[0],
-                                            traj_b.shape[0])
-        else:
-            c = self.cmmlib.cmm_truncate_sides(traj_b[:, 0], traj_b[:, 1], traj_a[:, 0], traj_a[:, 1], traj_b.shape[0],
-                                            traj_a.shape[0])
-
-        c = np.abs(c)
-        return c
-
-    def dc_dist(self, traj_a, traj_b):
-        d_a = direction_vector(traj_a)
-        d_b = direction_vector(traj_b)
-        return cosine_distance(d_a, d_b)
-
-    def ccmm_dist(self, traj_a, traj_b):
-        c1 = self.cmm_dist(traj_a, traj_b)
-        c2 = self.dc_dist(traj_a, traj_b)
-        return c1*c2
-
-    def tccmm_dist(self, traj_a, traj_b):
-        c1 = self.cmm_dist(traj_a, traj_b)
-        cmix = self.tc_dist(traj_a, traj_b)
-        return c1*cmix
-
-    def tc_dist(self, traj_a, traj_b):
-        c2 = self.dc_dist(traj_a, traj_b)
-        traj_a_mid = traj_a[int(len(traj_a)/2)]
-        traj_b_mid = traj_b[int(len(traj_b)/2)]
-        traj_a_1 = traj_a_mid - traj_a[0]
-        traj_a_2 = traj_a[-1] - traj_a_mid
-        traj_b_1 = traj_b_mid - traj_b[0]
-        traj_b_2 = traj_b[-1] - traj_b_mid
-        c3 = cosine_distance(traj_a_1, traj_b_1)
-        c4 = cosine_distance(traj_a_2, traj_b_2)
-        return c2+c3+c4
-
-    def counting(self, current_trajectory, cmmlib):
+    def counting(self, current_trajectory):
         # counting_start_time = time.time()
         resampled_trajectory = track_resample(np.array(current_trajectory, dtype=np.float64))
-
-        # distance = pow(pow(resampled_trajectory[0][0] - resampled_trajectory[-1][0], 2) + pow(resampled_trajectory[0][1] - resampled_trajectory[-1][1], 2), 0.5)
-        # distance = abs(resampled_trajectory[0][0] - resampled_trajectory[-1][0]) + abs(resampled_trajectory[0][1] - resampled_trajectory[-1][1])
-        # print(distance)
-
-        # if 65< distance < 100:
-        #     self.tem.append(current_trajectory)
-
-        # if len(current_trajectory) > MIN_TRAJ_POINTS and distance > MIN_TRAJ_Length:
 
         if True:
             min_c = float('inf')
@@ -189,13 +100,8 @@ class Counting:
                 for gt_trajectory in values:
                     traj_a, traj_b = gt_trajectory, resampled_trajectory
                     c = self.metric(traj_a, traj_b)
-                    # c = self.dc_dist(traj_a, traj_b)
-                    # c = self.cmm_dist(traj_a, traj_b)
                     tem.append(c)
                     key.append(keys)
-                    # if c < min_c:
-                    #     min_c = c
-                    #     matched_id = keys
 
             tem = np.array(tem)
             key = np.array(key)
@@ -203,15 +109,12 @@ class Counting:
             votes = key[idxs[:1]]
             matched_id = int(np.argmax(np.bincount(votes)))
 
-
             if self.args.CountVisPrompt:
                 for t , k in zip(tem, key):
                     print(f"tem = {t}, key = {k}")
                 print(f"matched id:{matched_id}")
                 self.viz_CMM(resampled_trajectory, matched_id=matched_id)
-
-            # having this threshold allows classification rejection
-            # if min_c < MAX_MATCHED_Distance:
+                
             self.counter[matched_id] += 1
             self.traject_couter += 1
 
@@ -272,27 +175,6 @@ class Counting:
         img_new = cv.cvtColor(img_new, cv.COLOR_BGR2RGB)
         plt.imshow(img_new)
         plt.show()
-        # cv.waitKey(0)
-        # cv.destroyAllWindows()
-
-    # def draw_trajectory(self):
-    #     img_path = "./../../Dataset/DundasStAtNinthLine.jpg"
-    #     # img_path = 'York/Elderlab/tracks_labelling_gui-master/Dundas_Street_at_Ninth_Line/Dundas Street at Ninth Line.jpg'
-    #     norm = matplotlib.colors.Normalize(vmin=0, vmax=50)
-    #     frame = cv2.imread(img_path)
-    #     for track_num, track in enumerate(self.tem):
-    #         trajectory = track
-    #         color = (
-    #         np.random.randint(low=0, high=128), np.random.randint(low=0, high=128), np.random.randint(low=0, high=128))
-    #         index = 0
-    #         for i, pt in enumerate(trajectory):
-    #             rgba_color = cm.rainbow(norm(index), bytes=True)[0:3]
-    #             if pt[0] < 0 or pt[1] < 0 or pt[0] >= frame.shape[1] or pt[1] >= frame.shape[0]:
-    #                 continue
-    #             index += 1
-    #             cv2.circle(frame, (int(pt[0]), int(pt[1])), 3,
-    #                        (int(rgba_color[0]), int(rgba_color[1]), int(rgba_color[2])), -1)
-    #         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
     def main(self):
         # file_path to all trajectories .txt file(at the moment
@@ -306,7 +188,7 @@ class Counting:
         for idx in tqdm(tids):
             current_track = df[df['id'] == idx]
             a = current_track['trajectory'].values.tolist()
-            self.counting(a[0], self.cmmlib)
+            self.counting(a[0])
                 # print(f"couning a[0] with shape {a[0].shape}")
 
         for i in range(12):
@@ -358,7 +240,6 @@ def main(args):
         # args.ReprojectedPklMeter
         # args.TrackLabellingExportPthMeter
     counter = Counting(args)
-    # input Trajectory_path
     counter.main()
 
     if args.EvalCount:
