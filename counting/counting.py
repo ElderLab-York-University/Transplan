@@ -27,21 +27,7 @@ MIN_TRAJ_POINTS = 10
 MIN_TRAJ_Length = 50
 MAX_MATCHED_Distance = 90
 
-color_dict = {
-    1:(128, 0, 0),
-    2:(230, 25, 75),
-    3:(250, 190, 212),
-    4:(170, 110, 40),
-    5:(245, 130, 48),
-    6:(255, 215, 180),
-    7:(128, 128, 0),
-    8:(255, 255, 25),
-    9:(210, 245, 60),
-    10:(0, 0, 128),
-    11:(70, 240, 240),
-    12:(0, 130, 200),
-}
-
+color_dict = moi_color_dict
 
 # def group_tracks_by_id(tracks_path):
 #     # this function was writtern for grouping the tracks with the same id
@@ -85,8 +71,11 @@ class Counting:
         # args.ReprojectedPklMeter
         # args.TrackLabellingExportPthMeter
         Metric_Dict = {
-            "cmm": self.cmm_dist,
-            "ccmm": self.cmmc_dist
+            "cmm":     self.cmm_dist,
+            "ccmm":    self.ccmm_dist,
+            "tccmm":   self.tccmm_dist,
+            "cos":     self.dc_dist,
+            "tcos":    self.tc_dist
         }
         self.metric = Metric_Dict[args.CountMetric]
         self.args = args
@@ -156,11 +145,27 @@ class Counting:
         d_b = direction_vector(traj_b)
         return cosine_distance(d_a, d_b)
 
-    def cmmc_dist(self, traj_a, traj_b):
+    def ccmm_dist(self, traj_a, traj_b):
         c1 = self.cmm_dist(traj_a, traj_b)
         c2 = self.dc_dist(traj_a, traj_b)
         return c1*c2
 
+    def tccmm_dist(self, traj_a, traj_b):
+        c1 = self.cmm_dist(traj_a, traj_b)
+        cmix = self.tc_dist(traj_a, traj_b)
+        return c1*cmix
+
+    def tc_dist(self, traj_a, traj_b):
+        c2 = self.dc_dist(traj_a, traj_b)
+        traj_a_mid = traj_a[int(len(traj_a)/2)]
+        traj_b_mid = traj_b[int(len(traj_b)/2)]
+        traj_a_1 = traj_a_mid - traj_a[0]
+        traj_a_2 = traj_a[-1] - traj_a_mid
+        traj_b_1 = traj_b_mid - traj_b[0]
+        traj_b_2 = traj_b[-1] - traj_b_mid
+        c3 = cosine_distance(traj_a_1, traj_b_1)
+        c4 = cosine_distance(traj_a_2, traj_b_2)
+        return c2+c3+c4
 
     def counting(self, current_trajectory, cmmlib):
         # counting_start_time = time.time()
@@ -254,6 +259,14 @@ class Counting:
         for p in current_track:
             x, y = int(p[0]/r), int(p[1]/r)
             back_ground = cv.circle(back_ground, (x,y), radius=2, color=(240, 50, 230), thickness=2)
+
+        p = current_track[0]
+        x, y = int(p[0]/r), int(p[1]/r)
+        back_ground = cv.circle(back_ground, (x,y), radius=3, color=(0, 255, 0), thickness=2)
+
+        p = current_track[-1]
+        x, y = int(p[0]/r), int(p[1]/r)
+        back_ground = cv.circle(back_ground, (x,y), radius=3, color=(0, 0, 255), thickness=2)
 
         img_new = cv2.addWeighted(img, alpha, back_ground, 1 - alpha, 0)
         img_new = cv.cvtColor(img_new, cv.COLOR_BGR2RGB)
