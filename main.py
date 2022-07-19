@@ -161,6 +161,7 @@ if __name__ == "__main__":
     parser.add_argument("--Count", help="If count the objects for each MOI", action="store_true")
     parser.add_argument("--CountVisPrompt", help="visualize each query track after classification", action="store_true")
     parser.add_argument("--CountMetric", help="name of the metric used in counting part",type=str)
+    parser.add_argument("--EvalCount", help="Evaluate the Counting Result you got from Counting part", action="store_true")
     parser.add_argument("--Meter", help="convert reprojected track coordinated into meter", action="store_true")
     parser.add_argument("--Cluster", help="if to perform clustering", action="store_true")
     parser.add_argument("--ClusteringAlgo", help="name of the clustering algorithm to be performed",type=str)

@@ -328,6 +328,31 @@ class Counting:
             accum_dist += dist_
         return accum_dist
 
+def eval_count(args):
+    # args.CountingResPth a json file
+    # args.CountingStatPth a csv file
+    # args.MetaData.gt has the gt numbers
+    estimated = None
+    with open(args.CountingResPth) as f:
+        estimated = json.load(f)
+    data = {}
+    data["moi"] = [i for i in args.MetaData["gt"].keys()]
+    data["gt"] = [args.MetaData["gt"][i] for i in args.MetaData["gt"].keys()]
+    data["estimated"] = [estimated[i] for i in args.MetaData["gt"].keys()]
+    df = pd.DataFrame.from_dict(data)
+    df["diff"] = (df["gt"] - df["estimated"]).abs()
+    df["err"] = df["diff"]/df["gt"]
+    
+    data2 = {}
+    data2["moi"] = ["all"]
+    data2["gt"] = [df["gt"].sum()]
+    data2["estimated"] = [df["estimated"].sum()]
+    data2["diff"] = [df["diff"].sum()]
+    data2["err"] = data2["diff"][0]/data2["gt"][0]
+    df2 = pd.DataFrame.from_dict(data2)
+    df = df.append(df2, ignore_index=True)
+    df.to_csv(args.CountingStatPth, index=False)
+
 def main(args):
     # some relative path form the args
         # args.ReprojectedPklMeter
@@ -335,4 +360,8 @@ def main(args):
     counter = Counting(args)
     # input Trajectory_path
     counter.main()
+
+    if args.EvalCount:
+        eval_count(args)
+        return SucLog("counting part executed successfully with stats saved in counting/")
     return SucLog("counting part executed successfully")
