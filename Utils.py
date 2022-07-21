@@ -58,7 +58,7 @@ class SubTaskMarker:
     VisLTrajectories = "vislabelledtraj"
     Counting = "counting"
     Clustering = "clustering"
- 
+    VisROI = "visROI"
 
 class Puncuations:
     Dot = "."
@@ -193,6 +193,11 @@ def get_vishomography_path(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisHomography + Puncuations.Dot + "png")
 
+def get_vis_roi_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisROI + Puncuations.Dot + "png")
+
 def get_counting_res_pth(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -270,6 +275,11 @@ def add_homography_related_path_to_args(args):
 def add_vishomography_path_to_args(args):
     vishomographypth = get_vishomography_path(args)
     args.VisHomographyPth = vishomographypth
+    return args
+
+def add_visroi_path_to_args(args):
+    vis_roi_path = get_vis_roi_path(args)
+    args.VisROIPth = vis_roi_path
     return args
 
 def add_tracklabelling_export_to_args(args):
@@ -359,7 +369,7 @@ def complete_args(args):
         args = add_tracking_pkl_to_args(args)
 
     args = add_metadata_to_args(args)
-    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count:
+    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI:
         args = add_homographygui_related_path_to_args(args)
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc:
         args = add_homography_related_path_to_args(args)
@@ -377,6 +387,8 @@ def complete_args(args):
         args = add_count_path_to_args(args)
     if args.Cluster:
         args = add_clustering_related_pth_to_args(args)
+    if args.VisROI:
+        args = add_visroi_path_to_args(args)
 
     return args
 

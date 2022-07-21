@@ -77,7 +77,7 @@ def viz_all_tracks(all_tracks, labels, save_path, image_path):
             color = (np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255))
             img = cv.circle(img, (x,y), radius=2, color=color, thickness=2)
 
-    total_clusters = int(len(np.unique(labels)) - 1)
+    total_clusters = int(len(np.unique(labels)))
     # add description for the visualization on the top part of image
     text = f"{total_clusters} clusters annotated with different colors"
     coordinates = (15,15)

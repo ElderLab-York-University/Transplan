@@ -106,3 +106,52 @@ def detectpostproc(args):
 def detectionth(df, args):
     df = df[df["score"] >= args.DetTh]
     return df
+
+def visroi(args):
+    # args.MetaData.roi
+    # args.HomographyStreetView
+    # args.HomographyTopView
+    # args.HomographyNPY
+    # args.VisROIPth
+
+    alpha = 0.6
+    M = np.load(args.HomographyNPY, allow_pickle=True)[0]
+    roi_rep = []
+    roi = args.MetaData["roi"]
+    for p in roi:
+        point = np.array([p[0], p[1], 1])
+        new_point = M.dot(point)
+        new_point /= new_point[2]
+        roi_rep.append([new_point[0], new_point[1]])
+    
+    img1 = cv.imread(args.HomographyStreetView)
+    img2 = cv.imread(args.HomographyTopView)
+    img1p = cv.imread(args.HomographyStreetView)
+    img2p = cv.imread(args.HomographyTopView)
+    rows1, cols1, dim1 = img1.shape
+    rows2, cols2, dim2 = img2.shape
+
+    poly_path1 = mplPath.Path(np.array(roi))
+    poly_path2 = mplPath.Path(np.array(roi_rep))
+    
+    for i in range(rows1):
+        for j in range(cols1):
+            if not poly_path1.contains_point([j, i]):
+                img1[i][j] = [0, 0, 0]            
+    for i in range(rows2):
+        for j in range(cols2):
+            if not poly_path2.contains_point([j, i]):
+                img2[i][j] = [0, 0, 0]
+
+    img1 = cv.addWeighted(img1, alpha, img1p, 1 - alpha, 0)
+    img2 = cv.addWeighted(img2, alpha, img2p, 1 - alpha, 0)
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+
+    ax1.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
+    ax1.set_title("camera view ROI")
+    ax2.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
+    ax2.set_title("top view ROI")
+    plt.savefig(args.VisROIPth)
+
+    return SucLog("Vis ROI executed successfully")
