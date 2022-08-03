@@ -63,7 +63,7 @@ class SubTaskMarker:
 class Puncuations:
     Dot = "."
 
-SupportedVideoExts = [".MP4", ".mp4", ".avi", ".AVI"]
+SupportedVideoExts = [".MP4", ".mp4", ".avi", ".AVI", ".mkv", ".MKV"]
 
 class Log(object):
     def __init__(self, message, bcolor, tag) -> None:
@@ -451,7 +451,7 @@ def download_url_to(url, path):
     open(path, 'wb').write(r.content)
 
 def save_frame_from_video(video_path, image_out_path):
-    chosen_frame = 1 # leave it this way for now
+    chosen_frame = 780 # leave it this way for now
     # Opens the Video file
     cap = cv2.VideoCapture(video_path)
     # Check if camera opened successfully
