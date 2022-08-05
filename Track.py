@@ -11,11 +11,13 @@ from counting.resample_gt_MOI.resample_typical_tracks import track_resample
 import Trackers.sort.track
 import Trackers.CenterTrack.track
 import Trackers.DeepSort.track
+import Trackers.ByteTrack.track
 # --------------------------
 trackers = {}
 trackers["sort"] = Trackers.sort.track
 trackers["CenterTrack"] = Trackers.CenterTrack.track
 trackers["DeepSort"] = Trackers.DeepSort.track
+trackers["ByteTrack"] = Trackers.ByteTrack.track
 # --------------------------
 
 def track(args):
