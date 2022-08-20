@@ -51,6 +51,7 @@ class SubTaskMarker:
     VisDetection  = "visdetection"
     Tracking      = "tracking"
     VisTracking   = "vistracking"
+    VisMoITracking = "visMOItracking"
     Homography    = "homography"
     VisHomography = "vishomography"
     MetaData      = "metadata"
@@ -59,6 +60,7 @@ class SubTaskMarker:
     Counting = "counting"
     Clustering = "clustering"
     VisROI = "visROI"
+    IdMatched = "IdMatched"
 
 class Puncuations:
     Dot = "."
@@ -122,6 +124,11 @@ def get_vis_tracking_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisTracking + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
+
+def get_vis_tracking_moi_path_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisMoITracking + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot + args.CountMetric +Puncuations.Dot+ SubTaskExt.VisTracking)
 
 def get_plot_all_traj_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -208,6 +215,11 @@ def get_counting_stat_pth(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Counting",file_name + Puncuations.Dot + SubTaskMarker.Counting + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + args.CountMetric +Puncuations.Dot +SubTaskExt.Csv)
 
+def get_counting_idmatching_pth(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Counting",file_name + Puncuations.Dot + SubTaskMarker.IdMatched + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + args.CountMetric +Puncuations.Dot +SubTaskExt.Csv)
+
 def add_detection_pathes_to_args(args):
     d_path = get_detection_path_from_args(args)
     d_d_path = get_detection_path_with_detector_from_args(args)
@@ -251,6 +263,10 @@ def add_vis_tracking_path_to_args(args):
     args.VisTrackingPth = vis_tracking_pth
     return args
 
+def add_vis_tracking_moi_path_to_args(args):
+    vis_tracking_pth = get_vis_tracking_moi_path_from_args(args)
+    args.VisTrackingMoIPth = vis_tracking_pth
+    return args
 
 def add_homographygui_related_path_to_args(args):
     streetview = get_homography_streetview_path(args)
@@ -314,8 +330,10 @@ def add_meter_path_to_args(args):
 def add_count_path_to_args(args):
     counting_result_path = get_counting_res_pth(args)
     counting_stat_path = get_counting_stat_pth(args)
+    counting_idmatching_path = get_counting_idmatching_pth(args)
     args.CountingResPth = counting_result_path
     args.CountingStatPth = counting_stat_path
+    args.CountingIdMatchPth = counting_idmatching_path
     return args
 
 def get_reprojected_meter_cluster_pkl(args):
@@ -383,12 +401,14 @@ def complete_args(args):
         args = add_vis_labelled_tracks_pth_to_args(args)
     if args.Meter or args.Count or args.Cluster or args.TrackPostProc:
         args = add_meter_path_to_args(args)
-    if args.Count:
+    if args.Count or args.VisTrackMoI:
         args = add_count_path_to_args(args)
     if args.Cluster:
         args = add_clustering_related_pth_to_args(args)
     if args.VisROI:
         args = add_visroi_path_to_args(args)
+    if args.VisTrackMoI:
+        args = add_vis_tracking_moi_path_to_args(args)
 
     return args
 
@@ -539,10 +559,35 @@ def tc_dist(traj_a, traj_b):
     c4 = cosine_distance(traj_a_2, traj_b_2)
     return c2+c3+c4
 
+def minvc_dist(traj_a, traj_b):
+    return np.linalg.norm(traj_a[0] - traj_b[0]) + np.linalg.norm(traj_a[-1] - traj_b[-1])
+
+def ptcos_dist(traj_a, traj_b):
+    return tc_dist(traj_a, traj_b) * minvc_dist(traj_a, traj_b)
+
+def hausdorff_directed(traj_a, traj_b, dist_func = lambda va, vb: np.linalg.norm(va-vb)):
+    max_dist = float('-inf')
+    for va in traj_a:
+        min_dist = float('inf')
+        for vb in traj_b:
+            dist_vavb = dist_func(va, vb)
+            if dist_vavb < min_dist:
+                min_dist = dist_vavb
+        if min_dist > max_dist:
+            max_dist = min_dist
+    return max_dist
+            
+def hausdorff_dist(traj_a, traj_b):
+    d_ab = hausdorff_directed(traj_a, traj_b)
+    d_ba = hausdorff_directed(traj_b, traj_a)
+    return max(d_ab, d_ba)
+
 Metric_Dict = {
-    "cmm":     CMM.cmm_dist,
-    "ccmm":    ccmm_dist,
-    "tccmm":   tccmm_dist,
-    "cos":     dc_dist,
-    "tcos":    tc_dist
+    "cmm":       CMM.cmm_dist,
+    "ccmm":      ccmm_dist,
+    "tccmm":     tccmm_dist,
+    "cos":       dc_dist,
+    "tcos":      tc_dist,
+    "hausdorff": hausdorff_dist,
+    "ptcos"    : ptcos_dist
     }

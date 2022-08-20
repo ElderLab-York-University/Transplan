@@ -117,6 +117,7 @@ class Counting:
                 
             self.counter[matched_id] += 1
             self.traject_couter += 1
+            return matched_id
 
     def viz_CMM(self, current_track, alpha=0.3, matched_id=0):
         r = meter_per_pixel(self.args.MetaData['center'])
@@ -182,13 +183,18 @@ class Counting:
         file_name = self.args.ReprojectedPklMeter
         result_paht = self.args.CountingResPth
 
+        data = {}
+        data['id'], data['moi'] = [], []
+
         df_temp = pd.read_pickle(file_name)
         df = group_tracks_by_id(df_temp)
         tids = np.unique(df['id'].tolist())
         for idx in tqdm(tids):
             current_track = df[df['id'] == idx]
             a = current_track['trajectory'].values.tolist()
-            self.counting(a[0])
+            matched_moi = self.counting(a[0])
+            data['id'].append(idx)
+            data['moi'].append(matched_moi)
                 # print(f"couning a[0] with shape {a[0].shape}")
 
         for i in range(12):
@@ -197,6 +203,9 @@ class Counting:
         print(self.traject_couter)
         with open(result_paht, "w") as f:
             json.dump(self.counter, f, indent=2)
+
+        df = pd.DataFrame.from_dict(data)
+        df.to_csv(self.args.CountingIdMatchPth, index=False)
 
     def arc_length(self, track):
         """

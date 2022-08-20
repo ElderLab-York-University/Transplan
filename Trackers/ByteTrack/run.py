@@ -25,9 +25,9 @@ if __name__ == "__main__":
 
     # initialize ByteTracker
     track_thresh=0.6
-    track_buffer = 30
+    track_buffer = 90
     match_thresh = 0.9
-    min_box_area = 100
+    min_box_area = 64
     ByteArgs = make_parser().parse_args(["--track_thresh", f"{track_thresh}", "--track_buffer",
         f"{track_buffer}", "--match_thresh", f"{match_thresh}", "--min-box-area", f"{min_box_area}"])
     tracker = BYTETracker(ByteArgs)
@@ -50,7 +50,7 @@ if __name__ == "__main__":
             score = ot.score
             bbox = ot.tlbr
             x1, y1, x2, y2 = bbox[0], bbox[1], bbox[2], bbox[3]
-            results.append([fn, idd, score, x1, y1, x2, y2])
+            results.append([frame_num, idd, score, x1, y1, x2, y2])
 
     # write results for txt file       
     with open(args["TrackingPth"],"w") as out_file:
