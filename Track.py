@@ -12,12 +12,16 @@ import Trackers.sort.track
 import Trackers.CenterTrack.track
 import Trackers.DeepSort.track
 import Trackers.ByteTrack.track
+import Trackers.gsort.track
+import Trackers.OCSort.track
 # --------------------------
 trackers = {}
 trackers["sort"] = Trackers.sort.track
 trackers["CenterTrack"] = Trackers.CenterTrack.track
 trackers["DeepSort"] = Trackers.DeepSort.track
 trackers["ByteTrack"] = Trackers.ByteTrack.track
+trackers["gsort"] = Trackers.gsort.track
+trackers["OCSort"] = Trackers.OCSort.track
 # --------------------------
 
 def track(args):
