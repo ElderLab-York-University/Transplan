@@ -1,5 +1,7 @@
 from .gsort.gsort import *
+# from .sort.sort import *
 from Libs import *
+from Maps import meter_per_pixel
 
 
 def track(args, detectors):
@@ -9,12 +11,17 @@ def track(args, detectors):
     # parse detection df using detector module
     detection_df = detectors[args.Detector].df(args)
     output_file = args.TrackingPth
-    mot_tracker = GSort() #create instance of the SORT tracker
+    M = np.load(args.HomographyNPY, allow_pickle=True)[0]
+    R = meter_per_pixel(args.MetaData['center'])
+    mot_tracker = GSort(Homography_M=M, R_meter=R) #create instance of the SORT tracker
+    # mot_tracker = Sort()
     with open(output_file,'w') as out_file:
         for frame_num in tqdm(range(int(detection_df.fn.max()))): # this line might not work :))) 
             frame_df = detection_df[detection_df.fn == frame_num]
             # create dets --> this is the part when information is converted/grouped
             dets = frame_df[["x1", "y1", "x2", "y2", "score"]].to_numpy()
+            # print("allllllllll dets")
+            # print(dets)
             trackers = mot_tracker.update(dets)
             for d in trackers:
                 print('%d,%d,%.4f,%.4f,%.4f,%.4f'%(frame_num+1,d[4],d[0],d[1],d[2],d[3]),file=out_file)
