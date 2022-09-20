@@ -15,6 +15,7 @@ import Trackers.ByteTrack.track
 import Trackers.gsort.track
 import Trackers.OCSort.track
 import Trackers.GByteTrack.track
+import Trackers.GDeepSort.track
 # --------------------------
 trackers = {}
 trackers["sort"] = Trackers.sort.track
@@ -24,6 +25,7 @@ trackers["ByteTrack"] = Trackers.ByteTrack.track
 trackers["gsort"] = Trackers.gsort.track
 trackers["OCSort"] = Trackers.OCSort.track
 trackers["GByteTrack"] = Trackers.GByteTrack.track
+trackers["GDeepSort"] = Trackers.GDeepSort.track
 # --------------------------
 
 def track(args):

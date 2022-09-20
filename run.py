@@ -8,8 +8,8 @@ sources = ['./../Dataset/DandasStAtNinthLineFull']
 detectors = ["detectron2"]
 
 # choose the tracker
-# options: ["sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack"]
-trackers = ["GByteTrack"] 
+# options: ["sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort"]
+trackers = ["GDeepSort"] 
 
 # choose the clustering algorithm
 # options: ["SpectralFull", "DBSCAN", "SpectralKNN"]
