@@ -1,7 +1,7 @@
 import os
 # choose the dataset/video
 # options : ['./../Dataset/DandasStAtNinthLineFull', './../Dataset/DandasStAtNinthLine', "./../Dataset/SOW_src1", "./../Dataset/SOW_src2", "./../Dataset/SOW_src3", "./../Dataset/SOW_src4"]
-sources = ["./../Dataset/SOW_src2", "./../Dataset/SOW_src3", "./../Dataset/SOW_src4"]
+sources = ['./../Dataset/DandasStAtNinthLineFull']
 
 # choose the detectors
 # options: ["detectron2", "OpenMM", "YOLOv5"]
