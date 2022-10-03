@@ -9,7 +9,7 @@ detectors = ["detectron2"]
 
 # choose the tracker
 # options: ["sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort"]
-trackers = ["GDeepSort"] 
+trackers = ["ByteTrack"] 
 
 # choose the clustering algorithm
 # options: ["SpectralFull", "DBSCAN", "SpectralKNN"]
@@ -17,7 +17,7 @@ clusters = ["SpectralFull"]
 
 # choose the metric for clustering and classification pqrt
 # options: ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos"]
-metrics = ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos"]
+metrics = ["tcos"]
 
 for src in sources:
     ########################################################
@@ -29,18 +29,18 @@ for src in sources:
     # 2. run the detection
     # the full commonad looks like : os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=sort --Detect --DetPostProc --DetMask --DetTh=0.75 --VisDetect --VisROI")
     ########################################################
-    # for det in detectors:
-    #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=sort --Detect --DetPostProc --DetMask --DetTh=0.75 --VisDetect --VisROI")
+    for det in detectors:
+        print(f"detecting ----> src:{src} det:{det}")
+        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=sort --Detect")
 
     ########################################################
     # 3. run the tracking 
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --TrackPostProc --TrackTh=8 --VisTrajectories")
     ########################################################
-    for det in detectors:
-        for tra in trackers:
-            print(f"tracking ---> src:{src} det:{det} tra:{tra}")
-            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --TrackPostProc --TrackTh=8 --VisTrajectories")
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --TrackPostProc --TrackTh=8 --VisTrajectories")
 
     ########################################################
     # 4. run clustering algorithm
@@ -66,14 +66,14 @@ for src in sources:
     #     for tra in trackers:
     #         for metric in metrics:
     #             print(f"counting metric:{metric}")
-    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount")
+    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --LabelledTrajectories='./../Dataset/DandasStAtNinthLineFull/Results/Annotation/video.tracking.detectron2.ByteTrack.reprojected.labelled.meter.pkl'")
 
     ########################################################
     # 7. Visualizing the results on a video including track label and track id
     # can be used to monitor the pipeline in detail
     ########################################################
-    # for det in detectors:
-    #     for tra in trackers:
-    #         for met in metrics[:1]:
-    #             print(f"visualizing MOI -----> det:{det} tra:{tra} met:{met}")
-    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={met} --VisTrackMoI")
+    for det in detectors:
+        for tra in trackers:
+            for met in metrics[:1]:
+                print(f"visualizing MOI -----> det:{det} tra:{tra} met:{met}")
+                os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={met} --VisTrackMoI")

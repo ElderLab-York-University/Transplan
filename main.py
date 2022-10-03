@@ -187,6 +187,8 @@ if __name__ == "__main__":
     parser.add_argument("--TrackTh", help="the threshold for short track removal in meter", type=float)
     parser.add_argument("--VisROI", help="visualize the selected ROI", action='store_true')
     parser.add_argument("--VisTrackMoI", help="visualize tracking with moi labels", action='store_true')
+    parser.add_argument("--LabelledTrajectories", help=" a pkl file containint the labelled trajectories on the ground plane",type=str)
+
     args = parser.parse_args()
 
     args = complete_args(args)

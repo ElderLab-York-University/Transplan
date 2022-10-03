@@ -105,6 +105,11 @@ def get_detection_pkl(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot +SubTaskExt.Pkl)
 
+def get_detection_pkl_back_up(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot + "backup" + Puncuations.Dot +SubTaskExt.Pkl)
+
 def get_vis_detection_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -224,9 +229,11 @@ def add_detection_pathes_to_args(args):
     d_path = get_detection_path_from_args(args)
     d_d_path = get_detection_path_with_detector_from_args(args)
     d_pkl = get_detection_pkl(args)
+    d_pkl_bu = get_detection_pkl_back_up(args)
     args.DetectionPath = d_path
     args.DetectionDetectorPath = d_d_path
     args.DetectionPkl = d_pkl
+    args.DetectionPklBackUp = d_pkl_bu
     return args
 
 def add_vis_detection_path_to_args(args):

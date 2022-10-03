@@ -26,7 +26,13 @@ def detect(args):
     current_detector = detectors[args.Detector]
     current_detector.detect(args)
     store_df_pickle(args)
+    store_df_pickle_backup(args)
+
     return SucLog("Detection files stored")
+
+def store_df_pickle_backup(args):
+    df = detectors[args.Detector].df(args)
+    df.to_pickle(args.DetectionPklBackUp)
 
 def store_df_pickle(args):
     df = detectors[args.Detector].df(args)
@@ -89,7 +95,7 @@ def detectpostproc(args):
         # args.DetMask
 
     # 0. load the pklfile first
-    df = pd.read_pickle(args.DetectionPkl)
+    df = pd.read_pickle(args.DetectionPklBackUp)
     # 1. condition on the post processing flags
     if not args.DetTh is None:
         df = detectionth(df, args)
