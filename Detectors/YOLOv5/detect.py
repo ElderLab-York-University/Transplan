@@ -1,5 +1,5 @@
 # Some basic setup:
-import torch
+# import torch
 import os
 from tqdm import tqdm
 import glob
@@ -10,9 +10,9 @@ from Libs import *
 from Utils import *
 
 # choose to run on CPU to GPU
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device_name = "cuda:0" if torch.cuda.is_available() else "cpu"
-print(f'device: {device_name}')
+# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# device_name = "cuda:0" if torch.cuda.is_available() else "cpu"
+# print(f'device: {device_name}')
 
 
 
