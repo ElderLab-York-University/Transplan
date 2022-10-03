@@ -2,4 +2,5 @@ tqdm
 pandas
 matplotlib
 googlemaps
+pillow==9.2.0
 scikit-image
