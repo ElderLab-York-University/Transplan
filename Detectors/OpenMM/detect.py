@@ -1,6 +1,5 @@
 # Some basic setup:
 from tabnanny import check
-import torch
 import os
 from tqdm import tqdm
 import glob
