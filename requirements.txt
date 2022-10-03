@@ -3,4 +3,5 @@ pandas
 matplotlib
 googlemaps
 pillow==9.2.0
+filterpy==1.4.5
 scikit-image
