@@ -11,7 +11,7 @@ from collections import defaultdict
 import cv2
 import matplotlib
 import numpy as np
-from pymatreader import read_mat
+# from pymatreader import read_mat
 import pandas as pd
 from matplotlib import cm
 from .resample_gt_MOI.resample_typical_tracks import track_resample
@@ -73,7 +73,9 @@ class Counting:
         
         self.metric = Metric_Dict[args.CountMetric]
         self.args = args
-        validated_trakcs_path = self.args.TrackLabellingExportPthMeter
+        if self.args.LabelledTrajectories is None:
+            validated_trakcs_path = self.args.TrackLabellingExportPthMeter
+        else: validated_trakcs_path = self.args.LabelledTrajectories 
 
         df = pd.read_pickle(validated_trakcs_path)
         # print(len(df))
