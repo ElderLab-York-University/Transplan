@@ -18,4 +18,5 @@ for updating the conda run
 ```code
 conda update conda
 conda update anaconda
+conda config --set auto_activate_base false
 ```
