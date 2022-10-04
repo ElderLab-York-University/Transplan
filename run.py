@@ -72,8 +72,8 @@ for src in sources:
     # 7. Visualizing the results on a video including track label and track id
     # can be used to monitor the pipeline in detail
     ########################################################
-    for det in detectors:
-        for tra in trackers:
-            for met in metrics[:1]:
-                print(f"visualizing MOI -----> det:{det} tra:{tra} met:{met}")
-                os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={met} --VisTrackMoI")
+#     for det in detectors:
+#         for tra in trackers:
+#             for met in metrics[:1]:
+#                 print(f"visualizing MOI -----> det:{det} tra:{tra} met:{met}")
+#                 os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={met} --VisTrackMoI")
