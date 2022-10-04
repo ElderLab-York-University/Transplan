@@ -13,3 +13,9 @@ copy the link for installer and run
 curl -O <link_to_installer>
 bash Anaconda*.sh
 ```
+reopen your terminal for changes to be effective.
+for updating the conda run
+```code
+conda update conda
+conda update anaconda
+```
