@@ -36,12 +36,18 @@ def track(args):
     current_tracker.track(args, detectors)
     # store pkl version of tracked df
     store_df_pickle(args)
+    store_df_pickle_backup(args)
     return SucLog("Tracking files stored")
 
 def store_df_pickle(args):
     # should be called after tracking is done and the results are stored in the .txt file
     df = trackers[args.Tracker].df(args)
     df.to_pickle(args.TrackingPkl)
+
+def store_df_pickle_backup(args):
+    # should be called after tracking is done and the results are stored in the .txt file
+    df = trackers[args.Tracker].df(args)
+    df.to_pickle(args.TrackingPklBackUp)
 
 def vistrack(args):
     current_tracker = trackers[args.Tracker]

@@ -125,6 +125,11 @@ def get_tracking_pkl_from_args(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector +Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Pkl)
 
+def get_tracking_pkl_bu_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector +Puncuations.Dot + args.Tracker + Puncuations.Dot +"back" + Puncuations.Dot +SubTaskExt.Pkl)
+
 def get_vis_tracking_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -262,7 +267,9 @@ def add_tracking_path_to_args(args):
 
 def add_tracking_pkl_to_args(args):
     tracking_pkl = get_tracking_pkl_from_args(args)
+    tracking_pkl_bu = get_tracking_pkl_bu_from_args(args)
     args.TrackingPkl = tracking_pkl
+    args.TrackingPklBackUp = tracking_pkl_bu
     return args
 
 def add_vis_tracking_path_to_args(args):

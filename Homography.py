@@ -52,7 +52,8 @@ def reproject(args):
     out_path = args.ReprojectedPoints 
 
     current_tracker = trackers[args.Tracker]
-    df = current_tracker.df(args)
+    # df = current_tracker.df(args)
+    df = pd.read_pickle(args.TrackingPklBackUp)
     
     M = np.load(homography_path, allow_pickle=True)[0]
     with open(out_path, 'w') as out_file:
