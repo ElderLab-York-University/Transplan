@@ -470,7 +470,7 @@ def deactivate_conda_env(env_name):
     os.system(f"conda deactivate")
 
 def conda_pyrun(env_name, exec_file, args):
-    os.system(f"conda run -n {env_name} python3 \"{exec_file}\" '{json.dumps(dict(vars(args)))}'")
+    os.system(f"conda run -n {env_name} --live-stream python3 \"{exec_file}\" '{json.dumps(dict(vars(args)))}'")
 
 def download_url_to(url, path):
     # make sure that path is valid
