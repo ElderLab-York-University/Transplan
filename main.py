@@ -122,7 +122,12 @@ def TrackPostProc(args):
     if args.TrackPostProc:
         print(ProcLog("Track Post Processing in execution"))
         log = trackpostproc(args)
-        return log
+        print(log)
+        print(WarningLog("relunching tracking subtasks make sure to set --Meter and --Homography"))
+        tracking_subtasks = [VisTrack, Homography, Pix2Meter]
+        for task in tracking_subtasks:
+            log = task(args)
+            print(log)
     else: return WarningLog("skipped track post processing")
 
 def Count(args):

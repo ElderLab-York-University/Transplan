@@ -40,6 +40,10 @@ class STrack(BaseTrack):
 
         self.score = score
         self.tracklet_len = 0
+        self.history = []
+
+        # keep the last tlwh for updates or creation
+        self.last_tlwh = tlwh
 
     def predict(self):
         mean_state = self.mean.copy()
@@ -104,6 +108,7 @@ class STrack(BaseTrack):
         self.is_activated = True
 
         self.score = new_track.score
+        self.last_tlwh = new_tlwh
 
     @property
     # @jit(nopython=True)
@@ -131,6 +136,10 @@ class STrack(BaseTrack):
         # ret = self.tlwh.copy()
         # ret[2:] += ret[:2]
         # return ret
+
+    @property
+    def last_tlbr(self):
+        return self.tlwh_to_tlbr(self.last_tlwh)
 
     @staticmethod
     # @jit(nopython=True)

@@ -44,8 +44,8 @@ def remove_out_of_ROI(df, roi):
     print(len(mask), len(df))
     for i, row in tqdm(df.iterrows(), total=len(df)):
         x1, y1, x2, y2 = row["x1"], row["y1"], row["x2"], row["y2"]
-        p = [[x1, y1], [x1, y2], [x2, y1], [x2, y2]]
-        if poly_path.contains_point(p[0]) or poly_path.contains_point(p[1]) or poly_path.contains_point(p[2]) or poly_path.contains_point(p[3]):
+        p = [(x1 + x2)/2, (y1+y2)/2]
+        if poly_path.contains_point(p):
             mask.append(True)
         else: mask.append(False)
     return df[mask]  

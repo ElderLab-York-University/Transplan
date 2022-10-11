@@ -22,6 +22,14 @@ def df(args):
     data["y2"]    = tracks[:, 7]
     return pd.DataFrame.from_dict(data)
 
+def df_txt(df, out_path):
+    with open(out_path,'w') as out_file:
+        for i, row in df.iterrows():
+            fn, idd, clss, score, x1, y1, x2, y2 = row['fn'], row['id'], row['class'], row['score'], row['x1'], row['y1'], row['x2'], row['y2']
+            print('%d,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f'%(fn, idd, clss, score, x1, y1, x2, y2),file=out_file)
+    # df = pd.read_pickle(args.TrackingPkl)
+    # out_path = args.TrackingPth 
+
 def setup(args):
     env_name = args.Tracker
     src_url = "https://github.com/xingyizhou/CenterTrack.git"

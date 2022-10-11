@@ -54,10 +54,10 @@ if __name__ == "__main__":
 
         online_targets = tracker.update(dets, info_imgs, img_size)
         for ot in online_targets:
-            fn = ot.frame_id
+            fn = ot.start_frame
             idd = ot.track_id
             score = ot.score
-            bbox = ot.tlbr
+            bbox = ot.last_tlbr
             x1, y1, x2, y2 = bbox[0], bbox[1], bbox[2], bbox[3]
             results.append([frame_num, idd, score, x1, y1, x2, y2])
 

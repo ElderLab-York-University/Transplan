@@ -81,7 +81,9 @@ def vistrack(args):
                 bbid, x1 , y1, x2, y2 = track.id, int(track.x1), int(track.y1), int(track.x2), int(track.y2)
                 # print(x1, y1, x2, y2)
                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-                cv2.putText(frame, f'id:{bbid}', (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                cv2.putText(frame, f'id:', (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+                cv2.putText(frame, f'{int(bbid)}', (x1 + 60, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 5)
+                cv2.putText(frame, f'{int(bbid)}', (x1 + 60, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (144, 251, 144), 2)
             out_cap.write(frame)
 
 def vistrackmoi(args):
@@ -137,22 +139,28 @@ def vistrackmoi(args):
     return SucLog("Vis Tracking moi file stored")
 
 def trackpostproc(args):
+    def update_tracking_changes(df, args):
+        trackers[args.Tracker].df_txt(df, args.TrackingPth)
+        store_df_pickle(args)
+
+    # apply postprocessing on args.ReprojectedPkLMeter and ReprojectedPkl
+    if not args.TrackTh is None:
+        df  = remove_short_tracks(args)
+        update_tracking_changes(df, args)
+
+    
+    return SucLog("track post processing executed with no error")
+
+
+def remove_short_tracks(args):
+    th = args.TrackTh
     df_meter_ungrouped = pd.read_pickle(args.ReprojectedPklMeter)
     df_reg_ungrouped   = pd.read_pickle(args.ReprojectedPkl)
     df_meter = group_tracks_by_id(df_meter_ungrouped)
     df_reg   = group_tracks_by_id(df_reg_ungrouped)
 
-    # apply postprocessing on args.ReprojectedPkLMeter and ReprojectedPkl
-    if not args.TrackTh is None:
-        df_meter_ungrouped, df_reg_ungrouped, df_meter, df_reg = remove_short_tracks(args.TrackTh, df_meter_ungrouped, df_reg_ungrouped, df_meter, df_reg)
+    main_df = pd.read_pickle(args.TrackingPkl)
 
-    # save updated 
-    pd.to_pickle(df_meter_ungrouped, args.ReprojectedPklMeter)
-    pd.to_pickle(df_reg_ungrouped, args.ReprojectedPkl)
-    return SucLog("track post processing executed with no error")
-
-
-def remove_short_tracks(th, df_meter_ungrouped, df_reg_ungrouped, df_meter, df_reg):
     to_remove_ids = []
     # resample tracks
     df_meter['trajectory'] = df_meter['trajectory'].apply(lambda x: track_resample(x))
@@ -162,24 +170,12 @@ def remove_short_tracks(th, df_meter_ungrouped, df_reg_ungrouped, df_meter, df_r
             to_remove_ids.append(row['id'])
 
     mask = []
-    for i, row in df_meter.iterrows():
+    for i, row in main_df.iterrows():
         if row['id'] in to_remove_ids:
             mask.append(False)
         else: mask.append(True)
 
-    df_meter = df_meter[mask]
-    df_reg = df_reg[mask]
-
-    mask = []
-    for i, row in df_meter_ungrouped.iterrows():
-        if row['id'] in to_remove_ids:
-            mask.append(False)
-        else: mask.append(True)
-    df_meter_ungrouped = df_meter_ungrouped[mask]
-    df_reg_ungrouped = df_reg_ungrouped[mask]
-        
-    return df_meter_ungrouped, df_reg_ungrouped, df_meter, df_reg
-    
+    return main_df[mask]
 
 def group_tracks_by_id(df):
     # this function was writtern for grouping the tracks with the same id
