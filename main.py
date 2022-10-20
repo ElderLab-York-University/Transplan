@@ -15,7 +15,7 @@ from Homography import homographygui
 from Homography import reproject
 from Homography import vishomographygui
 from Homography import vis_reprojected_tracks
-from TrackLabeling import tracklabelinggui, vis_labelled_tracks
+from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_tracks
 from Maps import pix2meter
 from counting import counting
 from Clustering import cluster
@@ -151,10 +151,19 @@ def VisTrackMoI(args):
         return log
     else: return WarningLog("skipped clustering subtask")
 
+def ExtractCommonTracks(args):
+    if args.ExtractCommonTracks:
+        print(ProcLog("Extract Common Trajectories from video"))
+        log = extract_common_tracks(args)
+        log_temp = pix2meter(args)
+        print(log_temp)
+        return log
+    else: return WarningLog("skipped extract common track subtask")
+
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, VisROI, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, TrackPostProc, VisTrajectories, Cluster, TrackLabelingGUI, VisLabelledTrajectories, Count, VisTrackMoI]
+    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, VisROI, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, TrackPostProc, VisTrajectories, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories, Count, VisTrackMoI]
     for subtask in subtasks:
         log = subtask(args)
         print(log)
@@ -193,6 +202,7 @@ if __name__ == "__main__":
     parser.add_argument("--VisROI", help="visualize the selected ROI", action='store_true')
     parser.add_argument("--VisTrackMoI", help="visualize tracking with moi labels", action='store_true')
     parser.add_argument("--LabelledTrajectories", help=" a pkl file containint the labelled trajectories on the ground plane",type=str)
+    parser.add_argument("--ExtractCommonTracks", help="instead of track labelling GUI extract common tracks automatically", action='store_true')
 
     args = parser.parse_args()
 

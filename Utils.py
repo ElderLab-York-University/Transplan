@@ -384,7 +384,7 @@ def add_clustering_related_pth_to_args(args):
     return args
 
 def complete_args(args):
-    if args.TrackLabelingGUI:
+    if args.TrackLabelingGUI or args.ExtractCommonTracks:
         args.Meter=True
 
     if args.Video is None:
@@ -407,7 +407,7 @@ def complete_args(args):
         args = add_homography_related_path_to_args(args)
     if args.VisHomographyGUI or args.VisLabelledTrajectories:
         args = add_vishomography_path_to_args(args)
-    if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter:
+    if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter or args.ExtractCommonTracks:
         args = add_tracklabelling_export_to_args(args)
     if args.VisTrajectories:
         args = add_plot_all_traj_pth_to_args(args)

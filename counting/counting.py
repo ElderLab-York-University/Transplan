@@ -74,8 +74,9 @@ class Counting:
         self.metric = Metric_Dict[args.CountMetric]
         self.args = args
         if self.args.LabelledTrajectories is None:
+            print("loaded track labelling from previous path")
             validated_trakcs_path = self.args.TrackLabellingExportPthMeter
-        else: validated_trakcs_path = self.args.LabelledTrajectories 
+        else: validated_trakcs_path = self.args.LabelledTrajectories; print("loaded track labelling from external source")
 
         df = pd.read_pickle(validated_trakcs_path)
         # print(len(df))

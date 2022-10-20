@@ -9,3 +9,4 @@ lap==0.4.0
 scikit-image
 seaborn
 sklearn
+sympy
