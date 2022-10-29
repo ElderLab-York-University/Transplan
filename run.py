@@ -1,7 +1,7 @@
 import os
 # choose the dataset/video
 # options : ['./../Dataset/DandasStAtNinthLineFull', './../Dataset/DandasStAtNinthLine', "./../Dataset/SOW_src1", "./../Dataset/SOW_src2", "./../Dataset/SOW_src3", "./../Dataset/SOW_src4"]
-sources = ["./../Dataset/SOW_src2"]
+sources = ['./../Dataset/DandasStAtNinthLineFull']
 
 # choose the detectors
 # options: ["detectron2", "OpenMM", "YOLOv5"]
@@ -16,8 +16,8 @@ trackers = [ "ByteTrack"]
 clusters = ["SpectralFull"]
 
 # choose the metric for clustering and classification pqrt
-# options: ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos"]
-metrics = ["tcos"]
+# options: ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde"]
+metrics = ["hmmg"]
 
 for src in sources:
     ########################################################
@@ -70,18 +70,18 @@ for src in sources:
     ########################################################
     # 7. Run the classification(counting) part
     ########################################################
-    # for det in detectors:
-    #     for tra in trackers:
-    #         for metric in metrics:
-    #             print(f"counting metric:{metric}")
-    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount")
+    for det in detectors:
+        for tra in trackers:
+            for metric in metrics:
+                print(f"counting metric:{metric}")
+                os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount")
 
     ########################################################
     # 8. Visualizing the results on a video including track label and track id
     # can be used to monitor the pipeline in detail
     ########################################################
-    for det in detectors:
-        for tra in trackers:
-            for met in metrics[:1]:
-                print(f"visualizing MOI -----> det:{det} tra:{tra} met:{met}")
-                os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={met} --VisTrackMoI")
+    # for det in detectors:
+    #     for tra in trackers:
+    #         for met in metrics[:1]:
+    #             print(f"visualizing MOI -----> det:{det} tra:{tra} met:{met}")
+    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={met} --VisTrackMoI")

@@ -403,7 +403,7 @@ def complete_args(args):
     args = add_metadata_to_args(args)
     if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Track:
         args = add_homographygui_related_path_to_args(args)
-    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc:
+    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc or args.Count:
         args = add_homography_related_path_to_args(args)
     if args.VisHomographyGUI or args.VisLabelledTrajectories:
         args = add_vishomography_path_to_args(args)

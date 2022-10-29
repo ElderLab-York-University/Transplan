@@ -21,6 +21,8 @@ import cv2 as cv
 from Utils import *
 from Maps import *
 from Libs import *
+from TrackLabeling import *
+from hmmlearn import hmm 
 
 #  Hyperparameters
 MIN_TRAJ_POINTS = 10
@@ -222,6 +224,238 @@ class Counting:
             accum_dist += dist_
         return accum_dist
 
+class IKDE():
+    def __init__(self, kernel="exponential", bandwidth=1):
+        self.kernel = kernel
+        self.bw = bandwidth
+
+    def fit(self, tracks):
+        self.mois = np.unique(tracks["moi"])
+        self.kdes = {}
+        for moi in self.mois:
+            self.kdes[moi] = sklearn.neighbors.KernelDensity(kernel=self.kernel, bandwidth=self.bw)
+        for moi in self.mois:
+            kde_data = []
+            for i, row in tracks[tracks["moi"] == moi].iterrows():
+                traj_len = len(row["trajectory"])
+                for x, y in row["trajectory"]:
+                    kde_data.append([x, y])
+            kde_data = np.array(kde_data)
+            self.kdes[moi].fit(kde_data)
+
+    def get_traj_score(self, traj, moi):
+        traj_data = []
+        for i in range(len(traj)):
+            x, y = traj[i]
+            traj_data.append([x, y])
+        traj_data = np.array(traj_data)
+        return np.sum(self.kdes[moi].score_samples(traj_data))
+    
+    def predict_traj(self, traj):
+        moi_scores = []
+        for moi in self.mois:
+            moi_scores.append(self.get_traj_score(traj, moi))
+        max_moi = self.mois[np.argmax(moi_scores)]
+        return max_moi
+
+    def predict_tracks(self, tracks):
+        max_mois = []
+        for i, row in tracks.iterrows():
+            traj = row["trajectory"]
+            max_mois.append(self.predict_traj(traj))
+        return max_mois
+
+class LOSIKDE(IKDE):
+    def __init__(self, kernel="exponential", bandwidth=1, os_ratio = 100):
+        super().__init__(kernel, bandwidth)
+        self.osr = os_ratio
+
+    def fit(self, tracks):
+        self.mois = np.unique(tracks["moi"])
+        self.kdes = {}
+        for moi in self.mois:
+            self.kdes[moi] = sklearn.neighbors.KernelDensity(kernel=self.kernel, bandwidth=self.bw)
+        for moi in self.mois:
+            kde_data = []
+            sequence_data = []
+            for i, row in tracks[tracks["moi"] == moi].iterrows():
+                traj = row["trajectory"]
+                for i in range(1, len(traj)):
+                    p1, p2 = traj[i-1], traj[i]
+                    for r in np.linspace(0, 1, num=self.osr):
+                        p_temp = (1-r)*p1 + r*p2
+                        sequence_data.append(p_temp)
+                for i , p in enumerate(sequence_data):
+                    x, y = p
+                    kde_data.append([x, y, i/len(sequence_data)])
+            kde_data = np.array(kde_data)
+            self.kdes[moi].fit(kde_data)
+
+    def get_traj_score(self, traj, moi):
+        traj_data = []
+        for i in range(len(traj)):
+            x, y = traj[i]
+            traj_data.append([x, y, i/len(traj)])
+        traj_data = np.array(traj_data)
+        return np.sum(self.kdes[moi].score_samples(traj_data))
+
+class HMMG():
+    def __init__(self, n_components=5):
+        self.nc = n_components
+
+    def fit(self, tracks):
+        self.mois = np.unique(tracks["moi"])
+        self.hmms = {}
+        for moi in self.mois:
+            self.hmms[moi] = hmm.GaussianHMM(n_components=self.nc)
+        for moi in self.mois:
+            hmm_data = []
+            hmm_length = []
+            for i, row in tracks[tracks["moi"] == moi].iterrows():
+                hmm_data.append(row["trajectory"])
+                hmm_length.append(len(row["trajectory"]))
+            hmm_data = np.concatenate(hmm_data)
+            self.hmms[moi].fit(hmm_data, hmm_length)
+
+    def get_traj_score(self, traj, moi):
+        return self.hmms[moi].score(traj)
+
+    def predict_traj(self, traj):
+        moi_scores = []
+        for moi in self.mois:
+            moi_scores.append(self.get_traj_score(traj, moi))
+        max_moi = self.mois[np.argmax(moi_scores)]
+        return max_moi
+
+    def predict_tracks(self, tracks):
+        max_mois = []
+        for i, row in tracks.iterrows():
+            traj = row["trajectory"]
+            max_mois.append(self.predict_traj(traj))
+        return max_mois
+
+    
+class KDECounting(Counting):
+    def __init__(self, args):
+        # load tracks
+        # isolate complete tracks
+        # train kdes and store them
+        # classify based on kdes
+        self.args = args
+        tracks_path = args.ReprojectedPkl
+        tracks_meter_path = args.ReprojectedPklMeter
+        top_image = args.HomographyTopView
+        meta_data = args.MetaData # dict is already loaded
+        HomographyNPY = args.HomographyNPY
+
+        # load data
+        M = np.load(HomographyNPY, allow_pickle=True)[0]
+        tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
+        tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
+        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True))
+        img = plt.imread(top_image)
+        img1 = cv.imread(top_image)
+        H, W, C = img1.shape
+        X_cord, Y_cord = np.meshgrid(range(int(W)), range(int(H)))
+        # X_cord, Y_cord = np.meshgrid(range(200, 600), range(200, 600))
+        Data_cord = np.stack([X_cord, Y_cord]).reshape(2, -1).T
+
+        # create roi polygon
+        roi_rep = []
+        for p in args.MetaData["roi"]:
+            point = np.array([p[0], p[1], 1])
+            new_point = M.dot(point)
+            new_point /= new_point[2]
+            roi_rep.append([new_point[0], new_point[1]])
+
+        pg = MyPoly(roi_rep)
+        th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
+
+        counter = 0
+        mask = []
+        i_strs = []
+        i_ends = []
+        moi = []
+
+        # find proper tracks(complete and monotonic)
+        for i, row in tqdm(tracks.iterrows(), total=len(tracks)):
+            traj = row["trajectory"]
+            d_str, i_str = pg.distance(traj[0])
+            d_end, i_end = pg.distance(traj[-1])
+            i_strs.append(i_str)
+            i_ends.append(i_end)
+            moi.append(str_end_to_moi(i_str, i_end))
+
+            if (d_str < th) and (d_end < th) and (not i_str == i_end) and is_monotonic(traj[row["index_mask"]]):
+                mask.append(True)
+                c=0 
+                for x, y in traj:
+                    x, y = int(x), int(y)
+                    img1 = cv.circle(img1, (x,y), radius=1, color=(int(c/len(traj)*255), 70, int(255 - c/len(traj)*255)), thickness=1)
+                    c+=1
+            else:
+                mask.append(False)
+
+        plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
+        plt.show()
+
+
+        # temporarily add info to track dataframe
+        tracks['i_str'] = i_strs
+        tracks['i_end'] = i_ends
+        tracks['moi'] = moi
+        tracks_meter['i_str'] = i_strs
+        tracks_meter['i_end'] = i_ends 
+        tracks_meter['moi'] = moi
+        plt.hist(tracks[mask]["moi"])
+        plt.show()
+        # resample on the ground plane but not in meter
+        tracks["trajectory"] = tracks.apply(lambda x: x['trajectory'][x["index_mask"]], axis=1)
+      
+        if self.args.CountMetric == "kde":
+            self.ikde = IKDE()
+        elif self.args.CountMetric == "loskde":
+            self.ikde = LOSIKDE()
+        elif self.args.CountMetric == "hmmg":
+            self.ikde = HMMG()
+        else: raise "it should not happen"
+        self.ikde.fit(tracks[mask])
+
+    def main(self):
+        # where the counting happens
+        args = self.args
+        tracks_path = args.ReprojectedPkl
+        tracks_meter_path = args.ReprojectedPklMeter
+        top_image = args.HomographyTopView
+        meta_data = args.MetaData # dict is already loaded
+        HomographyNPY = args.HomographyNPY
+        result_paht = args.CountingResPth
+        # load data
+        M = np.load(HomographyNPY, allow_pickle=True)[0]
+        tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
+        tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
+        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True))
+        img = plt.imread(top_image)
+        img1 = cv.imread(top_image)
+        # resample gp tracks
+        tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        tracks["moi"] = self.ikde.predict_tracks(tracks)
+
+        counted_tracks  = tracks[["id", "moi"]]
+        counted_tracks.to_csv(self.args.CountingIdMatchPth, index=False)
+
+        counter = {}
+        for moi in range(1, 13):
+            counter[moi]  = 0
+        for i, row in counted_tracks.iterrows():
+                counter[int(row["moi"])] += 1
+        print(counter)
+        with open(result_paht, "w") as f:
+            json.dump(counter, f, indent=2)
+
+
+        
+
 def eval_count(args):
     # args.CountingResPth a json file
     # args.CountingStatPth a csv file
@@ -249,9 +483,12 @@ def eval_count(args):
 
 def main(args):
     # some relative path form the args
-        # args.ReprojectedPklMeter
-        # args.TrackLabellingExportPthMeter
-    counter = Counting(args)
+    # args.ReprojectedPklMeter
+    # args.TrackLabellingExportPthMeter
+    if args.CountMetric in ["kde", "loskde", "hmmg"] :
+        counter = KDECounting(args)
+    else:
+        counter = Counting(args)
     counter.main()
 
     if args.EvalCount:
