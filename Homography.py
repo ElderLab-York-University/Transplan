@@ -47,13 +47,16 @@ def lunch_homographygui(args):
     os.system(f"sudo python3 main.py --StreetView='{street}' --TopView='{top}' --Txt='{txt}' --Npy='{npy}' --Csv='{csv}'")
     os.chdir(cwd)
 
-def reproject(args):
+def reproject(args, from_back_up = True):
     homography_path = args.HomographyNPY
     out_path = args.ReprojectedPoints 
 
     current_tracker = trackers[args.Tracker]
     # df = current_tracker.df(args)
-    df = pd.read_pickle(args.TrackingPklBackUp)
+    if from_back_up:
+        df = pd.read_pickle(args.TrackingPklBackUp)
+    else:
+        df = pd.read_pickle(args.TrackingPkl)
     
     M = np.load(homography_path, allow_pickle=True)[0]
     with open(out_path, 'w') as out_file:

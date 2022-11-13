@@ -81,10 +81,10 @@ def VisHomographyGUI(args):
         return log
     else: return WarningLog("skipped vis homography GUI subtask")
 
-def Homography(args):
+def Homography(args, from_back_up = False):
     if args.Homography:
         print(ProcLog("Homography reprojection in Process"))
-        log = reproject(args)
+        log = reproject(args, from_back_up=from_back_up)
         return log
     else: return WarningLog("skipped homography subtask")
 
@@ -120,11 +120,18 @@ def Pix2Meter(args):
 
 def TrackPostProc(args):
     if args.TrackPostProc:
+        print(ProcLog("Call homography and meter from back_up"))
+        args.Meter , args.Homograhy = True , True
+        log = Homography(args, from_back_up=True)
+        print(log)
+        log = Pix2Meter(args)
+        print(log)
         print(ProcLog("Track Post Processing in execution"))
         log = trackpostproc(args)
         print(log)
-        print(WarningLog("relunching tracking subtasks make sure to set --Meter and --Homography"))
-        tracking_subtasks = [VisTrack, Homography, Pix2Meter]
+        print(WarningLog("relunching tracking subtasks. homography and meter will be executed"))
+        
+        tracking_subtasks = [Homography, Pix2Meter]
         for task in tracking_subtasks:
             log = task(args)
             print(log)
@@ -199,6 +206,7 @@ if __name__ == "__main__":
     parser.add_argument("--DetMask", help="if to remove bboxes out of ROI", action="store_true")
     parser.add_argument("--TrackPostProc", help="if to perform tracking post processings", action="store_true")
     parser.add_argument("--TrackTh", help="the threshold for short track removal in meter", type=float)
+    parser.add_argument("--TrackMask", help="if to remove bboxes out of ROI", action="store_true")
     parser.add_argument("--VisROI", help="visualize the selected ROI", action='store_true')
     parser.add_argument("--VisTrackMoI", help="visualize tracking with moi labels", action='store_true')
     parser.add_argument("--LabelledTrajectories", help=" a pkl file containint the labelled trajectories on the ground plane",type=str)

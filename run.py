@@ -16,8 +16,8 @@ trackers = [ "ByteTrack"]
 clusters = ["SpectralFull"]
 
 # choose the metric for clustering and classification pqrt
-# options: ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde"]
-metrics = ["hmmg"]
+# options: ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde", "hmmg"]
+metrics = ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde", "hmmg"]
 
 for src in sources:
     ########################################################
@@ -40,7 +40,7 @@ for src in sources:
     # for det in detectors:
     #     for tra in trackers:
     #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --TrackPostProc --TrackTh=8 --VisTrajectories")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Homography --Meter --TrackPostProc --TrackTh=4 --TrackMask --VisTrajectories")
 
     ########################################################
     # 4. run clustering algorithm
@@ -69,6 +69,7 @@ for src in sources:
 
     ########################################################
     # 7. Run the classification(counting) part
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --CountVisPrompt --EvalCount")
     ########################################################
     for det in detectors:
         for tra in trackers:

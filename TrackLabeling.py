@@ -142,7 +142,7 @@ def extract_common_tracks(args):
             print(f"moi {mi} was empty")
             continue
 
-        clt = sklearn.cluster.KMeans(n_clusters = num_cluster)
+        clt = sklearn.cluster.KMeans(n_clusters = min(num_cluster, len(starts)))
         clt.fit(starts)
         c_start = clt.predict(starts)
         p_start = np.array([clt.score(x.reshape(1, -1)) for x in starts])

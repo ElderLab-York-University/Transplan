@@ -142,15 +142,30 @@ def trackpostproc(args):
     def update_tracking_changes(df, args):
         trackers[args.Tracker].df_txt(df, args.TrackingPth)
         store_df_pickle(args)
-
+    # restore original tracks in txt and pkl
+    df = pd.read_pickle(args.TrackingPklBackUp)
+    update_tracking_changes(df, args)
     # apply postprocessing on args.ReprojectedPkLMeter and ReprojectedPkl
     if not args.TrackTh is None:
         df  = remove_short_tracks(args)
         update_tracking_changes(df, args)
-
+    # apply postprocessing on args.TrackingPkl
+    if args.TrackMask:
+        main_df = pd.read_pickle(args.TrackingPkl)
+        df = remove_out_of_ROI(main_df, args.MetaData["roi"])
+        update_tracking_changes(df, args)
     
     return SucLog("track post processing executed with no error")
 
+# def roi_mask_tracks(args):
+#     df_meter_ungrouped = pd.read_pickle(args.ReprojectedPklMeter)
+#     df_reg_ungrouped   = pd.read_pickle(args.ReprojectedPkl)
+#     df_meter = group_tracks_by_id(df_meter_ungrouped)
+#     df_reg   = group_tracks_by_id(df_reg_ungrouped)
+#     main_df = pd.read_pickle(args.TrackingPkl)
+
+#     mask = []
+#     for i , row in main_df.iterrows():
 
 def remove_short_tracks(args):
     th = args.TrackTh
