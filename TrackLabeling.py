@@ -46,6 +46,7 @@ def extract_common_tracks(args):
     tracks_path = args.ReprojectedPkl
     tracks_meter_path = args.ReprojectedPklMeter
     top_image = args.HomographyTopView
+    street_image = args.HomographyStreetView
     meta_data = args.MetaData # dict is already loaded
     HomographyNPY = args.HomographyNPY
     exportpath = args.TrackLabellingExportPth
@@ -58,7 +59,19 @@ def extract_common_tracks(args):
     tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True))
     img = plt.imread(top_image)
     img1 = cv.imread(top_image)
+    img_street = plt.imread(street_image)
 
+    # create frame polygon
+    mx_y, mx_x, channels = img_street.shape
+    frame_rep = []
+    frame_rep_image = [[0, 0], [0, mx_y], [mx_x, 0], [mx_x, mx_y]]
+    for p in frame_rep_image:
+        point = np.array([p[0], p[1], 1])
+        new_point = M.dot(point)
+        new_point /= new_point[2]
+        frame_rep.append([new_point[0], new_point[1]])
+
+    frame_pg = MyPoly(frame_rep)
     # create roi polygon
     roi_rep = []
     for p in args.MetaData["roi"]:
@@ -81,11 +94,18 @@ def extract_common_tracks(args):
         traj = row["trajectory"]
         d_str, i_str = pg.distance(traj[0])
         d_end, i_end = pg.distance(traj[-1])
+        df_str, _ = frame_pg.distance(traj[0])
+        df_end, _ = frame_pg.distance(traj[-1])
+        # if df_str < d_str and d_str > th:
+        #     _, i_str = pg.distance_angle_filt(traj[row["index_mask"]][0], traj[row["index_mask"]][int(len(row["index_mask"])/2+0.5)])
         i_strs.append(i_str)
+        # if df_end < d_end and d_end > th:
+        #     _, i_end = pg.distance_angle_filt(traj[row["index_mask"]][-1], traj[row["index_mask"]][int(len(row["index_mask"])/2-0.5)])
         i_ends.append(i_end)
+
         moi.append(str_end_to_moi(i_str, i_end))
 
-        if (d_str < th) and (d_end < th) and (not i_str == i_end) and is_monotonic(traj[row["index_mask"]]):
+        if (d_str <= th) and (d_end <= th) and (not i_str == i_end) and is_monotonic(traj[row["index_mask"]]):
             mask.append(True)
             counter += 1
             c=0
@@ -194,6 +214,21 @@ class MyPoly():
         distances = np.array(distances)
         min_pos = np.argmin(distances)
         return distances[min_pos], int(min_pos)
+
+    def distance_angle_filt(self, p_main, p_second):
+        imaginary_line = sympy.Line(sympy.Point(p_main), sympy.Point(p_second))
+        min_angle = float('inf')
+        min_distance = float('inf')
+        min_distance_indx = None
+        for i, line in enumerate(self.lines):
+            d_main = float(line.distance(p_main))
+            d_secn = float(line.distance(p_second))
+            if d_secn <  d_main : continue
+            else:
+                if np.abs(float(imaginary_line.angle_between(line)) - np.pi/2 ) < min_angle:
+                    min_distance = float(line.distance(p_main))
+                    min_distance_indx  = i
+        return min_distance, min_distance_indx
 
     @property
     def area(self):

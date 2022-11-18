@@ -225,9 +225,10 @@ class Counting:
         return accum_dist
 
 class IKDE():
-    def __init__(self, kernel="exponential", bandwidth=1):
+    def __init__(self, kernel="gaussian", bandwidth=3.2, os_ratio = 10):
         self.kernel = kernel
         self.bw = bandwidth
+        self.osr = os_ratio
 
     def fit(self, tracks):
         self.mois = np.unique(tracks["moi"])
@@ -236,9 +237,16 @@ class IKDE():
             self.kdes[moi] = sklearn.neighbors.KernelDensity(kernel=self.kernel, bandwidth=self.bw)
         for moi in self.mois:
             kde_data = []
+            sequence_data = []
             for i, row in tracks[tracks["moi"] == moi].iterrows():
-                traj_len = len(row["trajectory"])
-                for x, y in row["trajectory"]:
+                traj = row["trajectory"]
+                for i in range(1, len(traj)):
+                    p1, p2 = traj[i-1], traj[i]
+                    for r in np.linspace(0, 1, num=self.osr):
+                        p_temp = (1-r)*p1 + r*p2
+                        sequence_data.append(p_temp)
+                for i , p in enumerate(sequence_data):
+                    x, y = p
                     kde_data.append([x, y])
             kde_data = np.array(kde_data)
             self.kdes[moi].fit(kde_data)
@@ -266,9 +274,8 @@ class IKDE():
         return max_mois
 
 class LOSIKDE(IKDE):
-    def __init__(self, kernel="exponential", bandwidth=1, os_ratio = 100):
-        super().__init__(kernel, bandwidth)
-        self.osr = os_ratio
+    def __init__(self, kernel="gaussian", bandwidth=3.2, os_ratio = 10):
+        super().__init__(kernel, bandwidth, os_ratio)
 
     def fit(self, tracks):
         self.mois = np.unique(tracks["moi"])
@@ -334,6 +341,42 @@ class HMMG():
             max_mois.append(self.predict_traj(traj))
         return max_mois
 
+class MyPoly():
+    def __init__(self, roi):
+        self.poly = sympy.Polygon(*roi)
+        self.lines = []
+        for i in range(len(roi)-1):
+            self.lines.append(sympy.Line(sympy.Point(roi[i]), sympy.Point(roi[i+1])))
+        self.lines.append(sympy.Line(sympy.Point(*roi[-1]), sympy.Point(*roi[0])))
+        
+    def distance(self, point):
+        p = sympy.Point(*point)
+        distances = []
+        for line in self.lines:
+            distances.append(float(line.distance(p)))
+        distances = np.array(distances)
+        min_pos = np.argmin(distances)
+        return distances[min_pos], int(min_pos)
+
+    def distance_angle_filt(self, p_main, p_second):
+        imaginary_line = sympy.Line(sympy.Point(p_main), sympy.Point(p_second))
+        min_angle = float('inf')
+        min_distance = float('inf')
+        min_distance_indx = None
+        for i, line in enumerate(self.lines):
+            d_main = float(line.distance(p_main))
+            d_secn = float(line.distance(p_second))
+            if d_secn <  d_main : continue
+            else:
+                if np.abs(float(imaginary_line.angle_between(line)) - np.pi/2 ) < min_angle:
+                    min_distance = float(line.distance(p_main))
+                    min_distance_indx  = i
+        return min_distance, min_distance_indx
+
+    @property
+    def area(self):
+        return float(self.poly.area)
+
     
 class KDECounting(Counting):
     def __init__(self, args):
@@ -397,7 +440,7 @@ class KDECounting(Counting):
                 mask.append(False)
 
         plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
-        plt.show()
+        # plt.show()
 
 
         # temporarily add info to track dataframe
@@ -408,7 +451,7 @@ class KDECounting(Counting):
         tracks_meter['i_end'] = i_ends 
         tracks_meter['moi'] = moi
         plt.hist(tracks[mask]["moi"])
-        plt.show()
+        # plt.show()
         # resample on the ground plane but not in meter
         tracks["trajectory"] = tracks.apply(lambda x: x['trajectory'][x["index_mask"]], axis=1)
       
@@ -489,7 +532,79 @@ class KDECounting(Counting):
         print(len(current_track))
         print(current_track)
 
+class ROICounting(KDECounting):
+    def __init__(self, args):
+        self.args = args
+        # load ROI 
+        meta_data = args.MetaData # dict is already loaded
+        HomographyNPY = args.HomographyNPY
+        self.M = np.load(HomographyNPY, allow_pickle=True)[0]
+        roi_rep = []
 
+        for p in args.MetaData["roi"]:
+            point = np.array([p[0], p[1], 1])
+            new_point = self.M.dot(point)
+            new_point /= new_point[2]
+            roi_rep.append([new_point[0], new_point[1]])
+
+        self.pg = MyPoly(roi_rep)
+
+    def main(self):
+        args = self.args
+        pg = self.pg
+        tracks_path = args.ReprojectedPkl
+        result_paht = args.CountingResPth
+
+        tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
+        i_strs = []
+        i_ends = []
+        moi = []
+        # perform the actual counting paradigm
+        for i, row in tqdm(tracks.iterrows(), total=len(tracks)):
+            traj = row["trajectory"]
+            d_str, i_str = pg.distance(traj[0])
+            d_end, i_end = pg.distance(traj[-1])
+            i_strs.append(i_str)
+            i_ends.append(i_end)
+            moi.append(str_end_to_moi(i_str, i_end))
+
+        tracks['i_str'] = i_strs
+        tracks['i_end'] = i_ends
+        tracks['moi'] = moi
+        counted_tracks  = tracks[["id", "moi"]][tracks["moi"]!=-1]
+        counted_tracks.to_csv(self.args.CountingIdMatchPth, index=False)
+
+
+        counter = {}
+        for moi in range(1, 13):
+            counter[moi]  = 0
+        for i, row in counted_tracks.iterrows():
+                counter[int(row["moi"])] += 1
+        print(counter)
+        with open(result_paht, "w") as f:
+            json.dump(counter, f, indent=2)
+
+        if self.args.CountVisPrompt:
+            for i, row in tracks.iterrows():
+                self.plot_track_on_gp(row["trajectory"], matched_id=row["moi"])
+                
+def str_end_to_moi(str, end):
+    str_end_moi = {}
+    str_end_moi[(3, 0)] = '1'
+    str_end_moi[(3, 1)] = '2'
+    str_end_moi[(3, 2)] = '3'
+    str_end_moi[(2, 3)] = '4'
+    str_end_moi[(2, 0)] = '5'
+    str_end_moi[(2, 1)] = '6'
+    str_end_moi[(1, 2)] = '7'
+    str_end_moi[(1, 3)] = '8'
+    str_end_moi[(1, 0)] = '9'
+    str_end_moi[(0, 1)] = '10'
+    str_end_moi[(0, 2)] = '11'
+    str_end_moi[(0, 3)] = '12'
+    if (str ,end) in str_end_moi:
+        return str_end_moi[(str, end)]
+    return -1
         
 
 def eval_count(args):
@@ -523,6 +638,8 @@ def main(args):
     # args.TrackLabellingExportPthMeter
     if args.CountMetric in ["kde", "loskde", "hmmg"] :
         counter = KDECounting(args)
+    elif args.CountMetric == "roi":
+        counter = ROICounting(args)
     else:
         counter = Counting(args)
     counter.main()

@@ -17,7 +17,7 @@ clusters = ["SpectralFull"]
 
 # choose the metric for clustering and classification pqrt
 # options: ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde", "hmmg"]
-metrics = ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde", "hmmg"]
+metrics = ["roi"]
 
 for src in sources:
     ########################################################
@@ -60,7 +60,7 @@ for src in sources:
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackLabelingGUI --VisLabelledTrajectories")
 
     ########################################################
-    # 6. Run automated track labelling
+    # 6. Run automated track extraction and labelling
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
