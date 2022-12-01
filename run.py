@@ -17,7 +17,7 @@ clusters = ["SpectralFull"]
 
 # choose the metric for clustering and classification pqrt
 # options: ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde", "hmmg"]
-metrics = ["roi"]
+metrics = ["loskde"]
 
 for src in sources:
     ########################################################
@@ -75,7 +75,7 @@ for src in sources:
         for tra in trackers:
             for metric in metrics:
                 print(f"counting metric:{metric}")
-                os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount")
+                os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --CountVisPrompt")
 
     ########################################################
     # 8. Visualizing the results on a video including track label and track id
