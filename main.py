@@ -211,6 +211,10 @@ if __name__ == "__main__":
     parser.add_argument("--VisTrackMoI", help="visualize tracking with moi labels", action='store_true')
     parser.add_argument("--LabelledTrajectories", help=" a pkl file containint the labelled trajectories on the ground plane",type=str)
     parser.add_argument("--ExtractCommonTracks", help="instead of track labelling GUI extract common tracks automatically", action='store_true')
+    parser.add_argument("--UseCachedCounter", help="use a pre-initialized cached counter object", action='store_true')
+    parser.add_argument("--CacheCounter", help="Cache the counter after initialization", action='store_true')
+    parser.add_argument("--CachedCounterPth", help="path to pre-initialized cached counter object", type=str)
+
 
     args = parser.parse_args()
 

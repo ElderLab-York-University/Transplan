@@ -54,7 +54,9 @@ def extract_common_tracks(args):
 
     # load data
     M = np.load(HomographyNPY, allow_pickle=True)[0]
+    print("!-!: grouping gp tracks points based on id")
     tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
+    print("!-!: grouping gp-meter tracks points based on id")
     tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
     tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True))
     img = plt.imread(top_image)
@@ -90,6 +92,7 @@ def extract_common_tracks(args):
     moi = []
 
     # find and plot proper tracks(complete and monotonic)
+    print("!-!: finding proper tracks(complete and monotonic)")
     for i, row in tqdm(tracks.iterrows(), total=len(tracks)):
         traj = row["trajectory"]
         d_str, i_str = pg.distance(traj[0])
@@ -116,7 +119,7 @@ def extract_common_tracks(args):
         else:
             mask.append(False)
 
-    print(counter/len(tracks))
+    print(f"percentage of complete tracks: {counter/len(tracks)}")
     plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
     plt.show()
 

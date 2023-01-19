@@ -48,7 +48,7 @@ def df_txt(df,text_result_path):
     pass
 
   with open(text_result_path, "w") as text_file:
-    for i, row in df.iterrows():
+    for i, row in tqdm(df.iterrows()):
       frame_num, clss, score, x1, y1, x2, y2 = row["fn"], row['class'], row["score"], row["x1"], row["y1"], row["x2"], row["y2"]
       text_file.write(f"{frame_num} {clss} {score} {x1} {y1} {x2} {y2}\n")
     

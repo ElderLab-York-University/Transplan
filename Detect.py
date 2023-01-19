@@ -9,6 +9,7 @@ from Utils import *
 import Detectors.OpenMM.detect
 import Detectors.YOLOv5.detect
 import Detectors.detectron2.detect
+import Detectors.YOLOv8.detect
 
 # --------------------------
 
@@ -16,7 +17,7 @@ detectors = {}
 detectors["detectron2"] = Detectors.detectron2.detect
 detectors["OpenMM"] = Detectors.OpenMM.detect
 detectors["YOLOv5"] = Detectors.YOLOv5.detect
-
+detectors["YOLOv8"] = Detectors.YOLOv8.detect
 
 def detect(args):
     # check if detector names is valid
@@ -110,6 +111,7 @@ def detectpostproc(args):
 
 
 def detectionth(df, args):
+    print("performing thresholding")
     df = df[df["score"] >= args.DetTh]
     return df
 

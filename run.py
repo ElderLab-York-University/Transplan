@@ -1,11 +1,15 @@
 import os
 # choose the dataset/video
 # options : ['./../Dataset/DandasStAtNinthLineFull', './../Dataset/DandasStAtNinthLine', "./../Dataset/SOW_src1", "./../Dataset/SOW_src2", "./../Dataset/SOW_src3", "./../Dataset/SOW_src4"]
-sources = ['./../Dataset/DandasStAtNinthLineFull']
+sources = [
+# '/home/savoji/Desktop/TransPlanProject/Dataset/preprocessed/DundasStreetAtNinthLine/2020Dec18/GX010069'
+# "./../Dataset/DandasStAtNinthLineFull"
+'./../Dataset/DandasStAtNinthLine'
+]
 
 # choose the detectors
-# options: ["detectron2", "OpenMM", "YOLOv5"]
-detectors = ["detectron2"]
+# options: ["detectron2", "OpenMM", "YOLOv5", "YOLOv8"]
+detectors = ["YOLOv8"]
 
 # choose the tracker
 # options: ["sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort"]
@@ -16,8 +20,8 @@ trackers = [ "ByteTrack"]
 clusters = ["SpectralFull"]
 
 # choose the metric for clustering and classification pqrt
-# options: ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde", "hmmg"]
-metrics = ["loskde"]
+# options: ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde", "hmmg", "roi"]
+metrics = ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde","roi"]
 
 for src in sources:
     ########################################################
@@ -29,9 +33,9 @@ for src in sources:
     # 2. run the detection
     # the full commonad looks like : os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=sort --Detect --DetPostProc --DetMask --DetTh=0.75 --VisDetect --VisROI")
     ########################################################
-    # for det in detectors:
-    #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=sort  --Detect --DetPostProc --DetMask --DetTh=0.75 --VisDetect --VisROI")
+    for det in detectors:
+        print(f"detecting ----> src:{src} det:{det}")
+        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=sort  --VisDetect")
 
     ########################################################
     # 3. run the tracking 
@@ -69,13 +73,13 @@ for src in sources:
 
     ########################################################
     # 7. Run the classification(counting) part
-    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --CountVisPrompt --EvalCount")
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --CountVisPrompt --EvalCount --UseCachedCounter --CacheCounter")
     ########################################################
-    for det in detectors:
-        for tra in trackers:
-            for metric in metrics:
-                print(f"counting metric:{metric}")
-                os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --CountVisPrompt")
+    # for det in detectors:
+    #     for tra in trackers:
+    #         for metric in metrics:
+    #             print(f"counting metric:{metric}")
+    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --CacheCounter --EvalCount")
 
     ########################################################
     # 8. Visualizing the results on a video including track label and track id

@@ -636,13 +636,27 @@ def main(args):
     # some relative path form the args
     # args.ReprojectedPklMeter
     # args.TrackLabellingExportPthMeter
-    if args.CountMetric in ["kde", "loskde", "hmmg"] :
-        counter = KDECounting(args)
-    elif args.CountMetric == "roi":
-        counter = ROICounting(args)
+
+    # check if use cached counter
+    if args.UseCachedCounter:
+        with open(args.CachedCounterPth, "rb") as f:
+            counter = pkl.load(f)
     else:
-        counter = Counting(args)
+        if args.CountMetric in ["kde", "loskde", "hmmg"] :
+            counter = KDECounting(args)
+        elif args.CountMetric == "roi":
+            counter = ROICounting(args)
+        else:
+            counter = Counting(args)
+
+    # perfom counting here
     counter.main()
+
+    # save counter object for later use
+    if args.CacheCounter:
+        with open(args.CachedCounterPth, "wb") as f:
+            print(f"counter being saved to {args.CachedCounterPth}")
+            pkl.dump(counter, f)
 
     if args.EvalCount:
         eval_count(args)

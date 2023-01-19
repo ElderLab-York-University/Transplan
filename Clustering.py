@@ -12,7 +12,7 @@ from collections import defaultdict
 import cv2
 import matplotlib
 import numpy as np
-# from pymatreader import read_mat
+# from pymatreader import read_matClcd
 import pandas as pd
 from matplotlib import cm
 from counting.resample_gt_MOI.resample_typical_tracks import track_resample
@@ -34,36 +34,6 @@ clusterers = {}
 clusterers["DBSCAN"] = DBSCAN(eps = 0.8, min_samples=2, metric="precomputed")
 clusterers["SpectralKNN"] = SpectralClustering(affinity="precomputed_nearest_neighbors", n_clusters=12)
 clusterers["SpectralFull"] = SpectralClustering(affinity="precomputed", n_clusters=12)
-
-def fit_circle(traj):
-    x = traj[:, 0]
-    y = traj[:, 1]
-    x_m = np.mean(x)
-    y_m = np.mean(y)
-    u = x - x_m
-    v = y - y_m
-    Suv  = np.sum(u*v)
-    Suu  = np.sum(u**2)
-    Svv  = np.sum(v**2)
-    Suuv = np.sum(u**2 * v)
-    Suvv = np.sum(u * v**2)
-    Suuu = np.sum(u**3)
-    Svvv = np.sum(v**3)
-
-    # Solving the linear system
-    A = np.array([ [ Suu, Suv ], [Suv, Svv]])
-    B = np.array([ Suuu + Suvv, Svvv + Suuv ])/2.0
-    uc, vc = np.linalg.solve(A, B)
-
-    xc_1 = x_m + uc
-    yc_1 = y_m + vc
-
-    # Calculation of all distances from the center (xc_1, yc_1)
-    Ri_1      = np.sqrt((x-xc_1)**2 + (y-yc_1)**2)
-    R_1       = np.mean(Ri_1)
-    # residu_1  = np.sum((Ri_1-R_1)**2)
-    # residu2_1 = np.sum((Ri_1**2-R_1**2)**2)
-    return xc_1, yc_1, R_1 
 
 # can be used for calculating descrete diff of a trajectory
 def diff_traj(traj):
@@ -202,11 +172,9 @@ def cluster(args):
 
     M = None
     # check if the distance matrix is available first
-    if False:
-        pass
-    # if os.path.exists(args.ClusteringDistanceMatrix):
-    #     with open(args.ClusteringDistanceMatrix, "rb") as f:
-    #         M = np.load(f)
+    if os.path.exists(args.ClusteringDistanceMatrix):
+        with open(args.ClusteringDistanceMatrix, "rb") as f:
+            M = np.load(f)
     else:
         # compute distance matrix
         M = np.zeros(shape=(len(indexes), len(indexes)))
@@ -217,8 +185,8 @@ def cluster(args):
                 c =  metric(traj_a, traj_b)
                 M[int(i), int(j)] = c
                 M[int(j), int(i)] = c
-        # with open(args.ClusteringDistanceMatrix, "wb") as f:
-        #     np.save(f, M)
+        with open(args.ClusteringDistanceMatrix, "wb") as f:
+            np.save(f, M)
 
     clt = clusterers[args.ClusteringAlgo]
     if args.ClusteringAlgo == "SpectralFull":
@@ -269,5 +237,5 @@ def cluster(args):
 # viz_all_tracks(df["trajectory"].iloc[center_indexes], labels[center_indexes], save_path = "./../../Results/Agglomorative_centers_MXLN.png")
 
 
-# idea 1: for each cluster find the trajectory that has the least average distance from all the other clusters
 # how to find cluster centers ??
+# idea 1: for each cluster find the trajectory that has the least average distance from all the other clusters
