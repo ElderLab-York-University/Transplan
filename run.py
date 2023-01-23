@@ -9,7 +9,7 @@ sources = [
 
 # choose the detectors
 # options: ["detectron2", "OpenMM", "YOLOv5", "YOLOv8"]
-detectors = ["YOLOv8"]
+detectors = ["DDETR"]
 
 # choose the tracker
 # options: ["sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort"]
@@ -35,7 +35,7 @@ for src in sources:
     ########################################################
     for det in detectors:
         print(f"detecting ----> src:{src} det:{det}")
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=sort  --VisDetect")
+        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=sort  --Detect --VisDetect")
 
     ########################################################
     # 3. run the tracking 

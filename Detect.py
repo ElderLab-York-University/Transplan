@@ -10,6 +10,7 @@ import Detectors.OpenMM.detect
 import Detectors.YOLOv5.detect
 import Detectors.detectron2.detect
 import Detectors.YOLOv8.detect
+import Detectors.DDETR.detect
 
 # --------------------------
 
@@ -18,6 +19,7 @@ detectors["detectron2"] = Detectors.detectron2.detect
 detectors["OpenMM"] = Detectors.OpenMM.detect
 detectors["YOLOv5"] = Detectors.YOLOv5.detect
 detectors["YOLOv8"] = Detectors.YOLOv8.detect
+detectors["DDETR"]  = Detectors.DDETR.detect
 
 def detect(args):
     # check if detector names is valid
