@@ -62,7 +62,7 @@ def reproject(args, from_back_up = True):
     with open(out_path, 'w') as out_file:
         for index, row in tqdm(df.iterrows(), total=len(df)):
             # fn, idd, x, y = track[0], track[1], (track[2] + track[4]/2), (track[3] + track[5])/2
-            fn, idd, x, y = row['fn'], row['id'], row['x2'], (row['y1'] + row['y2'])/2
+            fn, idd, x, y = row['fn'], row['id'], (row['x2']+row['x1'])/2, row['y2']
             point = np.array([x, y, 1])
             new_point = M.dot(point)
             new_point /= new_point[2]

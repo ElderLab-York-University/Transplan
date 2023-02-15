@@ -24,7 +24,7 @@ if __name__=="__main__":
 
     model = YOLO("yolov8x.pt", type="v8")
     model.to(device)
-    results = model.predict(source=video_path, stream=True) # stream=True return a generator for memory efficiency
+    results = model.predict(source=video_path, stream=True, verbose=False) # stream=True return a generator for memory efficiency
     print("len results is ......")
 
     cap = cv2.VideoCapture(video_path)
@@ -35,10 +35,12 @@ if __name__=="__main__":
         pass
     with open(text_result_path, "a") as f:
         for fn, result in tqdm(enumerate(results), total=length):
-            res = result[0].cpu().numpy()
-            boxes = res.boxes.xyxy
-            confs = res.boxes.conf
-            cls = res.boxes.cls
-            for cl, conf, box in zip(cls, confs, boxes):
-                if cl in classes_to_keep:
-                    f.write(f"{fn+1} {cl} {conf} " + " ".join(map(str, box)) + "\n")
+            try:
+                res = result.cpu().numpy()
+                boxes = res.boxes.xyxy
+                confs = res.boxes.conf
+                cls = res.boxes.cls
+                for cl, conf, box in zip(cls, confs, boxes):
+                    if cl in classes_to_keep:
+                        f.write(f"{fn+1} {cl} {conf} " + " ".join(map(str, box)) + "\n")
+            except: pass

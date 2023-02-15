@@ -9,11 +9,11 @@ sources = [
 
 # choose the detectors
 # options: ["detectron2", "OpenMM", "YOLOv5", "YOLOv8"]
-detectors = ["DDETR"]
+detectors = ["detectron2"]
 
 # choose the tracker
-# options: ["sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort"]
-trackers = [ "ByteTrack"] 
+# options: ["sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
+trackers = ["StrongSort"] 
 
 # choose the clustering algorithm
 # options: ["SpectralFull", "DBSCAN", "SpectralKNN"]
@@ -21,7 +21,8 @@ clusters = ["SpectralFull"]
 
 # choose the metric for clustering and classification pqrt
 # options: ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde", "hmmg", "roi"]
-metrics = ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde","roi"]
+clt_metrics = ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos"]
+cnt_metrics = ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "roi", "loskde", "kde"]
 
 for src in sources:
     ########################################################
@@ -31,30 +32,31 @@ for src in sources:
 
     ########################################################
     # 2. run the detection
-    # the full commonad looks like : os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=sort --Detect --DetPostProc --DetMask --DetTh=0.75 --VisDetect --VisROI")
+    # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=sort --Detect --DetPostProc --DetMask --DetTh=0.75 --VisDetect --VisROI")
     ########################################################
-    for det in detectors:
-        print(f"detecting ----> src:{src} det:{det}")
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=sort  --Detect --VisDetect")
+    # for det in detectors:
+    #     print(f"detecting ----> src:{src} det:{det}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect --DetPostProc --DetMask --DetTh=0.75 --VisDetect --VisROI")
 
     ########################################################
     # 3. run the tracking 
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --TrackPostProc --TrackTh=8 --VisTrajectories")
     ########################################################
-    # for det in detectors:
-    #     for tra in trackers:
-    #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Homography --Meter --TrackPostProc --TrackTh=4 --TrackMask --VisTrajectories")
+    for det in detectors:
+        for tra in trackers:
+            print(f"tracking ---> src:{src} det:{det} tra:{tra}")
+            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --TrackPostProc --TrackTh=8 --VisTrajectories")
 
     ########################################################
     # 4. run clustering algorithm
+    # apperently the clustering visulaizaiton is harcodded at the moment
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
-    #         for met in metrics:
+    #         for met in clt_metrics:
     #             for clt in clusters:
     #                 print(f"clustering ----> det:{det} tra:{tra} met:{met} clt:{clt}")
-    #                 os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Cluster --ClusteringAlgo={clt} --ClusterMetric={met}")
+    #                 os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --ClusteringAlgo={clt} --ClusterMetric={met} --Cluster")
     
     ########################################################
     # 5. Run the track labelling GUI / go to 6.
@@ -77,9 +79,9 @@ for src in sources:
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
-    #         for metric in metrics:
+    #         for metric in cnt_metrics:
     #             print(f"counting metric:{metric}")
-    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --CacheCounter --EvalCount")
+    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount")
 
     ########################################################
     # 8. Visualizing the results on a video including track label and track id
