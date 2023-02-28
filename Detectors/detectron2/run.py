@@ -261,7 +261,8 @@ def detect_multi_process(device_name, proc_id, num_procs, video_path, Batch_Size
       # input=frame
       frame_nums_inserted.append(temp_i)
       temp_i += 1
-
+    # check if got any inputs from the previous batch
+    if len(inputs) <  1: continue
     with model_lock:
       with torch.no_grad():
         outputs = predictor(inputs)
