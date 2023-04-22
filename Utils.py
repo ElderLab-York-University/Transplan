@@ -135,6 +135,11 @@ def get_vis_tracking_path_from_args(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisTracking + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
 
+def get_vis_top_tracking_path_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "VisTrackingTop" + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
+
 def get_vis_tracking_moi_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -282,6 +287,11 @@ def add_vis_tracking_path_to_args(args):
     args.VisTrackingPth = vis_tracking_pth
     return args
 
+def add_vis_top_tracking_path_to_args(args):
+    vis_top_tracking_path  = get_vis_top_tracking_path_from_args(args)
+    args.VisTrackingTopPth = vis_top_tracking_path
+    return args
+
 def add_vis_tracking_moi_path_to_args(args):
     vis_tracking_pth = get_vis_tracking_moi_path_from_args(args)
     args.VisTrackingMoIPth = vis_tracking_pth
@@ -409,14 +419,15 @@ def complete_args(args):
     if not args.Tracker is None:
         args = add_tracking_path_to_args(args)
         args = add_vis_tracking_path_to_args(args)
+        args = add_vis_top_tracking_path_to_args(args)
         args = add_tracking_pkl_to_args(args)
 
     args = add_metadata_to_args(args)
-    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Track:
+    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Track or args.Meter or args.VisTrackTop:
         args = add_homographygui_related_path_to_args(args)
-    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc or args.Count:
+    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or args.VisTrackTop:
         args = add_homography_related_path_to_args(args)
-    if args.VisHomographyGUI or args.VisLabelledTrajectories:
+    if args.VisHomographyGUI or args.VisLabelledTrajectories or args.Meter:
         args = add_vishomography_path_to_args(args)
     if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter or args.ExtractCommonTracks:
         args = add_tracklabelling_export_to_args(args)

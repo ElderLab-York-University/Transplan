@@ -40,6 +40,22 @@ def pix2meter(args):
         df['trajectory'] = df['trajectory'].apply(scale_function)
         df.to_pickle(args.TrackLabellingExportPthMeter)
 
+    # # show the scale with roi
+    # print(r)
+    # # print(np.array(args.MetaData["roi"]))
+
+    # M = np.load(args.HomographyNPY, allow_pickle=True)[0]
+    # roi_rep = []
+    # roi = args.MetaData["roi"]
+    # for p in roi:
+    #     point = np.array([p[0], p[1], 1])
+    #     new_point = M.dot(point)
+    #     new_point /= new_point[2]
+    #     roi_rep.append([new_point[0], new_point[1]])
+    # roi_rep = np.array(roi_rep)
+    # print(roi_rep)
+    # print(r*roi_rep)
+
     return SucLog("pixel cordinates changed to meter cordinates")
 
 

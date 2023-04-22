@@ -54,8 +54,9 @@ def store_df_pickle_backup(args):
     df.to_pickle(args.TrackingPklBackUp)
 
 def vistrack(args):
-    current_tracker = trackers[args.Tracker]
-    df = current_tracker.df(args)
+    # current_tracker = trackers[args.Tracker]
+    # df = current_tracker.df(args)
+    df = pd.read_pickle(args.TrackingPkl)
     video_path = args.Video
     annotated_video_path = args.VisTrackingPth
     # tracks_path = args.TrackingPth
@@ -72,6 +73,8 @@ def vistrack(args):
 
     out_cap = cv2.VideoWriter(annotated_video_path,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
 
+    if not args.ForNFrames is None:
+        frames = args.ForNFrames
     # Read until video is completed
     for frame_num in tqdm(range(frames)):
         if (not cap.isOpened()):
@@ -79,16 +82,57 @@ def vistrack(args):
         # Capture frame-by-frame
         ret, frame = cap.read()
         if ret:
-            this_frame_tracks = df[df.fn==(frame_num+1)]
+            this_frame_tracks = df[df.fn==(frame_num)]
             for i, track in this_frame_tracks.iterrows():
                 # plot the bbox + id with colors
                 bbid, x1 , y1, x2, y2 = track.id, int(track.x1), int(track.y1), int(track.x2), int(track.y2)
                 # print(x1, y1, x2, y2)
+                np.random.seed(int(bbid))
+                color = (np.random.randint(0, 256), np.random.randint(0, 256), np.random.randint(0, 256))
                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
                 cv2.putText(frame, f'id:', (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
                 cv2.putText(frame, f'{int(bbid)}', (x1 + 60, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 5)
                 cv2.putText(frame, f'{int(bbid)}', (x1 + 60, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (144, 251, 144), 2)
             out_cap.write(frame)
+
+def vistracktop(args):
+    df = pd.read_pickle(args.ReprojectedPkl)
+    annotated_video_path = args.VisTrackingTopPth
+    video_path = args.Video
+    cap = cv2.VideoCapture(video_path)
+    # Check if camera opened successfully
+    if (cap.isOpened()== False): return FailLog("could not open input video")
+
+    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+
+    frame = cv.imread(args.HomographyTopView)
+    rows2, cols2, dim2 = frame.shape
+    frame_width , frame_height  = cols2 , rows2
+
+
+    color = (0, 0, 102)
+
+    out_cap = cv2.VideoWriter(annotated_video_path,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
+
+    if not args.ForNFrames is None:
+        frames = min(args.ForNFrames, frames)
+    # Read until video is completed
+    for frame_num in tqdm(range(frames)):
+        frame = cv.imread(args.HomographyTopView)
+
+        this_frame_tracks = df[df.fn==(frame_num)]
+        for i, track in this_frame_tracks.iterrows():
+            # plot the bbox + id with colors
+            bbid, x , y = track.id, int(track.x), int(track.y)
+            # print(x1, y1, x2, y2)
+            np.random.seed(int(bbid))
+            color = (np.random.randint(0, 256), np.random.randint(0, 256), np.random.randint(0, 256))
+            cv.circle(frame, (x,y), radius=2, color=color, thickness=3)
+            cv2.putText(frame, f'{int(bbid)}', (x + 10, y-2), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 3)
+            cv2.putText(frame, f'{int(bbid)}', (x + 10, y-2), cv2.FONT_HERSHEY_SIMPLEX, 1, (144, 251, 144), 1)
+        out_cap.write(frame)
+    return SucLog("executed vistrack top")
 
 def vistrackmoi(args):
     current_tracker = trackers[args.Tracker]

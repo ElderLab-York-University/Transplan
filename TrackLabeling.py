@@ -58,7 +58,7 @@ def extract_common_tracks(args):
     tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
     print("!-!: grouping gp-meter tracks points based on id")
     tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
-    tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True))
+    tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
     img = plt.imread(top_image)
     img1 = cv.imread(top_image)
     img_street = plt.imread(street_image)

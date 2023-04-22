@@ -4,16 +4,24 @@ import os
 sources = [
 # '/home/savoji/Desktop/TransPlanProject/Dataset/preprocessed/DundasStreetAtNinthLine/2020Dec18/GX010069'
 # "./../Dataset/DandasStAtNinthLineFull"
-'./../Dataset/DandasStAtNinthLine'
+# './../Dataset/DandasStAtNinthLine'
+# '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/BronteRoadAtDundasStreet/2020Dec21/Video1',
+# '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/BronteRoadAtDundasStreet/2020Dec21/Video2',
+# '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/DundasStreetAtWinstonParkDrive/Video1',
+# '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/DundasStreetAtWinstonParkDrive/Video2',
+# '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/EglintonAveWAtCreditviewRoad/Video1',
+# '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/EglintonAveWAtCreditviewRoad/Video2',
+'/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/DundasStreetAtNinthLine/Video1',
+# '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/DundasStreetAtNinthLine/Video2'
 ]
 
 # choose the detectors
-# options: ["detectron2", "OpenMM", "YOLOv5", "YOLOv8"]
-detectors = ["detectron2"]
+# options: ["detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage"]
+detectors = ["InternImage"]
 
 # choose the tracker
 # options: ["sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
-trackers = ["StrongSort"] 
+trackers = ["ByteTrack"] 
 
 # choose the clustering algorithm
 # options: ["SpectralFull", "DBSCAN", "SpectralKNN"]
@@ -21,31 +29,38 @@ clusters = ["SpectralFull"]
 
 # choose the metric for clustering and classification pqrt
 # options: ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde", "hmmg", "roi"]
-clt_metrics = ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos"]
-cnt_metrics = ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "roi", "loskde", "kde"]
+clt_metrics = ["tcos", "cmm"]
+cnt_metrics = ["tcos","roi"]
 
 for src in sources:
     ########################################################
     # 1. estimate the Homography Metrix using Homography GUI 
+    # os.system(f"python3 main.py --Dataset={src}  --Detector=detectron2 --Tracker=sort --HomographyGUI --VisHomographyGUI")
     ########################################################
     # os.system(f"python3 main.py --Dataset={src}  --Detector=detectron2 --Tracker=sort --HomographyGUI --VisHomographyGUI")
 
     ########################################################
-    # 2. run the detection
-    # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=sort --Detect --DetPostProc --DetMask --DetTh=0.75 --VisDetect --VisROI")
+    # 1.5 visualizing the region of interest 
+    # os.system(f"python3 main.py --Dataset={src}  --Detector=detectron2 --Tracker=sort --HomographyGUI --VisHomographyGUI")
     ########################################################
-    # for det in detectors:
-    #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect --DetPostProc --DetMask --DetTh=0.75 --VisDetect --VisROI")
+    # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --VisROI")
+
+    ########################################################
+    # 2. run the detection
+    # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=NULL --Detect --DetPostProc --DetMask --DetTh=0.75 --VisDetect")
+    ########################################################
+    for det in detectors:
+        print(f"detecting ----> src:{src} det:{det}")
+        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect")
 
     ########################################################
     # 3. run the tracking 
-    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --TrackPostProc --TrackTh=8 --VisTrajectories")
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --ForNFrames=1800 --Homography --Meter --TrackPostProc --TrackTh=8 --VisTrajectories --VisTrackTop")
     ########################################################
-    for det in detectors:
-        for tra in trackers:
-            print(f"tracking ---> src:{src} det:{det} tra:{tra}")
-            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --TrackPostProc --TrackTh=8 --VisTrajectories")
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra}  --VisTrack --VisTrackTop")
 
     ########################################################
     # 4. run clustering algorithm
@@ -81,7 +96,7 @@ for src in sources:
     #     for tra in trackers:
     #         for metric in cnt_metrics:
     #             print(f"counting metric:{metric}")
-    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount")
+    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount  --CountVisPrompt")
 
     ########################################################
     # 8. Visualizing the results on a video including track label and track id

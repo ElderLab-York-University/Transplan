@@ -10,7 +10,7 @@
 from Libs import *
 from Utils import *
 from Detect import detect, visdetect,detectpostproc, visroi
-from Track import track, vistrack, trackpostproc, vistrackmoi
+from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop
 from Homography import homographygui
 from Homography import reproject
 from Homography import vishomographygui
@@ -167,13 +167,21 @@ def ExtractCommonTracks(args):
         return log
     else: return WarningLog("skipped extract common track subtask")
 
+def VisTrackTop(args):
+    if args.VisTrackTop:
+        print(ProcLog("Vis Top Tracking"))
+        log = vistracktop(args)
+        return log
+    else: return WarningLog("skipped vis tracking from top")
+
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, VisROI, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, TrackPostProc, VisTrajectories, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories, Count, VisTrackMoI]
+    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, VisROI, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, TrackPostProc, VisTrajectories, VisTrackTop, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories, Count, VisTrackMoI]
     for subtask in subtasks:
         log = subtask(args)
-        print(log)
+        if not isinstance(log, WarningLog):
+            print(log)
     
 if __name__ == "__main__":
     # ferch the arguments
@@ -213,7 +221,11 @@ if __name__ == "__main__":
     parser.add_argument("--ExtractCommonTracks", help="instead of track labelling GUI extract common tracks automatically", action='store_true')
     parser.add_argument("--UseCachedCounter", help="use a pre-initialized cached counter object", action='store_true')
     parser.add_argument("--CacheCounter", help="Cache the counter after initialization", action='store_true')
+    parser.add_argument("--VisTrackTop", help="Visualize tracks from top view", action='store_true')
     parser.add_argument("--CachedCounterPth", help="path to pre-initialized cached counter object", type=str)
+
+    parser.add_argument("--ForNFrames", help="visualize the N first frame instead of all of them", type=int)
+    parser.add_argument("--ResampleTH", help="the threshold to resample tracks with", type=float, default=8)
 
 
     args = parser.parse_args()

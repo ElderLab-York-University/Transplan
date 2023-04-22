@@ -11,15 +11,17 @@ import Detectors.YOLOv5.detect
 import Detectors.detectron2.detect
 import Detectors.YOLOv8.detect
 import Detectors.DDETR.detect
+import Detectors.InternImage.detect
 
 # --------------------------
 
 detectors = {}
-detectors["detectron2"] = Detectors.detectron2.detect
-detectors["OpenMM"] = Detectors.OpenMM.detect
-detectors["YOLOv5"] = Detectors.YOLOv5.detect
-detectors["YOLOv8"] = Detectors.YOLOv8.detect
-detectors["DDETR"]  = Detectors.DDETR.detect
+detectors["detectron2"]  = Detectors.detectron2.detect
+detectors["OpenMM"]      = Detectors.OpenMM.detect
+detectors["YOLOv5"]      = Detectors.YOLOv5.detect
+detectors["YOLOv8"]      = Detectors.YOLOv8.detect
+detectors["DDETR"]       = Detectors.DDETR.detect
+detectors["InternImage"] = Detectors.InternImage.detect
 
 def detect(args):
     # check if detector names is valid
@@ -44,8 +46,7 @@ def store_df_pickle(args):
 def remove_out_of_ROI(df, roi):
     poly_path = mplPath.Path(np.array(roi))
     mask = []
-    print(len(mask), len(df))
-    for i, row in tqdm(df.iterrows(), total=len(df)):
+    for i, row in tqdm(df.iterrows(), total=len(df), desc="rm oROI bbox"):
         x1, y1, x2, y2 = row["x1"], row["y1"], row["x2"], row["y2"]
         p = [(x2+x1)/2, y2]
         if poly_path.contains_point(p):
@@ -57,7 +58,7 @@ def visdetect(args):
     if args.Detector is None:
         return FailLog("To interpret detections you should specify detector")
     # parse detection df using detector module
-    detection_df = detectors[args.Detector].df(args)
+    detection_df = pd.read_pickle(args.DetectionPkl)
 
     # open the original video and process it
     cap = cv2.VideoCapture(args.Video)
@@ -71,6 +72,8 @@ def visdetect(args):
 
     out_cap = cv2.VideoWriter(args.VisDetectionPth,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
 
+    if not args.ForNFrames is None:
+        frames = args.ForNFrames
     for frame_num in tqdm(range(frames)):
         if (not cap.isOpened()):
             return FailLog("Error reading the video")
