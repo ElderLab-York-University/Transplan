@@ -25,9 +25,9 @@ from TrackLabeling import *
 from hmmlearn import hmm 
 
 #  Hyperparameters
-MIN_TRAJ_POINTS = 10
-MIN_TRAJ_Length = 50
-MAX_MATCHED_Distance = 90
+# MIN_TRAJ_POINTS = 10
+# MIN_TRAJ_Length = 50
+# MAX_MATCHED_Distance = 90
 
 color_dict = moi_color_dict
 
@@ -92,7 +92,7 @@ class Counting:
         self.traject_couter = 0
         self.tem = []       
 
-    def counting(self, current_trajectory):
+    def counting(self, current_trajectory, track_id=-1):
         # counting_start_time = time.time()
         resampled_trajectory = track_resample(np.array(current_trajectory, dtype=np.float64))
 
@@ -118,13 +118,13 @@ class Counting:
                 for t , k in zip(tem, key):
                     print(f"tem = {t}, key = {k}")
                 print(f"matched id:{matched_id}")
-                self.viz_CMM(resampled_trajectory, matched_id=matched_id)
+                self.viz_CMM(resampled_trajectory, matched_id=matched_id, track_id = track_id)
                 
             self.counter[matched_id] += 1
             self.traject_couter += 1
             return matched_id
 
-    def viz_CMM(self, current_track, alpha=0.3, matched_id=0):
+    def viz_CMM(self, current_track, alpha=0.3, matched_id=0, track_id=-1):
         r = meter_per_pixel(self.args.MetaData['center'])
         image_path = self.args.HomographyTopView
         img = cv.imread(image_path)
@@ -180,6 +180,7 @@ class Counting:
         img_new = cv2.addWeighted(img, alpha, back_ground, 1 - alpha, 0)
         img_new = cv.cvtColor(img_new, cv.COLOR_BGR2RGB)
         plt.imshow(img_new)
+        plt.title(f"id;{track_id}")
         plt.show()
 
     def main(self):
@@ -197,7 +198,7 @@ class Counting:
         for idx in tqdm(tids):
             current_track = df[df['id'] == idx]
             a = current_track['trajectory'].values.tolist()
-            matched_moi = self.counting(a[0])
+            matched_moi = self.counting(a[0], track_id=idx)
             data['id'].append(idx)
             data['moi'].append(matched_moi)
                 # print(f"couning a[0] with shape {a[0].shape}")
@@ -225,7 +226,7 @@ class Counting:
         return accum_dist
 
 class IKDE():
-    def __init__(self, kernel="gaussian", bandwidth=3.2, os_ratio = 10):
+    def __init__(self, kernel="gaussian", bandwidth=3.2, os_ratio = 2):
         self.kernel = kernel
         self.bw = bandwidth
         self.osr = os_ratio
@@ -274,7 +275,7 @@ class IKDE():
         return max_mois
 
 class LOSIKDE(IKDE):
-    def __init__(self, kernel="gaussian", bandwidth=3.2, os_ratio = 10):
+    def __init__(self, kernel="gaussian", bandwidth=3.2, os_ratio = 2):
         super().__init__(kernel, bandwidth, os_ratio)
 
     def fit(self, tracks):
@@ -395,7 +396,7 @@ class KDECounting(Counting):
         M = np.load(HomographyNPY, allow_pickle=True)[0]
         tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
         tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
-        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True))
+        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
         img = plt.imread(top_image)
         img1 = cv.imread(top_image)
         H, W, C = img1.shape
@@ -464,8 +465,10 @@ class KDECounting(Counting):
         else: raise "it should not happen"
         self.ikde.fit(tracks[mask])
 
-    def main(self):
+    def main(self, args=None):
         # where the counting happens
+        if args is not None:
+            self.args = args
         args = self.args
         tracks_path = args.ReprojectedPkl
         tracks_meter_path = args.ReprojectedPklMeter
@@ -496,15 +499,18 @@ class KDECounting(Counting):
         with open(result_paht, "w") as f:
             json.dump(counter, f, indent=2)
 
+        print("right before count vis prompt")
         if self.args.CountVisPrompt:
+            print("will initiate count vis prompt")
             for i, row in tracks.iterrows():
-                self.plot_track_on_gp(row["trajectory"], matched_id=row["moi"])
+                self.plot_track_on_gp(row["trajectory"], matched_id=row["moi"], track_id=row["id"])
 
-    def plot_track_on_gp(self, current_track, matched_id=0, alpha=0.4):
+    def plot_track_on_gp(self, current_track, matched_id=0, alpha=0.4, track_id=None):
         c = color_dict[int(matched_id)]
         image_path = self.args.HomographyTopView
         img = cv.imread(image_path)
         back_ground = cv.imread(image_path)
+
         for i in range(1, len(current_track)):
             p1 = current_track[i-1]
             p2 = current_track[i]
@@ -512,22 +518,25 @@ class KDECounting(Counting):
             x2, y2 = int(p2[0]), int(p2[1])
             back_ground = cv2.line(back_ground, (x1, y1), (x2, y2), c, thickness=2) 
 
-            for p in current_track:
-                x, y = int(p[0]), int(p[1])
-                back_ground = cv.circle(back_ground, (x,y), radius=2, color=c, thickness=2)
-
-            p = current_track[0]
+        for p in current_track:
             x, y = int(p[0]), int(p[1])
-            back_ground = cv.circle(back_ground, (x,y), radius=3, color=(0, 255, 0), thickness=2)
+            back_ground = cv.circle(back_ground, (x,y), radius=2, color=c, thickness=2)
 
-            p = current_track[-1]
-            x, y = int(p[0]), int(p[1])
-            back_ground = cv.circle(back_ground, (x,y), radius=3, color=(0, 0, 255), thickness=2)
+        p = current_track[0]
+        x, y = int(p[0]), int(p[1])
+        back_ground = cv.circle(back_ground, (x,y), radius=3, color=(0, 255, 0), thickness=2)
+
+        p = current_track[-1]
+        x, y = int(p[0]), int(p[1])
+        back_ground = cv.circle(back_ground, (x,y), radius=3, color=(0, 0, 255), thickness=2)
 
         img_new = cv2.addWeighted(img, alpha, back_ground, 1 - alpha, 0)
         img_new = cv.cvtColor(img_new, cv.COLOR_BGR2RGB)
         plt.imshow(img_new)
-        plt.title(f"matched id:{matched_id}")
+        if track_id is not None:
+            plt.title(f"matched id:{matched_id} track id:{track_id}")
+        else:
+            plt.title(f"matched id:{matched_id}")
         plt.show()
         print(len(current_track))
         print(current_track)
@@ -650,7 +659,7 @@ def main(args):
             counter = Counting(args)
 
     # perfom counting here
-    counter.main()
+    counter.main(args)
 
     # save counter object for later use
     if args.CacheCounter:
