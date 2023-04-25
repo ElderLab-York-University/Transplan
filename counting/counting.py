@@ -23,6 +23,7 @@ from Maps import *
 from Libs import *
 from TrackLabeling import *
 from hmmlearn import hmm 
+import copy
 
 #  Hyperparameters
 # MIN_TRAJ_POINTS = 10
@@ -500,12 +501,41 @@ class KDECounting(Counting):
             json.dump(counter, f, indent=2)
 
         print("right before count vis prompt")
+
+        # get roi on groundpalane
+        roi_rep = []
+        for p in args.MetaData["roi"]:
+            point = np.array([p[0], p[1], 1])
+            new_point = M.dot(point)
+            new_point /= new_point[2]
+            roi_rep.append([new_point[0], new_point[1]])
+        pg = MyPoly(roi_rep)
+        th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
+
         if self.args.CountVisPrompt:
             print("will initiate count vis prompt")
             for i, row in tracks.iterrows():
-                self.plot_track_on_gp(row["trajectory"], matched_id=row["moi"], track_id=row["id"])
+                self.plot_track_on_gp(row["trajectory"], matched_id=row["moi"], track_id=row["id"], roi=roi_rep, roi_th=th, pg=pg)
 
-    def plot_track_on_gp(self, current_track, matched_id=0, alpha=0.4, track_id=None):
+    def add_roi_line_to_img(img, roi):
+        for i in range(1, len(roi)):
+            x1, y1 = roi[i-1]
+            x2, y2 = roi[i]
+            img = cv2.line(img, (x1, y1), (x2, y2), (255, 255, 255), thickness=2)
+        return img
+    
+   def add_roi_gap_to_img(img, pg, roi_th):
+        alpha = 0.2
+        bg_img = copy.deepcopy(img)
+        for y in range(bg_image.shape[0]):
+            for x in range(bg_image.shape[1]):
+                d, i = pg.distance([x, y])
+                if d > roi_th:
+                    bg_img[y, x] = 0
+        return cv2.addWeighted(img, alpha, bg_img, 1 - alpha, 0)
+
+
+    def plot_track_on_gp(self, current_track, matched_id=0, alpha=0.4, track_id=None, roi=None, roi_th=None, pg=None):
         c = color_dict[int(matched_id)]
         image_path = self.args.HomographyTopView
         img = cv.imread(image_path)
@@ -529,6 +559,11 @@ class KDECounting(Counting):
         p = current_track[-1]
         x, y = int(p[0]), int(p[1])
         back_ground = cv.circle(back_ground, (x,y), radius=3, color=(0, 0, 255), thickness=2)
+
+        if roi is not None:
+            back_ground = add_roi_line_to_img(back_ground, roi)
+            if (roi_th is not None) and (pg is not None):
+                back_ground = add_roi_gap_to_img(back_ground, pg, roi_th)
 
         img_new = cv2.addWeighted(img, alpha, back_ground, 1 - alpha, 0)
         img_new = cv.cvtColor(img_new, cv.COLOR_BGR2RGB)
