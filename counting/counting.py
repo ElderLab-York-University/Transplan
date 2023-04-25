@@ -517,14 +517,14 @@ class KDECounting(Counting):
             for i, row in tracks.iterrows():
                 self.plot_track_on_gp(row["trajectory"], matched_id=row["moi"], track_id=row["id"], roi=roi_rep, roi_th=th, pg=pg)
 
-    def add_roi_line_to_img(img, roi):
+    def add_roi_line_to_img(self,img, roi):
         for i in range(1, len(roi)):
             x1, y1 = roi[i-1]
             x2, y2 = roi[i]
             img = cv2.line(img, (x1, y1), (x2, y2), (255, 255, 255), thickness=2)
         return img
     
-   def add_roi_gap_to_img(img, pg, roi_th):
+   def add_roi_gap_to_img(self,img, pg, roi_th):
         alpha = 0.2
         bg_img = copy.deepcopy(img)
         for y in range(bg_image.shape[0]):
@@ -561,9 +561,9 @@ class KDECounting(Counting):
         back_ground = cv.circle(back_ground, (x,y), radius=3, color=(0, 0, 255), thickness=2)
 
         if roi is not None:
-            back_ground = add_roi_line_to_img(back_ground, roi)
+            back_ground = self.add_roi_line_to_img(back_ground, roi)
             if (roi_th is not None) and (pg is not None):
-                back_ground = add_roi_gap_to_img(back_ground, pg, roi_th)
+                back_ground = self.add_roi_gap_to_img(back_ground, pg, roi_th)
 
         img_new = cv2.addWeighted(img, alpha, back_ground, 1 - alpha, 0)
         img_new = cv.cvtColor(img_new, cv.COLOR_BGR2RGB)
