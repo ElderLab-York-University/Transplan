@@ -521,7 +521,7 @@ class KDECounting(Counting):
         for i in range(1, len(roi)):
             x1, y1 = roi[i-1]
             x2, y2 = roi[i]
-            img = cv2.line(img, (x1, y1), (x2, y2), (255, 255, 255), thickness=2)
+            img = cv2.line(img, (int(x1), int(y1)), (int(x2), int(y2)), (255, 255, 255), thickness=2)
         return img
     
     def add_roi_gap_to_img(self,img, pg, roi_th):
