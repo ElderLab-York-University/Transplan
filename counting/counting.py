@@ -528,7 +528,7 @@ class KDECounting(Counting):
         alpha = 0.2
         bg_img = copy.deepcopy(img)
         for y in range(bg_img.shape[0]):
-            for x in range(bg_image.shape[1]):
+            for x in range(bg_img.shape[1]):
                 d, i = pg.distance([x, y])
                 if d > roi_th:
                     bg_img[y, x] = 0
