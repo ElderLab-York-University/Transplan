@@ -524,7 +524,7 @@ class KDECounting(Counting):
             img = cv2.line(img, (x1, y1), (x2, y2), (255, 255, 255), thickness=2)
         return img
     
-   def add_roi_gap_to_img(self,img, pg, roi_th):
+    def add_roi_gap_to_img(self,img, pg, roi_th):
         alpha = 0.2
         bg_img = copy.deepcopy(img)
         for y in range(bg_image.shape[0]):
