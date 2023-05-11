@@ -120,21 +120,11 @@ def Pix2Meter(args):
 
 def TrackPostProc(args):
     if args.TrackPostProc:
-        print(ProcLog("Call homography and meter from back_up"))
-        args.Meter , args.Homograhy = True , True
-        log = Homography(args, from_back_up=True)
-        print(log)
-        log = Pix2Meter(args)
-        print(log)
+        args.Meter , args.Homography = True , True
+        args = complete_args(args)
         print(ProcLog("Track Post Processing in execution"))
         log = trackpostproc(args)
-        print(log)
-        print(WarningLog("relunching tracking subtasks. homography and meter will be executed"))
-        
-        tracking_subtasks = [Homography, Pix2Meter]
-        for task in tracking_subtasks:
-            log = task(args)
-            print(log)
+        return log
     else: return WarningLog("skipped track post processing")
 
 def Count(args):
@@ -196,6 +186,7 @@ if __name__ == "__main__":
     parser.add_argument("--Track", help="If perform tracking", action="store_true")
     parser.add_argument("--VisTrack", help="If create video visualization of tracking", action="store_true")
     parser.add_argument("--HomographyGUI", help="If pop-up homography GUI", action="store_true")
+    parser.add_argument("--Frame", help="visualize the N first frame instead of all of them", type=int, default=10)
     parser.add_argument("--VisHomographyGUI", help="to visualize homography-gui results", action="store_true")
     parser.add_argument("--TrackLabelingGUI", help="If pop-up Track Labeling GUI", action="store_true")
     parser.add_argument("--Homography", help="If perform backkprojection using homography matrix", action="store_true")
@@ -214,7 +205,13 @@ if __name__ == "__main__":
     parser.add_argument("--DetMask", help="if to remove bboxes out of ROI", action="store_true")
     parser.add_argument("--TrackPostProc", help="if to perform tracking post processings", action="store_true")
     parser.add_argument("--TrackTh", help="the threshold for short track removal in meter", type=float)
-    parser.add_argument("--TrackMask", help="if to remove bboxes out of ROI", action="store_true")
+    parser.add_argument("--MaskROI", help="if to remove bboxes out of ROI", action="store_true")
+    parser.add_argument("--RemoveInvalidTracks", help="remove tracks with less than 3 points", action="store_true")
+    parser.add_argument("--SelectEndingInROI", help="select only those tracks that end in ROI", action="store_true")
+    parser.add_argument("--SelectBeginInROI", help="select only those tracks that begin in ROI", action="store_true")
+    parser.add_argument("--SelectDifEdgeInROI", help="remove tracks that begin and end in the same ROI region", action="store_true")
+    parser.add_argument("--HasPointsInROI", help="select the tracks that have at least on point in the ROI", action="store_true")
+    
     parser.add_argument("--VisROI", help="visualize the selected ROI", action='store_true')
     parser.add_argument("--VisTrackMoI", help="visualize tracking with moi labels", action='store_true')
     parser.add_argument("--LabelledTrajectories", help=" a pkl file containint the labelled trajectories on the ground plane",type=str)
@@ -225,7 +222,7 @@ if __name__ == "__main__":
     parser.add_argument("--CachedCounterPth", help="path to pre-initialized cached counter object", type=str)
 
     parser.add_argument("--ForNFrames", help="visualize the N first frame instead of all of them", type=int)
-    parser.add_argument("--ResampleTH", help="the threshold to resample tracks with", type=float, default=8)
+    parser.add_argument("--ResampleTH", help="the threshold to resample tracks with", type=float, default=2)
 
 
     args = parser.parse_args()
