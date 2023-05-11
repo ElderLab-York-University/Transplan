@@ -509,7 +509,7 @@ def download_url_to(url, path):
     open(path, 'wb').write(r.content)
 
 def save_frame_from_video(video_path, image_out_path):
-    chosen_frame = 4380 # leave it this way for now
+    chosen_frame = args.Frame # leave it this way for now
     # Opens the Video file
     cap = cv2.VideoCapture(video_path)
     # Check if camera opened successfully
