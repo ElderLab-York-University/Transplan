@@ -38,6 +38,7 @@ def vis_labelled_tracks(args):
 
     plt.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
     plt.savefig(save_path)
+    plt.close("all")
 
     return SucLog("labeled trackes plotted successfully")
 
@@ -122,6 +123,7 @@ def extract_common_tracks(args):
     print(f"percentage of complete tracks: {counter/len(tracks)}")
     plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
     plt.show()
+    plt.close("all")
 
     # temporarily add info to track dataframe
     tracks['i_str'] = i_strs
@@ -146,6 +148,7 @@ def extract_common_tracks(args):
     plt.imshow(img)
     plt.scatter(starts[:, 0],starts[:, 1], alpha=0.3)
     plt.show()
+    plt.close("all")
     
 
     # cluster tracks and choose common tracks as cluster centers
@@ -173,6 +176,8 @@ def extract_common_tracks(args):
         plt.imshow(img)
         plt.scatter(starts[:, 0], starts[:, 1], c=c_start)
         plt.show()
+        plt.close("all")
+
         for c_label in cluster_labels:
             mask_c = c_start == c_label
             i_c = np.argmax(p_start[mask_c])
@@ -191,6 +196,7 @@ def extract_common_tracks(args):
 
     plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
     plt.show()
+    plt.close("all")
 
     # save common tracks as labelled tracks
     tracks_labelled = group_tracks_by_id(pd.read_pickle(tracks_path))
@@ -232,6 +238,10 @@ class MyPoly():
                     min_distance = float(line.distance(p_main))
                     min_distance_indx  = i
         return min_distance, min_distance_indx
+    
+    def encloses_point(self, point):
+        p = sympy.Point(*point)
+        return self.poly.encloses_point(p)
 
     @property
     def area(self):
