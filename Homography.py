@@ -1,6 +1,6 @@
 from Utils import *
 from Libs import *
-from Track import *
+import Track
 import Maps
 # import homographygui.tabbed_ui_func as tui
 
@@ -48,6 +48,7 @@ def lunch_homographygui(args):
     os.chdir(cwd)
 
 def reproject(args, from_back_up = True):
+    trackers = Track.trackers
     homography_path = args.HomographyNPY
     out_path = args.ReprojectedPoints 
 
@@ -95,6 +96,8 @@ def vishomographygui(args):
     img2 = cv.imread(second_image_path)
     rows1, cols1, dim1 = img1.shape
     rows2, cols2, dim2 = img2.shape
+    
+
     M = np.load(homography_path, allow_pickle=True)[0]
 
     img12 = cv.warpPerspective(img1, M, (cols2, rows2))
