@@ -4,6 +4,9 @@ from Libs import *
 from Utils import *
 from Detect import *
 from counting.resample_gt_MOI.resample_typical_tracks import track_resample
+import Homography
+import Maps
+import TrackLabeling
 
 # import all detectros here
 # And add their names to the "trackers" dictionary
@@ -16,7 +19,7 @@ import Trackers.gsort.track
 import Trackers.OCSort.track
 import Trackers.GByteTrack.track
 import Trackers.GDeepSort.track
-import Trackers.BOTSort.track
+# import Trackers.BOTSort.track
 import Trackers.StrongSort.track
 # --------------------------
 trackers = {}
@@ -28,7 +31,7 @@ trackers["gsort"] = Trackers.gsort.track
 trackers["OCSort"] = Trackers.OCSort.track
 trackers["GByteTrack"] = Trackers.GByteTrack.track
 trackers["GDeepSort"] = Trackers.GDeepSort.track
-trackers["BOTSort"] = Trackers.BOTSort.track
+# trackers["BOTSort"] = Trackers.BOTSort.track
 trackers["StrongSort"] = Trackers.StrongSort.track
 # --------------------------
 
@@ -188,21 +191,66 @@ def vistrackmoi(args):
 
 def trackpostproc(args):
     def update_tracking_changes(df, args):
+        print(ProcLog("updating txt, pkl, reprojected, and meter files for tracking"))
         trackers[args.Tracker].df_txt(df, args.TrackingPth)
         store_df_pickle(args)
+        Homography.reproject(args, from_back_up=False)
+        Maps.pix2meter(args)
+
     # restore original tracks in txt and pkl
+    print(ProcLog("recover tracking from backup"))
     df = pd.read_pickle(args.TrackingPklBackUp)
     update_tracking_changes(df, args)
+
     # apply postprocessing on args.ReprojectedPkLMeter and ReprojectedPkl
     if not args.TrackTh is None:
         df  = remove_short_tracks(args)
         update_tracking_changes(df, args)
+
     # apply postprocessing on args.TrackingPkl
-    if args.TrackMask:
-        main_df = pd.read_pickle(args.TrackingPkl)
-        df = remove_out_of_ROI(main_df, args.MetaData["roi"])
+    if args.MaskROI:
+        print("mask ROI")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = remove_out_of_ROI(args)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
         update_tracking_changes(df, args)
-    
+
+    if args.RemoveInvalidTracks:
+        print("removing invalid tracks")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = remove_invalid_tracks(args)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
+        
+    if args.SelectDifEdgeInROI:
+        print("remove tracks that begin and end in the same roi region")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = select_based_on_roi(args, different_roi_edge)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
+
+    if args.SelectEndingInROI:
+        print("select ending in ROI")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = select_based_on_roi(args, end_in_roi)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
+
+    if args.SelectBeginInROI:
+        print("select begin in ROI")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = select_based_on_roi(args, begin_in_roi)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
+
+    if args.HasPointsInROI:
+        print("select tracks that have points inside ROI")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = select_based_on_roi(args, has_points_in_roi)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
+
+
     return SucLog("track post processing executed with no error")
 
 # def roi_mask_tracks(args):
@@ -214,6 +262,111 @@ def trackpostproc(args):
 
 #     mask = []
 #     for i , row in main_df.iterrows():
+
+def end_in_roi(pg, traj, th, poly_path):
+    d_end, i_end = pg.distance(traj[-1])
+    return d_end <= th
+
+def begin_in_roi(pg, traj, th, poly_path):
+    d_str, i_str = pg.distance(traj[0])
+    return d_str <= th
+
+def has_points_in_roi(pg, traj, th, poly_path):
+    for p in traj:
+        if poly_path.contains_point(p):
+            return True
+    return False
+
+def different_roi_edge(pg, traj, th, poly_path):
+    d_end, i_end = pg.distance(traj[-1])
+    d_str, i_str = pg.distance(traj[0])
+    if d_end<=th and d_str<=th:
+        return not i_str == i_end
+    return True
+
+def select_based_on_roi(args, condition):
+    df = pd.read_pickle(args.TrackingPkl)
+
+    tracks_path = args.ReprojectedPkl
+    meta_data = args.MetaData # dict is already loaded
+    HomographyNPY = args.HomographyNPY
+    M = np.load(HomographyNPY, allow_pickle=True)[0]
+
+    # load data
+    tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
+
+    # create roi polygon
+    roi_rep = []
+    for p in args.MetaData["roi"]:
+        point = np.array([p[0], p[1], 1])
+        new_point = M.dot(point)
+        new_point /= new_point[2]
+        roi_rep.append([new_point[0], new_point[1]])
+
+    pg = TrackLabeling.MyPoly(roi_rep)
+    th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
+    poly_path = mplPath.Path(np.array(roi_rep))
+
+    ids_to_keep = []
+    for i, row in tqdm(tracks.iterrows(), total=len(tracks)):
+        traj = row["trajectory"]
+        if condition(pg, traj, th, poly_path):
+            ids_to_keep.append(row["id"])
+
+    mask = []
+    for i, row in df.iterrows():
+        if row["id"] in ids_to_keep:
+            mask.append(True)
+        else:
+            mask.append(False)
+    return df[mask]
+
+
+def remove_invalid_tracks(args):
+    df = pd.read_pickle(args.TrackingPkl)
+    mask = []
+    to_remove_ids = []
+    ids = np.unique(df["id"])
+
+    for id in ids:
+        df_id = df[df["id"] == id]
+        if len(df_id) <= 2:
+            to_remove_ids.append(id)
+
+    for i, row in df.iterrows():
+        if row["id"] in to_remove_ids:
+            mask.append(False)
+        else:
+            mask.append(True)
+
+    return df[mask]
+
+def remove_out_of_ROI(args):
+    df_reproj = pd.read_pickle(args.ReprojectedPkl)
+    df_main   = pd.read_pickle(args.TrackingPkl)
+    mask = []
+
+    HomographyNPY = args.HomographyNPY
+    M = np.load(HomographyNPY, allow_pickle=True)[0]
+
+    roi_rep = []
+    for p in args.MetaData["roi"]:
+        point = np.array([p[0], p[1], 1])
+        new_point = M.dot(point)
+        new_point /= new_point[2]
+        roi_rep.append([new_point[0], new_point[1]])
+    pg = TrackLabeling.MyPoly(roi_rep)
+    poly_path = mplPath.Path(np.array(roi_rep))
+
+    for i, row in tqdm(df_reproj.iterrows(), total=len(df_reproj)):
+        x, y = row.x, row.y
+        p = [x, y]
+        if poly_path.contains_point(p):
+        # if pg.encloses_point(p):
+            mask.append(True)
+        else:
+            mask.append(False)
+    return df_main[mask]
 
 def remove_short_tracks(args):
     th = args.TrackTh
