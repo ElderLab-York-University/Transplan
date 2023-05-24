@@ -64,17 +64,18 @@ def extract_common_tracks(args):
     img1 = cv.imread(top_image)
     img_street = plt.imread(street_image)
 
-    # create frame polygon
-    mx_y, mx_x, channels = img_street.shape
-    frame_rep = []
-    frame_rep_image = [[0, 0], [0, mx_y], [mx_x, 0], [mx_x, mx_y]]
-    for p in frame_rep_image:
-        point = np.array([p[0], p[1], 1])
-        new_point = M.dot(point)
-        new_point /= new_point[2]
-        frame_rep.append([new_point[0], new_point[1]])
+    # # create frame polygon
+    # mx_y, mx_x, channels = img_street.shape
+    # frame_rep = []
+    # frame_rep_image = [[0, 0], [0, mx_y], [mx_x, 0], [mx_x, mx_y]]
+    # for p in frame_rep_image:
+    #     point = np.array([p[0], p[1], 1])
+    #     new_point = M.dot(point)
+    #     new_point /= new_point[2]
+    #     frame_rep.append([new_point[0], new_point[1]])
 
-    frame_pg = MyPoly(frame_rep)
+    # frame_pg = MyPoly(frame_rep)
+
     # create roi polygon
     roi_rep = []
     for p in args.MetaData["roi"]:
@@ -83,7 +84,7 @@ def extract_common_tracks(args):
         new_point /= new_point[2]
         roi_rep.append([new_point[0], new_point[1]])
 
-    pg = MyPoly(roi_rep)
+    pg = MyPoly(roi_rep, args.MetaData["roi_group"])
     th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
 
     counter = 0
@@ -98,8 +99,9 @@ def extract_common_tracks(args):
         traj = row["trajectory"]
         d_str, i_str = pg.distance(traj[0])
         d_end, i_end = pg.distance(traj[-1])
-        df_str, _ = frame_pg.distance(traj[0])
-        df_end, _ = frame_pg.distance(traj[-1])
+
+        # df_str, _ = frame_pg.distance(traj[0])
+        # df_end, _ = frame_pg.distance(traj[-1])
         # if df_str < d_str and d_str > th:
         #     _, i_str = pg.distance_angle_filt(traj[row["index_mask"]][0], traj[row["index_mask"]][int(len(row["index_mask"])/2+0.5)])
         i_strs.append(i_str)
@@ -208,21 +210,26 @@ def extract_common_tracks(args):
 
 
 class MyPoly():
-    def __init__(self, roi):
+    def __init__(self, roi, roi_group):
+        self.roi = roi
+        self.roi_group = roi_group
+
         self.poly = sympy.Polygon(*roi)
         self.lines = []
         for i in range(len(roi)-1):
-            self.lines.append(sympy.Line(sympy.Point(roi[i]), sympy.Point(roi[i+1])))
-        self.lines.append(sympy.Line(sympy.Point(*roi[-1]), sympy.Point(*roi[0])))
+            self.lines.append(sympy.Segment(sympy.Point(roi[i]), sympy.Point(roi[i+1])))
+        self.lines.append(sympy.Segment(sympy.Point(*roi[-1]), sympy.Point(*roi[0])))
         
     def distance(self, point):
         p = sympy.Point(*point)
         distances = []
-        for line in self.lines:
-            distances.append(float(line.distance(p)))
+        for line, gp in zip(self.lines, self.roi_group):
+            d_line = float(line.distance(p))
+            if gp <=0 : d_line = float('inf')
+            distances.append(d_line)
         distances = np.array(distances)
         min_pos = np.argmin(distances)
-        return distances[min_pos], int(min_pos)
+        return distances[min_pos], int(self.roi_group[min_pos])
 
     def distance_angle_filt(self, p_main, p_second):
         imaginary_line = sympy.Line(sympy.Point(p_main), sympy.Point(p_second))
@@ -245,7 +252,7 @@ class MyPoly():
 
     @property
     def area(self):
-        return float(self.poly.area)
+        return abs(float(self.poly.area))
 
 def is_monotonic(traj):
     orgin = traj[0]
@@ -275,18 +282,18 @@ def group_tracks_by_id(df):
 
 def str_end_to_moi(str, end):
     str_end_moi = {}
-    str_end_moi[(3, 0)] = '1'
-    str_end_moi[(3, 1)] = '2'
-    str_end_moi[(3, 2)] = '3'
-    str_end_moi[(2, 3)] = '4'
-    str_end_moi[(2, 0)] = '5'
-    str_end_moi[(2, 1)] = '6'
-    str_end_moi[(1, 2)] = '7'
-    str_end_moi[(1, 3)] = '8'
-    str_end_moi[(1, 0)] = '9'
-    str_end_moi[(0, 1)] = '10'
-    str_end_moi[(0, 2)] = '11'
-    str_end_moi[(0, 3)] = '12'
+    str_end_moi[(1, 4)] = '1'
+    str_end_moi[(1, 3)] = '2'
+    str_end_moi[(1, 2)] = '3'
+    str_end_moi[(2, 1)] = '4'
+    str_end_moi[(2, 4)] = '5'
+    str_end_moi[(2, 3)] = '6'
+    str_end_moi[(3, 2)] = '7'
+    str_end_moi[(3, 1)] = '8'
+    str_end_moi[(3, 4)] = '9'
+    str_end_moi[(4, 3)] = '10'
+    str_end_moi[(4, 2)] = '11'
+    str_end_moi[(4, 1)] = '12'
     if (str ,end) in str_end_moi:
         return str_end_moi[(str, end)]
     return -1

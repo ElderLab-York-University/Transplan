@@ -5,22 +5,22 @@ sources = [
 # '/home/savoji/Desktop/TransPlanProject/Dataset/preprocessed/DundasStreetAtNinthLine/2020Dec18/GX010069'
 # "./../Dataset/DandasStAtNinthLineFull"
 # './../Dataset/DandasStAtNinthLine'
+# '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/DundasStreetAtNinthLine/Video1',
+# '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/DundasStreetAtNinthLine/Video2'
 # '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/BronteRoadAtDundasStreet/2020Dec21/Video1',
 # '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/BronteRoadAtDundasStreet/2020Dec21/Video2',
 # '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/DundasStreetAtWinstonParkDrive/Video1',
 # '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/DundasStreetAtWinstonParkDrive/Video2',
 # '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/EglintonAveWAtCreditviewRoad/Video1',
 # '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/EglintonAveWAtCreditviewRoad/Video2',
-# '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/DundasStreetAtNinthLine/Video1',
-# '/media/sajjad/4f8a4d31-2741-4ef9-9e0a-fbd03dcf4d28/TransPlanProject/Dataset/preprocessed/DundasStreetAtNinthLine/Video2'
-# "/home/sajjad/Dataset/PreProcessedMain/D9L_Video1",
+"/home/sajjad/Dataset/PreProcessedMain/D9L_Video1",
 # "/home/sajjad/Dataset/PreProcessedMain/D9L_Video2",
 # "/home/sajjad/Dataset/PreProcessedMain/DBR_Video1",
 # "/home/sajjad/Dataset/PreProcessedMain/DBR_Video2",
 # "/home/sajjad/Dataset/PreProcessedMain/DWP_Video1",
 # "/home/sajjad/Dataset/PreProcessedMain/DWP_Video2",
-"/home/sajjad/Dataset/PreProcessedMain/ECR_Video1",
-"/home/sajjad/Dataset/PreProcessedMain/ECR_Video2",
+# "/home/sajjad/Dataset/PreProcessedMain/ECR_Video1",
+# "/home/sajjad/Dataset/PreProcessedMain/ECR_Video2",
 
 ]
 
@@ -71,17 +71,16 @@ for src in sources:
     #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --ForNFrames=1800 --Homography --Meter --VisTrajectories --VisTrackTop")
 
-
     ########################################################
     # 3.1 run the track post processing
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc --TrackTh=8 --RemoveInvalidTracks --SelectDifEdgeInROI --SelectEndingInROI --SelectBeginInROI --HasPointsInROI --MaskROI")
     ########################################################
-    for det in detectors:
-        for tra in trackers:
-            print(f"tracking ---> src:{src} det:{det} tra:{tra}")
-            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc --RemoveInvalidTracks --SelectEndingInROI")
-            # to visualize results
-            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack --ForNFrames=1800 --VisTrajectories --VisTrackTop")
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc --RemoveInvalidTracks --SelectEndingInROI")
+    #         # to visualize results
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack --ForNFrames=1800 --VisTrajectories --VisTrackTop")
 
     ########################################################
     # 4. run clustering algorithm
@@ -104,20 +103,20 @@ for src in sources:
     ########################################################
     # 6. Run automated track extraction and labelling
     ########################################################
-    # for det in detectors:
-    #     for tra in trackers:
-    #         print(f"extract common tracks ----> det:{det}, tra:{tra}")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --ExtractCommonTracks --VisLabelledTrajectories")
+    for det in detectors:
+        for tra in trackers:
+            print(f"extract common tracks ----> det:{det}, tra:{tra}")
+            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --ExtractCommonTracks --VisLabelledTrajectories --ResampleTH=2.0")
 
     ########################################################
     # 7. Run the classification(counting) part
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --CountVisPrompt --EvalCount --UseCachedCounter --CachedCounterPth --CacheCounter")
     ########################################################
-    for det in detectors:
-        for tra in trackers:
-            for metric in cnt_metrics:
-                print(f"counting metric:{metric}")
-                os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount  --UseCachedCounter --CachedCounterPth='/home/sajjad/Dataset/PreProcessedMain/ECR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl'")
+    # for det in detectors:
+    #     for tra in trackers:
+    #         for metric in cnt_metrics:
+    #             print(f"counting metric:{metric}")
+    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount  --UseCachedCounter --CachedCounterPth='/home/sajjad/Dataset/PreProcessedMain/ECR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl'")
 
     ########################################################
     # 8. Visualizing the results on a video including track label and track id
