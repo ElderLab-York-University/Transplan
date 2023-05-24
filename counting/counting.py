@@ -562,8 +562,8 @@ class KDECounting(Counting):
 
         if roi is not None:
             back_ground = self.add_roi_line_to_img(back_ground, roi)
-            if (roi_th is not None) and (pg is not None):
-                back_ground = self.add_roi_gap_to_img(back_ground, pg, roi_th)
+            # if (roi_th is not None) and (pg is not None):
+                # back_ground = self.add_roi_gap_to_img(back_ground, pg, roi_th)
 
         img_new = cv2.addWeighted(img, alpha, back_ground, 1 - alpha, 0)
         img_new = cv.cvtColor(img_new, cv.COLOR_BGR2RGB)

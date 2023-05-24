@@ -77,5 +77,5 @@ if __name__ == "__main__":
             results = image_processor.post_process_object_detection(outputs, threshold=0.5, target_sizes=target_sizes)[0]
             for score, label, box in zip(results["scores"].to("cpu"), results["labels"].to("cpu"), results["boxes"].to("cpu")):
                 if not int(label) in classes_to_keep: continue
-                box = [round(i, 2) for i in box.tolist()]
-                text_file.write(f"{fn } {int(label)} {score} " + " ".join(map(str, box.numpy())) + "\n")
+                box = np.array([round(i, 2) for i in box.tolist()])
+                text_file.write(f"{fn } {int(label)} {score} " + " ".join(map(str, box)) + "\n")

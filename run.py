@@ -20,7 +20,7 @@ sources = [
 # "/home/sajjad/Dataset/PreProcessedMain/DWP_Video1",
 # "/home/sajjad/Dataset/PreProcessedMain/DWP_Video2",
 "/home/sajjad/Dataset/PreProcessedMain/ECR_Video1",
-# "/home/sajjad/Dataset/PreProcessedMain/ECR_Video2",
+"/home/sajjad/Dataset/PreProcessedMain/ECR_Video2",
 
 ]
 
@@ -58,30 +58,30 @@ for src in sources:
     # 2. run the detection
     # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=NULL --Detect --DetPostProc --DetMask --DetTh=0.50 --VisDetect")
     ########################################################
-    for det in detectors:
-        print(f"detecting ----> src:{src} det:{det}")
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisDetect --ForNFrames=1800 --DetPostProc --DetTh=0.50")
+    # for det in detectors:
+    #     print(f"detecting ----> src:{src} det:{det}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisDetect --ForNFrames=1800 --DetPostProc --DetTh=0.50 --DetMask")
 
     ########################################################
     # 3. run the tracking 
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --ForNFrames=1800 --Homography --Meter --VisTrajectories --VisTrackTop")
     ########################################################
-    for det in detectors:
-        for tra in trackers:
-            print(f"tracking ---> src:{src} det:{det} tra:{tra}")
-            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --ForNFrames=1800 --Homography --Meter --VisTrajectories --VisTrackTop")
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --ForNFrames=1800 --Homography --Meter --VisTrajectories --VisTrackTop")
 
 
     ########################################################
     # 3.1 run the track post processing
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc --TrackTh=8 --RemoveInvalidTracks --SelectDifEdgeInROI --SelectEndingInROI --SelectBeginInROI --HasPointsInROI --MaskROI")
     ########################################################
-    # for det in detectors:
-    #     for tra in trackers:
-    #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc --HasPointsInROI")
-    #         # to visualize results
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack --ForNFrames=1800 --VisTrajectories --VisTrackTop")
+    for det in detectors:
+        for tra in trackers:
+            print(f"tracking ---> src:{src} det:{det} tra:{tra}")
+            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc --RemoveInvalidTracks --SelectEndingInROI")
+            # to visualize results
+            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack --ForNFrames=1800 --VisTrajectories --VisTrackTop")
 
     ########################################################
     # 4. run clustering algorithm
@@ -104,10 +104,10 @@ for src in sources:
     ########################################################
     # 6. Run automated track extraction and labelling
     ########################################################
-    for det in detectors:
-        for tra in trackers:
-            print(f"extract common tracks ----> det:{det}, tra:{tra}")
-            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --ExtractCommonTracks --VisLabelledTrajectories")
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"extract common tracks ----> det:{det}, tra:{tra}")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --ExtractCommonTracks --VisLabelledTrajectories")
 
     ########################################################
     # 7. Run the classification(counting) part
@@ -117,7 +117,7 @@ for src in sources:
         for tra in trackers:
             for metric in cnt_metrics:
                 print(f"counting metric:{metric}")
-                os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount  --CacheCounter")
+                os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount  --UseCachedCounter --CachedCounterPth='/home/sajjad/Dataset/PreProcessedMain/ECR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl'")
 
     ########################################################
     # 8. Visualizing the results on a video including track label and track id
