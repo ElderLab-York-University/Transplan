@@ -343,43 +343,6 @@ class HMMG():
             max_mois.append(self.predict_traj(traj))
         return max_mois
 
-class MyPoly():
-    def __init__(self, roi):
-        self.poly = sympy.Polygon(*roi)
-        self.lines = []
-        for i in range(len(roi)-1):
-            self.lines.append(sympy.Line(sympy.Point(roi[i]), sympy.Point(roi[i+1])))
-        self.lines.append(sympy.Line(sympy.Point(*roi[-1]), sympy.Point(*roi[0])))
-        
-    def distance(self, point):
-        p = sympy.Point(*point)
-        distances = []
-        for line in self.lines:
-            distances.append(float(line.distance(p)))
-        distances = np.array(distances)
-        min_pos = np.argmin(distances)
-        return distances[min_pos], int(min_pos)
-
-    def distance_angle_filt(self, p_main, p_second):
-        imaginary_line = sympy.Line(sympy.Point(p_main), sympy.Point(p_second))
-        min_angle = float('inf')
-        min_distance = float('inf')
-        min_distance_indx = None
-        for i, line in enumerate(self.lines):
-            d_main = float(line.distance(p_main))
-            d_secn = float(line.distance(p_second))
-            if d_secn <  d_main : continue
-            else:
-                if np.abs(float(imaginary_line.angle_between(line)) - np.pi/2 ) < min_angle:
-                    min_distance = float(line.distance(p_main))
-                    min_distance_indx  = i
-        return min_distance, min_distance_indx
-
-    @property
-    def area(self):
-        return float(self.poly.area)
-
-    
 class KDECounting(Counting):
     def __init__(self, args):
         # load tracks
@@ -413,7 +376,7 @@ class KDECounting(Counting):
             new_point /= new_point[2]
             roi_rep.append([new_point[0], new_point[1]])
 
-        pg = MyPoly(roi_rep)
+        pg = MyPoly(roi_rep, args.MetaData["roi_group"])
         th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
 
         counter = 0
@@ -509,7 +472,8 @@ class KDECounting(Counting):
             new_point = M.dot(point)
             new_point /= new_point[2]
             roi_rep.append([new_point[0], new_point[1]])
-        pg = MyPoly(roi_rep)
+            
+        pg = MyPoly(roi_rep, args.MetaData["roi_group"])
         th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
 
         if self.args.CountVisPrompt:
@@ -591,7 +555,7 @@ class ROICounting(KDECounting):
             new_point /= new_point[2]
             roi_rep.append([new_point[0], new_point[1]])
 
-        self.pg = MyPoly(roi_rep)
+        self.pg = MyPoly(roi_rep, args.MetaData["roi_group"])
 
     def main(self):
         args = self.args
@@ -631,24 +595,6 @@ class ROICounting(KDECounting):
         if self.args.CountVisPrompt:
             for i, row in tracks.iterrows():
                 self.plot_track_on_gp(row["trajectory"], matched_id=row["moi"])
-                
-def str_end_to_moi(str, end):
-    str_end_moi = {}
-    str_end_moi[(3, 0)] = '1'
-    str_end_moi[(3, 1)] = '2'
-    str_end_moi[(3, 2)] = '3'
-    str_end_moi[(2, 3)] = '4'
-    str_end_moi[(2, 0)] = '5'
-    str_end_moi[(2, 1)] = '6'
-    str_end_moi[(1, 2)] = '7'
-    str_end_moi[(1, 3)] = '8'
-    str_end_moi[(1, 0)] = '9'
-    str_end_moi[(0, 1)] = '10'
-    str_end_moi[(0, 2)] = '11'
-    str_end_moi[(0, 3)] = '12'
-    if (str ,end) in str_end_moi:
-        return str_end_moi[(str, end)]
-    return -1
         
 
 def eval_count(args):
