@@ -4,6 +4,7 @@
 from Libs import *
 
 moi_color_dict = {
+    0:(0, 0, 0),
     1:(128, 0, 0),
     2:(230, 25, 75),
     3:(250, 190, 212),
@@ -16,6 +17,14 @@ moi_color_dict = {
     10:(0, 0, 128),
     11:(70, 240, 240),
     12:(0, 130, 200),
+}
+
+roi_color_dict = {
+    0:(0, 0, 0),
+    1:(128, 0, 0),
+    2:(170, 110, 40),
+    3:(128, 128, 0),
+    4:(0, 0, 128),
 }
 class bcolors:
     HEADER = '\033[95m'
@@ -508,7 +517,9 @@ def download_url_to(url, path):
     r = requests.get(url, allow_redirects=True)
     open(path, 'wb').write(r.content)
 
-def save_frame_from_video(video_path, image_out_path):
+def save_frame_from_video(args):
+    video_path = args.Video
+    image_out_path = args.HomographyStreetView
     chosen_frame = args.Frame # leave it this way for now
     # Opens the Video file
     cap = cv2.VideoCapture(video_path)
