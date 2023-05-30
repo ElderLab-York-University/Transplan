@@ -131,11 +131,12 @@ def visroi(args):
     M = np.load(args.HomographyNPY, allow_pickle=True)[0]
     roi_rep = []
     roi = args.MetaData["roi"]
+    roi_group = args.MetaData["roi_group"]
     for p in roi:
         point = np.array([p[0], p[1], 1])
         new_point = M.dot(point)
         new_point /= new_point[2]
-        roi_rep.append([new_point[0], new_point[1]])
+        roi_rep.append([int(new_point[0]), int(new_point[1])])
     
     img1 = cv.imread(args.HomographyStreetView)
     img2 = cv.imread(args.HomographyTopView)
@@ -145,12 +146,14 @@ def visroi(args):
     rows2, cols2, dim2 = img2.shape
 
     poly_path1 = mplPath.Path(np.array(roi))
+
     poly_path2 = mplPath.Path(np.array(roi_rep))
     
     for i in range(rows1):
         for j in range(cols1):
             if not poly_path1.contains_point([j, i]):
-                img1[i][j] = [0, 0, 0]            
+                img1[i][j] = [0, 0, 0]    
+
     for i in range(rows2):
         for j in range(cols2):
             if not poly_path2.contains_point([j, i]):
@@ -158,6 +161,18 @@ def visroi(args):
 
     img1 = cv.addWeighted(img1, alpha, img1p, 1 - alpha, 0)
     img2 = cv.addWeighted(img2, alpha, img2p, 1 - alpha, 0)
+
+    # draw lines according to roi_group
+    for i in range(0, len(roi)):
+        p1 = tuple(roi[i-1])
+        p2 = tuple(roi[i])
+        q1 = tuple(roi_rep[i-1])
+        q2 = tuple(roi_rep[i])
+        group= roi_group[i-1]
+        color = roi_color_dict[group]
+        cv2.line(img1, p1, p2, color, 25)
+        cv2.line(img2, q1, q2, color, 5)
+
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
 
