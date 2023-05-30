@@ -23,7 +23,7 @@ def homographygui(args):
         
     if not os.path.exists(args.HomographyStreetView):
         print(ProcLog("intersection streetview is not given; will choose videos first frame"))
-        save_frame_from_video(args.Video, args.HomographyStreetView)
+        save_frame_from_video(args)
         
 
     # lunch homography gui
