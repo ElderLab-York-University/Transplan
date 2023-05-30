@@ -51,7 +51,9 @@ def extract_common_tracks(args):
     meta_data = args.MetaData # dict is already loaded
     HomographyNPY = args.HomographyNPY
     exportpath = args.TrackLabellingExportPth
-    moi_clusters = args.MetaData["moi_clusters"]
+    moi_clusters = {}
+    for mi in  args.MetaData["moi_clusters"].keys():
+        moi_clusters[int(mi)] = args.MetaData["moi_clusters"][mi]
 
     # load data
     M = np.load(HomographyNPY, allow_pickle=True)[0]
@@ -282,18 +284,18 @@ def group_tracks_by_id(df):
 
 def str_end_to_moi(str, end):
     str_end_moi = {}
-    str_end_moi[(1, 4)] = '1'
-    str_end_moi[(1, 3)] = '2'
-    str_end_moi[(1, 2)] = '3'
-    str_end_moi[(2, 1)] = '4'
-    str_end_moi[(2, 4)] = '5'
-    str_end_moi[(2, 3)] = '6'
-    str_end_moi[(3, 2)] = '7'
-    str_end_moi[(3, 1)] = '8'
-    str_end_moi[(3, 4)] = '9'
-    str_end_moi[(4, 3)] = '10'
-    str_end_moi[(4, 2)] = '11'
-    str_end_moi[(4, 1)] = '12'
+    str_end_moi[(1, 4)] = 1
+    str_end_moi[(1, 3)] = 2
+    str_end_moi[(1, 2)] = 3
+    str_end_moi[(2, 1)] = 4
+    str_end_moi[(2, 4)] = 5
+    str_end_moi[(2, 3)] = 6
+    str_end_moi[(3, 2)] = 7
+    str_end_moi[(3, 1)] = 8
+    str_end_moi[(3, 4)] = 9
+    str_end_moi[(4, 3)] = 10
+    str_end_moi[(4, 2)] = 11
+    str_end_moi[(4, 1)] = 12
     if (str ,end) in str_end_moi:
         return str_end_moi[(str, end)]
     return -1
