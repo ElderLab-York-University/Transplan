@@ -303,7 +303,7 @@ def select_based_on_roi(args, condition):
         new_point /= new_point[2]
         roi_rep.append([new_point[0], new_point[1]])
 
-    pg = TrackLabeling.MyPoly(roi_rep)
+    pg = TrackLabeling.MyPoly(roi_rep, args.MetaData["roi_group"])
     th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
     poly_path = mplPath.Path(np.array(roi_rep))
 
@@ -355,7 +355,7 @@ def remove_out_of_ROI(args):
         new_point = M.dot(point)
         new_point /= new_point[2]
         roi_rep.append([new_point[0], new_point[1]])
-    pg = TrackLabeling.MyPoly(roi_rep)
+    pg = TrackLabeling.MyPoly(roi_rep, args.MetaData["roi_group"])
     poly_path = mplPath.Path(np.array(roi_rep))
 
     for i, row in tqdm(df_reproj.iterrows(), total=len(df_reproj)):
