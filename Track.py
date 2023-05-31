@@ -250,6 +250,20 @@ def trackpostproc(args):
         print(f"ending with {len(np.unique(df['id']))} tracks")
         update_tracking_changes(df, args)
 
+    if args.CrossROI:
+        print("select tracks that cross roi at least once")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = select_based_on_roi(args, cross_roi, resample_tracks=True)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
+
+    if args.CrossROIMulti:
+        print("select tracks that cross roi multiple edges")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = select_based_on_roi(args, cross_roi_multiple, resample_tracks=True)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
+
 
     return SucLog("track post processing executed with no error")
 
@@ -284,16 +298,31 @@ def different_roi_edge(pg, traj, th, poly_path):
         return not i_str == i_end
     return True
 
-def select_based_on_roi(args, condition):
+def cross_roi(pg, traj, *args, **kwargs):
+    int_indxes= pg.doIntersect(traj)
+    if int_indxes:
+        return True
+    return False
+
+def cross_roi_multiple(pg, traj, *args, **kwargs):
+    int_indxes = pg.doIntersect(traj)
+    if len(np.uniwue(int_indxes)) > 1:
+        return True
+    return False
+
+def select_based_on_roi(args, condition, resample_tracks=False):
     df = pd.read_pickle(args.TrackingPkl)
 
     tracks_path = args.ReprojectedPkl
+    tracks_meter_path = args.ReprojectedPklMeter
     meta_data = args.MetaData # dict is already loaded
     HomographyNPY = args.HomographyNPY
     M = np.load(HomographyNPY, allow_pickle=True)[0]
 
     # load data
     tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
+    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
+    tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
 
     # create roi polygon
     roi_rep = []
@@ -309,7 +338,11 @@ def select_based_on_roi(args, condition):
 
     ids_to_keep = []
     for i, row in tqdm(tracks.iterrows(), total=len(tracks)):
-        traj = row["trajectory"]
+        if resample_tracks:
+            traj = row["trajectory"][row["index_mask"]]
+        else:
+            traj = row["trajectory"]
+
         if condition(pg, traj, th, poly_path):
             ids_to_keep.append(row["id"])
 
