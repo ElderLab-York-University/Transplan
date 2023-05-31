@@ -251,7 +251,41 @@ class MyPoly():
     def encloses_point(self, point):
         p = sympy.Point(*point)
         return self.poly.encloses_point(p)
+    
+    def intersection(self, track):
+        "assume track is a list of points [[], []] but not in sumpy format"
+        int_indexes = []
+        int_points = []
+        for i in range(len(track)-1):
+            p0 = track[i]
+            p1 = track[i+1]
+            seg = sympy.Segment(sympy.Point(p0), sympy.Point(p1))
+            for i, roi_line in enumerate(self.lines):
+                points = roi_line.intersection(seg)
+                if points:
+                    for p in points:
+                        int_indexes.append(i)
+                        int_points.append(list(p))
 
+        return int_indexes, int_points
+
+    def doIntersect(self, track):
+        '''
+        hope fully a faster method just to determine intersection indexes
+        '''                    
+        int_indexes = []
+        roi_segments = []
+        for seg in self.lines:
+            roi_segments.append([Point(list(seg.points[0])), Point(list(seg.points[1]))])
+        for i in range(len(track)-1):
+            p0 = Point(track[i])
+            p1 = Point(track[i+1])
+            for i, roi_seg in enumerate(roi_segments):
+                q0 , q1 = roi_seg[0], roi_seg[1]
+                if doIntersect(p0,q0,p1,q1):
+                    int_indexes.append(i)
+        return int_indexes
+        
     @property
     def area(self):
         return abs(float(self.poly.area))
