@@ -2,6 +2,7 @@
 from Utils import * 
 from Libs import *
 from counting.resample_gt_MOI.resample_typical_tracks import track_resample
+import Track
 
 # args variables for tracklabelling gui
     # args.TrackLabellingExportPth
@@ -48,35 +49,23 @@ def extract_common_tracks(args):
     tracks_meter_path = args.ReprojectedPklMeter
     top_image = args.HomographyTopView
     street_image = args.HomographyStreetView
+    exportpath = args.TrackLabellingExportPth
     meta_data = args.MetaData # dict is already loaded
     HomographyNPY = args.HomographyNPY
-    exportpath = args.TrackLabellingExportPth
+    M = np.load(HomographyNPY, allow_pickle=True)[0]
     moi_clusters = {}
     for mi in  args.MetaData["moi_clusters"].keys():
         moi_clusters[int(mi)] = args.MetaData["moi_clusters"][mi]
 
-    # load data
-    M = np.load(HomographyNPY, allow_pickle=True)[0]
-    print("!-!: grouping gp tracks points based on id")
-    tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
-    print("!-!: grouping gp-meter tracks points based on id")
-    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
-    tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
     img = plt.imread(top_image)
     img1 = cv.imread(top_image)
     img_street = plt.imread(street_image)
 
-    # # create frame polygon
-    # mx_y, mx_x, channels = img_street.shape
-    # frame_rep = []
-    # frame_rep_image = [[0, 0], [0, mx_y], [mx_x, 0], [mx_x, mx_y]]
-    # for p in frame_rep_image:
-    #     point = np.array([p[0], p[1], 1])
-    #     new_point = M.dot(point)
-    #     new_point /= new_point[2]
-    #     frame_rep.append([new_point[0], new_point[1]])
-
-    # frame_pg = MyPoly(frame_rep)
+    # load data
+    tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
+    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
+    tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+    # tracks_meter['trajectory'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=False, threshold=args.ResampleTH))
 
     # create roi polygon
     roi_rep = []
@@ -89,33 +78,27 @@ def extract_common_tracks(args):
     pg = MyPoly(roi_rep, args.MetaData["roi_group"])
     th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
 
+    # select only tracks that have two interactions with Intersection
     counter = 0
     mask = []
     i_strs = []
     i_ends = []
+    p_strs = []
+    p_ends = []
     moi = []
 
-    # find and plot proper tracks(complete and monotonic)
-    print("!-!: finding proper tracks(complete and monotonic)")
+    print("!-!: selecting tacks that have at least two interactions with ROI")
     for i, row in tqdm(tracks.iterrows(), total=len(tracks)):
-        traj = row["trajectory"]
-        d_str, i_str = pg.distance(traj[0])
-        d_end, i_end = pg.distance(traj[-1])
-
-        # df_str, _ = frame_pg.distance(traj[0])
-        # df_end, _ = frame_pg.distance(traj[-1])
-        # if df_str < d_str and d_str > th:
-        #     _, i_str = pg.distance_angle_filt(traj[row["index_mask"]][0], traj[row["index_mask"]][int(len(row["index_mask"])/2+0.5)])
-        i_strs.append(i_str)
-        # if df_end < d_end and d_end > th:
-        #     _, i_end = pg.distance_angle_filt(traj[row["index_mask"]][-1], traj[row["index_mask"]][int(len(row["index_mask"])/2-0.5)])
-        i_ends.append(i_end)
-
-        moi.append(str_end_to_moi(i_str, i_end))
-
-        if (d_str <= th) and (d_end <= th) and (not i_str == i_end) and is_monotonic(traj[row["index_mask"]]):
+        traj = row["trajectory"][row["index_mask"]]
+        int_indexes, int_points = pg.doIntersect(traj, ret_points=True)
+        if len(np.unique(int_indexes)) > 1 and is_monotonic(traj): # more than one interactions with ROI
             mask.append(True)
             counter += 1
+            i_strs.append(int_indexes[0])
+            i_ends.append(int_indexes[-1])
+            p_strs.append(int_points[0])
+            p_ends.append(int_points[-1])
+            moi.append(str_end_to_moi(int_indexes[0], int_indexes[-1]))
             c=0
             for x, y in traj:
                 x, y = int(x), int(y)
@@ -126,45 +109,52 @@ def extract_common_tracks(args):
 
     print(f"percentage of complete tracks: {counter/len(tracks)}")
     plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
-    plt.show()
+    plt.savefig("multicross.png")
     plt.close("all")
+
+    # modify dfs with mask
+    tracks = tracks[mask]
+    tracks_meter = tracks_meter[mask]
 
     # temporarily add info to track dataframe
     tracks['i_str'] = i_strs
     tracks['i_end'] = i_ends
     tracks['moi'] = moi
+    tracks['p_str'] = p_strs
+    tracks['p_end'] = p_ends
+
     tracks_meter['i_str'] = i_strs
     tracks_meter['i_end'] = i_ends 
     tracks_meter['moi'] = moi
-    # plt.hist(tracks[mask]['moi'])
-    # plt.show()
+
 
 
     # extract all starts and ends from proper tracks
     starts = []
     ends=[]
-    for i, row in tracks[mask].iterrows():
-        starts.append(row['trajectory'][0])
-        ends.append(row['trajectory'][-1])
+    for i, row in tracks.iterrows():
+        starts.append(row['p_str'])
+        ends.append(row['p_end'])
 
     starts = np.array(starts)
     ends = np.array(ends)
     plt.imshow(img)
     plt.scatter(starts[:, 0],starts[:, 1], alpha=0.3)
-    plt.show()
+    plt.savefig("multicorss_points.png")
     plt.close("all")
+
     
 
     # cluster tracks and choose common tracks as cluster centers
     chosen_indexes = []
     for mi in moi_clusters.keys():
-        tracks_mi = tracks[mask][tracks[mask]['moi']==mi]
+        tracks_mi = tracks[tracks['moi']==mi]
         index_mi = tracks_mi.index
         starts = []
         ends=[]
         for i, row in tracks_mi.iterrows():
-            starts.append(row['trajectory'][0])
-            ends.append(row['trajectory'][-1])
+            starts.append(row['p_str'])
+            ends.append(row['p_end'])
         starts = np.array(starts)
         ends = np.array(ends)
         num_cluster = moi_clusters[mi]
@@ -179,7 +169,7 @@ def extract_common_tracks(args):
         cluster_labels = np.unique(c_start)
         plt.imshow(img)
         plt.scatter(starts[:, 0], starts[:, 1], c=c_start)
-        plt.show()
+        plt.savefig(f"int_lane_clt_{mi}.png")
         plt.close("all")
 
         for c_label in cluster_labels:
@@ -204,8 +194,8 @@ def extract_common_tracks(args):
 
     # save common tracks as labelled tracks
     tracks_labelled = group_tracks_by_id(pd.read_pickle(tracks_path))
-    tracks_labelled["moi"] = tracks["moi"].apply(lambda x: int(x))
     tracks_labelled = tracks_labelled.loc[chosen_indexes]
+    tracks_labelled["moi"] = tracks.loc[chosen_indexes]["moi"].apply(lambda x: int(x))
     tracks_labelled.to_pickle(exportpath)
     return SucLog("common trakces extracted successfully")
 
@@ -262,12 +252,16 @@ class MyPoly():
         for seg in self.lines:
             roi_segments.append([Point(list(seg.points[0])), Point(list(seg.points[1]))])
         for i in range(len(track)-1):
+            if len(int_indexes)==len(self.lines):
+                break
             p0 = Point(track[i])
             p1 = Point(track[i+1])
             for i, roi_seg in enumerate(roi_segments):
+                if int(self.roi_group[i]) in int_indexes:
+                    continue
                 q0 , q1 = roi_seg[0], roi_seg[1]
-                if doIntersect(p0,q0,p1,q1):
-                    int_indexes.append(i)
+                if doIntersect(p0,p1,q0,q1):
+                    int_indexes.append(int(self.roi_group[i]))
                     # compute interseciton point as well
                     if ret_points:
                         int_points.append(self.getIntersectionPoint(p0, p1, q0, q1))
@@ -277,12 +271,11 @@ class MyPoly():
         else:
             return int_indexes
     
-    def getIntersectionPoint(self,p0, p1, q0, q1):
-        segp = sympy.Segment(sympy.Point([p0.x, p0.y]), sympy.Point([p1.x, p1.y]))
-        segq = sympy.Segment(sympy.Point([q0.x, q0.y]), sympy.Point([q1.x, q1.y]))
-        points = segp.intersect(segq)
-        if points:
-            return list(points[0])
+    def getIntersectionPoint(self, p0, p1, q0, q1):
+        segp = sympy.Line(sympy.Point([p0.x, p0.y]), sympy.Point([p1.x, p1.y]))
+        segq = sympy.Line(sympy.Point([q0.x, q0.y]), sympy.Point([q1.x, q1.y]))
+        point = segp.intersection(segq)
+        return [float(point[0][0]), float(point[0][1])]
 
     @property
     def area(self):
