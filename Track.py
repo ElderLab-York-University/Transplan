@@ -299,14 +299,14 @@ def different_roi_edge(pg, traj, th, poly_path):
     return True
 
 def cross_roi(pg, traj, *args, **kwargs):
-    int_indxes= pg.doIntersect(traj)
+    int_indxes = pg.doIntersect(traj, ret_points=False)
     if int_indxes:
         return True
     return False
 
 def cross_roi_multiple(pg, traj, *args, **kwargs):
-    int_indxes = pg.doIntersect(traj)
-    if len(np.uniwue(int_indxes)) > 1:
+    int_indxes = pg.doIntersect(traj, ret_points=False)
+    if len(np.unique(int_indxes)) > 1:
         return True
     return False
 
