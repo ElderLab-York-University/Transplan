@@ -666,7 +666,7 @@ def orientation(p, q, r):
 	# See https://www.geeksforgeeks.org/orientation-3-ordered-points/amp/
 	# for details of below formula.
 	
-	val = (float(q.y - p.y) * (r.x - q.x)) - (float(q.x - p.x) * (r.y - q.y))
+	val = ((q.y - p.y) * (r.x - q.x)) - ((q.x - p.x) * (r.y - q.y))
 	if (val > 0):
 		
 		# Clockwise orientation
