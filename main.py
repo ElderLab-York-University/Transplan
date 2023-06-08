@@ -213,6 +213,9 @@ if __name__ == "__main__":
     parser.add_argument("--HasPointsInROI", help="select the tracks that have at least on point in the ROI", action="store_true")
     parser.add_argument("--CrossROI", help="select tracks that cross the edges of roi at least once", action="store_true")
     parser.add_argument("--CrossROIMulti", help="select tracks that cross multiple edges of the roi", action="store_true")
+    parser.add_argument("--JustEnterROI", help="select tracks that cross multiple edges of the roi", action="store_true")
+    parser.add_argument("--JustExitROI", help="select tracks that cross multiple edges of the roi", action="store_true")
+    parser.add_argument("--WithinROI", help="select tracks that cross multiple edges of the roi", action="store_true")
     
     parser.add_argument("--VisROI", help="visualize the selected ROI", action='store_true')
     parser.add_argument("--VisTrackMoI", help="visualize tracking with moi labels", action='store_true')
