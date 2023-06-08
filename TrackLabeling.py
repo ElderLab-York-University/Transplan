@@ -245,6 +245,8 @@ class MyPoly():
     def doIntersect(self, track, ret_points):
         '''
         hope fully a faster method just to determine intersection indexes
+        only returns unique groups that track intersected with
+        if re_points=True will return intersection point as well
         '''                    
         int_indexes = []
         int_points = []
