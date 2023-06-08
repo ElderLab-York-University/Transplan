@@ -264,7 +264,28 @@ def trackpostproc(args):
         print(f"ending with {len(np.unique(df['id']))} tracks")
         update_tracking_changes(df, args)
 
+    if args.JustEnterROI:
+        print("select tracks that just enter roi")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = select_based_on_roi(args, just_enter_roi, resample_tracks=True)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
 
+    if args.JustExitROI:
+        print("select tracks that just exit roi")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = select_based_on_roi(args, just_exit_roi, resample_tracks=True)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
+
+    if args.WithinROI:
+        print("select tracks that are completely within roi")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = select_based_on_roi(args, within_roi, resample_tracks=True)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
+
+    
     return SucLog("track post processing executed with no error")
 
 # def roi_mask_tracks(args):
@@ -304,6 +325,36 @@ def cross_roi(pg, traj, *args, **kwargs):
         return True
     return False
 
+def just_enter_roi(pg, traj, th, poly_path):
+    int_indxes = pg.doIntersect(traj, ret_points=False)
+    cross_once = len(int_indxes)==1
+    start_in_roi = poly_path.contains_point(traj[0])
+    end_in_roi = poly_path.contains_point(traj[-1])
+    if cross_once and (not start_in_roi) and end_in_roi:
+        return True
+    else:
+        return False
+    
+def just_exit_roi(pg, traj, th, poly_path):
+    int_indxes = pg.doIntersect(traj, ret_points=False)
+    cross_once = len(int_indxes)==1
+    end_in_roi = poly_path.contains_point(traj[-1])
+    start_in_roi = poly_path.contains_point(traj[0])
+    if cross_once and (not end_in_roi) and start_in_roi:
+        return True
+    else:
+        return False
+    
+def within_roi(pg, traj, th, poly_path):
+    int_indxes = pg.doIntersect(traj, ret_points=False)
+    dont_cross_roi = len(int_indxes)==0
+    start_in_roi = poly_path.contains_point(traj[0])
+    end_in_roi = poly_path.contains_point(traj[-1])
+    if dont_cross_roi and start_in_roi and end_in_roi:
+        return True
+    else:
+        return False
+    
 def cross_roi_multiple(pg, traj, *args, **kwargs):
     int_indxes = pg.doIntersect(traj, ret_points=False)
     if len(np.unique(int_indxes)) > 1:
