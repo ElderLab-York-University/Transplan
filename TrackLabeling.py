@@ -43,13 +43,21 @@ def vis_labelled_tracks(args):
 
     return SucLog("labeled trackes plotted successfully")
 
+def get_in_roi_points(traj, poly_path):
+    mask = []
+    for p in traj:
+        if poly_path.contains_point(p):
+            mask.append(True)
+        else:
+            mask.append(False)
+    return traj[mask]
 
-def extract_common_tracks(args):
+def get_proper_tracks(args):
     tracks_path = args.ReprojectedPkl
     tracks_meter_path = args.ReprojectedPklMeter
     top_image = args.HomographyTopView
     street_image = args.HomographyStreetView
-    exportpath = args.TrackLabellingExportPth
+    # exportpath = args.TrackLabellingExportPth
     meta_data = args.MetaData # dict is already loaded
     HomographyNPY = args.HomographyNPY
     M = np.load(HomographyNPY, allow_pickle=True)[0]
@@ -77,6 +85,7 @@ def extract_common_tracks(args):
 
     pg = MyPoly(roi_rep, args.MetaData["roi_group"])
     th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
+    poly_path = mplPath.Path(np.array(roi_rep))
 
     # select only tracks that have two interactions with Intersection
     counter = 0
@@ -91,7 +100,7 @@ def extract_common_tracks(args):
     for i, row in tqdm(tracks.iterrows(), total=len(tracks)):
         traj = row["trajectory"][row["index_mask"]]
         int_indexes, int_points = pg.doIntersect(traj, ret_points=True)
-        if len(np.unique(int_indexes)) > 1 and is_monotonic(traj): # more than one interactions with ROI
+        if len(np.unique(int_indexes)) > 1 and is_monotonic(get_in_roi_points(traj, poly_path)): # more than one interactions with ROI
             mask.append(True)
             counter += 1
             i_strs.append(int_indexes[0])
@@ -127,7 +136,97 @@ def extract_common_tracks(args):
     tracks_meter['i_end'] = i_ends 
     tracks_meter['moi'] = moi
 
+    return tracks
 
+def cluster_prop_tracks_based_on_str(tracks, args):
+    '''
+    assuming that tracks has p_str and p_end for their s
+    '''
+    tracks["clt"] = np.nan
+    moi_clusters = {}
+    for mi in  args.MetaData["moi_clusters"].keys():
+        moi_clusters[int(mi)] = args.MetaData["moi_clusters"][mi]
+            # cluster tracks and choose common tracks as cluster centers
+
+    for mi in moi_clusters.keys():
+        tracks_mi = tracks[tracks['moi']==mi]
+        index_mi = tracks_mi.index
+        starts = []
+        ends=[]
+        for i, row in tracks_mi.iterrows():
+            starts.append(row['p_str'])
+            ends.append(row['p_end'])
+        starts = np.array(starts)
+        ends = np.array(ends)
+        num_cluster = moi_clusters[mi]
+        if len(starts) < 1:
+            print(f"moi {mi} was empty")
+            continue
+
+        clt = sklearn.cluster.KMeans(n_clusters = min(num_cluster, len(starts)), n_init=100)
+        clt.fit(starts)
+        c_start = clt.predict(starts)
+        tracks.loc[tracks.moi == mi, "clt"] = c_start
+
+    return tracks
+
+def make_uniform_clt_per_moi(tracks, args):
+    # sort tracks based on their length(longer comes first)
+    tracks_len = []
+    for i, row in tracks.iterrows():
+        tracks_len.append(len(row.trajectory))
+    tracks["traj_len"] = tracks_len
+    tracks = tracks.sort_values(by="traj_len", ascending=False)
+
+    # for each moi
+    indexes_to_keep = []
+    for mi in np.unique(tracks.moi):
+        tracks_mi = tracks[tracks['moi']==mi].sort_values(by="traj_len", ascending=False)
+        # print(tracks_mi.clt)
+        uni_vals, uni_counts = np.unique(tracks_mi.clt, return_counts=True)
+        # print(uni_vals)
+        # print(uni_counts)
+        num_tracks_to_get_from_clt_per_moi = min(np.min(uni_counts), 10)
+
+        print(f"nums to take: {num_tracks_to_get_from_clt_per_moi} moi:{mi} num_clt:{len(uni_vals)} tot_tracks_chosen:{len(uni_vals)*num_tracks_to_get_from_clt_per_moi}")
+        for uv in uni_vals:
+            idxs_mi_clt  = tracks_mi[tracks_mi.clt == uv].index[:num_tracks_to_get_from_clt_per_moi]
+            indexes_to_keep += [i for i in idxs_mi_clt]
+
+    return tracks.loc[indexes_to_keep]
+
+
+def extract_common_tracks(args):
+    tracks_path = args.ReprojectedPkl
+    tracks_meter_path = args.ReprojectedPklMeter
+    top_image = args.HomographyTopView
+    street_image = args.HomographyStreetView
+    exportpath = args.TrackLabellingExportPth
+    meta_data = args.MetaData # dict is already loaded
+    HomographyNPY = args.HomographyNPY
+    M = np.load(HomographyNPY, allow_pickle=True)[0]
+    moi_clusters = {}
+    for mi in  args.MetaData["moi_clusters"].keys():
+        moi_clusters[int(mi)] = args.MetaData["moi_clusters"][mi]
+
+    img = plt.imread(top_image)
+    img1 = cv.imread(top_image)
+    img_street = plt.imread(street_image)
+
+    # create roi polygon
+    roi_rep = []
+    for p in args.MetaData["roi"]:
+        point = np.array([p[0], p[1], 1])
+        new_point = M.dot(point)
+        new_point /= new_point[2]
+        roi_rep.append([new_point[0], new_point[1]])
+
+    pg = MyPoly(roi_rep, args.MetaData["roi_group"])
+    th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
+    poly_path = mplPath.Path(np.array(roi_rep))
+
+    # get proper tracks
+    tracks = get_proper_tracks(args)
 
     # extract all starts and ends from proper tracks
     starts = []
@@ -162,7 +261,7 @@ def extract_common_tracks(args):
             print(f"moi {mi} was empty")
             continue
 
-        clt = sklearn.cluster.KMeans(n_clusters = min(num_cluster, len(starts)))
+        clt = sklearn.cluster.KMeans(n_clusters = min(num_cluster, len(starts)), n_init=100)
         clt.fit(starts)
         c_start = clt.predict(starts)
         p_start = np.array([clt.score(x.reshape(1, -1)) for x in starts])
@@ -284,6 +383,8 @@ class MyPoly():
         return abs(float(self.poly.area))
 
 def is_monotonic(traj):
+    if len(traj) < 1:
+        return False
     orgin = traj[0]
     max_distance = -1
     for p in traj:
@@ -301,7 +402,7 @@ def group_tracks_by_id(df):
         frames = df[df['id']==idd]["fn"].to_numpy(np.float32)
         id = idd
         trajectory = df[df['id']==idd][["x", "y"]].to_numpy(np.float32)
-        
+        assert len(frames)==len(trajectory)
         data["id"].append(id)
         data["frames"].append(frames)
         data["trajectory"].append(trajectory)
