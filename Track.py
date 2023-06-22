@@ -215,6 +215,13 @@ def trackpostproc(args):
         print(f"ending with {len(np.unique(df['id']))} tracks")
         update_tracking_changes(df, args)
 
+    if args.MaskGPFrame:
+        print("mask GP Frame")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = remove_out_of_GP_frame(args)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
+
     if args.RemoveInvalidTracks:
         print("removing invalid tracks")
         print(f"starting with {len(np.unique(df['id']))} tracks")
@@ -285,7 +292,20 @@ def trackpostproc(args):
         print(f"ending with {len(np.unique(df['id']))} tracks")
         update_tracking_changes(df, args)
 
-    
+    if args.ExitOrCrossROI:
+        print("select tracks that either exit roi or cross roi multi")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = select_based_on_roi(args, just_exit_or_cross_multi, resample_tracks=True)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
+
+    if args.Interpolate:
+        print("Interpolate Tracks")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = interpolate_tracks(args)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
+
     return SucLog("track post processing executed with no error")
 
 # def roi_mask_tracks(args):
@@ -361,6 +381,63 @@ def cross_roi_multiple(pg, traj, *args, **kwargs):
         return True
     return False
 
+def just_exit_or_cross_multi(pg, traj, th, poly_path):
+    if cross_roi_multiple(pg, traj, th, poly_path) or just_exit_roi(pg, traj, th, poly_path):
+        return True
+    else:
+        return False
+
+def interpolate_tracks(args):
+    df = pd.read_pickle(args.TrackingPkl)
+    columns_to_inter_polate = ["x1", "y1", "x2", "y2", "fn"]
+    regular_columns = []
+    for col in df.columns:
+        if not col in columns_to_inter_polate:
+            regular_columns.append(col)
+
+    print(regular_columns)
+    print(columns_to_inter_polate)
+
+    intpol_df_data = {}
+    for col in df.columns:
+        intpol_df_data[col] = []
+
+    unique_ids = np.unique(df["id"].to_numpy())
+    for uid in tqdm(unique_ids, desc="IntPolTracks"):
+        df_id = df[df["id"] == uid].sort_values(by=["fn"])
+        for i in range(1, len(df_id)):
+            cur_row = df_id.iloc[i]
+            pre_row = df_id.iloc[i-1]
+            if cur_row["fn"] == pre_row["fn"]:
+                print("two detections with same id in tracking results")
+                print(cur_row["fn"])
+            assert cur_row["fn"] > pre_row["fn"]
+            frame_diff = int(cur_row["fn"] - pre_row["fn"])
+            if frame_diff > 1:
+                weights = np.linspace(0, 1, frame_diff, endpoint=False)
+                for w in weights:
+                    for col in regular_columns:
+                        intpol_df_data[col].append(pre_row[col])
+                    for col in columns_to_inter_polate:
+                        pre_value = pre_row[col]
+                        cur_value = cur_row[col]
+                        intpol_df_data[col].append((1-w)*float(pre_value) + (w)*float(cur_value))
+            else:
+                for col in df_id.columns:
+                    intpol_df_data[col].append(pre_row[col])
+
+        # add the last row as it is   
+        for col in df_id.columns:
+            intpol_df_data[col].append(df_id.iloc[-1][col])
+
+        interpol_df = pd.DataFrame.from_dict(intpol_df_data).sort_values(by=["fn"])
+
+    print(f"original df len: {len(df)}")
+    print(f"interpol df len: {len(interpol_df)}")
+
+    return interpol_df
+    
+
 def select_based_on_roi(args, condition, resample_tracks=False):
     df = pd.read_pickle(args.TrackingPkl)
 
@@ -424,6 +501,34 @@ def remove_invalid_tracks(args):
             mask.append(True)
 
     return df[mask]
+
+def remove_out_of_GP_frame (args):
+    df_reproj = pd.read_pickle(args.ReprojectedPkl)
+    df_main   = pd.read_pickle(args.TrackingPkl)
+    mask = []
+
+    HomographyNPY = args.HomographyNPY
+    M = np.load(HomographyNPY, allow_pickle=True)[0]
+
+    # read top
+    frame = cv.imread(args.HomographyTopView)
+    rows2, cols2, dim2 = frame.shape
+    frame_width , frame_height  = cols2 , rows2
+
+    roi_rep = [[0, 0], [0, frame_height], [frame_width, frame_height], [frame_width, 0]]
+    
+    poly_path = mplPath.Path(np.array(roi_rep))
+
+    for i, row in tqdm(df_reproj.iterrows(), total=len(df_reproj)):
+        x, y = row.x, row.y
+        p = [x, y]
+        if poly_path.contains_point(p):
+        # if pg.encloses_point(p):
+            mask.append(True)
+        else:
+            mask.append(False)
+    return df_main[mask]
+
 
 def remove_out_of_ROI(args):
     df_reproj = pd.read_pickle(args.ReprojectedPkl)
