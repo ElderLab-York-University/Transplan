@@ -234,6 +234,11 @@ def get_counting_res_pth(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Counting",file_name + Puncuations.Dot + SubTaskMarker.Counting + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + args.CountMetric +Puncuations.Dot +SubTaskExt.Json)
 
+def get_vis_density_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "density" + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + args.CountMetric +Puncuations.Dot)
+
 def get_counting_stat_pth(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -413,6 +418,11 @@ def add_cached_counter_path_to_args(args):
         args.CachedCounterPth = cached_path
     return args
 
+def add_density_path_to_args(args):
+    vis_density_pth = get_vis_density_path(args)
+    args.DensityVisPath = vis_density_pth
+    return args
+
 def complete_args(args):
     if args.TrackLabelingGUI or args.ExtractCommonTracks:
         args.Meter=True
@@ -456,6 +466,7 @@ def complete_args(args):
         args = add_vis_tracking_moi_path_to_args(args)
     if args.Count:
         args = add_cached_counter_path_to_args(args)
+        args = add_density_path_to_args(args)
 
     return args
 
