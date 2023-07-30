@@ -7,6 +7,7 @@ from counting.resample_gt_MOI.resample_typical_tracks import track_resample
 import Homography
 import Maps
 import TrackLabeling
+import copy
 
 # import all detectros here
 # And add their names to the "trackers" dictionary
@@ -109,9 +110,15 @@ def vistracktop(args):
     frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = int(cap.get(cv2.CAP_PROP_FPS))
 
+    img1 = cv.imread(args.HomographyStreetView)
     frame = cv.imread(args.HomographyTopView)
     rows2, cols2, dim2 = frame.shape
+
+    alpha=0.6
+    M = np.load(args.HomographyNPY, allow_pickle=True)[0]
     frame_width , frame_height  = cols2 , rows2
+    img12 = cv.warpPerspective(img1, M, (cols2, rows2))
+    img2 = cv.addWeighted(frame, alpha, img12, 1 - alpha, 0)
 
 
     color = (0, 0, 102)
@@ -122,7 +129,7 @@ def vistracktop(args):
         frames = min(args.ForNFrames, frames)
     # Read until video is completed
     for frame_num in tqdm(range(frames)):
-        frame = cv.imread(args.HomographyTopView)
+        frame = copy.deepcopy(img2)
 
         this_frame_tracks = df[df.fn==(frame_num)]
         for i, track in this_frame_tracks.iterrows():
@@ -160,6 +167,8 @@ def vistrackmoi(args):
     out_cap = cv2.VideoWriter(annotated_video_path,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
 
     # Read until video is completed
+    if args.ForNFrames is not None:
+        frames = min(frames, args.ForNFrames)
     for frame_num in tqdm(range(frames)):
         if (not cap.isOpened()):
             break

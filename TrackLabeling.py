@@ -21,13 +21,17 @@ def tracklabelinggui(args):
 
 
 def vis_labelled_tracks(args):
+    alpha = 0.6
     save_path = args.VisLabelledTracksPth
     tracks = pd.read_pickle(args.TrackLabellingExportPth)
     tracks = tracks.sort_values("moi")
-    second_image_path = args.HomographyTopView
-
-    img2 = cv.imread(second_image_path)
+    img1 = cv.imread(args.HomographyStreetView)
+    img2 = cv.imread(args.HomographyTopView)
+    M = np.load(args.HomographyNPY, allow_pickle=True)[0]
     rows2, cols2, dim2 = img2.shape
+    img12 = cv.warpPerspective(img1, M, (cols2, rows2))
+    img2 = cv.addWeighted(img2, alpha, img12, 1 - alpha, 0)
+
     for i in range(len(tracks)):
         track = tracks.iloc[i]
         traj = track['trajectory']

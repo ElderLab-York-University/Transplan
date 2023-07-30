@@ -251,19 +251,25 @@ class IKDE():
         self.bw = bandwidth
         self.osr = os_ratio
 
+    def del_kdes(self):
+        del self.kdes
+
     def fit(self, tracks):
         self.mois = np.unique(tracks["moi"])
         self.kdes = {}
         self.priors = {}
+        self.n_prototype = {}
         self.infer_maps = {}
         for moi in self.mois:
             self.kdes[moi] = sklearn.neighbors.KernelDensity(kernel=self.kernel, bandwidth=self.bw)
             self.priors[moi] = 0
             self.infer_maps[moi] = None
+            self.n_prototype[moi] = 0
 
         sum_temp = 0
         for moi in tqdm(self.mois, desc="computing priors"):
             num_traj_per_moi = len(tracks[tracks["moi"] == moi])
+            self.n_prototype[moi] = num_traj_per_moi
             for i, row in tracks[tracks["moi"] == moi].iterrows():
                 traj = row["trajectory"]
                 self.priors[moi] += len(traj)/num_traj_per_moi 
@@ -335,13 +341,17 @@ class IKDE():
                 scores[j, i] = infer_map[(x, y)]
 
         plt.imshow(img)
-        plt.contourf(xs, ys, scores, alpha=0.5, levels=100)
+        plt.contourf(xs, ys, scores, alpha=0.5, levels=100, cmap='plasma')
+        plt.colorbar()
+        plt.title(f"prototpyes used: {self.n_prototype[moi]}")
         plt.savefig(vis_path+f"logdensity_{moi}.png")
         plt.close("all")
 
         scores = np.exp(scores)
         plt.imshow(img)
-        plt.contourf(xs, ys, scores, alpha=0.5, levels=100)
+        plt.contourf(xs, ys, scores, alpha=0.5, levels=100, cmap="plasma")
+        plt.colorbar()
+        plt.title(f"prototpyes used: {self.n_prototype[moi]}")
         plt.savefig(vis_path+ f"density_{moi}.png")
         plt.close("all")
 
@@ -354,7 +364,7 @@ class IKDE():
             x , y = int(x), int(y) # to have map indexes
             log_score += infer_map[(x, y)]
         # add prior to it
-        log_score += np.log(self.priors[moi])
+        # log_score += np.log(self.priors[moi])
         return log_score
             
         ## use this code to compute exact score
@@ -454,7 +464,8 @@ class KDECounting(Counting):
         # cluster prop_tracks based on their starting point
         tracks = cluster_prop_tracks_based_on_str(tracks, self.args)
         # get same number of longest tracks from each cluster per moi
-        tracks = make_uniform_clt_per_moi(tracks, self.args)
+        # uncomment this line if you want to use the same anumber of prototypes per cluster
+        # tracks = make_uniform_clt_per_moi(tracks, self.args)
 
 
         # resample on the ground plane but not in meter
@@ -484,7 +495,8 @@ class KDECounting(Counting):
         self.ikde.make_inference_maps(img, args.DensityVisPath)
         if args.CountVisDensity:
             self.ikde.plot_densities(img, args.DensityVisPath)
-
+        # delete original kde for each moi to free up space when you are caching object
+        self.ikde.del_kdes()
     def main(self, args=None):
         # where the counting happens
         if args is not None:

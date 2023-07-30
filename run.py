@@ -2,26 +2,38 @@ import os
 # choose the dataset/video
 # options : ['./../Dataset/DandasStAtNinthLineFull', './../Dataset/DandasStAtNinthLine', "./../Dataset/SOW_src1", "./../Dataset/SOW_src2", "./../Dataset/SOW_src3", "./../Dataset/SOW_src4"]
 sources = [
-# "/home/sajjad/Dataset/PreProcessedMain/D9L_Video1",
-"/home/sajjad/Dataset/PreProcessedMain/D9L_Video2",
-# "/home/sajjad/Dataset/PreProcessedMain/DBR_Video1",
-"/home/sajjad/Dataset/PreProcessedMain/DBR_Video2",
-# "/home/sajjad/Dataset/PreProcessedMain/DWP_Video1",
-"/home/sajjad/Dataset/PreProcessedMain/DWP_Video2",
-# "/home/sajjad/Dataset/PreProcessedMain/ECR_Video1",
-"/home/sajjad/Dataset/PreProcessedMain/ECR_Video2",
+# TransPlan Dataset
+    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video2",
+    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video2",
+    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video2",
+    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video2",
+# HW7 & Leslie  DATASET
+    # "/mnt/data/HW7Leslie/Seg17sc1",
+    # "/mnt/data/HW7Leslie/Seg17sc2",
+    # "/mnt/data/HW7Leslie/Seg17sc3",
+    # "/mnt/data/HW7Leslie/Seg17sc4"
 
 ]
 
 cached_cnt_sources = [
-    # "/home/sajjad/Dataset/PreProcessedMain/D9L_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
-    "/home/sajjad/Dataset/PreProcessedMain/D9L_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
-    # "/home/sajjad/Dataset/PreProcessedMain/DBR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
-    "/home/sajjad/Dataset/PreProcessedMain/DBR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
-    # "/home/sajjad/Dataset/PreProcessedMain/DWP_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
-    "/home/sajjad/Dataset/PreProcessedMain/DWP_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
-    # "/home/sajjad/Dataset/PreProcessedMain/ECR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
-    "/home/sajjad/Dataset/PreProcessedMain/ECR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
+# TransPlan Dataset
+    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
+    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
+    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
+    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
+# HW7 & Leslie  DATASET
+    # "/mnt/data/HW7Leslie/Seg17sc1",
+    # "/mnt/data/HW7Leslie/Seg17sc2",
+    # "/mnt/data/HW7Leslie/Seg17sc3",
+    # "/mnt/data/HW7Leslie/Seg17sc4"
 ]
 
 # choose the detectors
@@ -46,42 +58,39 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     # 1. estimate the Homography Metrix using Homography GUI 
     # os.system(f"python3 main.py --Dataset={src}  --Detector=detectron2 --Tracker=sort --HomographyGUI --VisHomographyGUI")
     ########################################################
-    # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --VisHomographyGUI --HomographyGUI")
+    # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --HomographyGUI --VisHomographyGUI")
 
     ########################################################
     # 1.5 visualizing the region of interest 
     # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --VisROI")
     #######################################################
-    os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --VisROI")
+    # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --VisROI")
 
     ########################################################
     # 2. run the detection
     # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=NULL --Detect --DetPostProc --DetMask --DetTh=0.50 --VisDetect")
     ########################################################
-    for det in detectors:
-        print(f"detecting ----> src:{src} det:{det}")
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisDetect --ForNFrames=1800 --DetPostProc --DetTh=0.50")
+    # for det in detectors:
+    #     print(f"detecting ----> src:{src} det:{det}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL  --VisDetect --DetPostProc --DetTh=0.5")
 
     ########################################################
     # 3. run the tracking 
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --ForNFrames=1800 --Homography --Meter --VisTrajectories --VisTrackTop")
     ########################################################
-    for det in detectors:
-        for tra in trackers:
-            print(f"tracking ---> src:{src} det:{det} tra:{tra}")
-            # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --ForNFrames=1800 --Homography --Meter --VisTrajectories --VisTrackTop")
-            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --ForNFrames=1800 --Homography --Meter --VisTrajectories --VisTrackTop")
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop")
 
     ########################################################
     # 3.1 run the track post processing
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc --TrackTh=8 --RemoveInvalidTracks --SelectDifEdgeInROI --SelectEndingInROI --SelectBeginInROI --MaskGPFrame --HasPointsInROI --MaskROI  --CrossROI --CrossROIMulti --JustEnterROI --JustExitROI --WithinROI --Interpolate --ExitOrCrossROI")
     ########################################################
-    for det in detectors:
-        for tra in trackers:
-            print(f"tracking ---> src:{src} det:{det} tra:{tra}")
-            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc  --MaskGPFrame --HasPointsInROI --ExitOrCrossROI")
-            #to visualize results
-            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack --ForNFrames=1800 --VisTrajectories --VisTrackTop")
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"tracking POSTPROC ---> src:{src} det:{det} tra:{tra}")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc  --MaskGPFrame --HasPointsInROI --ExitOrCrossROI")
 
     ########################################################
     # 4. run clustering algorithm
@@ -117,7 +126,7 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
         for tra in trackers:
             for metric in cnt_metrics:
                 print(f"counting metric:{metric}")
-                os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --UseCachedCounter --CachedCounterPth={cached_cnt_pth}")
+                os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --CountVisDensity --CacheCounter")
 
     ########################################################
     # 8. Visualizing the results on a video including track label and track id
@@ -125,6 +134,6 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
-    #         for met in metrics[:1]:
+    #         for met in cnt_metrics:
     #             print(f"visualizing MOI -----> det:{det} tra:{tra} met:{met}")
     #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={met} --VisTrackMoI")
