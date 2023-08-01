@@ -5,11 +5,11 @@ sources = [
 # TransPlan Dataset
     "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video2",
-    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1",
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video2",
-    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1",
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video2",
-    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1",
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video2",
 # HW7 & Leslie  DATASET
     # "/mnt/data/HW7Leslie/Seg17sc1",
@@ -23,11 +23,11 @@ cached_cnt_sources = [
 # TransPlan Dataset
     "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
-    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
-    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
-    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1/Results/Counting/video.counting.InternImage.ByteTrack.kde.cached.pkl",
 # HW7 & Leslie  DATASET
     # "/mnt/data/HW7Leslie/Seg17sc1",
@@ -91,6 +91,17 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     #     for tra in trackers:
     #         print(f"tracking POSTPROC ---> src:{src} det:{det} tra:{tra}")
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc  --MaskGPFrame --HasPointsInROI --ExitOrCrossROI")
+
+
+    ########################################################
+    # 3.1 find optimum BW for kde fiting
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --FindOptimalKDEBW --ResampleTH=2.0")
+    ########################################################
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"finding optimal bw for kde ---> src:{src} det:{det} tra:{tra}")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --FindOptimalKDEBW --ResampleTH=2.0")
+
 
     ########################################################
     # 4. run clustering algorithm

@@ -26,6 +26,12 @@ from hmmlearn import hmm
 import copy
 import os
 
+import numpy as np
+import math
+import matplotlib.pyplot as plt
+from scipy.stats import norm
+from scipy.signal import convolve2d
+
 #  Hyperparameters
 # MIN_TRAJ_POINTS = 10
 # MIN_TRAJ_Length = 50
@@ -85,6 +91,187 @@ def interpolate_traj(traj, frames):
             int_traj.append(traj[i])
 
     return int_traj, int_frames
+
+def find_opt_bw(args):
+    osr = 10
+    tracks_path = args.ReprojectedPkl
+    tracks_meter_path = args.ReprojectedPklMeter
+    top_image = args.HomographyTopView
+    meta_data = args.MetaData # dict is already loaded
+    HomographyNPY = args.HomographyNPY
+
+    # load data
+    tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
+    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
+    # resample gp tracks
+    tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+    tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+    img = plt.imread(top_image)
+    img1 = cv.imread(top_image)
+
+    # make data ready for kde training
+    kde_data = []
+    sequence_data = []
+    for i, row in tracks.iterrows():
+        traj = row["trajectory"]
+        # total points to add
+        tot_ps_to_add = len(traj) * osr
+        # compute arch length of traj
+        t1 = np.array(traj[1:])
+        t2 = np.array(traj[:-1])
+        distances = np.linalg.norm(t1 - t2, axis=1)
+        arc = np.sum(distances)
+        num_points = distances / arc * tot_ps_to_add
+
+        for i in range(1, len(traj)):
+            p1, p2 = traj[i-1], traj[i]
+            for r in np.linspace(0, 1, num=int(num_points[i-1]+0.5)):
+                p_temp = (1-r)*p1 + r*p2
+                x, y = p_temp
+                kde_data.append([x, y])
+
+    kde_data = np.array(kde_data)
+
+    #shuffle data
+    np.random.seed(1234)
+    # np.random.shuffle(kde_data)
+
+    split_idx = int(len(kde_data) * 0.5)
+    
+    # 80 percent train and 20 percent test
+    kde_data_train = kde_data[:split_idx]
+    kde_data_test  = kde_data[split_idx:]
+    
+    # use optimized 2D KDE
+    h_range = np.linspace(0.5, 7, 100)
+
+
+    scores = []
+    for h in tqdm(h_range):
+        kde = KDE2D()
+        kde.fit(kde_data_train, img, h)
+        scores.append(np.sum(kde.score_samples(kde_data_test)))
+
+    scores = np.array(scores)
+
+    plt.plot(h_range, scores)
+    plt.xlabel('Bandwidth h (pixels)')
+    plt.ylabel('log likelihood')
+    plt.savefig("sweep_h.png")
+
+    h_opt = h_range[np.argmax(scores)]
+    return h_opt
+
+class KDE2D(object):
+    def __init__(self):
+        self.pmap = None
+        self.im = None
+        self.eps = 1e-20
+
+    def fit(self, data, im, h=3.4):
+        # Fit KDE model to 2D data points and plots results, overlaid on image im.
+        # Input:
+        # data: Nx2 data matrix
+        # im: Image from which data point were derived
+        # h: kernel bw
+        self.im = im
+        imsize = im.shape[0:2]
+        n = data.shape[0]
+
+        datamap = np.zeros(imsize) + self.eps
+        # note reversal of x and y
+        #
+        # datamap[data[:,1].astype(int), data[:,0].astype(int)] += 1 ?
+        for point in data.astype(int):
+            datamap[point[1],point[0]] += 1
+
+        self.pmap = self.KDE2D(datamap, h, n)
+
+    def score_samples(self, test_data):
+        scores = []
+        for test_point in test_data.astype(int):
+            scores.append(np.log(self.pmap[test_point[1], test_point[0]]))
+        return np.array(scores)
+    
+    def find_opt_h(self, data, im, h_range = range(5, 55, 5), M=10):
+        imsize = im.shape[0:2]
+        hopt = self.KDE2Dopt(data, h_range, imsize, M)
+        return hopt
+
+    def KDE2D(self, datamap=None, h=None, n=None):
+        # Compute KDE map over 2D data, assuming points are at integer locations
+        # Input:
+        # data: Nx2 data matrix
+        # h: bandwidth
+        # n: number of points
+        # Output:
+        # pmap: probability density at each pixel of image
+
+        # Truncate Gaussian kernel at +/-20h
+        xlim = math.ceil(20 * h)
+        x = range(-xlim, xlim + 1)
+        kern = np.reshape(norm.pdf(x, 0, h), (-1, 1))
+        pmap = convolve2d(convolve2d(datamap, kern, 'same'), kern.T, 'same') / n
+        return pmap
+
+
+    def KDE2DXval(self, data=None, h=None, M=None, imsize=None):
+        # Compute M-fold cross-validated pseudo log likelihood
+        # Input:
+        # data: Nx2 data matrix
+        # h: bandwidth
+        # M: number of folds
+        # imsize: size of image
+        # Output:
+        # pll: pseudo log likelihood of model
+        N = data.shape[0]
+        pllM = np.zeros(M)
+        W = math.ceil(N / M)  # Fold size
+
+        for i in range(M):
+            tstart = W * i
+            tend = min(W * (i + 1), N)  # Last fold may be slightly smaller
+            trainidx = list(range(0, tstart)) + list(range(tend, N))
+            datamap = np.zeros(imsize) + self.eps
+            # note reversal of x and y and conversion
+            # datamap[data[trainidx, 1].astype(int), data[trainidx, 0].astype(int)] += 1 ?
+            for point in data.astype(int)[trainidx]:
+                datamap[point[1],point[0]] += 1
+
+            pmap = self.KDE2D(datamap, h, len(trainidx))
+            testdata = data[tstart:tend]
+            # note reversal of x and y
+            pllM[i] = np.sum(np.log(pmap[testdata[:, 1].astype(int), testdata[:, 0].astype(int)]))
+
+        pll = np.mean(pllM)
+        return pll
+
+
+    def KDE2Dopt(self, data=None, hs=None, imsize=None, M=10):
+        # Optimize h by cross-validation
+        # Input:
+        # data: Nx2 data matrix
+        # hs: bandwidths
+        # imsize: size of image
+        # Output:
+        # hopt: pseudo log likelihood of model
+
+        N = data.shape[0]
+        data = np.random.permutation(data) #randomly permute data to shuffle any correlations
+        pll = []
+        for h in tqdm(hs, desc="KDE BWs:"):
+            pll.append(self.KDE2DXval(data, h, M, imsize))
+        idx=np.argmax(pll)
+        hopt = hs[idx]
+
+        # Plot pseudo log likelihood as a function of bandwidth h
+        plt.figure()
+        plt.plot(hs, pll)
+        plt.xlabel('Bandwidth h (pixels)')
+        plt.ylabel('Pseudo log likelihood')
+        plt.savefig("find_opt_h.png")
+
+        return hopt
 
 class Counting:
     def __init__(self, args):
@@ -246,7 +433,7 @@ class Counting:
         return accum_dist
 
 class IKDE():
-    def __init__(self, kernel="gaussian", bandwidth=3.2, os_ratio = 5):
+    def __init__(self, kernel="gaussian", bandwidth=None, os_ratio = 1):
         self.kernel = kernel
         self.bw = bandwidth
         self.osr = os_ratio
@@ -254,14 +441,15 @@ class IKDE():
     def del_kdes(self):
         del self.kdes
 
-    def fit(self, tracks):
+    def fit(self, tracks, img):
         self.mois = np.unique(tracks["moi"])
         self.kdes = {}
         self.priors = {}
         self.n_prototype = {}
         self.infer_maps = {}
         for moi in self.mois:
-            self.kdes[moi] = sklearn.neighbors.KernelDensity(kernel=self.kernel, bandwidth=self.bw)
+            # self.kdes[moi] = sklearn.neighbors.KernelDensity(kernel=self.kernel, bandwidth=self.bw)
+            self.kdes[moi] = KDE2D()
             self.priors[moi] = 0
             self.infer_maps[moi] = None
             self.n_prototype[moi] = 0
@@ -282,7 +470,7 @@ class IKDE():
             sequence_data = []
             for i, row in tracks[tracks["moi"] == moi].iterrows():
                 traj = row["trajectory"]
-                 # total points to add
+                # total points to add
                 tot_ps_to_add = len(traj) * self.osr
                 # compute arch length of traj
                 t1 = np.array(traj[1:])
@@ -295,12 +483,16 @@ class IKDE():
                     p1, p2 = traj[i-1], traj[i]
                     for r in np.linspace(0, 1, num=int(num_points[i-1]+0.5)):
                         p_temp = (1-r)*p1 + r*p2
-                        sequence_data.append(p_temp)
-                for i , p in enumerate(sequence_data):
-                    x, y = p
-                    kde_data.append([x, y])
+                        x, y = p_temp
+                        kde_data.append([x, y])
+
+                #         sequence_data.append(p_temp)
+                # for i , p in enumerate(sequence_data):
+                #     x, y = p
+                #     kde_data.append([x, y])
+
             kde_data = np.array(kde_data)
-            self.kdes[moi].fit(kde_data)
+            self.kdes[moi].fit(kde_data, img)
 
     def make_inference_maps(self, img, vis_path):
         for moi in tqdm(self.kdes.keys(), desc="estimating inference maps"):
@@ -491,7 +683,7 @@ class KDECounting(Counting):
 
         img = args.HomographyTopView
         img = cv.imread(args.HomographyTopView)
-        self.ikde.fit(tracks)
+        self.ikde.fit(tracks, img)
         self.ikde.make_inference_maps(img, args.DensityVisPath)
         if args.CountVisDensity:
             self.ikde.plot_densities(img, args.DensityVisPath)
