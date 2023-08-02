@@ -18,6 +18,7 @@ from Homography import vis_reprojected_tracks
 from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_tracks
 from Maps import pix2meter
 from counting import counting
+from counting.counting import find_opt_bw
 from Clustering import cluster
 
 def Preprocess(args):
@@ -87,6 +88,13 @@ def Homography(args, from_back_up = False):
         log = reproject(args, from_back_up=from_back_up)
         return log
     else: return WarningLog("skipped homography subtask")
+
+def FindOptBW(args):
+    if args.FindOptimalKDEBW:
+        print(ProcLog("finding optimal KDE BW"))
+        log = find_opt_bw(args)
+        return log
+    else: return WarningLog("skipped find opt bw")
 
 def TrackLabelingGUI(args):
     if args.TrackLabelingGUI:
@@ -167,7 +175,7 @@ def VisTrackTop(args):
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, VisROI, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, TrackPostProc, VisTrajectories, VisTrackTop, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories, Count, VisTrackMoI]
+    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, VisROI, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, TrackPostProc, VisTrajectories, VisTrackTop, FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories, Count, VisTrackMoI]
     for subtask in subtasks:
         log = subtask(args)
         if not isinstance(log, WarningLog):
@@ -232,6 +240,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--ForNFrames", help="visualize the N first frame instead of all of them", type=int)
     parser.add_argument("--ResampleTH", help="the threshold to resample tracks with", type=float, default=2)
+
+    parser.add_argument("--FindOptimalKDEBW", help="find the optimal KDE band width", action='store_true')
 
 
     args = parser.parse_args()
