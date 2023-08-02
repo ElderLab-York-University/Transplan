@@ -2,6 +2,7 @@
 from Utils import * 
 from Libs import *
 from counting.resample_gt_MOI.resample_typical_tracks import track_resample
+import Track
 
 # args variables for tracklabelling gui
     # args.TrackLabellingExportPth
@@ -20,13 +21,17 @@ def tracklabelinggui(args):
 
 
 def vis_labelled_tracks(args):
+    alpha = 0.6
     save_path = args.VisLabelledTracksPth
     tracks = pd.read_pickle(args.TrackLabellingExportPth)
     tracks = tracks.sort_values("moi")
-    second_image_path = args.HomographyTopView
-
-    img2 = cv.imread(second_image_path)
+    img1 = cv.imread(args.HomographyStreetView)
+    img2 = cv.imread(args.HomographyTopView)
+    M = np.load(args.HomographyNPY, allow_pickle=True)[0]
     rows2, cols2, dim2 = img2.shape
+    img12 = cv.warpPerspective(img1, M, (cols2, rows2))
+    img2 = cv.addWeighted(img2, alpha, img12, 1 - alpha, 0)
+
     for i in range(len(tracks)):
         track = tracks.iloc[i]
         traj = track['trajectory']
@@ -42,41 +47,37 @@ def vis_labelled_tracks(args):
 
     return SucLog("labeled trackes plotted successfully")
 
+def get_in_roi_points(traj, poly_path):
+    mask = []
+    for p in traj:
+        if poly_path.contains_point(p):
+            mask.append(True)
+        else:
+            mask.append(False)
+    return traj[mask]
 
-def extract_common_tracks(args):
+def get_proper_tracks(args):
     tracks_path = args.ReprojectedPkl
     tracks_meter_path = args.ReprojectedPklMeter
     top_image = args.HomographyTopView
     street_image = args.HomographyStreetView
+    # exportpath = args.TrackLabellingExportPth
     meta_data = args.MetaData # dict is already loaded
     HomographyNPY = args.HomographyNPY
-    exportpath = args.TrackLabellingExportPth
+    M = np.load(HomographyNPY, allow_pickle=True)[0]
     moi_clusters = {}
     for mi in  args.MetaData["moi_clusters"].keys():
         moi_clusters[int(mi)] = args.MetaData["moi_clusters"][mi]
 
-    # load data
-    M = np.load(HomographyNPY, allow_pickle=True)[0]
-    print("!-!: grouping gp tracks points based on id")
-    tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
-    print("!-!: grouping gp-meter tracks points based on id")
-    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
-    tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
     img = plt.imread(top_image)
     img1 = cv.imread(top_image)
     img_street = plt.imread(street_image)
 
-    # # create frame polygon
-    # mx_y, mx_x, channels = img_street.shape
-    # frame_rep = []
-    # frame_rep_image = [[0, 0], [0, mx_y], [mx_x, 0], [mx_x, mx_y]]
-    # for p in frame_rep_image:
-    #     point = np.array([p[0], p[1], 1])
-    #     new_point = M.dot(point)
-    #     new_point /= new_point[2]
-    #     frame_rep.append([new_point[0], new_point[1]])
-
-    # frame_pg = MyPoly(frame_rep)
+    # load data
+    tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
+    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
+    tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+    # tracks_meter['trajectory'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=False, threshold=args.ResampleTH))
 
     # create roi polygon
     roi_rep = []
@@ -88,34 +89,29 @@ def extract_common_tracks(args):
 
     pg = MyPoly(roi_rep, args.MetaData["roi_group"])
     th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
+    poly_path = mplPath.Path(np.array(roi_rep))
 
+    # select only tracks that have two interactions with Intersection
     counter = 0
     mask = []
     i_strs = []
     i_ends = []
+    p_strs = []
+    p_ends = []
     moi = []
 
-    # find and plot proper tracks(complete and monotonic)
-    print("!-!: finding proper tracks(complete and monotonic)")
+    print("!-!: selecting tacks that have at least two interactions with ROI")
     for i, row in tqdm(tracks.iterrows(), total=len(tracks)):
-        traj = row["trajectory"]
-        d_str, i_str = pg.distance(traj[0])
-        d_end, i_end = pg.distance(traj[-1])
-
-        # df_str, _ = frame_pg.distance(traj[0])
-        # df_end, _ = frame_pg.distance(traj[-1])
-        # if df_str < d_str and d_str > th:
-        #     _, i_str = pg.distance_angle_filt(traj[row["index_mask"]][0], traj[row["index_mask"]][int(len(row["index_mask"])/2+0.5)])
-        i_strs.append(i_str)
-        # if df_end < d_end and d_end > th:
-        #     _, i_end = pg.distance_angle_filt(traj[row["index_mask"]][-1], traj[row["index_mask"]][int(len(row["index_mask"])/2-0.5)])
-        i_ends.append(i_end)
-
-        moi.append(str_end_to_moi(i_str, i_end))
-
-        if (d_str <= th) and (d_end <= th) and (not i_str == i_end) and is_monotonic(traj[row["index_mask"]]):
+        traj = row["trajectory"][row["index_mask"]]
+        int_indexes, int_points = pg.doIntersect(traj, ret_points=True)
+        if len(np.unique(int_indexes)) > 1 and is_monotonic(get_in_roi_points(traj, poly_path)): # more than one interactions with ROI
             mask.append(True)
             counter += 1
+            i_strs.append(int_indexes[0])
+            i_ends.append(int_indexes[-1])
+            p_strs.append(int_points[0])
+            p_ends.append(int_points[-1])
+            moi.append(str_end_to_moi(int_indexes[0], int_indexes[-1]))
             c=0
             for x, y in traj:
                 x, y = int(x), int(y)
@@ -126,45 +122,44 @@ def extract_common_tracks(args):
 
     print(f"percentage of complete tracks: {counter/len(tracks)}")
     plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
-    plt.show()
+    plt.savefig("multicross.png")
     plt.close("all")
+
+    # modify dfs with mask
+    tracks = tracks[mask]
+    tracks_meter = tracks_meter[mask]
 
     # temporarily add info to track dataframe
     tracks['i_str'] = i_strs
     tracks['i_end'] = i_ends
     tracks['moi'] = moi
+    tracks['p_str'] = p_strs
+    tracks['p_end'] = p_ends
+
     tracks_meter['i_str'] = i_strs
     tracks_meter['i_end'] = i_ends 
     tracks_meter['moi'] = moi
-    # plt.hist(tracks[mask]['moi'])
-    # plt.show()
 
+    return tracks
 
-    # extract all starts and ends from proper tracks
-    starts = []
-    ends=[]
-    for i, row in tracks[mask].iterrows():
-        starts.append(row['trajectory'][0])
-        ends.append(row['trajectory'][-1])
+def cluster_prop_tracks_based_on_str(tracks, args):
+    '''
+    assuming that tracks has p_str and p_end for their s
+    '''
+    tracks["clt"] = np.nan
+    moi_clusters = {}
+    for mi in  args.MetaData["moi_clusters"].keys():
+        moi_clusters[int(mi)] = args.MetaData["moi_clusters"][mi]
+            # cluster tracks and choose common tracks as cluster centers
 
-    starts = np.array(starts)
-    ends = np.array(ends)
-    plt.imshow(img)
-    plt.scatter(starts[:, 0],starts[:, 1], alpha=0.3)
-    plt.show()
-    plt.close("all")
-    
-
-    # cluster tracks and choose common tracks as cluster centers
-    chosen_indexes = []
     for mi in moi_clusters.keys():
-        tracks_mi = tracks[mask][tracks[mask]['moi']==mi]
+        tracks_mi = tracks[tracks['moi']==mi]
         index_mi = tracks_mi.index
         starts = []
         ends=[]
         for i, row in tracks_mi.iterrows():
-            starts.append(row['trajectory'][0])
-            ends.append(row['trajectory'][-1])
+            starts.append(row['p_str'])
+            ends.append(row['p_end'])
         starts = np.array(starts)
         ends = np.array(ends)
         num_cluster = moi_clusters[mi]
@@ -172,14 +167,112 @@ def extract_common_tracks(args):
             print(f"moi {mi} was empty")
             continue
 
-        clt = sklearn.cluster.KMeans(n_clusters = min(num_cluster, len(starts)))
+        clt = sklearn.cluster.KMeans(n_clusters = min(num_cluster, len(starts)), n_init=100)
+        clt.fit(starts)
+        c_start = clt.predict(starts)
+        tracks.loc[tracks.moi == mi, "clt"] = c_start
+
+    return tracks
+
+def make_uniform_clt_per_moi(tracks, args):
+    # sort tracks based on their length(longer comes first)
+    tracks_len = []
+    for i, row in tracks.iterrows():
+        tracks_len.append(len(row.trajectory))
+    tracks["traj_len"] = tracks_len
+    tracks = tracks.sort_values(by="traj_len", ascending=False)
+
+    # for each moi
+    indexes_to_keep = []
+    for mi in np.unique(tracks.moi):
+        tracks_mi = tracks[tracks['moi']==mi].sort_values(by="traj_len", ascending=False)
+        # print(tracks_mi.clt)
+        uni_vals, uni_counts = np.unique(tracks_mi.clt, return_counts=True)
+        # print(uni_vals)
+        # print(uni_counts)
+        num_tracks_to_get_from_clt_per_moi = min(np.min(uni_counts), 10)
+
+        print(f"nums to take: {num_tracks_to_get_from_clt_per_moi} moi:{mi} num_clt:{len(uni_vals)} tot_tracks_chosen:{len(uni_vals)*num_tracks_to_get_from_clt_per_moi}")
+        for uv in uni_vals:
+            idxs_mi_clt  = tracks_mi[tracks_mi.clt == uv].index[:num_tracks_to_get_from_clt_per_moi]
+            indexes_to_keep += [i for i in idxs_mi_clt]
+
+    return tracks.loc[indexes_to_keep]
+
+
+def extract_common_tracks(args):
+    tracks_path = args.ReprojectedPkl
+    tracks_meter_path = args.ReprojectedPklMeter
+    top_image = args.HomographyTopView
+    street_image = args.HomographyStreetView
+    exportpath = args.TrackLabellingExportPth
+    meta_data = args.MetaData # dict is already loaded
+    HomographyNPY = args.HomographyNPY
+    M = np.load(HomographyNPY, allow_pickle=True)[0]
+    moi_clusters = {}
+    for mi in  args.MetaData["moi_clusters"].keys():
+        moi_clusters[int(mi)] = args.MetaData["moi_clusters"][mi]
+
+    img = plt.imread(top_image)
+    img1 = cv.imread(top_image)
+    img_street = plt.imread(street_image)
+
+    # create roi polygon
+    roi_rep = []
+    for p in args.MetaData["roi"]:
+        point = np.array([p[0], p[1], 1])
+        new_point = M.dot(point)
+        new_point /= new_point[2]
+        roi_rep.append([new_point[0], new_point[1]])
+
+    pg = MyPoly(roi_rep, args.MetaData["roi_group"])
+    th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
+    poly_path = mplPath.Path(np.array(roi_rep))
+
+    # get proper tracks
+    tracks = get_proper_tracks(args)
+
+    # extract all starts and ends from proper tracks
+    starts = []
+    ends=[]
+    for i, row in tracks.iterrows():
+        starts.append(row['p_str'])
+        ends.append(row['p_end'])
+
+    starts = np.array(starts)
+    ends = np.array(ends)
+    plt.imshow(img)
+    plt.scatter(starts[:, 0],starts[:, 1], alpha=0.3)
+    plt.savefig("multicorss_points.png")
+    plt.close("all")
+
+    
+
+    # cluster tracks and choose common tracks as cluster centers
+    chosen_indexes = []
+    for mi in moi_clusters.keys():
+        tracks_mi = tracks[tracks['moi']==mi]
+        index_mi = tracks_mi.index
+        starts = []
+        ends=[]
+        for i, row in tracks_mi.iterrows():
+            starts.append(row['p_str'])
+            ends.append(row['p_end'])
+        starts = np.array(starts)
+        ends = np.array(ends)
+        num_cluster = moi_clusters[mi]
+        if len(starts) < 1:
+            print(f"moi {mi} was empty")
+            continue
+
+        clt = sklearn.cluster.KMeans(n_clusters = min(num_cluster, len(starts)), n_init=100)
         clt.fit(starts)
         c_start = clt.predict(starts)
         p_start = np.array([clt.score(x.reshape(1, -1)) for x in starts])
         cluster_labels = np.unique(c_start)
         plt.imshow(img)
         plt.scatter(starts[:, 0], starts[:, 1], c=c_start)
-        plt.show()
+        plt.savefig(f"int_lane_clt_{mi}.png")
         plt.close("all")
 
         for c_label in cluster_labels:
@@ -204,8 +297,8 @@ def extract_common_tracks(args):
 
     # save common tracks as labelled tracks
     tracks_labelled = group_tracks_by_id(pd.read_pickle(tracks_path))
-    tracks_labelled["moi"] = tracks["moi"].apply(lambda x: int(x))
     tracks_labelled = tracks_labelled.loc[chosen_indexes]
+    tracks_labelled["moi"] = tracks.loc[chosen_indexes]["moi"].apply(lambda x: int(x))
     tracks_labelled.to_pickle(exportpath)
     return SucLog("common trakces extracted successfully")
 
@@ -255,6 +348,8 @@ class MyPoly():
     def doIntersect(self, track, ret_points):
         '''
         hope fully a faster method just to determine intersection indexes
+        only returns unique groups that track intersected with
+        if re_points=True will return intersection point as well
         '''                    
         int_indexes = []
         int_points = []
@@ -262,12 +357,16 @@ class MyPoly():
         for seg in self.lines:
             roi_segments.append([Point(list(seg.points[0])), Point(list(seg.points[1]))])
         for i in range(len(track)-1):
+            if len(int_indexes)==len(self.lines):
+                break
             p0 = Point(track[i])
             p1 = Point(track[i+1])
             for i, roi_seg in enumerate(roi_segments):
+                if int(self.roi_group[i]) in int_indexes:
+                    continue
                 q0 , q1 = roi_seg[0], roi_seg[1]
-                if doIntersect(p0,q0,p1,q1):
-                    int_indexes.append(i)
+                if doIntersect(p0,p1,q0,q1):
+                    int_indexes.append(int(self.roi_group[i]))
                     # compute interseciton point as well
                     if ret_points:
                         int_points.append(self.getIntersectionPoint(p0, p1, q0, q1))
@@ -277,18 +376,19 @@ class MyPoly():
         else:
             return int_indexes
     
-    def getIntersectionPoint(self,p0, p1, q0, q1):
-        segp = sympy.Segment(sympy.Point([p0.x, p0.y]), sympy.Point([p1.x, p1.y]))
-        segq = sympy.Segment(sympy.Point([q0.x, q0.y]), sympy.Point([q1.x, q1.y]))
-        points = segp.intersect(segq)
-        if points:
-            return list(points[0])
+    def getIntersectionPoint(self, p0, p1, q0, q1):
+        segp = sympy.Line(sympy.Point([p0.x, p0.y]), sympy.Point([p1.x, p1.y]))
+        segq = sympy.Line(sympy.Point([q0.x, q0.y]), sympy.Point([q1.x, q1.y]))
+        point = segp.intersection(segq)
+        return [float(point[0][0]), float(point[0][1])]
 
     @property
     def area(self):
         return abs(float(self.poly.area))
 
 def is_monotonic(traj):
+    if len(traj) < 1:
+        return False
     orgin = traj[0]
     max_distance = -1
     for p in traj:
@@ -306,7 +406,7 @@ def group_tracks_by_id(df):
         frames = df[df['id']==idd]["fn"].to_numpy(np.float32)
         id = idd
         trajectory = df[df['id']==idd][["x", "y"]].to_numpy(np.float32)
-        
+        assert len(frames)==len(trajectory)
         data["id"].append(id)
         data["frames"].append(frames)
         data["trajectory"].append(trajectory)

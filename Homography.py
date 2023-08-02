@@ -134,6 +134,12 @@ def vis_reprojected_tracks(args):
     img2 = cv.imread(second_image_path)
     rows1, cols1, dim1 = img1.shape
     rows2, cols2, dim2 = img2.shape
+
+    alpha=0.6
+    M = np.load(args.HomographyNPY, allow_pickle=True)[0]
+    img12 = cv.warpPerspective(img1, M, (cols2, rows2))
+    img2 = cv.addWeighted(img2, alpha, img12, 1 - alpha, 0)
+
     unique_track_ids = np.unique(cam_df['id'])
     # M = np.load(homography_path, allow_pickle=True)[0]
     # img12 = cv.warpPerspective(img1, M, (cols2, rows2))

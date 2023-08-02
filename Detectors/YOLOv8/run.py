@@ -22,7 +22,7 @@ if __name__=="__main__":
     video_path = args["Video"]
     text_result_path = args["DetectionDetectorPath"]
 
-    model = YOLO("yolov8x.pt", type="v8")
+    model = YOLO("yolov8x.pt")
     model.to(device)
     results = model.predict(source=video_path, stream=True, verbose=False) # stream=True return a generator for memory efficiency
     print("len results is ......")

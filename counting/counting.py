@@ -24,6 +24,7 @@ from Libs import *
 from TrackLabeling import *
 from hmmlearn import hmm 
 import copy
+import os
 
 #  Hyperparameters
 # MIN_TRAJ_POINTS = 10
@@ -66,6 +67,24 @@ def group_tracks_by_id(df):
         data["trajectory"].append(trajectory)
     df2 = pd.DataFrame(data)
     return df2
+
+def interpolate_traj(traj, frames):
+    int_traj, int_frames = [traj[0]], [frames[0]]
+    assert len(traj)==len(frames)
+    for i in range(1, len(frames)):
+        fm = int(frames[i-1])
+        fn = int(frames[i])
+        assert fn > fm
+        if not(fm+1 == fn): # interpolate between two tracks
+            for fi in range(fm+1, fn+1):
+                r = (fi-fm)/(fn-fm)
+                int_frames.append(fi)
+                int_traj.append(r*traj[i] + (1-r)*traj[i-1])
+        else:
+            int_frames.append(fn)
+            int_traj.append(traj[i])
+
+    return int_traj, int_frames
 
 class Counting:
     def __init__(self, args):
@@ -227,24 +246,54 @@ class Counting:
         return accum_dist
 
 class IKDE():
-    def __init__(self, kernel="gaussian", bandwidth=3.2, os_ratio = 2):
+    def __init__(self, kernel="gaussian", bandwidth=3.2, os_ratio = 5):
         self.kernel = kernel
         self.bw = bandwidth
         self.osr = os_ratio
 
+    def del_kdes(self):
+        del self.kdes
+
     def fit(self, tracks):
         self.mois = np.unique(tracks["moi"])
         self.kdes = {}
+        self.priors = {}
+        self.n_prototype = {}
+        self.infer_maps = {}
         for moi in self.mois:
             self.kdes[moi] = sklearn.neighbors.KernelDensity(kernel=self.kernel, bandwidth=self.bw)
+            self.priors[moi] = 0
+            self.infer_maps[moi] = None
+            self.n_prototype[moi] = 0
+
+        sum_temp = 0
+        for moi in tqdm(self.mois, desc="computing priors"):
+            num_traj_per_moi = len(tracks[tracks["moi"] == moi])
+            self.n_prototype[moi] = num_traj_per_moi
+            for i, row in tracks[tracks["moi"] == moi].iterrows():
+                traj = row["trajectory"]
+                self.priors[moi] += len(traj)/num_traj_per_moi 
+                sum_temp += len(traj)/num_traj_per_moi 
         for moi in self.mois:
+            self.priors[moi] /= sum_temp
+
+        for moi in tqdm(self.mois, desc="fit KDEs"):
             kde_data = []
             sequence_data = []
             for i, row in tracks[tracks["moi"] == moi].iterrows():
                 traj = row["trajectory"]
+                 # total points to add
+                tot_ps_to_add = len(traj) * self.osr
+                # compute arch length of traj
+                t1 = np.array(traj[1:])
+                t2 = np.array(traj[:-1])
+                distances = np.linalg.norm(t1 - t2, axis=1)
+                arc = np.sum(distances)
+                num_points = distances / arc * tot_ps_to_add
+
                 for i in range(1, len(traj)):
                     p1, p2 = traj[i-1], traj[i]
-                    for r in np.linspace(0, 1, num=self.osr):
+                    for r in np.linspace(0, 1, num=int(num_points[i-1]+0.5)):
                         p_temp = (1-r)*p1 + r*p2
                         sequence_data.append(p_temp)
                 for i , p in enumerate(sequence_data):
@@ -253,13 +302,78 @@ class IKDE():
             kde_data = np.array(kde_data)
             self.kdes[moi].fit(kde_data)
 
+    def make_inference_maps(self, img, vis_path):
+        for moi in tqdm(self.kdes.keys(), desc="estimating inference maps"):
+            self.make_infer_map(moi, img, vis_path)
+
+    def make_infer_map(self, moi, img, vis_path):
+        kde = self.kdes[moi]
+        h, w, c = img.shape
+        # compute infer map per pixel on image
+        y, x  = np.linspace(0, h, num=int(h), endpoint=False), np.linspace(0, w, num=int(w), endpoint=False)
+        xx, yy = np.meshgrid(x, y)
+        xf , yf = xx.flatten(), yy.flatten()
+        X = np.vstack([xf, yf]).T
+
+        scores = kde.score_samples(X)
+        scores = scores.reshape(xx.shape)
+
+        self.infer_maps[moi] = self.get_infer_map_dict(xx, yy, scores)
+
+    def get_infer_map_dict(self, xx, yy, ss):
+        dict_map = {}
+        for x, y, s in zip(xx.flatten(), yy.flatten(), ss.flatten()):
+            dict_map[(x, y)] = s
+
+        return dict_map
+
+    def plot_densities(self, img, vis_path):
+        for moi in tqdm(self.kdes.keys(), desc="vis KDEs"):
+            self.plot_density(moi, img, vis_path)
+
+    def plot_density(self, moi, img, vis_path):
+        infer_map = self.infer_maps[moi]
+        h, w, c = img.shape
+        ys, xs  = np.linspace(0, h, num=int(h), endpoint=False), np.linspace(0, w, num=int(w), endpoint=False)
+        scores = np.zeros(shape = (len(ys), len(xs)))
+        for i, x in enumerate(xs):
+            for j, y in enumerate(ys):
+                scores[j, i] = infer_map[(x, y)]
+
+        plt.imshow(img)
+        plt.contourf(xs, ys, scores, alpha=0.5, levels=100, cmap='plasma')
+        plt.colorbar()
+        plt.title(f"prototpyes used: {self.n_prototype[moi]}")
+        plt.savefig(vis_path+f"logdensity_{moi}.png")
+        plt.close("all")
+
+        scores = np.exp(scores)
+        plt.imshow(img)
+        plt.contourf(xs, ys, scores, alpha=0.5, levels=100, cmap="plasma")
+        plt.colorbar()
+        plt.title(f"prototpyes used: {self.n_prototype[moi]}")
+        plt.savefig(vis_path+ f"density_{moi}.png")
+        plt.close("all")
+
     def get_traj_score(self, traj, moi):
-        traj_data = []
+        ## use infer maps to get estimates
+        infer_map = self.infer_maps[moi]
+        log_score = 0
         for i in range(len(traj)):
             x, y = traj[i]
-            traj_data.append([x, y])
-        traj_data = np.array(traj_data)
-        return np.sum(self.kdes[moi].score_samples(traj_data))
+            x , y = int(x), int(y) # to have map indexes
+            log_score += infer_map[(x, y)]
+        # add prior to it
+        # log_score += np.log(self.priors[moi])
+        return log_score
+            
+        ## use this code to compute exact score
+        # traj_data = []
+        # for i in range(len(traj)):
+        #     x, y = traj[i]
+        #     traj_data.append([x, y])
+        # traj_data = np.array(traj_data)
+        # return np.sum(self.kdes[moi].score_samples(traj_data))+ np.log(self.priors[moi])
     
     def predict_traj(self, traj):
         moi_scores = []
@@ -270,7 +384,7 @@ class IKDE():
 
     def predict_tracks(self, tracks):
         max_mois = []
-        for i, row in tracks.iterrows():
+        for i, row in tqdm(tracks.iterrows(), desc="pred moi", total=len(tracks)):
             traj = row["trajectory"]
             max_mois.append(self.predict_traj(traj))
         return max_mois
@@ -345,81 +459,28 @@ class HMMG():
 
 class KDECounting(Counting):
     def __init__(self, args):
-        # load tracks
-        # isolate complete tracks
-        # train kdes and store them
-        # classify based on kdes
         self.args = args
-        tracks_path = args.ReprojectedPkl
-        tracks_meter_path = args.ReprojectedPklMeter
-        top_image = args.HomographyTopView
-        meta_data = args.MetaData # dict is already loaded
-        HomographyNPY = args.HomographyNPY
-
-        # load data
-        M = np.load(HomographyNPY, allow_pickle=True)[0]
-        tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
-        tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
-        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
-        img = plt.imread(top_image)
-        img1 = cv.imread(top_image)
-        H, W, C = img1.shape
-        X_cord, Y_cord = np.meshgrid(range(int(W)), range(int(H)))
-        # X_cord, Y_cord = np.meshgrid(range(200, 600), range(200, 600))
-        Data_cord = np.stack([X_cord, Y_cord]).reshape(2, -1).T
-
-        # create roi polygon
-        roi_rep = []
-        for p in args.MetaData["roi"]:
-            point = np.array([p[0], p[1], 1])
-            new_point = M.dot(point)
-            new_point /= new_point[2]
-            roi_rep.append([new_point[0], new_point[1]])
-
-        pg = MyPoly(roi_rep, args.MetaData["roi_group"])
-        th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
-
-        counter = 0
-        mask = []
-        i_strs = []
-        i_ends = []
-        moi = []
-
-        # find proper tracks(complete and monotonic)
-        for i, row in tqdm(tracks.iterrows(), total=len(tracks)):
-            traj = row["trajectory"]
-            d_str, i_str = pg.distance(traj[0])
-            d_end, i_end = pg.distance(traj[-1])
-            i_strs.append(i_str)
-            i_ends.append(i_end)
-            moi.append(str_end_to_moi(i_str, i_end))
-
-            if (d_str < th) and (d_end < th) and (not i_str == i_end) and is_monotonic(traj[row["index_mask"]]):
-                mask.append(True)
-                c=0 
-                for x, y in traj:
-                    x, y = int(x), int(y)
-                    img1 = cv.circle(img1, (x,y), radius=1, color=(int(c/len(traj)*255), 70, int(255 - c/len(traj)*255)), thickness=1)
-                    c+=1
-            else:
-                mask.append(False)
-
-        plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
-        # plt.show()
+        tracks = get_proper_tracks(self.args)
+        # cluster prop_tracks based on their starting point
+        tracks = cluster_prop_tracks_based_on_str(tracks, self.args)
+        # get same number of longest tracks from each cluster per moi
+        # uncomment this line if you want to use the same anumber of prototypes per cluster
+        # tracks = make_uniform_clt_per_moi(tracks, self.args)
 
 
-        # temporarily add info to track dataframe
-        tracks['i_str'] = i_strs
-        tracks['i_end'] = i_ends
-        tracks['moi'] = moi
-        tracks_meter['i_str'] = i_strs
-        tracks_meter['i_end'] = i_ends 
-        tracks_meter['moi'] = moi
-        plt.hist(tracks[mask]["moi"])
-        # plt.show()
         # resample on the ground plane but not in meter
         tracks["trajectory"] = tracks.apply(lambda x: x['trajectory'][x["index_mask"]], axis=1)
-      
+        tracks["frames"] = tracks.apply(lambda x: x['frames'][x["index_mask"]], axis=1)
+        # interpolate tracks to fill in gaps
+        # os_trajectories  = []
+        # os_frames        = []
+        # for i, row in tracks.iterrows():
+        #     traj, frames = interpolate_traj(row["trajectory"], row["frames"])
+        #     os_trajectories.append(traj)
+        #     os_frames.append(frames)
+        # tracks["trajectory"] = os_trajectories
+        # tracks["frames"] = os_frames
+            
         if self.args.CountMetric == "kde":
             self.ikde = IKDE()
         elif self.args.CountMetric == "loskde":
@@ -427,8 +488,15 @@ class KDECounting(Counting):
         elif self.args.CountMetric == "hmmg":
             self.ikde = HMMG()
         else: raise "it should not happen"
-        self.ikde.fit(tracks[mask])
 
+        img = args.HomographyTopView
+        img = cv.imread(args.HomographyTopView)
+        self.ikde.fit(tracks)
+        self.ikde.make_inference_maps(img, args.DensityVisPath)
+        if args.CountVisDensity:
+            self.ikde.plot_densities(img, args.DensityVisPath)
+        # delete original kde for each moi to free up space when you are caching object
+        self.ikde.del_kdes()
     def main(self, args=None):
         # where the counting happens
         if args is not None:
