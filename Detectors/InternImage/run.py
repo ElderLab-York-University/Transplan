@@ -15,7 +15,6 @@ import mmcv_custom  # noqa: F401,F403
 from mmdet.apis import init_detector, inference_detector
 from tqdm import tqdm
 
-classes_to_keep = [2, 5, 7] #3-1:car, 6-1:bus, 8-1:truck
 def getbboxes(result):
     if isinstance(result, tuple):
         bbox_result, segm_result = result
@@ -55,8 +54,7 @@ if __name__ == "__main__":
           bboxes=res[0]
           labels=res[1]
           for box,label in zip(bboxes,labels):
-                if(box[4]>0.0 and label in classes_to_keep):
-                    r=box
-                    f.write(str(i) + " " + str(label) + " " + str(r[4]) + " " + str(r[0])+ " " + str(r[1]) + " " + str(r[2])+ " " + str(r[3]) +'\n')
+                r=box
+                f.write(str(i) + " " + str(label) + " " + str(r[4]) + " " + str(r[0])+ " " + str(r[1]) + " " + str(r[2])+ " " + str(r[3]) +'\n')
           i=i+1
 

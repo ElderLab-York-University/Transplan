@@ -105,6 +105,10 @@ def detectpostproc(args):
     # 1. condition on the post processing flags
     if not args.DetTh is None:
         df = detectionth(df, args)
+
+    if args.classes_to_keep:
+        df = filter_det_class(df, args)
+
     if args.DetMask:
         df = remove_out_of_ROI(df, args.MetaData["roi"])
     
@@ -119,6 +123,14 @@ def detectionth(df, args):
     print("performing thresholding")
     df = df[df["score"] >= args.DetTh]
     return df
+
+def filter_det_class(df, args):
+    print("performing class filtering")
+    mask = df["fn"] < 0
+    for clss in args.classes_to_keep:
+        clss_mask = df["class"] == clss
+        mask = np.logical_or(mask, clss_mask)
+    return df[mask]
 
 def visroi(args):
     # args.MetaData.roi

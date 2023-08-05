@@ -26,48 +26,48 @@ sources = [
     # "/mnt/data/HW7Leslie/Seg02/Seg02sc2",
     # "/mnt/data/HW7Leslie/Seg02/Seg02sc3",
     # "/mnt/data/HW7Leslie/Seg02/Seg02sc4",
-    # # Seg03
+    # # # Seg03
     # "/mnt/data/HW7Leslie/Seg03/Seg03sc1",
     # "/mnt/data/HW7Leslie/Seg03/Seg03sc2",
     # "/mnt/data/HW7Leslie/Seg03/Seg03sc3",
     # "/mnt/data/HW7Leslie/Seg03/Seg03sc4",
-    # # Seg05
+    # # # Seg05
     # "/mnt/data/HW7Leslie/Seg05/Seg05sc1",
     # "/mnt/data/HW7Leslie/Seg05/Seg05sc2",
     # "/mnt/data/HW7Leslie/Seg05/Seg05sc3",
     # "/mnt/data/HW7Leslie/Seg05/Seg05sc4",
-    # # Seg06
+    # # # Seg06
     # "/mnt/data/HW7Leslie/Seg06/Seg06sc1",
     # "/mnt/data/HW7Leslie/Seg06/Seg06sc2",
     # "/mnt/data/HW7Leslie/Seg06/Seg06sc3",
     # "/mnt/data/HW7Leslie/Seg06/Seg06sc4",
-    # # Seg09
+    # # # Seg09
     # "/mnt/data/HW7Leslie/Seg09/Seg09sc1",
     # "/mnt/data/HW7Leslie/Seg09/Seg09sc2",
     # "/mnt/data/HW7Leslie/Seg09/Seg09sc3",
     # "/mnt/data/HW7Leslie/Seg09/Seg09sc4",
-    # # Seg10
+    # # # Seg10
     # "/mnt/data/HW7Leslie/Seg10/Seg10sc1",
     # "/mnt/data/HW7Leslie/Seg10/Seg10sc2",
     # "/mnt/data/HW7Leslie/Seg10/Seg10sc3",
     # "/mnt/data/HW7Leslie/Seg10/Seg10sc4",
-    # # Seg11
+    # # # Seg11
     # "/mnt/data/HW7Leslie/Seg11/Seg11sc1",
     # "/mnt/data/HW7Leslie/Seg11/Seg11sc2",
     # "/mnt/data/HW7Leslie/Seg11/Seg11sc3",
     # "/mnt/data/HW7Leslie/Seg11/Seg11sc4",
-    # # Seg12
+    # # # Seg12
     # "/mnt/data/HW7Leslie/Seg12/Seg12sc1",
     # "/mnt/data/HW7Leslie/Seg12/Seg12sc2",
     # "/mnt/data/HW7Leslie/Seg12/Seg12sc3",
     # "/mnt/data/HW7Leslie/Seg12/Seg12sc4",
-    # # Seg13
+    # # # Seg13
     # "/mnt/data/HW7Leslie/Seg13/Seg13sc1",
     # "/mnt/data/HW7Leslie/Seg13/Seg13sc2",
     # "/mnt/data/HW7Leslie/Seg13/Seg13sc3",
     # "/mnt/data/HW7Leslie/Seg13/Seg13sc4",
     # #Seg17
-    # "/mnt/data/HW7Leslie/Seg17/Seg17sc1",
+    "/mnt/data/HW7Leslie/Seg17/Seg17sc1",
     # "/mnt/data/HW7Leslie/Seg17/Seg17sc2",
     # "/mnt/data/HW7Leslie/Seg17/Seg17sc3",
     # "/mnt/data/HW7Leslie/Seg17/Seg17sc4",
@@ -140,7 +140,7 @@ cached_cnt_sources = [
     # "/mnt/data/HW7Leslie/Seg13/Seg13sc3",
     # "/mnt/data/HW7Leslie/Seg13/Seg13sc4",
     # #Seg17
-    # "/mnt/data/HW7Leslie/Seg17/Seg17sc1",
+    "/mnt/data/HW7Leslie/Seg17/Seg17sc1",
     # "/mnt/data/HW7Leslie/Seg17/Seg17sc2",
     # "/mnt/data/HW7Leslie/Seg17/Seg17sc3",
     # "/mnt/data/HW7Leslie/Seg17/Seg17sc4",
@@ -148,11 +148,12 @@ cached_cnt_sources = [
 
 # choose the detectors
 # options: ["detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage"]
-detectors = ["InternImage"]
+detectors = ["YOLOv8", "detectron2", "InternImage"]
 
 # choose the tracker
 # options: ["sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
-trackers = ["ByteTrack"] 
+trackers = ["ByteTrack","DeepSort","OCSort", "sort"] 
+
 
 # choose the clustering algorithm
 # options: ["SpectralFull", "DBSCAN", "SpectralKNN"]
@@ -166,9 +167,9 @@ cnt_metrics = ["kde"]
 for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     ########################################################
     # 1. estimate the Homography Metrix using Homography GUI 
-    # os.system(f"python3 main.py --Dataset={src}  --Detector=detectron2 --Tracker=sort --HomographyGUI --VisHomographyGUI")
+    # os.system(f"python3 main.py --Dataset={src}  --Detector=detectron2 --Tracker=sort --HomographyGUI --VisHomographyGUI --Frame=1")
     ########################################################
-    # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --HomographyGUI --Frame=1")
+    # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --VisHomographyGUI")
 
     ########################################################
     # 2. visualizing the region of interest 
@@ -182,7 +183,17 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     ########################################################
     # for det in detectors:
     #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL  --VisDetect --DetPostProc --DetTh=0.5")
+    #     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect  --VisDetect --DetPostProc --DetTh=0.5")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL  --Detect --VisDetect")
+
+    ########################################################
+    # 3.5 run the detection post processing
+    # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=NULL --Detect --DetPostProc --DetMask --DetTh=0.50 --VisDetect")
+    ########################################################
+    for det in detectors:
+        print(f"detecting ----> src:{src} det:{det}")
+        # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --DetPostProc --DetTh=0.5 --VisDetect")
+        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --DetPostProc --DetTh=0.5 --classes_to_keep 2 5 7 --VisDetect")
 
     ########################################################
     # 4. run the tracking 
@@ -191,6 +202,7 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     # for det in detectors:
     #     for tra in trackers:
     #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
+    #         # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop")
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop")
 
     ########################################################
@@ -247,7 +259,7 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     #     for tra in trackers:
     #         for metric in cnt_metrics:
     #             print(f"counting metric:{metric}")
-    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --CountVisDensity --CacheCounter")
+    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --CountVisDensity")
 
     ########################################################
     # 11. Visualizing the results on a video including track label and track id

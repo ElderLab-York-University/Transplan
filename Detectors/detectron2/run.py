@@ -183,7 +183,7 @@ import numpy as np
 # see the list of MS_COCO class dict in the link below 
 # https://gist.github.com/AruniRC/7b3dadd004da04c80198557db5da4bda
 # the output of detectron2 is the class numbers + 1
-classes_to_keep = [2, 5, 7] #3-1:car, 6-1:bus, 8-1:truck
+
 Num_Proc = 1*torch.cuda.device_count() if torch.cuda.is_available() else 1
 Batch_Size = 1
 pbars = []
@@ -218,8 +218,7 @@ def write_outputs_to_file(outputs, frame_nums_inserted, text_file):
         boxes = output['instances'].pred_boxes.to("cpu")
         with results_lock:
             for clss, score, box in zip(classes, scores, boxes):
-              if clss in classes_to_keep:
-                text_file.write(f"{frame_number_i} {clss} {score} " + " ".join(map(str, box.numpy())) + "\n")
+              text_file.write(f"{frame_number_i} {clss} {score} " + " ".join(map(str, box.numpy())) + "\n")
 
 def detect_multi_process(device_name, proc_id, num_procs, video_path, Batch_Size, text_file):
   global pbars, models, models_locks
