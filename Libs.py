@@ -23,3 +23,4 @@ import ctypes
 import sympy
 import sklearn
 import copy
+import scipy
