@@ -22,3 +22,4 @@ import matplotlib.path as mplPath
 import ctypes
 import sympy
 import sklearn
+import copy
