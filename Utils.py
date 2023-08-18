@@ -416,6 +416,11 @@ def add_cached_counter_path_to_args(args):
     if args.CachedCounterPth is None:
         cached_path = get_counter_cached_path(args)
         args.CachedCounterPth = cached_path
+    elif args.UseCachedCounter:
+        chached_args = copy.deepcopy(args)
+        chached_args.Dataset = args.CachedCounterPth
+        cached_path = get_counter_cached_path(chached_args)
+        args.CachedCounterPth = cached_path
     return args
 
 def add_density_path_to_args(args):
