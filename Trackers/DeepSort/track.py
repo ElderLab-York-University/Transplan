@@ -61,11 +61,10 @@ def match_classes(args):
     tracks = np.loadtxt(tracks_path, delimiter=',')
     data["fn"]    = tracks[:, 0]
     data["id"]    = tracks[:, 1]
-    data["score"] = tracks[:, 2]
-    data["x1"]    = tracks[:, 3]
-    data["y1"]    = tracks[:, 4]
-    data["x2"]    = tracks[:, 5]
-    data["y2"]    = tracks[:, 6]
+    data["x1"]    = tracks[:, 2]
+    data["y1"]    = tracks[:, 3]
+    data["x2"]    = tracks[:, 4]
+    data["y2"]    = tracks[:, 5]
 
     track_df = pd.DataFrame.from_dict(data)
     det_df = df = pd.read_pickle(args.DetectionPkl)
