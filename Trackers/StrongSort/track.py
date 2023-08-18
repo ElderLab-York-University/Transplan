@@ -6,6 +6,7 @@ def track(args, *oargs):
     env_name = args.Tracker
     exec_path = "./Trackers/StrongSort/run.py"
     conda_pyrun(env_name, exec_path, args)
+    match_classes(args)
 
 def df(args):
     data = {}
@@ -29,6 +30,9 @@ def df_txt(df, out_path):
     # df = pd.read_pickle(args.TrackingPkl)
     # out_path = args.TrackingPth 
 
+def match_classes(args):
+    # already hass classes in txt
+    pass
 
 def setup(args):
     env_name = args.Tracker
