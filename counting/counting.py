@@ -22,6 +22,7 @@ from Utils import *
 from Maps import *
 from Libs import *
 from TrackLabeling import *
+import Track
 from hmmlearn import hmm 
 import copy
 import os
@@ -56,6 +57,37 @@ color_dict = moi_color_dict
 #         data["trajectory"].append(trajectory)
 #     df = pd.DataFrame(data)
 #     return df
+
+
+def my_viz_CMM(current_track, img, alpha=0.3, matched_id=0, track_id=-1):
+
+    back_ground = copy.deepcopy(img)
+    rows, cols, dim = img.shape
+
+    for i in range(1, len(current_track)):
+        p1 = current_track[i-1]
+        p2 = current_track[i]
+        x1, y1 = int(p1[0]), int(p1[1])
+        x2, y2 = int(p2[0]), int(p2[1])
+        back_ground = cv2.line(back_ground, (x1, y1), (x2, y2), (240, 50, 230), thickness=2) 
+
+    for p in current_track:
+        x, y = int(p[0]), int(p[1])
+        back_ground = cv.circle(back_ground, (x,y), radius=2, color=(240, 50, 230), thickness=2)
+
+    p = current_track[0]
+    x, y = int(p[0]), int(p[1])
+    back_ground = cv.circle(back_ground, (x,y), radius=3, color=(0, 255, 0), thickness=2)
+
+    p = current_track[-1]
+    x, y = int(p[0]), int(p[1])
+    back_ground = cv.circle(back_ground, (x,y), radius=3, color=(0, 0, 255), thickness=2)
+
+    img_new = cv2.addWeighted(img, alpha, back_ground, 1 - alpha, 0)
+    img_new = cv.cvtColor(img_new, cv.COLOR_BGR2RGB)
+    plt.imshow(img_new)
+    plt.title(f"id;{track_id}")
+    plt.savefig(f"sample_track_moi{matched_id}_id{track_id}.png")
 
 
 def group_tracks_by_id(df):
@@ -143,7 +175,7 @@ def find_opt_bw(args):
     kde_data_test  = kde_data[split_idx:]
     
     # use optimized 2D KDE
-    h_range = np.linspace(0.5, 7, 100)
+    h_range = np.linspace(1, 5, 100)
 
 
     scores = []
@@ -294,42 +326,36 @@ class Counting:
         self.typical_mois = defaultdict(list)
         for index, row in df.iterrows():
             self.typical_mois[row['moi']].append(row["trajectory"])
-
-        self.counter = defaultdict(int)
-        self.traject_couter = 0
-        self.tem = []       
+    
 
     def counting(self, current_trajectory, track_id=-1):
         # counting_start_time = time.time()
-        resampled_trajectory = track_resample(np.array(current_trajectory, dtype=np.float64))
+        resampled_trajectory = current_trajectory
+        
+        min_c = float('inf')
+        matched_id = -1
+        tem = []
+        key = []
+        for keys, values in self.typical_mois.items():
+            for gt_trajectory in values:
+                traj_a, traj_b = gt_trajectory, resampled_trajectory
+                c = self.metric(traj_a, traj_b)
+                tem.append(c)
+                key.append(keys)
 
-        if True:
-            min_c = float('inf')
-            matched_id = -1
-            tem = []
-            key = []
-            for keys, values in self.typical_mois.items():
-                for gt_trajectory in values:
-                    traj_a, traj_b = gt_trajectory, resampled_trajectory
-                    c = self.metric(traj_a, traj_b)
-                    tem.append(c)
-                    key.append(keys)
+        tem = np.array(tem)
+        key = np.array(key)
+        idxs = np.argpartition(tem, 1)
+        votes = key[idxs[:1]]
+        matched_id = int(np.argmax(np.bincount(votes)))
 
-            tem = np.array(tem)
-            key = np.array(key)
-            idxs = np.argpartition(tem, 1)
-            votes = key[idxs[:1]]
-            matched_id = int(np.argmax(np.bincount(votes)))
-
-            if self.args.CountVisPrompt:
-                for t , k in zip(tem, key):
-                    print(f"tem = {t}, key = {k}")
-                print(f"matched id:{matched_id}")
-                self.viz_CMM(resampled_trajectory, matched_id=matched_id, track_id = track_id)
-                
-            self.counter[matched_id] += 1
-            self.traject_couter += 1
-            return matched_id
+        if self.args.CountVisPrompt:
+            for t , k in zip(tem, key):
+                print(f"tem = {t}, key = {k}")
+            print(f"matched id:{matched_id}")
+            self.viz_CMM(resampled_trajectory, matched_id=matched_id, track_id = track_id)
+            
+        return matched_id
 
     def viz_CMM(self, current_track, alpha=0.3, matched_id=0, track_id=-1):
         r = meter_per_pixel(self.args.MetaData['center'])
@@ -390,17 +416,26 @@ class Counting:
         plt.title(f"id;{track_id}")
         plt.show()
 
-    def main(self):
+    def main(self, args=None):
+        if args is None:
+            args = self.args
+
+        counter = defaultdict(int)
+        traject_couter = 0
+
         # file_path to all trajectories .txt file(at the moment
         # ** do not confuse it with selected trajectories
-        file_name = self.args.ReprojectedPklMeter
-        result_paht = self.args.CountingResPth
+        file_name = args.ReprojectedPklMeter
+        result_paht = args.CountingResPth
 
         data = {}
         data['id'], data['moi'] = [], []
 
         df_temp = pd.read_pickle(file_name)
         df = group_tracks_by_id(df_temp)
+        # resample tracks
+        df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x, threshold=args.ResampleTH))
+
         tids = np.unique(df['id'].tolist())
         for idx in tqdm(tids):
             current_track = df[df['id'] == idx]
@@ -408,17 +443,19 @@ class Counting:
             matched_moi = self.counting(a[0], track_id=idx)
             data['id'].append(idx)
             data['moi'].append(matched_moi)
-                # print(f"couning a[0] with shape {a[0].shape}")
+
+            counter[matched_moi] += 1
+            traject_couter += 1
 
         for i in range(12):
-            print(f"{i+1}: {self.counter[i+1]}")
+            print(f"{i+1}: {counter[i+1]}")
         # print(self.counter)
-        print(self.traject_couter)
+        print(traject_couter)
         with open(result_paht, "w") as f:
-            json.dump(self.counter, f, indent=2)
+            json.dump(counter, f, indent=2)
 
         df = pd.DataFrame.from_dict(data)
-        df.to_csv(self.args.CountingIdMatchPth, index=False)
+        df.to_csv(args.CountingIdMatchPth, index=False)
 
     def arc_length(self, track):
         """
@@ -470,6 +507,8 @@ class IKDE():
             sequence_data = []
             for i, row in tracks[tracks["moi"] == moi].iterrows():
                 traj = row["trajectory"]
+                # if row["moi"] == 6:
+                #     my_viz_CMM(traj, img, matched_id = row["moi"], track_id = row["id"])
                 # total points to add
                 tot_ps_to_add = len(traj) * self.osr
                 # compute arch length of traj
@@ -712,7 +751,7 @@ class KDECounting(Counting):
         tracks["moi"] = self.ikde.predict_tracks(tracks)
 
         counted_tracks  = tracks[["id", "moi"]]
-        counted_tracks.to_csv(self.args.CountingIdMatchPth, index=False)
+        counted_tracks.to_csv(args.CountingIdMatchPth, index=False)
 
         counter = {}
         for moi in range(1, 13):
@@ -816,31 +855,61 @@ class ROICounting(KDECounting):
             roi_rep.append([new_point[0], new_point[1]])
 
         self.pg = MyPoly(roi_rep, args.MetaData["roi_group"])
+        self.poly_path = mplPath.Path(np.array(roi_rep))
+        self.th = self.args.MetaData["roi_percent"] * np.sqrt(self.pg.area)
 
-    def main(self):
-        args = self.args
+    def main(self, args=None):
+        if args is None:
+            args = self.args
         pg = self.pg
         tracks_path = args.ReprojectedPkl
+        tracks_meter_path = args.ReprojectedPklMeter
         result_paht = args.CountingResPth
 
         tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
+        tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
+        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True))
+        tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+
+        # depending on tracks select str and end roi edge
         i_strs = []
         i_ends = []
         moi = []
-        # perform the actual counting paradigm
         for i, row in tqdm(tracks.iterrows(), total=len(tracks)):
             traj = row["trajectory"]
-            d_str, i_str = pg.distance(traj[0])
-            d_end, i_end = pg.distance(traj[-1])
+
+            if Track.just_enter_roi(self.pg, traj, self.th, self.poly_path):
+                int_indxes = pg.doIntersect(traj, ret_points=False)
+                i_str = int_indxes[0]
+                d_end, i_end = pg.distance(traj[-1])
+
+            elif Track.just_exit_roi(self.pg, traj, self.th, self.poly_path):
+                int_indxes = pg.doIntersect(traj, ret_points=False)
+                i_end = int_indxes[-1]
+                d_str, i_str = pg.distance(traj[0])
+
+            elif Track.within_roi(self.pg, traj, self.th, self.poly_path):
+                d_str, i_str = pg.distance(traj[0])
+                d_end, i_end = pg.distance(traj[-1])
+
+            elif Track.cross_roi_multiple(self.pg, traj, self.th, self.poly_path):
+                int_indxes = pg.doIntersect(traj, ret_points=False)
+                i_str , i_end = int_indxes[0], int_indxes[-1]
+
+            else:
+                d_str, i_str = pg.distance(traj[0])
+                d_end, i_end = pg.distance(traj[-1])
+
             i_strs.append(i_str)
             i_ends.append(i_end)
             moi.append(str_end_to_moi(i_str, i_end))
+
 
         tracks['i_str'] = i_strs
         tracks['i_end'] = i_ends
         tracks['moi'] = moi
         counted_tracks  = tracks[["id", "moi"]][tracks["moi"]!=-1]
-        counted_tracks.to_csv(self.args.CountingIdMatchPth, index=False)
+        counted_tracks.to_csv(args.CountingIdMatchPth, index=False)
 
 
         counter = {}
