@@ -6,6 +6,7 @@ def track(args, *oargs):
     env_name = args.Tracker
     exec_path = "./Trackers/CenterTrack/run.py"
     conda_pyrun(env_name, exec_path, args)
+    match_classes(args)
 
 def df(args):
     # fn,id,class,score,bbox(4 numbers)
@@ -29,6 +30,10 @@ def df_txt(df, out_path):
             print('%d,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f'%(fn, idd, clss, score, x1, y1, x2, y2),file=out_file)
     # df = pd.read_pickle(args.TrackingPkl)
     # out_path = args.TrackingPth 
+
+def match_classes(args):
+    # classes are already in the txt file
+    pass
 
 def setup(args):
     env_name = args.Tracker
