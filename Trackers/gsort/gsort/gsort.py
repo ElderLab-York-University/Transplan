@@ -71,14 +71,14 @@ def convert_bbox_to_z(bbox):
     the aspect ratio
   """
   global M, Mi
-  w = bbox[2] - bbox[0]
-  h = bbox[3] - bbox[1]
-  x = bbox[2]
-  y = bbox[1] + h/2.
+  w =  float(bbox[2] - bbox[0])
+  h =  float(bbox[3] - bbox[1])
+  x =  float((bbox[2] + bbox[0])/2)
+  y =  float(bbox[3])
   s = w * h    #scale is just area
-  r = w / float(h)
+  r = w / h
 
-  point = np.array([x, y, 1])
+  point = np.array([x, y, 1.])
   new_point = M.dot(point)
   new_point /= new_point[2]
   x , y = new_point[0], new_point[1]
@@ -91,7 +91,8 @@ def convert_x_to_bbox(x, score=None):
     [x1,y1,x2,y2] where x1,y1 is the top left and x2,y2 is the bottom right
   """
   global M, Mi
-  point = np.array([x[0], x[1], 1])
+  x = x.reshape(-1)
+  point = np.array([x[0], x[1], 1.])
   new_point = Mi.dot(point)
   new_point /= new_point[2]
   xp , yp = new_point[0], new_point[1]
@@ -99,9 +100,9 @@ def convert_x_to_bbox(x, score=None):
   w = np.sqrt(x[2] * x[3])
   h = x[2] / w
   if(score==None):
-    return np.array([xp-w, yp-h/2., xp, yp+h/2.]).reshape((1,4))
+    return np.array([xp-w/2., yp-h, xp+w/2., yp]).reshape((1,4))
   else:
-    return np.array([xp-w, yp-h/2., xp, yp+h/2.,score]).reshape((1,5))
+    return np.array([xp-w/2., yp-h, xp+w/2., yp, score]).reshape((1,5))
 
 
 class KalmanBoxTracker(object):
@@ -228,7 +229,7 @@ def associate_detections_to_trackers(detections,trackers,iou_threshold = 0.3):
 
 
 class GSort(object):
-  def __init__(self, Homography_M, R_meter, max_age=3, min_hits=3, iou_threshold=0.75):
+  def __init__(self, Homography_M, R_meter, max_age=1, min_hits=3, iou_threshold=0.3):
     """
     Sets key parameters for SORT
     M is the homography matrix for projecting contact points into the ground plane
