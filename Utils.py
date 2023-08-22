@@ -428,7 +428,19 @@ def add_density_path_to_args(args):
     args.DensityVisPath = vis_density_pth
     return args
 
+def adjust_args_with_params(args):
+    if args.CountMetric == "knn":
+        args.CountMetric += f".k={args.K}"
+    return args
+
+def revert_args_with_params(args):
+    if args.CountMetric is not None:
+        args.CountMetric = args.CountMetric.split(".")[0]
+    return args
+
 def complete_args(args):
+    args = adjust_args_with_params(args)
+
     if args.TrackLabelingGUI or args.ExtractCommonTracks:
         args.Meter=True
 
@@ -453,7 +465,7 @@ def complete_args(args):
         args = add_homography_related_path_to_args(args)
     if args.VisHomographyGUI or args.VisLabelledTrajectories or args.Meter or args.FindOptimalKDEBW:
         args = add_vishomography_path_to_args(args)
-    if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter or args.ExtractCommonTracks:
+    if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter or args.ExtractCommonTracks or args.Count:
         args = add_tracklabelling_export_to_args(args)
     if args.VisTrajectories:
         args = add_plot_all_traj_pth_to_args(args)
@@ -473,6 +485,7 @@ def complete_args(args):
         args = add_cached_counter_path_to_args(args)
         args = add_density_path_to_args(args)
 
+    args = revert_args_with_params(args)
     return args
 
 def check_config(args):
