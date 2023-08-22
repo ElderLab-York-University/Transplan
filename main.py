@@ -244,6 +244,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--FindOptimalKDEBW", help="find the optimal KDE band width", action='store_true')
 
+    parser.add_argument("--K", help="K in KNN classifier", type=int, default=1)
+    
 
     args = parser.parse_args()
 
