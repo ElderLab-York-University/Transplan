@@ -5,16 +5,16 @@ sources = [
 # TransPlan Dataset
     # # D9L
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
-    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video2",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video2",
     # # DBR
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1",
-    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video2",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video2",
     # # DWP
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1",
-    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video2",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video2",
     # # ECR
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1",
-    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video2",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video2",
 # HW7 & Leslie  DATASET
     # # Seg01
     # "/mnt/data/HW7Leslie/Seg01/Seg01sc1",
@@ -79,16 +79,16 @@ cached_cnt_sources = [
    # TransPlan Dataset
     # # D9L
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
-    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
     # # DBR
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1",
-    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1",
     # # DWP
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1",
-    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1",
     # # ECR
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1",
-    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1",
+    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1",
     
 # HW7 & Leslie  DATASET
     # # Seg01
@@ -162,9 +162,9 @@ trackers = ["ByteTrack"]
 clusters = ["SpectralFull"]
 
 # choose the metric for clustering and classification pqrt
-# options: ["cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde", "hmmg", "roi"]
+# options: ["roi", "knn", "cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde", "hmmg"]
 clt_metrics = ["tcos", "cmm"]
-cnt_metrics = ["roi"]
+cnt_metrics = ["knn"]
 
 for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     ########################################################
@@ -205,7 +205,7 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     #     for tra in trackers:
     #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
     #         # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop")
 
     ########################################################
     # 5. run the track post processing
@@ -257,11 +257,12 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     # 10. Run the classification(counting) part
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --CountVisPrompt --EvalCount --UseCachedCounter --CachedCounterPth={cached_cnt_pth} --CacheCounter --CountVisDensity")
     ########################################################
-    for det in detectors:
-        for tra in trackers:
-            for metric in cnt_metrics:
-                print(f"counting metric:{metric}")
-                os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --UseCachedCounter --CachedCounterPth={cached_cnt_pth}")
+    # for det in detectors:
+    #     for tra in trackers:
+    #         for metric in cnt_metrics:
+    #             print(f"counting metric:{metric} K={k}")
+    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --CacheCounter --CountVisDensity")
+                # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --UseCachedCounter --CachedCounterPth={cached_cnt_pth}")
 
     ########################################################
     # 11. Visualizing the results on a video including track label and track id
