@@ -587,28 +587,29 @@ def cosine_distance(v1, v2):
     return  1 - np.dot(v1, v2)
 
 # Similarity Metrics (used in counting and clustering
-class CMMClass(object):
-    def __init__(self):
-        libfile = "./counting/cmm_truncate_linux/build/lib.linux-x86_64-3.7/cmm.cpython-37m-x86_64-linux-gnu.so"
-        self.cmmlib = ctypes.CDLL(libfile)
-        # 2. tell Python the argument and result types of function cmm
-        self.cmmlib.cmm_truncate_sides.restype = ctypes.c_double
-        self.cmmlib.cmm_truncate_sides.argtypes = [np.ctypeslib.ndpointer(dtype=np.float64),
-                                                    np.ctypeslib.ndpointer(dtype=np.float64),
-                                                    np.ctypeslib.ndpointer(dtype=np.float64),
-                                                    np.ctypeslib.ndpointer(dtype=np.float64),
-                                                    ctypes.c_int, ctypes.c_int]
-    def cmm_dist(self, traj_a, traj_b):
-        if traj_a.shape[0] >= traj_b.shape[0]:
-            c = self.cmmlib.cmm_truncate_sides(traj_a[:, 0], traj_a[:, 1], traj_b[:, 0], traj_b[:, 1], traj_a.shape[0],
-                                            traj_b.shape[0])
-        else:
-            c = self.cmmlib.cmm_truncate_sides(traj_b[:, 0], traj_b[:, 1], traj_a[:, 0], traj_a[:, 1], traj_b.shape[0],
-                                            traj_a.shape[0])
 
-        c = np.abs(c)
-        return c
-CMM = CMMClass()
+def cmm_dist(traj_a, traj_b):
+    libfile = "./counting/cmm_truncate_linux/build/lib.linux-x86_64-3.7/cmm.cpython-37m-x86_64-linux-gnu.so"
+    cmmlib = ctypes.CDLL(libfile)
+    # 2. tell Python the argument and result types of function cmm
+    cmmlib.cmm_truncate_sides.restype = ctypes.c_double
+    cmmlib.cmm_truncate_sides.argtypes = [np.ctypeslib.ndpointer(dtype=np.float64),
+                                                np.ctypeslib.ndpointer(dtype=np.float64),
+                                                np.ctypeslib.ndpointer(dtype=np.float64),
+                                                np.ctypeslib.ndpointer(dtype=np.float64),
+                                                ctypes.c_int, ctypes.c_int]
+
+    traj_a = traj_a.astype(dtype=np.float64)
+    traj_b = traj_b.astype(dtype=np.float64)
+    if traj_a.shape[0] >= traj_b.shape[0]:
+        c = cmmlib.cmm_truncate_sides(traj_a[:, 0], traj_a[:, 1], traj_b[:, 0], traj_b[:, 1], traj_a.shape[0],
+                                        traj_b.shape[0])
+    else:
+        c = cmmlib.cmm_truncate_sides(traj_b[:, 0], traj_b[:, 1], traj_a[:, 0], traj_a[:, 1], traj_b.shape[0],
+                                        traj_a.shape[0])
+
+    c = np.abs(c)
+    return c
 
 def dc_dist(traj_a, traj_b):
     d_a = direction_vector(traj_a)
@@ -661,7 +662,7 @@ def hausdorff_dist(traj_a, traj_b):
     return max(d_ab, d_ba)
 
 Metric_Dict = {
-    "cmm":       CMM.cmm_dist,
+    "cmm":       cmm_dist,
     "ccmm":      ccmm_dist,
     "tccmm":     tccmm_dist,
     "cos":       dc_dist,
