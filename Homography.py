@@ -47,7 +47,7 @@ def lunch_homographygui(args):
     os.system(f"sudo python3 main.py --StreetView='{street}' --TopView='{top}' --Txt='{txt}' --Npy='{npy}' --Csv='{csv}'")
     os.chdir(cwd)
 
-def reproject(args, from_back_up = True):
+def reproject(args, from_back_up = False):
     trackers = Track.trackers
     homography_path = args.HomographyNPY
     out_path = args.ReprojectedPoints 
