@@ -63,11 +63,19 @@ def reproject(args, from_back_up = True):
     with open(out_path, 'w') as out_file:
         for index, row in tqdm(df.iterrows(), total=len(df)):
             # fn, idd, x, y = track[0], track[1], (track[2] + track[4]/2), (track[3] + track[5])/2
-            fn, idd, x, y = row['fn'], row['id'], (row['x2']+row['x1'])/2, row['y2']
+            x, y = (row['x2']+row['x1'])/2, row['y2']
             point = np.array([x, y, 1])
             new_point = M.dot(point)
             new_point /= new_point[2]
-            print(f'{int(fn)},{int(idd)},{new_point[0]},{new_point[1]}', file=out_file)
+            # complete the new entry
+            new_entry = ""
+            for col in df.columns:
+                new_entry += f"{row[col]},"
+            new_entry += f"{x},"
+            new_entry += f"{y},"
+            new_entry += f"{new_point[0]},"
+            new_entry += f"{new_point[1]}" # last value does not have the ","
+            print(new_entry, file=out_file)
 
     store_to_pickle(args)
     return SucLog("Homography reprojection executed successfully")
@@ -77,13 +85,21 @@ def store_to_pickle(args):
     df.to_pickle(args.ReprojectedPkl)   
 
 def reprojected_df(args):
-    in_path = args.ReprojectedPoints 
+    in_path = args.ReprojectedPoints
+    df = pd.read_pickle(args.TrackingPkl)
+    # reprojected df will have all the columns of tracking df 
+    # with addition of xcp, ycp, x, y
+    # which are contact point coordinates and  backprojected coordinates 
     points = np.loadtxt(in_path, delimiter=',')
     data  = {}
-    data["fn"] = points[:, 0]
-    data["id"] = points[:, 1]
-    data["x"]  = points[:, 2]
-    data["y"]  = points[:, 3]
+    for i, col in enumerate(df.columns):
+        data[col] = points[:, i]
+
+    data["y"]   = points[:, -1]
+    data["x"]   = points[:, -2]
+    data["ycp"] = points[:, -3]
+    data["xcp"] = points[:, -4]
+
     return pd.DataFrame.from_dict(data)
 
 def vishomographygui(args):
@@ -153,7 +169,7 @@ def vis_reprojected_tracks(args):
         
         c = 0
         for i, row in cam_df_id.iterrows():
-            x, y = int(row['x2']), int((row['y1']+row['y2'])/2)
+            x, y = int((row['x2'] + row['x1'])/2), int(row['y2'])
             img1 = cv.circle(img1, (x,y), radius=4, color=(int(c/len(cam_df_id)*255), 70, int(255 - c/len(cam_df_id)*255)), thickness=3)
             c+=1
 
