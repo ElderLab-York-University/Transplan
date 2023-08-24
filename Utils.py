@@ -70,7 +70,8 @@ class SubTaskMarker:
     Clustering = "clustering"
     VisROI = "visROI"
     IdMatched = "IdMatched"
-
+    MCTrackDis = "MCTrackDist"
+    
 class Puncuations:
     Dot = "."
 
@@ -311,6 +312,81 @@ def add_vis_tracking_moi_path_to_args(args):
     args.VisTrackingMoIPth = vis_tracking_pth
     return args
 
+def get_eval_save_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results",file_name + Puncuations.Dot + SubTaskMarker.MCTrackDis + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot+"txt")
+
+
+def get_args_gt(args):
+    args_gt = copy.deepcopy(args)
+    args_gt.Detector = "GT"
+    args_gt.Tracker = "GT"
+    args_gt.Video=None
+    args_gt=complete_args(args_gt)
+    # args_gt , arg_mc_gt = complete_args_mc(args_gt, args_mc_gt)
+    return args_gt
+
+
+# def modify_args(args):
+#     sp = args.Dataset
+#     cam_paths = []
+#     cam_ids = []
+#     for cl in os.listdir(sp):
+#         print(cl)
+#         if (not cl.startswith(".") and not cl.endswith(".png")) and (not cl == "Results"):
+#             cam_paths.append(os.path.join(sp, cl))
+#             cam_ids.append(cl)
+#     args_mc = []
+#     for cam, cam_id in zip(cam_paths, cam_ids):
+#         temp_args = copy.deepcopy(args)
+#         temp_args.Dataset = cam
+#         temp_args.CamID = cam_id
+#         args_mc.append(temp_args)
+#     return args_mc
+
+
+# def modify_args_mc(args):
+#     sp = args.Dataset
+#     cam_paths = []
+#     cam_ids = []
+#     for cl in os.listdir(sp):
+#         if (not cl.startswith(".") and not cl.endswith(".png")) and (not cl == "Results"):
+#             cam_paths.append(os.path.join(sp, cl))
+#             cam_ids.append(cl)
+#     args_mc = []
+#     for cam, cam_id in zip(cam_paths, cam_ids):
+#         temp_args = copy.deepcopy(args)
+#         temp_args.Dataset = cam
+#         temp_args.CamID = cam_id
+#         args_mc.append(temp_args)
+#     return args_mc
+
+
+# def complete_args_mc(args, args_mc):
+#      # compete args: complete specific path variables
+#     for i, arg in enumerate(args_mc):
+#         arg = complete_args(arg)
+#         check_config(arg)
+#         args_mc[i] = arg
+
+#     check_config(args)
+    
+#     args.Video = args_mc[0].Video
+#     return args, args_mc
+
+
+# def get_args_mc_gt(args):
+#     # make a duplicate from args
+#     args_gt = copy.deepcopy(args)
+#     args_gt.Detector = "GT"
+#     args_gt.Tracker = "GT"
+#     args_gt.Video=None
+#     args_mc_gt = modify_args_mc(args_gt)
+
+#     args_gt , arg_mc_gt = complete_args_mc(args_gt, args_mc_gt)
+#     return args_gt, args_mc_gt
+
 def add_homographygui_related_path_to_args(args):
     streetview = get_homography_streetview_path(args)
     topview = get_homography_topview_path(args)
@@ -356,6 +432,10 @@ def add_plot_all_traj_pth_to_args(args):
     path = get_plot_all_traj_path(args)
     args.PlotAllTrajPth = path
     return args
+
+def add_eval_save_path(args):
+    args.EvalPth = get_eval_save_path(args)
+    return args 
 
 def add_vis_labelled_tracks_pth_to_args(args):
     path = get_vis_labelled_tracks_path(args)
@@ -457,6 +537,10 @@ def complete_args(args):
         args = add_vis_tracking_path_to_args(args)
         args = add_vis_top_tracking_path_to_args(args)
         args = add_tracking_pkl_to_args(args)
+        
+    if args.Eval:
+        args = add_eval_save_path(args)
+    
 
     args = add_metadata_to_args(args)
     if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Track or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW:
