@@ -204,6 +204,11 @@ def get_tracklabelling_export_pth(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Annotation",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector + Puncuations.Dot +args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+ "labelled" + Puncuations.Dot+ SubTaskExt.Pkl)
 
+def get_tracklabelling_export_pth_image(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Annotation",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector + Puncuations.Dot +args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+ "labelled" + Puncuations.Dot+"Image"+Puncuations.Dot+ SubTaskExt.Pkl)
+
 def get_tracklabelling_export_pth_meter(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -343,7 +348,9 @@ def add_visroi_path_to_args(args):
 
 def add_tracklabelling_export_to_args(args):
     export_pth = get_tracklabelling_export_pth(args)
+    export_pth_image = get_tracklabelling_export_pth_image(args)
     args.TrackLabellingExportPth = export_pth
+    args.TrackLabellingExportPthImage = export_pth_image
     return args
 
 def add_metadata_to_args(args):

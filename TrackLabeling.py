@@ -3,10 +3,7 @@ from Utils import *
 from Libs import *
 from counting.resample_gt_MOI.resample_typical_tracks import track_resample
 import Track
-
-# args variables for tracklabelling gui
-    # args.TrackLabellingExportPth
-    # args.VisLabelledTracksPth
+from counting.counting import group_tracks_by_id
 
 def tracklabelinggui(args):
     export_path = os.path.abspath(args.TrackLabellingExportPth)
@@ -18,7 +15,6 @@ def tracklabelinggui(args):
     if ret==0:
         return SucLog("track labelling executed successfully")
     return FailLog("track labelling ended with non-zero return value")
-
 
 def vis_labelled_tracks(args):
     alpha = 0.6
@@ -74,8 +70,8 @@ def get_proper_tracks(args):
     img_street = plt.imread(street_image)
 
     # load data
-    tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
-    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
+    tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
+    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
     tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
     # tracks_meter['trajectory'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=False, threshold=args.ResampleTH))
 
@@ -206,6 +202,7 @@ def extract_common_tracks(args):
     top_image = args.HomographyTopView
     street_image = args.HomographyStreetView
     exportpath = args.TrackLabellingExportPth
+    exportpathimage = args.TrackLabellingExportPthImage
     meta_data = args.MetaData # dict is already loaded
     HomographyNPY = args.HomographyNPY
     M = np.load(HomographyNPY, allow_pickle=True)[0]
@@ -295,14 +292,20 @@ def extract_common_tracks(args):
     plt.show()
     plt.close("all")
 
-    # save common tracks as labelled tracks
-    tracks_labelled = group_tracks_by_id(pd.read_pickle(tracks_path))
+    # save common tracks as labelled tracks on ground plane
+    tracks_labelled = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
     tracks_labelled = tracks_labelled.loc[chosen_indexes]
     tracks_labelled["moi"] = tracks.loc[chosen_indexes]["moi"].apply(lambda x: int(x))
     tracks_labelled.to_pickle(exportpath)
+
+
+    # save common tracks as labelled tracks on image plane
+    tracks_labelled = group_tracks_by_id(pd.read_pickle(tracks_path), gp=False)
+    tracks_labelled = tracks_labelled.loc[chosen_indexes]
+    tracks_labelled["moi"] = tracks.loc[chosen_indexes]["moi"].apply(lambda x: int(x))
+    tracks_labelled.to_pickle(exportpathimage)
+
     return SucLog("common trakces extracted successfully")
-
-
 
 class MyPoly():
     def __init__(self, roi, roi_group):
@@ -396,23 +399,6 @@ def is_monotonic(traj):
         if dp < max_distance: return False
         max_distance = dp
     return True
-
-def group_tracks_by_id(df):
-    # this function was writtern for grouping the tracks with the same id
-    # usinig this one can load the data from a .txt file rather than .mat file
-    all_ids = np.unique(df['id'].to_numpy(dtype=np.int64))
-    data = {"id":[], "trajectory":[], "frames":[]}
-    for idd in tqdm(all_ids):
-        frames = df[df['id']==idd]["fn"].to_numpy(np.float32)
-        id = idd
-        trajectory = df[df['id']==idd][["x", "y"]].to_numpy(np.float32)
-        assert len(frames)==len(trajectory)
-        data["id"].append(id)
-        data["frames"].append(frames)
-        data["trajectory"].append(trajectory)
-    df2 = pd.DataFrame(data)
-    return df2
-
 
 def str_end_to_moi(str, end):
     str_end_moi = {}
