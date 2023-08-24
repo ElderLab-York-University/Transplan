@@ -17,6 +17,7 @@ def tracklabelinggui(args):
     return FailLog("track labelling ended with non-zero return value")
 
 def vis_labelled_tracks(args):
+    # plot labelled tracks on top view
     alpha = 0.6
     save_path = args.VisLabelledTracksPth
     tracks = pd.read_pickle(args.TrackLabellingExportPth)
@@ -39,6 +40,31 @@ def vis_labelled_tracks(args):
 
     plt.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
     plt.savefig(save_path)
+    plt.close("all")
+
+    # plot labelled tracks on image domain as well
+    alpha = 0.6
+    save_path_street = args.VisLabelledTracksPthImage
+    tracks = pd.read_pickle(args.TrackLabellingExportPthImage)
+    tracks = tracks.sort_values("moi")
+    img1 = cv.imread(args.HomographyStreetView)
+    # img2 = cv.imread(args.HomographyTopView)
+    M = np.load(args.HomographyNPY, allow_pickle=True)[0]
+    rows2, cols2, dim2 = img2.shape
+    # img12 = cv.warpPerspective(img1, M, (cols2, rows2))
+    # img2 = cv.addWeighted(img2, alpha, img12, 1 - alpha, 0)
+
+    for i in range(len(tracks)):
+        track = tracks.iloc[i]
+        traj = track['trajectory']
+        moi = track["moi"]
+        for j , p in enumerate(traj):
+            x , y = int(p[0]), int(p[1])
+            c = moi_color_dict[moi]
+            img2 = cv.circle(img1, (x,y), radius=3, color=c, thickness=3)
+
+    plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
+    plt.savefig(save_path_street)
     plt.close("all")
 
     return SucLog("labeled trackes plotted successfully")
@@ -278,26 +304,11 @@ def extract_common_tracks(args):
             chosen_index = index_mi[mask_c][i_c]
             chosen_indexes.append(chosen_index)
 
-    # plot final common tracks
-    img1 = cv.imread(top_image)
-    for i, row in tracks.loc[chosen_indexes].iterrows():
-        traj = row["trajectory"]
-        c=0
-        for x, y in traj:
-            x, y = int(x), int(y)
-            img1 = cv.circle(img1, (x,y), radius=1, color=(int(c/len(traj)*255), 70, int(255 - c/len(traj)*255)), thickness=1)
-            c+=1
-
-    plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
-    plt.show()
-    plt.close("all")
-
     # save common tracks as labelled tracks on ground plane
     tracks_labelled = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
     tracks_labelled = tracks_labelled.loc[chosen_indexes]
     tracks_labelled["moi"] = tracks.loc[chosen_indexes]["moi"].apply(lambda x: int(x))
     tracks_labelled.to_pickle(exportpath)
-
 
     # save common tracks as labelled tracks on image plane
     tracks_labelled = group_tracks_by_id(pd.read_pickle(tracks_path), gp=False)
