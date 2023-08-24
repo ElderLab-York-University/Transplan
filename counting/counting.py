@@ -554,6 +554,7 @@ class KNNCounting(Counting):
 
 
     def plot_boundries(self, img, vis_path):
+        from matplotlib import ticker
         h, w, c = img.shape
         ys, xs  = np.linspace(0, h, num=int(h), endpoint=False), np.linspace(0, w, num=int(w), endpoint=False)
         xx, yy = np.meshgrid(xs, ys)
@@ -565,8 +566,11 @@ class KNNCounting(Counting):
         scores = scores.reshape(xx.shape)
 
         plt.imshow(img)
-        plt.contourf(xs, ys, scores, alpha=0.5, cmap="Paired")
-        plt.colorbar()
+        plt.contourf(xs, ys, scores, alpha=0.5, cmap="gist_ncar", levels=100)
+        cb = plt.colorbar()
+        tick_locator = ticker.MaxNLocator(nbins=12)
+        cb.locator = tick_locator
+        cb.update_ticks()
         plt.title(f"K: {self.K}")
         plt.savefig(vis_path+f"Boundries.png")
         plt.close("all")
