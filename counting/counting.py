@@ -91,15 +91,22 @@ def my_viz_CMM(current_track, img, alpha=0.3, matched_id=0, track_id=-1):
     plt.savefig(f"sample_track_moi{matched_id}_id{track_id}.png")
 
 
-def group_tracks_by_id(df):
+def group_tracks_by_id(df, gp):
     # this function was writtern for grouping the tracks with the same id
     # usinig this one can load the data from a .txt file rather than .mat file
+    # if gp choose backprojected points[x, y]
+    # if not gp choose contact point [xcp, ycp]
+    if gp:
+        traj_fields = ["x", "y"]
+    else:
+        traj_fields = ["xcp", "ycp"]
+
     all_ids = np.unique(df['id'].to_numpy(dtype=np.int64))
     data = {"id":[], "trajectory":[], "frames":[]}
     for idd in tqdm(all_ids):
         frames = df[df['id']==idd]["fn"].to_numpy(np.float32)
         id = idd
-        trajectory = df[df['id']==idd][["x", "y"]].to_numpy(np.float32)
+        trajectory = df[df['id']==idd][traj_fields].to_numpy(np.float32)
         
         data["id"].append(id)
         data["frames"].append(frames)
@@ -134,8 +141,8 @@ def find_opt_bw(args):
     HomographyNPY = args.HomographyNPY
 
     # load data
-    tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
-    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
+    tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
+    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
     # resample gp tracks
     tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
     tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
@@ -322,7 +329,7 @@ class Counting:
 
         df = pd.read_pickle(validated_trakcs_path)
         # print(len(df))
-        df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x))
+        df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x), threshold=args.ResampleTH)
 
         self.typical_mois = defaultdict(list)
         for index, row in df.iterrows():
@@ -433,7 +440,7 @@ class Counting:
         data['id'], data['moi'] = [], []
 
         df_temp = pd.read_pickle(file_name)
-        df = group_tracks_by_id(df_temp)
+        df = group_tracks_by_id(df_temp, gp=True)
         # resample tracks
         df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x, threshold=args.ResampleTH))
 
@@ -471,7 +478,14 @@ class Counting:
         return accum_dist
 
 class KNNCounting(Counting):
-    def __init__(self, args):
+    def __init__(self, args, gp):
+        self.gp = gp
+        if gp:
+            self.init_gp(args)
+        else:
+            self.init_image(args)
+
+    def init_gp(self, args):
         self.args = args
         self.K = args.K # K in KNN
 
@@ -506,17 +520,57 @@ class KNNCounting(Counting):
             # self.plot_train_samples(img, x, y, args.DensityVisPath)
             self.plot_boundries(img, args.DensityVisPath)
 
+    def init_image(self, args):
+        self.args = args
+        self.K = args.K # K in KNN
+
+        if self.args.LabelledTrajectories is None:
+            print("loaded track labelling from previous path")
+            validated_trakcs_path = self.args.TrackLabellingExportPthImage
+        else: validated_trakcs_path = self.args.LabelledTrajectories; print("loaded track labelling from external source")
+
+        df = pd.read_pickle(validated_trakcs_path)
+        # resample tracks on gp
+        df['index_mask'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+        df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+
+        # add prototype tracks as KNN data points
+        x = []
+        y = []
+        for i, row in tqdm(df.iterrows(), total=len(df), desc="building KNN data"):
+            moi = row.moi
+            for p in row.trajectory:
+                x.append(p)
+                y.append(moi)
+        x = np.array(x)
+        y = np.array(y)
+        self.knn = KNeighborsClassifier(n_neighbors=self.K)
+        self.knn.fit(x, y)
+
+        img = cv.imread(args.HomographyStreetView)
+        if args.CountVisDensity:
+            # self.plot_train_samples(img, x, y, args.DensityVisPath)
+            self.plot_boundries(img, args.DensityVisPath)
+
+
     def plot_boundries(self, img, vis_path):
+        from matplotlib import ticker
         h, w, c = img.shape
         ys, xs  = np.linspace(0, h, num=int(h), endpoint=False), np.linspace(0, w, num=int(w), endpoint=False)
-        scores = np.zeros(shape = (len(ys), len(xs)))
-        for i, x in tqdm(enumerate(xs), desc="plot knn boundries", total=len(xs)):
-            for j, y in enumerate(ys):
-                scores[j, i] = self.knn.predict([[x, y]]).reshape(-1)
+        xx, yy = np.meshgrid(xs, ys)
+        xf , yf = xx.flatten(), yy.flatten()
+        X = np.vstack([xf, yf]).T
+        # scores = np.zeros(shape = (len(ys), len(xs)))
+
+        scores = self.knn.predict(X)
+        scores = scores.reshape(xx.shape)
 
         plt.imshow(img)
-        plt.contourf(xs, ys, scores, alpha=0.5)
-        plt.colorbar()
+        plt.contourf(xs, ys, scores, alpha=0.5, cmap="gist_ncar", levels=24)
+        cb = plt.colorbar()
+        tick_locator = ticker.MaxNLocator(nbins=12)
+        cb.locator = tick_locator
+        cb.update_ticks()
         plt.title(f"K: {self.K}")
         plt.savefig(vis_path+f"Boundries.png")
         plt.close("all")
@@ -528,8 +582,6 @@ class KNNCounting(Counting):
         plt.savefig(vis_path+f"{self.K}NN_TrainSamples.png")
         plt.close("all")
 
-
-
     def main(self, args=None):
         if args is None:
             args = self.args
@@ -538,10 +590,15 @@ class KNNCounting(Counting):
         tracks_meter_path = args.ReprojectedPklMeter
         result_paht = args.CountingResPth
 
-        tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
-        tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
-        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
-        tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        if self.gp:
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
+            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
+            tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+            tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        else:
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=False)
+            tracks['index_mask'] = tracks['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+            tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
 
         moi = []
         for i, row in tqdm(tracks.iterrows(), total=len(tracks), desc="knn classifier infer"):
@@ -838,9 +895,9 @@ class KDECounting(Counting):
         result_paht = args.CountingResPth
         # load data
         M = np.load(HomographyNPY, allow_pickle=True)[0]
-        tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
-        tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
-        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True))
+        tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
+        tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
+        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
         img = plt.imread(top_image)
         img1 = cv.imread(top_image)
         # resample gp tracks
@@ -937,7 +994,14 @@ class KDECounting(Counting):
         print(current_track)
 
 class ROICounting(KDECounting):
-    def __init__(self, args):
+    def __init__(self, args, gp):
+        self.gp = gp
+        if gp:
+            self.init_gp(args)
+        else:
+            self.init_image(args)
+
+    def init_gp(self, args):
         self.args = args
         # load ROI 
         meta_data = args.MetaData # dict is already loaded
@@ -955,6 +1019,20 @@ class ROICounting(KDECounting):
         self.poly_path = mplPath.Path(np.array(roi_rep))
         self.th = self.args.MetaData["roi_percent"] * np.sqrt(self.pg.area)
 
+    def init_image(self, args):
+        self.args = args
+        # load ROI 
+        meta_data = args.MetaData # dict is already loaded
+        HomographyNPY = args.HomographyNPY
+        self.M = np.load(HomographyNPY, allow_pickle=True)[0]
+
+        # roi rep on image domain
+        roi_rep = [p for p in args.MetaData["roi"] ]
+
+        self.pg = MyPoly(roi_rep, args.MetaData["roi_group"])
+        self.poly_path = mplPath.Path(np.array(roi_rep))
+        self.th = self.args.MetaData["roi_percent"] * np.sqrt(self.pg.area)
+
     def main(self, args=None):
         if args is None:
             args = self.args
@@ -963,10 +1041,15 @@ class ROICounting(KDECounting):
         tracks_meter_path = args.ReprojectedPklMeter
         result_paht = args.CountingResPth
 
-        tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
-        tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
-        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
-        tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        if self.gp:
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
+            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
+            tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+            tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        else:
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=False)
+            tracks['index_mask'] = tracks['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+            tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
 
         # depending on tracks select str and end roi edge
         i_strs = []
@@ -1020,8 +1103,7 @@ class ROICounting(KDECounting):
 
         if self.args.CountVisPrompt:
             for i, row in tracks.iterrows():
-                self.plot_track_on_gp(row["trajectory"], matched_id=row["moi"])
-        
+                self.plot_track_on_gp(row["trajectory"], matched_id=row["moi"])      
 
 def eval_count(args):
     # args.CountingResPth a json file
@@ -1060,10 +1142,14 @@ def main(args):
     else:
         if args.CountMetric in ["kde", "loskde", "hmmg"] :
             counter = KDECounting(args)
+        elif args.CountMetric == "groi":
+            counter = ROICounting(args, gp=True)
         elif args.CountMetric == "roi":
-            counter = ROICounting(args)
+            counter = ROICounting(args, gp=False)
+        elif args.CountMetric == "gknn":
+            counter = KNNCounting(args, gp=True)
         elif args.CountMetric == "knn":
-            counter = KNNCounting(args)
+            counter = KNNCounting(args, gp=False)
         else:
             counter = Counting(args)
 
