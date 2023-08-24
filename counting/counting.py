@@ -478,7 +478,14 @@ class Counting:
         return accum_dist
 
 class KNNCounting(Counting):
-    def __init__(self, args):
+    def __init__(self, args, gp):
+        self.gp = gp
+        if gp:
+            self.init_gp(args)
+        else:
+            self.init_image(args)
+
+    def init_gp(self, args):
         self.args = args
         self.K = args.K # K in KNN
 
@@ -513,16 +520,52 @@ class KNNCounting(Counting):
             # self.plot_train_samples(img, x, y, args.DensityVisPath)
             self.plot_boundries(img, args.DensityVisPath)
 
+    def init_image(self, args):
+        self.args = args
+        self.K = args.K # K in KNN
+
+        if self.args.LabelledTrajectories is None:
+            print("loaded track labelling from previous path")
+            validated_trakcs_path = self.args.TrackLabellingExportPthImage
+        else: validated_trakcs_path = self.args.LabelledTrajectories; print("loaded track labelling from external source")
+
+        df = pd.read_pickle(validated_trakcs_path)
+        # resample tracks on gp
+        df['index_mask'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+        df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+
+        # add prototype tracks as KNN data points
+        x = []
+        y = []
+        for i, row in tqdm(df.iterrows(), total=len(df), desc="building KNN data"):
+            moi = row.moi
+            for p in row.trajectory:
+                x.append(p)
+                y.append(moi)
+        x = np.array(x)
+        y = np.array(y)
+        self.knn = KNeighborsClassifier(n_neighbors=self.K)
+        self.knn.fit(x, y)
+
+        img = cv.imread(args.HomographyStreetView)
+        if args.CountVisDensity:
+            # self.plot_train_samples(img, x, y, args.DensityVisPath)
+            self.plot_boundries(img, args.DensityVisPath)
+
+
     def plot_boundries(self, img, vis_path):
         h, w, c = img.shape
         ys, xs  = np.linspace(0, h, num=int(h), endpoint=False), np.linspace(0, w, num=int(w), endpoint=False)
-        scores = np.zeros(shape = (len(ys), len(xs)))
-        for i, x in tqdm(enumerate(xs), desc="plot knn boundries", total=len(xs)):
-            for j, y in enumerate(ys):
-                scores[j, i] = self.knn.predict([[x, y]]).reshape(-1)
+        xx, yy = np.meshgrid(xs, ys)
+        xf , yf = xx.flatten(), yy.flatten()
+        X = np.vstack([xf, yf]).T
+        # scores = np.zeros(shape = (len(ys), len(xs)))
+
+        scores = self.knn.predict(X)
+        scores = scores.reshape(xx.shape)
 
         plt.imshow(img)
-        plt.contourf(xs, ys, scores, alpha=0.5)
+        plt.contourf(xs, ys, scores, alpha=0.5, cmap="Paired")
         plt.colorbar()
         plt.title(f"K: {self.K}")
         plt.savefig(vis_path+f"Boundries.png")
@@ -543,10 +586,15 @@ class KNNCounting(Counting):
         tracks_meter_path = args.ReprojectedPklMeter
         result_paht = args.CountingResPth
 
-        tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
-        tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
-        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
-        tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        if self.gp:
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
+            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
+            tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+            tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        else:
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=False)
+            tracks['index_mask'] = tracks['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+            tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
 
         moi = []
         for i, row in tqdm(tracks.iterrows(), total=len(tracks), desc="knn classifier infer"):
@@ -1094,8 +1142,10 @@ def main(args):
             counter = ROICounting(args, gp=True)
         elif args.CountMetric == "roi":
             counter = ROICounting(args, gp=False)
+        elif args.CountMetric == "gknn":
+            counter = KNNCounting(args, gp=True)
         elif args.CountMetric == "knn":
-            counter = KNNCounting(args)
+            counter = KNNCounting(args, gp=False)
         else:
             counter = Counting(args)
 

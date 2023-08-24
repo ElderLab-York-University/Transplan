@@ -443,7 +443,7 @@ def add_density_path_to_args(args):
     return args
 
 def adjust_args_with_params(args):
-    if args.CountMetric == "knn":
+    if args.CountMetric == "knn" or args.CountMetric == "gknn" :
         args.CountMetric += f".k={args.K}"
     return args
 
