@@ -566,7 +566,7 @@ class KNNCounting(Counting):
         scores = scores.reshape(xx.shape)
 
         plt.imshow(img)
-        plt.contourf(xs, ys, scores, alpha=0.5, cmap="gist_ncar", levels=100)
+        plt.contourf(xs, ys, scores, alpha=0.5, cmap="gist_ncar", levels=24)
         cb = plt.colorbar()
         tick_locator = ticker.MaxNLocator(nbins=12)
         cb.locator = tick_locator
