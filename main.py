@@ -16,6 +16,7 @@ from Homography import reproject
 from Homography import vishomographygui
 from Homography import vis_reprojected_tracks
 from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_tracks
+from Evaluate import evaluate
 from Maps import pix2meter
 from counting import counting
 from counting.counting import find_opt_bw
@@ -171,11 +172,17 @@ def VisTrackTop(args):
         log = vistracktop(args)
         return log
     else: return WarningLog("skipped vis tracking from top")
+def Evaluate(args):
+    if args.Eval:
+        print(ProcLog("Evaluate Tracking"))
+        log = evaluate(args)
+        return log
+    else: return WarningLog("skipped vis tracking from top")
 
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, VisROI, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, TrackPostProc, VisTrajectories, VisTrackTop, FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories, Count, VisTrackMoI]
+    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, VisROI, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, TrackPostProc, VisTrajectories, VisTrackTop, FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories, Count, VisTrackMoI, Evaluate]
     for subtask in subtasks:
         log = subtask(args)
         if not isinstance(log, WarningLog):
@@ -229,7 +236,7 @@ if __name__ == "__main__":
     parser.add_argument("--WithinROI", help="select tracks that cross multiple edges of the roi", action="store_true")
     parser.add_argument("--ExitOrCrossROI", help="select tracks that either exit or cross multi roi", action="store_true")
     parser.add_argument("--MaskGPFrame", help="remove dets on tracks that are outside gp frame", action="store_true")
-    
+    parser.add_argument("--Eval", help="Evaluate the tracking single camera", action="store_true")
     parser.add_argument("--VisROI", help="visualize the selected ROI", action='store_true')
     parser.add_argument("--VisTrackMoI", help="visualize tracking with moi labels", action='store_true')
     parser.add_argument("--LabelledTrajectories", help=" a pkl file containint the labelled trajectories on the ground plane",type=str)
