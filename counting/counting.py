@@ -1129,6 +1129,7 @@ def eval_count(args):
     df2 = pd.DataFrame.from_dict(data2)
     df = df.append(df2, ignore_index=True)
     df.to_csv(args.CountingStatPth, index=False)
+    return SucLog("counts evaluated")
 
 def main(args):
     # some relative path form the args
