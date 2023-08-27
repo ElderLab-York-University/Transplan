@@ -1,6 +1,32 @@
 import os
 # choose the dataset/video
 # options : ['./../Dataset/DandasStAtNinthLineFull', './../Dataset/DandasStAtNinthLine', "./../Dataset/SOW_src1", "./../Dataset/SOW_src2", "./../Dataset/SOW_src3", "./../Dataset/SOW_src4"]
+
+segments = [
+    # Seg01
+    "/mnt/data/HW7Leslie/Seg01",
+    # Seg02
+    "/mnt/data/HW7Leslie/Seg02",
+    # # Seg03
+    "/mnt/data/HW7Leslie/Seg03",
+    # # Seg05
+    "/mnt/data/HW7Leslie/Seg05",
+    # # Seg06
+    "/mnt/data/HW7Leslie/Seg06",
+    # # Seg09
+    "/mnt/data/HW7Leslie/Seg09",
+    # # Seg10
+    "/mnt/data/HW7Leslie/Seg10",
+    # # Seg11
+    "/mnt/data/HW7Leslie/Seg11",
+    # # Seg12
+    "/mnt/data/HW7Leslie/Seg12",
+    # # Seg13
+    "/mnt/data/HW7Leslie/Seg13",
+    #Seg17
+    "/mnt/data/HW7Leslie/Seg17",
+
+]
 sources = [
 # TransPlan Dataset
     # # D9L
@@ -91,7 +117,7 @@ cached_cnt_sources = [
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1",
     
 # HW7 & Leslie  DATASET
-    # # Seg01
+    # Seg01
     # "/mnt/data/HW7Leslie/Seg01/Seg01sc1",
     # "/mnt/data/HW7Leslie/Seg01/Seg01sc2",
     # "/mnt/data/HW7Leslie/Seg01/Seg01sc3",
@@ -149,11 +175,11 @@ cached_cnt_sources = [
 ]
 
 # choose the detectors
-# options: ["detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage"]
+# options: ["GT", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage"]
 detectors = ["InternImage"]
 
 # choose the tracker
-# options: ["sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
+# options: ["GT", sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
 trackers = ["ByteTrack"] 
 
 
@@ -162,21 +188,23 @@ trackers = ["ByteTrack"]
 clusters = ["SpectralFull"]
 
 # choose the metric for clustering and classification pqrt
-# options: ["roi", "knn", "cos", "tcos", "cmm", "ccmm", "tccmm", "hausdorff", "ptcos", "loskde", "kde", "hmmg"]
+# options: ["groi", "roi", "knn", "cos", "tcos", "cmm", "hausdorff", "kde",,"ccmm", "tccmm", "ptcos", "loskde", "hmmg"]
 clt_metrics = ["tcos", "cmm"]
-cnt_metrics = ["knn"]
+cnt_metrics = ["kde"]
 
-for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
+# for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     ########################################################
     # 1. estimate the Homography Metrix using Homography GUI 
     # os.system(f"python3 main.py --Dataset={src}  --Detector=detectron2 --Tracker=sort --HomographyGUI --VisHomographyGUI --Frame=1")
     ########################################################
+    # print(f"src:{src}")
     # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --VisHomographyGUI")
 
     ########################################################
     # 2. visualizing the region of interest 
     # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --VisROI")
     #######################################################
+    # print(f"src:{src}")
     # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --VisROI")
 
     ########################################################
@@ -185,8 +213,7 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     ########################################################
     # for det in detectors:
     #     print(f"detecting ----> src:{src} det:{det}")
-    #     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect  --VisDetect --DetPostProc --DetTh=0.5")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL  --Detect --VisDetect")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect")
 
     ########################################################
     # 3.5 run the detection post processing
@@ -195,7 +222,7 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     # for det in detectors:
     #     print(f"detecting ----> src:{src} det:{det}")
     #     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --DetPostProc --DetTh=0.5 --VisDetect")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --DetPostProc --DetTh=0.5 --classes_to_keep 2 5 7")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisDetect --DetPostProc --DetTh=0.5 --classes_to_keep 2 5 7")
 
     ########################################################
     # 4. run the tracking 
@@ -214,8 +241,8 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     # for det in detectors:
     #     for tra in trackers:
     #         print(f"tracking POSTPROC ---> src:{src} det:{det} tra:{tra}")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc  --MaskGPFrame --HasPointsInROI --ExitOrCrossROI")
-
+    #         # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc  --MaskGPFrame --HasPointsInROI")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop")
 
     ########################################################
     # 6. find optimum BW for kde fiting
@@ -225,7 +252,6 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     #     for tra in trackers:
     #         print(f"finding optimal bw for kde ---> src:{src} det:{det} tra:{tra}")
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --FindOptimalKDEBW --ResampleTH=2.0")
-
 
     ########################################################
     # 7. run clustering algorithm
@@ -260,9 +286,9 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     # for det in detectors:
     #     for tra in trackers:
     #         for metric in cnt_metrics:
-    #             print(f"counting metric:{metric} K={k}")
-    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --CacheCounter --CountVisDensity")
-                # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --UseCachedCounter --CachedCounterPth={cached_cnt_pth}")
+    #             print(f"counting metric:{metric} det:{det} tra:{tra}")
+    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --CacheCounter --CountVisDensity --ResampleTH=2.0")
+    #             # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --UseCachedCounter --CachedCounterPth={cached_cnt_pth}")
 
     ########################################################
     # 11. Visualizing the results on a video including track label and track id
@@ -273,3 +299,18 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     #         for met in cnt_metrics:
     #             print(f"visualizing MOI -----> det:{det} tra:{tra} met:{met}")
     #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={met} --VisTrackMoI")
+
+
+    #_______________________MULTICAMERA_______________________#
+
+for src in segments:
+    print(f"running on seg:{src}")
+    # ########################################################
+    # # 0. Average Counts MC
+    # # os.system(f"python3 main.py --MultiCam --Dataset={src}  --Detector={det} --Tracker={tra} -- --VisTrackTopMC")
+    # ########################################################
+    for det in detectors:
+        for tra in trackers:
+            for metric in cnt_metrics:
+                print(f"average MC counts ---> src:{src} det:{det} tra:{tra} cnt:{metric}")
+                os.system(f"python3 main.py --MultiCam --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={metric} --AverageCountsMC --EvalCountMC")

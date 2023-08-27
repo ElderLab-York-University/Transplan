@@ -356,34 +356,38 @@ def get_args_gt(args):
 #     return args_mc
 
 
-# def modify_args_mc(args):
-#     sp = args.Dataset
-#     cam_paths = []
-#     cam_ids = []
-#     for cl in os.listdir(sp):
-#         if (not cl.startswith(".") and not cl.endswith(".png")) and (not cl == "Results"):
-#             cam_paths.append(os.path.join(sp, cl))
-#             cam_ids.append(cl)
-#     args_mc = []
-#     for cam, cam_id in zip(cam_paths, cam_ids):
-#         temp_args = copy.deepcopy(args)
-#         temp_args.Dataset = cam
-#         temp_args.CamID = cam_id
-#         args_mc.append(temp_args)
-#     return args_mc
+def modify_args_mc(args):
+    sp = args.Dataset
+    cam_paths = []
+    cam_ids = []
+    for cl in os.listdir(sp):
+        if (not cl.startswith(".") and not cl.endswith(".png")) and (not cl == "Results"):
+            cam_paths.append(os.path.join(sp, cl))
+            cam_ids.append(cl)
+    args_mc = []
+    for cam, cam_id in zip(cam_paths, cam_ids):
+        temp_args = copy.deepcopy(args)
+        temp_args.Dataset = cam
+        temp_args.CamID = cam_id
+        args_mc.append(temp_args)
+    return args_mc
 
 
-# def complete_args_mc(args, args_mc):
-#      # compete args: complete specific path variables
-#     for i, arg in enumerate(args_mc):
-#         arg = complete_args(arg)
-#         check_config(arg)
-#         args_mc[i] = arg
+def complete_args_mc(args, args_mc):
+     # compete args: complete specific path variables
+    for i, arg in enumerate(args_mc):
+        arg = complete_args(arg)
+        check_config(arg)
+        args_mc[i] = arg
 
-#     check_config(args)
+    check_config(args)
     
-#     args.Video = args_mc[0].Video
-#     return args, args_mc
+    args.Video = args_mc[0].Video
+
+    if args.AverageCountsMC or EvalCountMC:
+        args = add_count_path_to_args(args)
+
+    return args, args_mc
 
 
 # def get_args_mc_gt(args):
@@ -571,7 +575,7 @@ def complete_args(args):
         args = add_vis_labelled_tracks_pth_to_args(args)
     if args.Meter or args.Count or args.Cluster or args.TrackPostProc or args.FindOptimalKDEBW:
         args = add_meter_path_to_args(args)
-    if args.Count or args.VisTrackMoI:
+    if args.Count or args.VisTrackMoI or args.AverageCountsMC:
         args = add_count_path_to_args(args)
     if args.Cluster:
         args = add_clustering_related_pth_to_args(args)
