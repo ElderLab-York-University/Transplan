@@ -16,10 +16,12 @@ from Homography import reproject
 from Homography import vishomographygui
 from Homography import vis_reprojected_tracks
 from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_tracks
+from Evaluate import evaluate
 from Maps import pix2meter
 from counting import counting
-from counting.counting import find_opt_bw
+from counting.counting import find_opt_bw, eval_count
 from Clustering import cluster
+from CountingMC import AverageCountsMC
 
 def Preprocess(args):
     if args.Preprocess:
@@ -171,13 +173,47 @@ def VisTrackTop(args):
         log = vistracktop(args)
         return log
     else: return WarningLog("skipped vis tracking from top")
+def Evaluate(args):
+    if args.Eval:
+        print(ProcLog("Evaluate Tracking"))
+        log = evaluate(args)
+        return log
+    else: return WarningLog("skipped vis tracking from top")
+
+
+def AverageCounts(args, args_mc):
+    if args.AverageCountsMC:
+        print(ProcLog("Averaging Counting on all cameras"))
+        log = AverageCountsMC(args, args_mc)
+        return log
+    else:
+        return WarningLog("skipped averaging counts")
+
+def EvalCountMC(args, args_mc):
+    if args.EvalCountMC:
+        print(ProcLog("Evaluating counts MC"))
+        args.MetaData = args_mc[0].MetaData
+        log = eval_count(args)
+        return log
+    else:
+        return WarningLog("skipped evaluating counts")
 
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, VisROI, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, TrackPostProc, VisTrajectories, VisTrackTop, FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories, Count, VisTrackMoI]
+    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, VisROI, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, TrackPostProc, VisTrajectories, VisTrackTop, FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories, Count, VisTrackMoI, Evaluate]
     for subtask in subtasks:
         log = subtask(args)
+        if not isinstance(log, WarningLog):
+            print(log)
+
+def main_mc(args, args_mc):
+    # Pass the args to each subtask
+    # Each subtask will validate its own inputs
+
+    subtasks = [AverageCounts, EvalCountMC]
+    for subtask in subtasks:
+        log = subtask(args,args_mc)
         if not isinstance(log, WarningLog):
             print(log)
     
@@ -229,7 +265,7 @@ if __name__ == "__main__":
     parser.add_argument("--WithinROI", help="select tracks that cross multiple edges of the roi", action="store_true")
     parser.add_argument("--ExitOrCrossROI", help="select tracks that either exit or cross multi roi", action="store_true")
     parser.add_argument("--MaskGPFrame", help="remove dets on tracks that are outside gp frame", action="store_true")
-    
+    parser.add_argument("--Eval", help="Evaluate the tracking single camera", action="store_true")
     parser.add_argument("--VisROI", help="visualize the selected ROI", action='store_true')
     parser.add_argument("--VisTrackMoI", help="visualize tracking with moi labels", action='store_true')
     parser.add_argument("--LabelledTrajectories", help=" a pkl file containint the labelled trajectories on the ground plane",type=str)
@@ -245,11 +281,23 @@ if __name__ == "__main__":
     parser.add_argument("--FindOptimalKDEBW", help="find the optimal KDE band width", action='store_true')
 
     parser.add_argument("--K", help="K in KNN classifier", type=int, default=1)
+
+    parser.add_argument("--MultiCam", help="operating in multi-camera", action='store_true')
+    parser.add_argument("--AverageCountsMC", help="averaging counting on MC", action='store_true')
+    parser.add_argument("--EvalCountMC", help="Evaluate Counts MC", action="store_true")
     
 
     args = parser.parse_args()
 
-    args = complete_args(args)
-    check_config(args)
+    # check if the opeerations should be performed cross camera
+    if args.MultiCam:
+        # duplicate args and set new DataSet path for each
+        args_mc = modify_args_mc(args)
+        args , args_mc = complete_args_mc(args, args_mc)
+        main_mc(args, args_mc)
+    
+    else:
+        args = complete_args(args)
+        check_config(args)
+        main(args)
 
-    main(args)
