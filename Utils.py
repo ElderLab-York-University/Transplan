@@ -770,7 +770,14 @@ Metric_Dict = {
     "cos":       dc_dist,
     "tcos":      tc_dist,
     "hausdorff": hausdorff_dist,
-    "ptcos"    : ptcos_dist
+    "ptcos"    : ptcos_dist,
+    "gcmm":       cmm_dist,
+    "gccmm":      ccmm_dist,
+    "gtccmm":     tccmm_dist,
+    "gcos":       dc_dist,
+    "gtcos":      tc_dist,
+    "ghausdorff": hausdorff_dist,
+    "gptcos"    : ptcos_dist
     }
 
 # A Python3 program to find if 2 given line segments intersect or not
