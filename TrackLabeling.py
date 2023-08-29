@@ -3,7 +3,6 @@ from Utils import *
 from Libs import *
 from counting.resample_gt_MOI.resample_typical_tracks import track_resample
 import Track
-from counting.counting import group_tracks_by_id
 
 def tracklabelinggui(args):
     export_path = os.path.abspath(args.TrackLabellingExportPth)
@@ -428,3 +427,5 @@ def str_end_to_moi(str, end):
     if (str ,end) in str_end_moi:
         return str_end_moi[(str, end)]
     return -1
+
+from counting.counting import group_tracks_by_id

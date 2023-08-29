@@ -314,12 +314,19 @@ class KDE2D(object):
         return hopt
 
 class Counting:
-    def __init__(self, args):
+    def __init__(self, args, gp):
         #ground truth labelled trajactories
         # validated tracks with moi labels
         # args.ReprojectedPklMeter
         # args.TrackLabellingExportPthMeter
-        
+        self.gp = gp
+        if gp:
+            self.init_gp(args)
+        else:
+            self.init_image(args)
+
+    def init_gp(self, args):
+        self.CountMetric = args.CountMetric
         self.metric = Metric_Dict[args.CountMetric]
         self.args = args
         if self.args.LabelledTrajectories is None:
@@ -329,13 +336,30 @@ class Counting:
 
         df = pd.read_pickle(validated_trakcs_path)
         # print(len(df))
-        df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x), threshold=args.ResampleTH)
+        df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=False, threshold=args.ResampleTH))
+
+        self.typical_mois = defaultdict(list)
+        for index, row in df.iterrows():
+            self.typical_mois[row['moi']].append(row["trajectory"])
+
+    def init_image(self, args):
+        self.CountMetric = args.CountMetric
+        self.metric = Metric_Dict[args.CountMetric]
+        self.args = args
+        if self.args.LabelledTrajectories is None:
+            print("loaded track labelling from previous path")
+            # load typical tracks from image
+            validated_trakcs_path = self.args.TrackLabellingExportPthImage
+        else: validated_trakcs_path = self.args.LabelledTrajectories; print("loaded track labelling from external source")
+
+        df = pd.read_pickle(validated_trakcs_path)
+        # print(len(df))
+        df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=False, threshold=args.ResampleTH))
 
         self.typical_mois = defaultdict(list)
         for index, row in df.iterrows():
             self.typical_mois[row['moi']].append(row["trajectory"])
     
-
     def counting(self, current_trajectory, track_id=-1):
         # counting_start_time = time.time()
         resampled_trajectory = current_trajectory
@@ -366,8 +390,18 @@ class Counting:
         return matched_id
 
     def viz_CMM(self, current_track, alpha=0.3, matched_id=0, track_id=-1):
-        r = meter_per_pixel(self.args.MetaData['center'])
-        image_path = self.args.HomographyTopView
+        input("enter smth to plot")
+        if self.gp:
+            image_path = self.args.HomographyTopView
+            thickness = 1
+            radius = 2
+            r = meter_per_pixel(self.args.MetaData['center'])
+        else: 
+            image_path = self.args.HomographyStreetView
+            thickness = 5
+            radius = 10
+            r = 1
+
         img = cv.imread(image_path)
         back_ground = cv.imread(image_path)
         rows, cols, dim = img.shape
@@ -380,11 +414,11 @@ class Counting:
                         x1, y1 = int(p1[0]/r), int(p1[1]/r)
                         x2, y2 = int(p2[0]/r), int(p2[1]/r)
                         c = color_dict[keys]
-                        img = cv2.line(img, (x1, y1), (x2, y2), c, thickness=1) 
+                        img = cv2.line(img, (x1, y1), (x2, y2), c, thickness=thickness) 
                     for p in gt_trajectory:
                         x, y = int(p[0]/r), int(p[1]/r)
                         c = color_dict[keys]
-                        img = cv.circle(img, (x,y), radius=1, color=c, thickness=1)
+                        img = cv.circle(img, (x,y), radius=radius, color=c, thickness=thickness)
                 else: 
                     for i in range(1, len(gt_trajectory)):
                         p1 = gt_trajectory[i-1]
@@ -392,37 +426,39 @@ class Counting:
                         x1, y1 = int(p1[0]/r), int(p1[1]/r)
                         x2, y2 = int(p2[0]/r), int(p2[1]/r)
                         c = color_dict[keys]
-                        back_ground = cv2.line(back_ground, (x1, y1), (x2, y2), c, thickness=2) 
+                        back_ground = cv2.line(back_ground, (x1, y1), (x2, y2), c, thickness=thickness) 
 
                     for p in gt_trajectory:
                         x, y = int(p[0]/r), int(p[1]/r)
                         c = color_dict[keys]
-                        back_ground = cv.circle(back_ground, (x,y), radius=2, color=c, thickness=2)
+                        back_ground = cv.circle(back_ground, (x,y), radius=radius, color=c, thickness=thickness)
 
         for i in range(1, len(current_track)):
             p1 = current_track[i-1]
             p2 = current_track[i]
             x1, y1 = int(p1[0]/r), int(p1[1]/r)
             x2, y2 = int(p2[0]/r), int(p2[1]/r)
-            back_ground = cv2.line(back_ground, (x1, y1), (x2, y2), (240, 50, 230), thickness=2) 
+            back_ground = cv2.line(back_ground, (x1, y1), (x2, y2), (240, 50, 230), thickness=thickness) 
 
         for p in current_track:
             x, y = int(p[0]/r), int(p[1]/r)
-            back_ground = cv.circle(back_ground, (x,y), radius=2, color=(240, 50, 230), thickness=2)
+            back_ground = cv.circle(back_ground, (x,y), radius=radius, color=(240, 50, 230), thickness=thickness)
 
         p = current_track[0]
         x, y = int(p[0]/r), int(p[1]/r)
-        back_ground = cv.circle(back_ground, (x,y), radius=3, color=(0, 255, 0), thickness=2)
+        back_ground = cv.circle(back_ground, (x,y), radius=radius, color=(0, 255, 0), thickness=thickness)
 
         p = current_track[-1]
         x, y = int(p[0]/r), int(p[1]/r)
-        back_ground = cv.circle(back_ground, (x,y), radius=3, color=(0, 0, 255), thickness=2)
+        back_ground = cv.circle(back_ground, (x,y), radius=radius, color=(0, 0, 255), thickness=thickness)
 
         img_new = cv2.addWeighted(img, alpha, back_ground, 1 - alpha, 0)
         img_new = cv.cvtColor(img_new, cv.COLOR_BGR2RGB)
         plt.imshow(img_new)
         plt.title(f"id;{track_id}")
+        plt.savefig(f"couting_with_{self.CountMetric}_id_{track_id}_matched_{matched_id}.png")
         plt.show()
+
 
     def main(self, args=None):
         if args is None:
@@ -435,16 +471,21 @@ class Counting:
         # ** do not confuse it with selected trajectories
         file_name = args.ReprojectedPklMeter
         result_paht = args.CountingResPth
+        df_temp = pd.read_pickle(file_name)
+
+        # get deffrent trajectory reps depending on if gp or image reasoning
+        if self.gp:
+            df = group_tracks_by_id(df_temp, gp=True)
+        else:
+            df = group_tracks_by_id(df_temp, gp=False)
+            
+        # resample tracks
+        df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=False, threshold=args.ResampleTH))
 
         data = {}
         data['id'], data['moi'] = [], []
-
-        df_temp = pd.read_pickle(file_name)
-        df = group_tracks_by_id(df_temp, gp=True)
-        # resample tracks
-        df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x, threshold=args.ResampleTH))
-
         tids = np.unique(df['id'].tolist())
+
         for idx in tqdm(tids):
             current_track = df[df['id'] == idx]
             a = current_track['trajectory'].values.tolist()
@@ -1151,7 +1192,10 @@ def main(args):
         elif args.CountMetric == "knn":
             counter = KNNCounting(args, gp=False)
         else:
-            counter = Counting(args)
+            if args.CountMetric[0] == "g":
+                counter = Counting(args, gp=True)
+            else:
+                counter = Counting(args, gp=False)
 
     # perfom counting here
     counter.main(args)
