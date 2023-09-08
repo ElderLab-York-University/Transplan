@@ -87,7 +87,7 @@ def VisHomographyGUI(args):
 def Homography(args, from_back_up = False):
     if args.Homography:
         print(ProcLog("Homography reprojection in Process"))
-        log = reproject(args, from_back_up=from_back_up)
+        log = reproject(args, source = args.BackprojectSource, from_back_up=from_back_up)
         return log
     else: return WarningLog("skipped homography subtask")
 
@@ -285,7 +285,9 @@ if __name__ == "__main__":
     parser.add_argument("--MultiCam", help="operating in multi-camera", action='store_true')
     parser.add_argument("--AverageCountsMC", help="averaging counting on MC", action='store_true')
     parser.add_argument("--EvalCountMC", help="Evaluate Counts MC", action="store_true")
-    
+
+    parser.add_argument("--TopView", help="seeting which topview to use. Options are [GoogleMap, OrthoPhoto]", type=str)
+    parser.add_argument("--BackprojectSource", help="selecting which source to backproject form Options are [tracks, detections]", type=str)
 
     args = parser.parse_args()
 

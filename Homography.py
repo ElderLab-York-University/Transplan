@@ -34,7 +34,10 @@ def homographygui(args):
 def download_top_view_image(args):
     center = args.MetaData['center']
     file_name = args.HomographyTopView
-    Maps.download_image(center=center, file_name=file_name)
+    if args.TopView == "GoogleMap":
+        Maps.download_image(center=center, file_name=file_name)
+    else:
+        print("automatic download only supported for GoogleMap topview")
 
 def lunch_homographygui(args):
     street = os.path.abspath(args.HomographyStreetView)
@@ -47,42 +50,93 @@ def lunch_homographygui(args):
     os.system(f"sudo python3 main.py --StreetView='{street}' --TopView='{top}' --Txt='{txt}' --Npy='{npy}' --Csv='{csv}'")
     os.chdir(cwd)
 
-def reproject(args, from_back_up = False):
-    trackers = Track.trackers
-    homography_path = args.HomographyNPY
-    out_path = args.ReprojectedPoints 
+def reproject(args, source, from_back_up = False):
+    # try to reproject tracking results
+    if source == "tracks":
+        homography_path = args.HomographyNPY
+        out_path = args.ReprojectedPoints 
 
-    current_tracker = trackers[args.Tracker]
-    # df = current_tracker.df(args)
-    if from_back_up:
-        df = pd.read_pickle(args.TrackingPklBackUp)
+        if from_back_up:
+            df = pd.read_pickle(args.TrackingPklBackUp)
+        else:
+            df = pd.read_pickle(args.TrackingPkl)
+        
+        M = np.load(homography_path, allow_pickle=True)[0]
+        with open(out_path, 'w') as out_file:
+            for index, row in tqdm(df.iterrows(), total=len(df)):
+                # fn, idd, x, y = track[0], track[1], (track[2] + track[4]/2), (track[3] + track[5])/2
+                x, y = (row['x2']+row['x1'])/2, row['y2']
+                point = np.array([x, y, 1])
+                new_point = M.dot(point)
+                new_point /= new_point[2]
+                # complete the new entry
+                new_entry = ""
+                for col in df.columns:
+                    new_entry += f"{row[col]},"
+                new_entry += f"{x},"
+                new_entry += f"{y},"
+                new_entry += f"{new_point[0]},"
+                new_entry += f"{new_point[1]}" # last value does not have the ","
+                print(new_entry, file=out_file)
+        store_to_pickle(args)
+        return SucLog("Backprojection executed successfully from tracks")
+
+    elif source == "detections":
+        homography_path = args.HomographyNPY
+        out_path = args.ReprojectedPointsForDetection
+
+        if from_back_up:
+            df = pd.read_pickle(args.DetectionPklBackUp)
+        else:
+            df = pd.read_pickle(args.DetectionPkl)
+        
+        M = np.load(homography_path, allow_pickle=True)[0]
+        with open(out_path, 'w') as out_file:
+            for index, row in tqdm(df.iterrows(), total=len(df)):
+                # fn, idd, x, y = track[0], track[1], (track[2] + track[4]/2), (track[3] + track[5])/2
+                x, y = (row['x2']+row['x1'])/2, row['y2']
+                point = np.array([x, y, 1])
+                new_point = M.dot(point)
+                new_point /= new_point[2]
+                # complete the new entry
+                new_entry = ""
+                for col in df.columns:
+                    new_entry += f"{row[col]},"
+                new_entry += f"{x},"
+                new_entry += f"{y},"
+                new_entry += f"{new_point[0]},"
+                new_entry += f"{new_point[1]}" # last value does not have the ","
+                print(new_entry, file=out_file)
+        store_to_pickle_to_detection(args)
+        return SucLog("Backrojection executed successfully from detections")
     else:
-        df = pd.read_pickle(args.TrackingPkl)
-    
-    M = np.load(homography_path, allow_pickle=True)[0]
-    with open(out_path, 'w') as out_file:
-        for index, row in tqdm(df.iterrows(), total=len(df)):
-            # fn, idd, x, y = track[0], track[1], (track[2] + track[4]/2), (track[3] + track[5])/2
-            x, y = (row['x2']+row['x1'])/2, row['y2']
-            point = np.array([x, y, 1])
-            new_point = M.dot(point)
-            new_point /= new_point[2]
-            # complete the new entry
-            new_entry = ""
-            for col in df.columns:
-                new_entry += f"{row[col]},"
-            new_entry += f"{x},"
-            new_entry += f"{y},"
-            new_entry += f"{new_point[0]},"
-            new_entry += f"{new_point[1]}" # last value does not have the ","
-            print(new_entry, file=out_file)
-
-    store_to_pickle(args)
-    return SucLog("Homography reprojection executed successfully")
+        return FailLog(f"{source} not a valid backprojection source")
 
 def store_to_pickle(args):
     df = reprojected_df(args)
-    df.to_pickle(args.ReprojectedPkl)   
+    df.to_pickle(args.ReprojectedPkl)
+
+def store_to_pickle_to_detection(args):
+    df = reprojected_df_for_detection(args)
+    df.to_pickle(args.ReprojectedPklForDetection)
+
+def reprojected_df_for_detection(args):
+    in_path = args.ReprojectedPointsForDetection
+    df = pd.read_pickle(args.DetectionPkl)
+    # reprojected df will have all the columns of tracking df 
+    # with addition of xcp, ycp, x, y
+    # which are contact point coordinates and  backprojected coordinates 
+    points = np.loadtxt(in_path, delimiter=',')
+    data  = {}
+    for i, col in enumerate(df.columns):
+        data[col] = points[:, i]
+
+    data["y"]   = points[:, -1]
+    data["x"]   = points[:, -2]
+    data["ycp"] = points[:, -3]
+    data["xcp"] = points[:, -4]
+
+    return pd.DataFrame.from_dict(data)
 
 def reprojected_df(args):
     in_path = args.ReprojectedPoints
@@ -103,6 +157,14 @@ def reprojected_df(args):
     return pd.DataFrame.from_dict(data)
 
 def vishomographygui(args):
+    if not os.path.exists(args.HomographyTopView):
+        print(ProcLog("intersection topview is not given; will fetch from gmaps"))
+        download_top_view_image(args)
+        
+    if not os.path.exists(args.HomographyStreetView):
+        print(ProcLog("intersection streetview is not given; will choose videos first frame"))
+        save_frame_from_video(args)
+
     first_image_path = args.HomographyStreetView
     second_image_path = args.HomographyTopView
     homography_path = args.HomographyNPY
