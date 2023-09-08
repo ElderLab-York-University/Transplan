@@ -77,7 +77,7 @@ def get_in_roi_points(traj, poly_path):
             mask.append(False)
     return traj[mask]
 
-def get_proper_tracks(args):
+def get_proper_tracks(args, gp):
     tracks_path = args.ReprojectedPkl
     tracks_meter_path = args.ReprojectedPklMeter
     top_image = args.HomographyTopView
@@ -95,18 +95,26 @@ def get_proper_tracks(args):
     img_street = plt.imread(street_image)
 
     # load data
-    tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
-    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
-    tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+    if gp:
+        tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
+        tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
+        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+    else:
+        tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=False)
+        tracks['index_mask'] = tracks['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+
     # tracks_meter['trajectory'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=False, threshold=args.ResampleTH))
 
     # create roi polygon
-    roi_rep = []
-    for p in args.MetaData["roi"]:
-        point = np.array([p[0], p[1], 1])
-        new_point = M.dot(point)
-        new_point /= new_point[2]
-        roi_rep.append([new_point[0], new_point[1]])
+    if gp:
+        roi_rep = []
+        for p in args.MetaData["roi"]:
+            point = np.array([p[0], p[1], 1])
+            new_point = M.dot(point)
+            new_point /= new_point[2]
+            roi_rep.append([new_point[0], new_point[1]])
+    else:
+        roi_rep = [p for p in args.MetaData["roi"] ]
 
     pg = MyPoly(roi_rep, args.MetaData["roi_group"])
     th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
@@ -148,7 +156,6 @@ def get_proper_tracks(args):
 
     # modify dfs with mask
     tracks = tracks[mask]
-    tracks_meter = tracks_meter[mask]
 
     # temporarily add info to track dataframe
     tracks['i_str'] = i_strs
@@ -156,10 +163,6 @@ def get_proper_tracks(args):
     tracks['moi'] = moi
     tracks['p_str'] = p_strs
     tracks['p_end'] = p_ends
-
-    tracks_meter['i_str'] = i_strs
-    tracks_meter['i_end'] = i_ends 
-    tracks_meter['moi'] = moi
 
     return tracks
 
@@ -189,6 +192,7 @@ def cluster_prop_tracks_based_on_str(tracks, args):
             continue
 
         clt = sklearn.cluster.KMeans(n_clusters = min(num_cluster, len(starts)), n_init=100)
+        # you should better cluster based on both str and end @TODO
         clt.fit(starts)
         c_start = clt.predict(starts)
         tracks.loc[tracks.moi == mi, "clt"] = c_start
@@ -252,7 +256,8 @@ def extract_common_tracks(args):
     poly_path = mplPath.Path(np.array(roi_rep))
 
     # get proper tracks
-    tracks = get_proper_tracks(args)
+    # you can also add the gp flag for extract common tracks @TODO
+    tracks = get_proper_tracks(args, gp=True)
 
     # extract all starts and ends from proper tracks
     starts = []

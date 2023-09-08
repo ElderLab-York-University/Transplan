@@ -132,6 +132,8 @@ def interpolate_traj(traj, frames):
 
     return int_traj, int_frames
 
+
+# you should optimize the bw for image as well @TODO
 def find_opt_bw(args):
     osr = 10
     tracks_path = args.ReprojectedPkl
@@ -223,7 +225,11 @@ class KDE2D(object):
         #
         # datamap[data[:,1].astype(int), data[:,0].astype(int)] += 1 ?
         for point in data.astype(int):
-            datamap[point[1],point[0]] += 1
+            try:
+                datamap[point[1],point[0]] += 1
+            except:
+                print(f"datamap shape:{datamap.shape} y:{point[1]} x:{point[0]}")
+
 
         self.pmap = self.KDE2D(datamap, h, n)
 
@@ -276,7 +282,10 @@ class KDE2D(object):
             # note reversal of x and y and conversion
             # datamap[data[trainidx, 1].astype(int), data[trainidx, 0].astype(int)] += 1 ?
             for point in data.astype(int)[trainidx]:
-                datamap[point[1],point[0]] += 1
+                try:
+                    datamap[point[1],point[0]] += 1
+                except:
+                    print(f"datamap shape:{datamap.shape} y:{point[1]} x:{point[0]}")
 
             pmap = self.KDE2D(datamap, h, len(trainidx))
             testdata = data[tstart:tend]
@@ -663,7 +672,7 @@ class KNNCounting(Counting):
         with open(result_paht, "w") as f:
             json.dump(counter, f, indent=2)
         
-
+# change IKDE code to propagate bw to 2D KDE instead of hardcoding. this is important for Image Counters @TODO
 class IKDE():
     def __init__(self, kernel="gaussian", bandwidth=None, os_ratio = 1):
         self.kernel = kernel
@@ -884,9 +893,18 @@ class HMMG():
         return max_mois
 
 class KDECounting(Counting):
-    def __init__(self, args):
+    def __init__(self, args, gp):
+
+        self.gp = gp
+        if gp:
+            self.img_path = args.HomographyTopView
+        else:
+            self.img_path = args.HomographyStreetView
+        self.init(args)
+
+    def init(self, args):
         self.args = args
-        tracks = get_proper_tracks(self.args)
+        tracks = get_proper_tracks(self.args, gp = self.gp)
         # cluster prop_tracks based on their starting point
         tracks = cluster_prop_tracks_based_on_str(tracks, self.args)
         # get same number of longest tracks from each cluster per moi
@@ -909,20 +927,22 @@ class KDECounting(Counting):
             
         if self.args.CountMetric == "kde":
             self.ikde = IKDE()
+        elif self.args.CountMetric == "gkde":
+            self.ikde = IKDE()
         elif self.args.CountMetric == "loskde":
             self.ikde = LOSIKDE()
         elif self.args.CountMetric == "hmmg":
             self.ikde = HMMG()
         else: raise "it should not happen"
 
-        img = args.HomographyTopView
-        img = cv.imread(args.HomographyTopView)
+        img = cv.imread(self.img_path)
         self.ikde.fit(tracks, img)
         self.ikde.make_inference_maps(img, args.DensityVisPath)
         if args.CountVisDensity:
             self.ikde.plot_densities(img, args.DensityVisPath)
         # delete original kde for each moi to free up space when you are caching object
         self.ikde.del_kdes()
+
     def main(self, args=None):
         # where the counting happens
         if args is not None:
@@ -931,16 +951,24 @@ class KDECounting(Counting):
         tracks_path = args.ReprojectedPkl
         tracks_meter_path = args.ReprojectedPklMeter
         top_image = args.HomographyTopView
+        street_image = args.HomographyStreetView
         meta_data = args.MetaData # dict is already loaded
         HomographyNPY = args.HomographyNPY
         result_paht = args.CountingResPth
         # load data
         M = np.load(HomographyNPY, allow_pickle=True)[0]
-        tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
-        tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
-        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
-        img = plt.imread(top_image)
-        img1 = cv.imread(top_image)
+        if self.gp:
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
+            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
+            tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+            img = plt.imread(top_image)
+            img1 = cv.imread(top_image)
+        else:
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=False)
+            tracks['index_mask'] = tracks['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+            img = plt.imread(street_image)
+            img1 = cv.imread(street_image)
+
         # resample gp tracks
         tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
         tracks["moi"] = self.ikde.predict_tracks(tracks)
@@ -960,12 +988,15 @@ class KDECounting(Counting):
         print("right before count vis prompt")
 
         # get roi on groundpalane
-        roi_rep = []
-        for p in args.MetaData["roi"]:
-            point = np.array([p[0], p[1], 1])
-            new_point = M.dot(point)
-            new_point /= new_point[2]
-            roi_rep.append([new_point[0], new_point[1]])
+        if self.gp:
+            roi_rep = []
+            for p in args.MetaData["roi"]:
+                point = np.array([p[0], p[1], 1])
+                new_point = M.dot(point)
+                new_point /= new_point[2]
+                roi_rep.append([new_point[0], new_point[1]])
+        else:
+            roi_rep = [p for p in args.MetaData["roi"]]
             
         pg = MyPoly(roi_rep, args.MetaData["roi_group"])
         th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
@@ -973,7 +1004,7 @@ class KDECounting(Counting):
         if self.args.CountVisPrompt:
             print("will initiate count vis prompt")
             for i, row in tracks.iterrows():
-                self.plot_track_on_gp(row["trajectory"], matched_id=row["moi"], track_id=row["id"], roi=roi_rep, roi_th=th, pg=pg)
+                    self.plot_track_on_gp(row["trajectory"], matched_id=row["moi"], track_id=row["id"], roi=roi_rep, roi_th=th, pg=pg)
 
     def add_roi_line_to_img(self,img, roi):
         for i in range(1, len(roi)):
@@ -995,7 +1026,7 @@ class KDECounting(Counting):
 
     def plot_track_on_gp(self, current_track, matched_id=0, alpha=0.4, track_id=None, roi=None, roi_th=None, pg=None):
         c = color_dict[int(matched_id)]
-        image_path = self.args.HomographyTopView
+        image_path = self.image_path
         img = cv.imread(image_path)
         back_ground = cv.imread(image_path)
 
@@ -1182,8 +1213,10 @@ def main(args):
         with open(args.CachedCounterPth, "rb") as f:
             counter = pkl.load(f)
     else:
-        if args.CountMetric in ["kde", "loskde", "hmmg"] :
-            counter = KDECounting(args)
+        if   args.CountMetric == "kde" :
+            counter = KDECounting(args, gp=False)
+        elif args.CountMetric == "gkde":
+            counter = KDECounting(args, gp=True)
         elif args.CountMetric == "groi":
             counter = ROICounting(args, gp=True)
         elif args.CountMetric == "roi":

@@ -3,34 +3,33 @@ import os
 # options : ['./../Dataset/DandasStAtNinthLineFull', './../Dataset/DandasStAtNinthLine', "./../Dataset/SOW_src1", "./../Dataset/SOW_src2", "./../Dataset/SOW_src3", "./../Dataset/SOW_src4"]
 
 segments = [
-    # Seg01
-    "/mnt/data/HW7Leslie/Seg01",
-    # Seg02
-    "/mnt/data/HW7Leslie/Seg02",
-    # # Seg03
-    "/mnt/data/HW7Leslie/Seg03",
-    # # Seg05
-    "/mnt/data/HW7Leslie/Seg05",
-    # # Seg06
-    "/mnt/data/HW7Leslie/Seg06",
-    # # Seg09
-    "/mnt/data/HW7Leslie/Seg09",
-    # # Seg10
-    "/mnt/data/HW7Leslie/Seg10",
-    # # Seg11
-    "/mnt/data/HW7Leslie/Seg11",
-    # # Seg12
-    "/mnt/data/HW7Leslie/Seg12",
-    # # Seg13
-    "/mnt/data/HW7Leslie/Seg13",
-    #Seg17
-    "/mnt/data/HW7Leslie/Seg17",
-
+    # # Seg01
+    # "/mnt/data/HW7Leslie/Seg01",
+    # # Seg02
+    # "/mnt/data/HW7Leslie/Seg02",
+    # # # Seg03
+    # "/mnt/data/HW7Leslie/Seg03",
+    # # # Seg05
+    # "/mnt/data/HW7Leslie/Seg05",
+    # # # Seg06
+    # "/mnt/data/HW7Leslie/Seg06",
+    # # # Seg09
+    # "/mnt/data/HW7Leslie/Seg09",
+    # # # Seg10
+    # "/mnt/data/HW7Leslie/Seg10",
+    # # # Seg11
+    # "/mnt/data/HW7Leslie/Seg11",
+    # # # Seg12
+    # "/mnt/data/HW7Leslie/Seg12",
+    # # # Seg13
+    # "/mnt/data/HW7Leslie/Seg13",
+    # #Seg17
+    # "/mnt/data/HW7Leslie/Seg17",
 ]
 sources = [
 # TransPlan Dataset
     # # D9L
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
+    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video2",
     # # DBR
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1",
@@ -104,7 +103,7 @@ cached_cnt_sources = [
 # TransPlan Dataset
    # TransPlan Dataset
     # # D9L
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
+    "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
     # # DBR
     # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1",
@@ -192,7 +191,7 @@ clusters = ["SpectralFull"]
 clt_metrics = ["tcos", "cmm"]
 cnt_metrics = ["kde"]
 
-# for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
+for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     ########################################################
     # 1. estimate the Homography Metrix using Homography GUI 
     # os.system(f"python3 main.py --Dataset={src}  --Detector=detectron2 --Tracker=sort --HomographyGUI --VisHomographyGUI --Frame=1")
@@ -265,7 +264,7 @@ cnt_metrics = ["kde"]
     #                 os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --ClusteringAlgo={clt} --ClusterMetric={met} --Cluster")
     
     ########################################################
-    # 8. Run the track labelling GUI / go to 6.
+    # 8. Run the track labelling GUI / go to 9.
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
@@ -283,12 +282,12 @@ cnt_metrics = ["kde"]
     # 10. Run the classification(counting) part
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --CountVisPrompt --EvalCount --UseCachedCounter --CachedCounterPth={cached_cnt_pth} --CacheCounter --CountVisDensity")
     ########################################################
-    # for det in detectors:
-    #     for tra in trackers:
-    #         for metric in cnt_metrics:
-    #             print(f"counting metric:{metric} det:{det} tra:{tra}")
-    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --CacheCounter --CountVisDensity --ResampleTH=2.0")
-    #             # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --UseCachedCounter --CachedCounterPth={cached_cnt_pth}")
+    for det in detectors:
+        for tra in trackers:
+            for metric in cnt_metrics:
+                print(f"counting metric:{metric} det:{det} tra:{tra}")
+                os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --CacheCounter --CountVisDensity --ResampleTH=50.0")
+                # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --UseCachedCounter --CachedCounterPth={cached_cnt_pth}")
 
     ########################################################
     # 11. Visualizing the results on a video including track label and track id
@@ -303,14 +302,14 @@ cnt_metrics = ["kde"]
 
     #_______________________MULTICAMERA_______________________#
 
-for src in segments:
-    print(f"running on seg:{src}")
-    # ########################################################
-    # # 0. Average Counts MC
-    # # os.system(f"python3 main.py --MultiCam --Dataset={src}  --Detector={det} --Tracker={tra} -- --VisTrackTopMC")
-    # ########################################################
-    for det in detectors:
-        for tra in trackers:
-            for metric in cnt_metrics:
-                print(f"average MC counts ---> src:{src} det:{det} tra:{tra} cnt:{metric}")
-                os.system(f"python3 main.py --MultiCam --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={metric} --AverageCountsMC --EvalCountMC")
+# for src in segments:
+#     print(f"running on seg:{src}")
+#     # ########################################################
+#     # # 0. Average Counts MC
+#     # # os.system(f"python3 main.py --MultiCam --Dataset={src}  --Detector={det} --Tracker={tra} -- --VisTrackTopMC")
+#     # ########################################################
+#     for det in detectors:
+#         for tra in trackers:
+#             for metric in cnt_metrics:
+#                 print(f"average MC counts ---> src:{src} det:{det} tra:{tra} cnt:{metric}")
+#                 os.system(f"python3 main.py --MultiCam --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={metric} --AverageCountsMC --EvalCountMC")
