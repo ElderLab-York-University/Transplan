@@ -34,6 +34,7 @@ def homographygui(args):
 def download_top_view_image(args):
     center = args.MetaData['center']
     file_name = args.HomographyTopView
+    print(f"file_name of donwloaded top view : {file_name}")
     if args.TopView == "GoogleMap":
         Maps.download_image(center=center, file_name=file_name)
     else:
