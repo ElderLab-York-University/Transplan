@@ -797,7 +797,10 @@ class IKDE():
         for i in range(len(traj)):
             x, y = traj[i]
             x , y = int(x), int(y) # to have map indexes
-            log_score += infer_map[(x, y)]
+            try:
+                log_score += infer_map[(x, y)]
+            except:
+                pass
         # add prior to it
         # log_score += np.log(self.priors[moi])
         return log_score
