@@ -1,5 +1,6 @@
 from .sort.sort import *
 from Libs import *
+from Utils import *
 
 
 def track(args, detectors):
@@ -11,13 +12,13 @@ def track(args, detectors):
     output_file = args.TrackingPth
     mot_tracker = Sort() #create instance of the SORT tracker
     with open(output_file,'w') as out_file:
-        for frame_num in tqdm(range(int(detection_df.fn.max()))): # this line might not work :))) 
+        for frame_num in tqdm(range(int(detection_df.fn.min()), int(detection_df.fn.max()+1))): #looping from df.fn.min to df.fn.max
             frame_df = detection_df[detection_df.fn == frame_num]
             # create dets --> this is the part when information is converted/grouped
             dets = frame_df[["x1", "y1", "x2", "y2", "score"]].to_numpy()
             trackers = mot_tracker.update(dets)
             for d in trackers:
-                print('%d,%d,%.4f,%.4f,%.4f,%.4f'%(frame_num+1,d[4],d[0],d[1],d[2],d[3]),file=out_file)
+                print('%d,%d,%.4f,%.4f,%.4f,%.4f'%(frame_num,d[4],d[0],d[1],d[2],d[3]),file=out_file) # using frame_num so that trakcing df and detection df are synced
 
     match_classes(args)
 
@@ -38,7 +39,9 @@ def df_txt(df, out_path):
     with open(out_path,'w') as out_file:
         for i, row in df.iterrows():
             fn, idd, x1, y1, x2, y2, clss = row['fn'], row['id'], row['x1'], row['y1'], row['x2'], row['y2'], row["class"]
-            print('%d,%d,%.4f,%.4f,%.4f,%.4f,%d'%(fn, idd, x1, y1, x2, y2),file=out_file)
+            print('%d,%d,%.4f,%.4f,%.4f,%.4f,%d'%(fn, idd, x1, y1, x2, y2, clss),file=out_file)
+            # fn, idd, x1, y1, x2, y2 = row['fn'], row['id'], row['x1'], row['y1'], row['x2'], row['y2']
+            # print('%d,%d,%.4f,%.4f,%.4f,%.4f'%(fn, idd, x1, y1, x2, y2),file=out_file)
     # df = pd.read_pickle(args.TrackingPkl)
     # out_path = args.TrackingPth 
 
@@ -91,6 +94,5 @@ def match_classes(args):
     
     # add class as a column to df
     track_df["class"] = class_labels
-
     # write class to txt file
     df_txt(track_df, args.TrackingPth)
