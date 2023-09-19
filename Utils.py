@@ -538,6 +538,24 @@ def add_density_path_to_args(args):
     args.DensityVisPath = vis_density_pth
     return args
 
+def get_segmentation_pkl_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Segment",file_name + Puncuations.Dot + "Segmentation" + Puncuations.Dot + args.Segmenter + Puncuations.Dot + SubTaskExt.Pkl )
+
+def get_vis_segment_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "VisSegment" + Puncuations.Dot + args.Segmenter + Puncuations.Dot +SubTaskExt.VisTracking)
+
+def add_segmentation_path_to_args(args):
+    args.SegmentPkl = get_segmentation_pkl_path(args)
+    return args
+
+def add_vis_segment_path_to_args(args):
+    args.VisSegmentPath = get_vis_segment_path(args)
+    return args
+
 def adjust_args_with_params(args):
     if args.CountMetric == "knn" or args.CountMetric == "gknn" :
         args.CountMetric += f".k={args.K}"
@@ -573,6 +591,7 @@ def complete_args(args):
     
 
     args = add_metadata_to_args(args)
+
     if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Track or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW:
         args = add_homographygui_related_path_to_args(args)
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW:
@@ -598,6 +617,9 @@ def complete_args(args):
     if args.Count:
         args = add_cached_counter_path_to_args(args)
         args = add_density_path_to_args(args)
+    if args.Segment:
+        args = add_segmentation_path_to_args(args)
+        args = add_vis_segment_path_to_args(args)
 
     args = revert_args_with_params(args)
     return args
@@ -614,6 +636,7 @@ def check_config(args):
     Annotation_path = os.path.join(results_path, "Annotation")
     counting_path = os.path.join(results_path, "Counting")
     clustering_path = os.path.join(results_path, "Clustering")
+    segment_path    = os.path.join(results_path, "Segment")
 
     try: os.system(f"mkdir -p {results_path}")
     except: pass
@@ -630,6 +653,8 @@ def check_config(args):
     try: os.system(f"mkdir -p {Annotation_path}")
     except: pass
     try: os.system(f"mkdir -p {clustering_path}")
+    except: pass
+    try: os.system(f"mkdir -p {segment_path}")
     except: pass
 
 def get_conda_envs():

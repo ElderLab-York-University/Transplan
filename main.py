@@ -22,6 +22,7 @@ from counting import counting
 from counting.counting import find_opt_bw, eval_count
 from Clustering import cluster
 from CountingMC import AverageCountsMC
+from Segment import segment, vis_segment
 
 def Preprocess(args):
     if args.Preprocess:
@@ -206,11 +207,31 @@ def EvalCountMC(args, args_mc):
         return log
     else:
         return WarningLog("skipped evaluating counts")
+    
+def Segment(args):
+    if args.Segment:
+        print(ProcLog("segment images"))
+        log = segment(args)
+        return log
+    else: return WarningLog("skipped segmentation subtask")
+
+def VisSegment(args):
+    if args.VisSegment:
+        print(ProcLog("visulaize segmentation masks"))
+        log = vis_segment(args)
+        return log
+    else: return WarningLog("skipped vis segmentations")
 
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, VisROI, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, TrackPostProc, VisTrajectories, VisTrackTop, FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories, Count, VisTrackMoI, Evaluate]
+    subtasks = [Preprocess,
+                HomographyGUI, VisHomographyGUI, VisROI,
+                Segment, VisSegment,
+                Detect, DetPostProc, VisDetect,
+                Track, VisTrack, Homography, Pix2Meter, TrackPostProc, VisTrajectories, VisTrackTop,
+                FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories,
+                Count, VisTrackMoI, Evaluate]
     for subtask in subtasks:
         log = subtask(args)
         if not isinstance(log, WarningLog):
@@ -298,6 +319,10 @@ if __name__ == "__main__":
     parser.add_argument("--TopView", help="seeting which topview to use. Options are [GoogleMap, OrthoPhoto]", type=str)
     parser.add_argument("--BackprojectSource", help="selecting which source to backproject form Options are [tracks, detections]", type=str)
     parser.add_argument("--BackprojectionMethod", help="Select back projection method  options = [Homography/UTM/OnSegMask]", type=str)
+
+    parser.add_argument("--Segment", help="perform segmentation and store results", action='store_true')
+    parser.add_argument("--VisSegment", help="Vis Segmentation Masks", action='store_true')
+    parser.add_argument("--Segmenter", help="model for segmentation", type=str, default="Null")
 
 
     args = parser.parse_args()
