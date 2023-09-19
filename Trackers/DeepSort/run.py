@@ -1,9 +1,8 @@
 import sys
-# import pickle as pkl
+# import pickle as pickle
 import json
-import pickle5 as pickle
+# import pickle5 as pickle
 import pandas as pd
-
 from DeepSort.deep_sort import nn_matching
 from DeepSort.deep_sort.detection import Detection
 from DeepSort.deep_sort.tracker import Tracker
@@ -11,14 +10,11 @@ from DeepSort.tools import generate_detections as gdet
 import cv2
 from tqdm import tqdm
 import numpy as np
-
-# import argparse
 import sys
 CENTERTRACK_PATH = "./Trackers/CenterTrack/CenterTrack/src/lib/"
 sys.path.insert(0, CENTERTRACK_PATH)
-# import cv2
-# from tqdm import tqdm
-# import torch
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 if __name__ == "__main__":
     args = json.loads(sys.argv[-1]) # args in a dictionary here where it was a argparse.NameSpace in the main code
@@ -44,26 +40,22 @@ if __name__ == "__main__":
         fps = int(cap.get(cv2.CAP_PROP_FPS))
         frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+
+        detections_df = pd.read_pickle(args["DetectionPkl"])
+
+        # with open(args["DetectionPkl"],"rb") as f:
+        #     detections_df=pickle.load(f)
+
         for frame_num in tqdm(range(frames)):
             if (not cap.isOpened()):
                 break
             ret, frame=cap.read()
-            with open(args["DetectionPkl"],"rb") as f:
-                detections=pickle.load(f)
 
-            # try:
-
-            #     original_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            #     original_frame = cv2.cvtColor(original_frame, cv2.COLOR_BGR2RGB)
-            # except Exception as e:
-            #     print(e)
-            #     break
-            frame_bool= detections["fn"]==frame_num
-            frame_detections=detections[frame_bool]
+            frame_bool= detections_df["fn"]==frame_num
+            frame_detections=detections_df[frame_bool]
             bboxes=[]
             names=[]
             scores=[]
-            # print(frame_detections.iloc[0])
 
             for frame_detection in frame_detections.iterrows():
                 bbox=np.array([frame_detection[1]["x1"], frame_detection[1]["y1"],frame_detection[1]["x2"]-frame_detection[1]["x1"], frame_detection[1]["y2"]-frame_detection[1]["y1"]])
@@ -72,11 +64,11 @@ if __name__ == "__main__":
                 bboxes.append(bbox)
                 scores.append(score)
                 names.append(name)
+
             bboxes=np.array(bboxes)
             scores=np.array(scores)
             names=np.array(names)
             features = np.array(encoder(frame, bboxes))
-            print(features.shape)
             detections = [Detection(bbox, score, feature) for bbox, score, feature in zip(bboxes, scores, features)]
             tracker.predict()
             tracker.update(detections)
@@ -90,7 +82,7 @@ if __name__ == "__main__":
         for row in results:
             # print("YOO")
             print('%d,%d,%f,%f,%f,%f'%
-            (row[0]+1, row[1], row[2], row[3], row[2]+row[4], row[3]+row[5]),file=out_file)
+            (row[0], row[1], row[2], row[3], row[2]+row[4], row[3]+row[5]),file=out_file)
 
 
 
