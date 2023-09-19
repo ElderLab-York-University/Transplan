@@ -442,6 +442,10 @@ clusters = ["SpectralFull"]
 clt_metrics = ["tcos", "cmm"]
 cnt_metrics = ["kde"]
 
+# choose the segmenter
+# options: ["InternImage"]
+segmenters = ["InternImage"]
+
 # for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     ########################################################
     # 1. estimate the Homography Metrix using Homography GUI 
@@ -456,6 +460,14 @@ cnt_metrics = ["kde"]
     #######################################################
     # print(f"src:{src}")
     # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --VisROI --TopView=GoogleMap")
+
+    #######################################################
+    # 2.5 Segment Video Frames 
+    #  os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --Segment --Segmenter={seg} --VisSegment --ForNFrames=2000")
+    #######################################################
+    # for seg in segmenters:
+    #     print(f" Segmenting ----> src:{src} seg:{seg}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --Segment --Segmenter={seg} --VisSegment")
 
     ########################################################
     # 3. run the detection
