@@ -90,7 +90,9 @@ def match_classes(args):
         scores = compute_pairwise_iou(track_df[track_df["fn"] == fn], det_df[det_df["fn"] == fn])
         costs = 1 - scores
         row_indices, col_indices = scipy.optimize.linear_sum_assignment(costs)
-        class_labels += list(det_df.iloc[col_indices]["class"])
+        temp = np.array([-1 for i in range(len(track_df[track_df["fn"] == fn]))])
+        temp[row_indices] = det_df.iloc[col_indices]["class"]
+        class_labels += [int(c) for c in temp]
     
     # add class as a column to df
     track_df["class"] = class_labels
