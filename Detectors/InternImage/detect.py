@@ -76,9 +76,11 @@ def setup(args):
         # install library on conda env
         print("here I am 1")
         os.system(f"conda run --live-stream -n {args.Detector} conda install pip")
-        os.system(f"conda run -n {args.Detector} pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113  -f https://download.pytorch.org/whl/torch_stable.html")
+        os.system(f"conda run --live-stream -n {args.Detector} pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113  -f https://download.pytorch.org/whl/torch_stable.html")
+        print("here I am 1.5")
+        os.system(f"conda run --live-stream -n {args.Detector} pip install easydict llvmlite numba pyyaml tqdm")
         print("here I am 2")
-        os.system(f"conda run --live-stream -n {args.Detector} pip install -U openmim")
+        os.system(f"conda run --live-stream -n {args.Detector} pip install openmim")
         print("here I am 2.3")
         os.system(f"conda run --live-stream -n {args.Detector} mim install mmcv-full==1.5.0")
         print("here I am 2.6")
