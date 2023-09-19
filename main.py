@@ -297,7 +297,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--TopView", help="seeting which topview to use. Options are [GoogleMap, OrthoPhoto]", type=str)
     parser.add_argument("--BackprojectSource", help="selecting which source to backproject form Options are [tracks, detections]", type=str)
-    parser.add_argument("--BackprojectionMethod", help="Select back projection method", type=str) # options = [Homography/UTM]
+    parser.add_argument("--BackprojectionMethod", help="Select back projection method  options = [Homography/UTM/OnSegMask]", type=str)
 
 
     args = parser.parse_args()

@@ -442,7 +442,7 @@ clusters = ["SpectralFull"]
 clt_metrics = ["tcos", "cmm"]
 cnt_metrics = ["kde"]
 
-for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
+# for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     ########################################################
     # 1. estimate the Homography Metrix using Homography GUI 
     # os.system(f"python3 main.py --Dataset={src}  --Detector=detectron2 --Tracker=sort --HomographyGUI --VisHomographyGUI --Frame=1 --TopView=GoogleMap")
@@ -478,9 +478,9 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     # 3.6 back project detections
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Homography --BackprojectSource=detections --TopView=[GoogleMap/OrthoPhoto] --BackprojectionMethod=[Homography/DTM]")
     ########################################################
-    for det in detectors:
-        print(f"detecting ----> src:{src} det:{det}")
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Homography --BackprojectSource=detections --TopView=GoogleMap --BackprojectionMethod=Homography")
+    # for det in detectors:
+    #     print(f"detecting ----> src:{src} det:{det}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Homography --BackprojectSource=detections --TopView=GoogleMap --BackprojectionMethod=Homography")
 
     ########################################################
     # 4. run the tracking and backproject and convert to meter
@@ -523,7 +523,7 @@ for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     #                 os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --ClusteringAlgo={clt} --ClusterMetric={met} --Cluster")
     
     ########################################################
-    # 8. Run the track labelling GUI / go to 6.
+    # 8. Run the track labelling GUI / go to 9.
     ########################################################
     # for det in detectors:
     #     for tra in trackers:

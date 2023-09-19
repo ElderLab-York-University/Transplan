@@ -37,11 +37,11 @@ def detect(args):
 
 def store_df_pickle_backup(args):
     df = detectors[args.Detector].df(args)
-    df.to_pickle(args.DetectionPklBackUp)
+    df.to_pickle(args.DetectionPklBackUp, protocol=4)
 
 def store_df_pickle(args):
     df = detectors[args.Detector].df(args)
-    df.to_pickle(args.DetectionPkl)
+    df.to_pickle(args.DetectionPkl, protocol=4)
 
 def remove_out_of_ROI(df, roi):
     poly_path = mplPath.Path(np.array(roi))
