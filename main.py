@@ -92,6 +92,9 @@ def Homography(args, from_back_up = False):
         elif args.BackprojectionMethod == "DTM": 
             print(ProcLog("Reprojection with DTM in Process"))
             raise NotImplemented
+        elif args.BackprojectionMethod == "OnSegMask": 
+            print(ProcLog("Reprojection with On Segmentation Mask in Process"))
+            raise NotImplemented
         else:
             raise "not valid backprojeciton method"
         return log
