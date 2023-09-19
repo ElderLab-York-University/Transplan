@@ -183,27 +183,32 @@ def get_metadata_path(args):
 def get_homography_topview_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, file_name + Puncuations.Dot + SubTaskMarker.Homography + Puncuations.Dot + "top" + Puncuations.Dot + "png")
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + SubTaskMarker.Homography + Puncuations.Dot + "top"+ Puncuations.Dot + args.TopView + Puncuations.Dot + "png")
 
 def get_homography_txt_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Homography",file_name + Puncuations.Dot + SubTaskMarker.Homography + Puncuations.Dot + "txt")
+    return os.path.join(args.Dataset, "Results/Homography",file_name + Puncuations.Dot + SubTaskMarker.Homography + Puncuations.Dot + args.TopView + Puncuations.Dot + "txt")
 
 def get_homography_npy_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Homography",file_name + Puncuations.Dot + SubTaskMarker.Homography + Puncuations.Dot + "npy")
+    return os.path.join(args.Dataset, "Results/Homography",file_name + Puncuations.Dot + SubTaskMarker.Homography + Puncuations.Dot + args.TopView + Puncuations.Dot + "npy")
 
 def get_homography_csv_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Homography",file_name + Puncuations.Dot + SubTaskMarker.Homography + Puncuations.Dot + "csv")
+    return os.path.join(args.Dataset, "Results/Homography",file_name + Puncuations.Dot + SubTaskMarker.Homography + Puncuations.Dot + args.TopView + Puncuations.Dot + "csv")
 
 def get_reprojection_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+SubTaskExt.Tracking)
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+ args.BackprojectionMethod + Puncuations.Dot + args.TopView + Puncuations.Dot +SubTaskExt.Tracking)
+
+def get_reprojection_path_for_detection(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot + "reprojected" + Puncuations.Dot+ args.BackprojectionMethod+ Puncuations.Dot+ args.TopView + Puncuations.Dot+ SubTaskExt.Detection)
 
 def get_tracklabelling_export_pth(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -223,7 +228,12 @@ def get_tracklabelling_export_pth_meter(args):
 def get_reprojection_pkl(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+SubTaskExt.Pkl)
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + "reprojected" + Puncuations.Dot+ args.BackprojectionMethod + Puncuations.Dot+ args.TopView + Puncuations.Dot+SubTaskExt.Pkl)
+
+def get_reprojection_pkl_for_detection(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector+ Puncuations.Dot + "reprojected" + Puncuations.Dot+ args.BackprojectionMethod + Puncuations.Dot+ args.TopView + Puncuations.Dot+SubTaskExt.Pkl)
 
 def get_reprojection_pkl_meter(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -419,6 +429,8 @@ def add_homography_related_path_to_args(args):
     reprojected_pkl = get_reprojection_pkl(args)
     args.ReprojectedPoints = reprojected_path
     args.ReprojectedPkl = reprojected_pkl
+    args.ReprojectedPointsForDetection = get_reprojection_path_for_detection(args)
+    args.ReprojectedPklForDetection = get_reprojection_pkl_for_detection(args)
     return args
 
 def add_vishomography_path_to_args(args):
