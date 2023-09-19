@@ -50,12 +50,12 @@ def track(args):
 def store_df_pickle(args):
     # should be called after tracking is done and the results are stored in the .txt file
     df = trackers[args.Tracker].df(args)
-    df.to_pickle(args.TrackingPkl)
+    df.to_pickle(args.TrackingPkl, protocol=4)
 
 def store_df_pickle_backup(args):
     # should be called after tracking is done and the results are stored in the .txt file
     df = trackers[args.Tracker].df(args)
-    df.to_pickle(args.TrackingPklBackUp)
+    df.to_pickle(args.TrackingPklBackUp, protocol=4)
 
 def vistrack(args):
     # current_tracker = trackers[args.Tracker]
