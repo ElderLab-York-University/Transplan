@@ -28,6 +28,9 @@ def df_txt(df, out_path):
         for i, row in df.iterrows():
             fn, idd, x1, y1, x2, y2, clss = row['fn'], row['id'], row['x1'], row['y1'], row['x2'], row['y2'], row["class"]
             print('%d,%d,%.4f,%.4f,%.4f,%.4f,%d'%(fn, idd, x1, y1, x2, y2, clss),file=out_file)
+            # fn, idd, x1, y1, x2, y2 = row['fn'], row['id'], row['x1'], row['y1'], row['x2'], row['y2']
+            # print('%d,%d,%.4f,%.4f,%.4f,%.4f'%(fn, idd, x1, y1, x2, y2),file=out_file)
+            
     # df = pd.read_pickle(args.TrackingPkl)
     # out_path = args.TrackingPth 
 
@@ -67,16 +70,18 @@ def match_classes(args):
     data["y2"]    = tracks[:, 5]
 
     track_df = pd.DataFrame.from_dict(data)
-    det_df = df = pd.read_pickle(args.DetectionPkl)
+    det_df = pd.read_pickle(args.DetectionPkl)
     class_labels = []
 
-    frames = np.unique(track_df["fn"])
+    uni_frames = np.unique(track_df["fn"])
 
-    for fn in tqdm(frames):
+    for fn in tqdm(uni_frames):
         scores = compute_pairwise_iou(track_df[track_df["fn"] == fn], det_df[det_df["fn"] == fn])
         costs = 1 - scores
         row_indices, col_indices = scipy.optimize.linear_sum_assignment(costs)
-        class_labels += list(det_df.iloc[col_indices]["class"])
+        temp = np.array([-1 for i in range(len(track_df[track_df["fn"] == fn]))])
+        temp[row_indices] = det_df.iloc[col_indices]["class"]
+        class_labels += [int(c) for c in temp]
     
     # add class as a column to df
     track_df["class"] = class_labels
@@ -101,7 +106,9 @@ def setup(args):
     
     if not env_name in get_conda_envs():
         make_conda_env(env_name, libs="python=3.6")
-        os.system(f"conda run -n {args.Tracker} pip3 install tensorflow==1.15.5 opencv-python numpy scikit-learn==0.22.2 tqdm")
-        os.system(f"conda run -n {args.Tracker} pip3 install wheel")
-        os.system(f"conda run -n {args.Tracker} pip3 install pickle5 pandas")
+        os.system(f"conda run --live-stream -n {args.Tracker} conda install pip")
+        os.system(f"conda run --live-stream -n {args.Tracker} pip install --upgrade pip setuptools wheel")
+        os.system(f"conda run --live-stream -n {args.Tracker} pip install tensorflow==1.15.5 opencv-python==4.6.0.66 numpy scikit-learn==0.22.2 tqdm")
+        os.system(f"conda run --live-stream -n {args.Tracker} pip install wheel")
+        os.system(f"conda run --live-stream -n {args.Tracker} pip install pickle5 pandas")
         print("______++++++++++++________")
