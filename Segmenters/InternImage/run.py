@@ -66,6 +66,7 @@ if __name__ == "__main__":
     args = json.loads(sys.argv[-1]) # args in a dictionary here where it was a argparse.NameSpace in the main code
     video_path = args["Video"]
     results_path = args["SegmentPkl"]
+    results_path_bu = args["SegmentPklBackUp"]
 
     model = init_detector(config_file, checkpoint_file, device=device_name)
     video = mmcv.VideoReader(video_path)
@@ -74,6 +75,7 @@ if __name__ == "__main__":
     for frame in tqdm(video):
         data_dict = make_data_dict()
         results_path_fn = get_results_path_with_frame(results_path, fn)
+        results_path_bu_fn = get_results_path_with_frame(results_path_bu, fn)
 
         with torch.no_grad():
             result = inference_detector(model, frame)
@@ -93,4 +95,5 @@ if __name__ == "__main__":
 
         df = pd.DataFrame.from_dict(data_dict)
         df.to_pickle(results_path_fn, protocol=4, compression=None)
+        df.to_pickle(results_path_bu_fn, protocol=4, compression=None)
         fn += 1
