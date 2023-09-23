@@ -577,6 +577,11 @@ def get_segmentation_pkl_path(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Segment",file_name + Puncuations.Dot + "Segmentation" + Puncuations.Dot + args.Segmenter + Puncuations.Dot + SubTaskExt.Pkl )
 
+def get_segmentation_pkl_path_backup(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Segment",file_name + Puncuations.Dot + "Segmentation" + Puncuations.Dot + args.Segmenter + Puncuations.Dot+ "BackUp"+ Puncuations.Dot + SubTaskExt.Pkl )
+
 def get_vis_segment_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -584,6 +589,7 @@ def get_vis_segment_path(args):
 
 def add_segmentation_path_to_args(args):
     args.SegmentPkl = get_segmentation_pkl_path(args)
+    args.SegmentPklBackUp = get_segmentation_pkl_path_backup(args)
     return args
 
 def add_vis_segment_path_to_args(args):
