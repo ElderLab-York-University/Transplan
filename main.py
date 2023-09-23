@@ -22,7 +22,7 @@ from counting import counting
 from counting.counting import find_opt_bw, eval_count
 from Clustering import cluster
 from CountingMC import AverageCountsMC
-from Segment import segment, vis_segment
+from Segment import segment, vis_segment, SegmentPostProc
 
 def Preprocess(args):
     if args.Preprocess:
@@ -206,6 +206,13 @@ def Segment(args):
         return log
     else: return WarningLog("skipped segmentation subtask")
 
+def SegPostProc(args):
+    if args.SegPostProc:
+        print(ProcLog("segment post processing"))
+        log = SegmentPostProc(args)
+        return log
+    else: return WarningLog("skipped segPostProc task")
+
 def VisSegment(args):
     if args.VisSegment:
         print(ProcLog("visulaize segmentation masks"))
@@ -218,7 +225,7 @@ def main(args):
     # Each subtask will validate its own inputs
     subtasks = [Preprocess,
                 HomographyGUI, VisHomographyGUI, VisROI,
-                Segment, VisSegment,
+                Segment, SegPostProc, VisSegment,
                 Detect, DetPostProc, VisDetect,
                 Track, VisTrack, Homography, Pix2Meter, TrackPostProc, VisTrajectories, VisTrackTop,
                 FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories,
@@ -314,7 +321,8 @@ if __name__ == "__main__":
     parser.add_argument("--Segment", help="perform segmentation and store results", action='store_true')
     parser.add_argument("--VisSegment", help="Vis Segmentation Masks", action='store_true')
     parser.add_argument("--Segmenter", help="model for segmentation", type=str, default="Null")
-
+    parser.add_argument("--SegTh", help="threshold to filter segmentation masks", type=float)
+    parser.add_argument("--SegPostProc", help="perform segmentation post processing", action='store_true')
 
     args = parser.parse_args()
 

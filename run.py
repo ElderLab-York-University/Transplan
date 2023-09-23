@@ -467,7 +467,15 @@ segmenters = ["InternImage"]
     #######################################################
     # for seg in segmenters:
     #     print(f" Segmenting ----> src:{src} seg:{seg}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --Segment --Segmenter={seg} --VisSegment")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --Segmenter={seg} --Segment --VisSegment")
+
+    #######################################################
+    # 2.6 Segment Post Processing
+    # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --Segmenter={seg} --SegPostProc --VisSegment --SegTh=0.5 --classes_to_keep 2 5 7")
+    #######################################################
+    # for seg in segmenters:
+    #     print(f" Segmenting ----> src:{src} seg:{seg}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --Segmenter={seg} --SegPostProc --VisSegment --SegTh=0.5 --classes_to_keep 2 5 7")
 
     ########################################################
     # 3. run the detection

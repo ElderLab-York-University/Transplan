@@ -22,6 +22,49 @@ def get_results_path_with_frame(results_path, fn):
     splited_path = results_path.split(".")
     return ".".join(splited_path[:-1] + [str(fn)] + splited_path[-1:])
 
+def segmentationth(df, args):
+    df = df[df["score"] >= args.SegTh]
+    return df
+
+def filter_seg_class(df, args):
+    mask = df["fn"] < 0
+    for clss in args.classes_to_keep:
+        clss_mask = df["class"] == clss
+        mask = np.logical_or(mask, clss_mask)
+    return df[mask]
+
+def df_seg_post_proc(df, args):
+    if not args.SegTh is None:
+        df = segmentationth(df, args)
+
+    if args.classes_to_keep:
+        df = filter_seg_class(df, args)
+    
+    return df
+
+def SegmentPostProc(args):
+    video_path = args.Video
+    seg_pkl_base = args.SegmentPkl
+    seg_pkl_bu_base = args.SegmentPklBackUp
+
+    cap = cv2.VideoCapture(video_path)
+    # Check if camera opened successfully
+    if (cap.isOpened()== False): return FailLog("could not open input video")
+
+    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+
+    for frame_num in tqdm(range(frames)):
+        data_path_bu = get_results_path_with_frame(seg_pkl_bu_base, frame_num)
+        data_path    = get_results_path_with_frame(seg_pkl_base, frame_num)
+        df = pd.read_pickle(data_path_bu)
+        modified_df = df_seg_post_proc(df, args)
+        modified_df.to_pickle(data_path)
+
+    return SucLog("Seg post processing successful")
+
 def vis_segment(args):
     video_path = args.Video
     seg_pkl_base = args.SegmentPkl

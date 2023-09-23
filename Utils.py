@@ -658,7 +658,7 @@ def complete_args(args):
     if args.Count:
         args = add_cached_counter_path_to_args(args)
         args = add_density_path_to_args(args)
-    if args.Segment:
+    if args.Segment or args.SegPostProc:
         args = add_segmentation_path_to_args(args)
         args = add_vis_segment_path_to_args(args)
 
