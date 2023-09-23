@@ -275,6 +275,32 @@ def get_counting_idmatching_pth(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Counting",file_name + Puncuations.Dot + SubTaskMarker.IdMatched + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + args.CountMetric +Puncuations.Dot +SubTaskExt.Csv)
 
+def get_dsm_points_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "dsm_points_aoi" + Puncuations.Dot + "xyz")
+
+def get_intrinsics_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "intrinsic_calibrations" + Puncuations.Dot + "json")
+
+def get_extrinsics_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "extrinsic_calibrations" + Puncuations.Dot + "json")
+
+
+def get_to_ground_correspondance_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/DSM/" + Puncuations.Dot + "ToGroundCorrespondance" + Puncuations.Dot + "csv")
+
+def get_to_ground_raster_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/DSM/" + Puncuations.Dot + "ToGroundRaster" + Puncuations.Dot + "pkl")
+
 def add_detection_pathes_to_args(args):
     d_path = get_detection_path_from_args(args)
     d_d_path = get_detection_path_with_detector_from_args(args)
@@ -431,6 +457,14 @@ def add_homography_related_path_to_args(args):
     args.ReprojectedPkl = reprojected_pkl
     args.ReprojectedPointsForDetection = get_reprojection_path_for_detection(args)
     args.ReprojectedPklForDetection = get_reprojection_pkl_for_detection(args)
+    return args
+
+def add_dsm_related_path_to_args(args):
+    args.DSM_POINTS_PATH        = get_dsm_points_path(args)
+    args.INTRINSICS_PATH        = get_intrinsics_path(args)
+    args.EXTRINSICS_PATH        = get_extrinsics_path(args)
+    args.ToGroundCorrespondance = get_to_ground_correspondance_path(args)
+    args.ToGroundRaster         = get_to_ground_raster_path(args)
     return args
 
 def add_vishomography_path_to_args(args):
@@ -596,6 +630,7 @@ def complete_args(args):
         args = add_homographygui_related_path_to_args(args)
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW:
         args = add_homography_related_path_to_args(args)
+        args = add_dsm_related_path_to_args(args)
     if args.VisHomographyGUI or args.VisLabelledTrajectories or args.Meter or args.FindOptimalKDEBW:
         args = add_vishomography_path_to_args(args)
     if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter or args.ExtractCommonTracks or args.Count:
@@ -637,6 +672,7 @@ def check_config(args):
     counting_path = os.path.join(results_path, "Counting")
     clustering_path = os.path.join(results_path, "Clustering")
     segment_path    = os.path.join(results_path, "Segment")
+    dsm_path    = os.path.join(results_path, "DSM")
 
     try: os.system(f"mkdir -p {results_path}")
     except: pass
@@ -655,6 +691,8 @@ def check_config(args):
     try: os.system(f"mkdir -p {clustering_path}")
     except: pass
     try: os.system(f"mkdir -p {segment_path}")
+    except: pass
+    try: os.system(f"mkdir -p {dsm_path}")
     except: pass
 
 def get_conda_envs():
