@@ -28,6 +28,7 @@ def setup(args):
     if not env_name in get_conda_envs():
         make_conda_env(env_name, libs="python=3.7")
         print("here I am 1")
+        os.system(f"conda run --live-stream -n {env_name} conda env config vars set CUDA_HOME=/usr/local/cuda-11.3/")
         os.system(f"conda run --live-stream -n {env_name} conda install pip")
         os.system(f"conda run --live-stream -n {env_name} pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113  -f https://download.pytorch.org/whl/torch_stable.html")
         print("here I am 1.5")
