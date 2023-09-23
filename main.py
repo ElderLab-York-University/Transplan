@@ -87,17 +87,8 @@ def VisHomographyGUI(args):
 
 def Homography(args, from_back_up = False):
     if args.Homography:
-        if args.BackprojectionMethod == "Homography":
-            print(ProcLog("Reprojection with Homographies in Process"))
-            log = reproject(args, source = args.BackprojectSource, from_back_up=from_back_up)
-        elif args.BackprojectionMethod == "DTM": 
-            print(ProcLog("Reprojection with DTM in Process"))
-            raise NotImplemented
-        elif args.BackprojectionMethod == "OnSegMask": 
-            print(ProcLog("Reprojection with On Segmentation Mask in Process"))
-            raise NotImplemented
-        else:
-            raise "not valid backprojeciton method"
+        print(ProcLog("Reprojection with Homographies in Process"))
+        log = reproject(args, method=args.BackprojectionMethod, source = args.BackprojectSource, from_back_up=from_back_up)
         return log
     else: return WarningLog("skipped homography subtask")
 
@@ -318,7 +309,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--TopView", help="seeting which topview to use. Options are [GoogleMap, OrthoPhoto]", type=str)
     parser.add_argument("--BackprojectSource", help="selecting which source to backproject form Options are [tracks, detections]", type=str)
-    parser.add_argument("--BackprojectionMethod", help="Select back projection method  options = [Homography/UTM/OnSegMask]", type=str)
+    parser.add_argument("--BackprojectionMethod", help="Select back projection method  options = [Homography/DSM]", type=str)
 
     parser.add_argument("--Segment", help="perform segmentation and store results", action='store_true')
     parser.add_argument("--VisSegment", help="Vis Segmentation Masks", action='store_true')
