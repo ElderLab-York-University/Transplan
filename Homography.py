@@ -2,6 +2,7 @@ from Utils import *
 from Libs import *
 import Track
 import Maps
+import DSM
 # import homographygui.tabbed_ui_func as tui
 
 #hints the vars set for homography are 
@@ -51,10 +52,66 @@ def lunch_homographygui(args):
     os.system(f"sudo python3 main.py --StreetView='{street}' --TopView='{top}' --Txt='{txt}' --Npy='{npy}' --Csv='{csv}'")
     os.chdir(cwd)
 
-def reproject(args, source, from_back_up = False):
-    # try to reproject tracking results
-    if source == "tracks":
+def reproj_point(args, x, y, method, **kwargs):
+    if method == "Homography":
+        return reproj_point_homography(x, y, kwargs["M"])
+        
+    elif method == "DSM":
+        return reproj_point_dsm(x, y, kwargs["GroundRaster"])
+    
+    else: raise NotImplemented
+
+def reproj_point_homography(x, y, M):
+    point = np.array([x, y, 1])
+    new_point = M.dot(point)
+    new_point /= new_point[2]
+    return new_point
+
+def reproj_point_dsm(x, y, img_ground_raster):
+    u_int, v_int = int(x), int(y)
+    matched_coord =  img_ground_raster[v_int, u_int]
+    return matched_coord
+
+def reproject_df(args, df, out_path, method):
+    # we will load M and Raster here and pass it on to speed up the projection
+    M = None
+    GroundRaster = None
+
+    if method == "Homography":
         homography_path = args.HomographyNPY
+        M = np.load(homography_path, allow_pickle=True)[0]
+
+    elif method == "DSM":
+        # creat/load raster
+        if not os.path.exists(args.ToGroundRaster):
+            coords = DSM.load_dsm_points(args)
+            intrinsic_dict = DSM.load_json_file(args.INTRINSICS_PATH)
+            projection_dict = DSM.load_json_file(args.EXTRINSICS_PATH)
+            DSM.create_raster(args, args.MetaData["camera"], coords, projection_dict, intrinsic_dict)
+        
+        with open(args.ToGroundRaster, 'rb') as f:
+            GroundRaster = DSM.pickle.load(f)
+
+    with open(out_path, 'w') as out_file:
+        for index, row in tqdm(df.iterrows(), total=len(df)):
+            # select contact point
+            x, y = (row['x2']+row['x1'])/2, row['y2']
+            # reproject contact point
+            new_point = reproj_point(args, x, y, method, M=M, GroundRaster=GroundRaster)
+            # complete the new entry
+            new_entry = ""
+            for col in df.columns:
+                new_entry += f"{row[col]},"
+            new_entry += f"{x},"
+            new_entry += f"{y},"
+            new_entry += f"{new_point[0]},"
+            new_entry += f"{new_point[1]}" # last value does not have the ","
+            print(new_entry, file=out_file)
+
+def reproject(args, source, method, from_back_up = False):
+    # try to reproject tracking results
+    # method can be "Homography" / "DTM"
+    if source == "tracks":
         out_path = args.ReprojectedPoints 
 
         if from_back_up:
@@ -62,28 +119,11 @@ def reproject(args, source, from_back_up = False):
         else:
             df = pd.read_pickle(args.TrackingPkl)
         
-        M = np.load(homography_path, allow_pickle=True)[0]
-        with open(out_path, 'w') as out_file:
-            for index, row in tqdm(df.iterrows(), total=len(df)):
-                # fn, idd, x, y = track[0], track[1], (track[2] + track[4]/2), (track[3] + track[5])/2
-                x, y = (row['x2']+row['x1'])/2, row['y2']
-                point = np.array([x, y, 1])
-                new_point = M.dot(point)
-                new_point /= new_point[2]
-                # complete the new entry
-                new_entry = ""
-                for col in df.columns:
-                    new_entry += f"{row[col]},"
-                new_entry += f"{x},"
-                new_entry += f"{y},"
-                new_entry += f"{new_point[0]},"
-                new_entry += f"{new_point[1]}" # last value does not have the ","
-                print(new_entry, file=out_file)
+        reproject_df(args, df, out_path, method)
         store_to_pickle(args)
         return SucLog("Backprojection executed successfully from tracks")
 
     elif source == "detections":
-        homography_path = args.HomographyNPY
         out_path = args.ReprojectedPointsForDetection
 
         if from_back_up:
@@ -91,23 +131,7 @@ def reproject(args, source, from_back_up = False):
         else:
             df = pd.read_pickle(args.DetectionPkl)
         
-        M = np.load(homography_path, allow_pickle=True)[0]
-        with open(out_path, 'w') as out_file:
-            for index, row in tqdm(df.iterrows(), total=len(df)):
-                # fn, idd, x, y = track[0], track[1], (track[2] + track[4]/2), (track[3] + track[5])/2
-                x, y = (row['x2']+row['x1'])/2, row['y2']
-                point = np.array([x, y, 1])
-                new_point = M.dot(point)
-                new_point /= new_point[2]
-                # complete the new entry
-                new_entry = ""
-                for col in df.columns:
-                    new_entry += f"{row[col]},"
-                new_entry += f"{x},"
-                new_entry += f"{y},"
-                new_entry += f"{new_point[0]},"
-                new_entry += f"{new_point[1]}" # last value does not have the ","
-                print(new_entry, file=out_file)
+        reproject_df(args, df, out_path, method)
         store_to_pickle_to_detection(args)
         return SucLog("Backrojection executed successfully from detections")
     else:
