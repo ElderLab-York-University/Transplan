@@ -71,6 +71,8 @@ def reproj_point_dsm(x, y, img_ground_raster):
     u_int, v_int = int(x), int(y)
     matched_coord =  img_ground_raster[v_int, u_int]
     return matched_coord
+    # @TODO @BARDIA to Complete this part
+    # mathced_coord are the real-world coordinates we need to change them to top-view pixel coordinates(for consistancy reasons)
 
 def reproject_df(args, df, out_path, method):
     # we will load M and Raster here and pass it on to speed up the projection
