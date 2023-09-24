@@ -3,6 +3,7 @@ from Libs import *
 import Track
 import Maps
 import DSM
+import Segment
 # import homographygui.tabbed_ui_func as tui
 
 #hints the vars set for homography are 
@@ -52,6 +53,86 @@ def lunch_homographygui(args):
     os.system(f"sudo python3 main.py --StreetView='{street}' --TopView='{top}' --Txt='{txt}' --Npy='{npy}' --Csv='{csv}'")
     os.chdir(cwd)
 
+def iou(det_row, mask_row):
+    box1 = det_row
+    box2 = mask_row
+    # Calculate area of each bounding box
+    area1 = (box1.x2 - box1.x1) * (box1.y2 - box1.y1)
+    area2 = (box2.x2 - box2.x1) * (box2.y2 - box2.y1)
+
+    # Calculate intersection of the two bounding boxes
+    intersection_x1 = np.maximum(box1.x1, box2.x1)
+    intersection_y1 = np.maximum(box1.y1, box2.y1)
+    intersection_x2 = np.minimum(box1.x2, box2.x2)
+    intersection_y2 = np.minimum(box1.y2, box2.y2)
+    intersection_w = np.maximum(0, intersection_x2 - intersection_x1)
+    intersection_h = np.maximum(0, intersection_y2 - intersection_y1)
+    intersection_area = intersection_w * intersection_h
+
+    # Calculate union of the two bounding boxes
+    union_area = area1 + area2 - intersection_area
+
+    # Calculate IoU
+    iou = intersection_area / union_area
+
+    return iou
+    
+
+def get_mask_with_max_iou(det_row, mask_df, th=0.5):
+    ious = []
+    for i, mask_row in mask_df.iterrows():
+        ious.append(iou(det_row, mask_row))
+    if len(ious) ==0: # no segmentations in mask_df
+        return None
+
+    max_idx = np.array(ious).argmax()
+    if ious[max_idx] < th: # if the best match is not yet good enough
+        return None
+
+    return mask_df.iloc[max_idx]
+
+
+def find_cp_BottomSeg(det_row, args):
+    fn = int(det_row["fn"])
+    # get the right segmentation file
+    seg_fn_path = Segment.get_results_path_with_frame(args.SegmentPkl, fn)
+    mask_df = pd.read_pickle(seg_fn_path)
+    mask_row = get_mask_with_max_iou(det_row, mask_df)
+    if mask_row is not None: # found a matching mask
+        det_x_mid = int((det_row.x1 + det_row.x2)/2)
+        if det_x_mid >= mask_row.x1 and det_x_mid <= mask_row.x2:
+            mask_x_idx_to_look = int(det_x_mid - mask_row.x1)
+            mask_y_min_idx_to_look = int(min(max(det_row.y1 - mask_row.y1, 0), mask_row.y2 - mask_row.y1))
+            mask_y_max_idx_to_look = int(min(max(det_row.y2 - mask_row.y1, 0), mask_row.y2 - mask_row.y1))
+            mask_line_to_look = mask_row["mask"][mask_y_min_idx_to_look:mask_y_max_idx_to_look, mask_x_idx_to_look]
+            indices = np.where(mask_line_to_look == 1)
+            if indices[0].size > 0:
+                # Get the largest index
+                largest_index = np.max(indices)
+                y = largest_index + mask_y_min_idx_to_look + mask_row.y1
+                x = mask_row.x1 + mask_x_idx_to_look
+                return (x, y)
+            
+    # if could not find a contact point on Seg mask, return bottom point        
+    x, y = (det_row['x2']+det_row['x1'])/2, det_row['y2']
+    return (x, y)
+
+
+def get_contact_point(row, args):
+    if args.ContactPoint == "BottomPoint":
+        x, y = (row['x2']+row['x1'])/2, row['y2']
+        return (x, y)
+    
+    elif args.ContactPoint == "Center":
+        x, y = (row['x2']+row['x1'])/2, (row['y2']+row['y1'])/2
+        return (x, y)
+    
+    elif args.ContactPoint == "BottomSeg":
+        x, y = find_cp_BottomSeg(row, args)
+        return (x, y)
+    
+    else: raise NotImplemented
+
 def reproj_point(args, x, y, method, **kwargs):
     if method == "Homography":
         return reproj_point_homography(x, y, kwargs["M"])
@@ -95,7 +176,7 @@ def reproject_df(args, df, out_path, method):
     with open(out_path, 'w') as out_file:
         for index, row in tqdm(df.iterrows(), total=len(df)):
             # select contact point
-            x, y = (row['x2']+row['x1'])/2, row['y2']
+            x, y = get_contact_point(row, args)
             # reproject contact point
             new_point = reproj_point(args, x, y, method, M=M, GroundRaster=GroundRaster)
             # complete the new entry
