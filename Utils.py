@@ -290,6 +290,10 @@ def get_extrinsics_path(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, file_name + Puncuations.Dot + "extrinsic_calibrations" + Puncuations.Dot + "json")
 
+def get_orthophoto_tif_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "OrthoPhoto" + Puncuations.Dot + "tif")
 
 def get_to_ground_correspondance_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -465,6 +469,7 @@ def add_dsm_related_path_to_args(args):
     args.EXTRINSICS_PATH        = get_extrinsics_path(args)
     args.ToGroundCorrespondance = get_to_ground_correspondance_path(args)
     args.ToGroundRaster         = get_to_ground_raster_path(args)
+    args.OrthoPhotoTif          = get_orthophoto_tif_path(args)
     return args
 
 def add_vishomography_path_to_args(args):
