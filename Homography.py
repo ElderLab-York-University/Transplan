@@ -3,6 +3,7 @@ from Libs import *
 import Track
 import Maps
 import DSM
+import Detect
 # import homographygui.tabbed_ui_func as tui
 
 #hints the vars set for homography are 
@@ -275,3 +276,35 @@ def vis_reprojected_tracks(args):
     ax2.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
     plt.savefig(save_path)
     return SucLog("Plotting all trajectories execuded")
+
+def vis_contact_point(args):
+    # parse detection df using detector module
+    det_bp_df = pd.read_pickle(args.ReprojectedPklForDetection)
+
+    # open the original video and process it
+    cap = cv2.VideoCapture(args.Video)
+
+    if (cap.isOpened()== False): 
+        return FailLog("Error opening video stream or file")
+    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+
+    out_cap = cv2.VideoWriter(args.VisContactPointPth,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
+
+    if not args.ForNFrames is None:
+        frames = args.ForNFrames
+    for frame_num in tqdm(range(frames)):
+        if (not cap.isOpened()):
+            return FailLog("Error reading the video")
+        ret, frame = cap.read()
+        if not ret: continue
+        for i, row in det_bp_df[det_bp_df["fn"]==frame_num].iterrows():
+            frame = Detect.draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
+            frame = Detect.draw_point_on_image(frame, row.xcp, row.ycp)
+        out_cap.write(frame)
+
+    cap.release()
+    out_cap.release()
+    return SucLog("sucessfully viz-ed contact points")
