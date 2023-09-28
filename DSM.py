@@ -31,11 +31,11 @@ def load_json_file(file_path):
         projection_dict = json.load(f)
     return projection_dict
 
-def load_orthophoto():
+def load_orthophoto(orthophoto_path):
     '''
     Return the georeferenced object and its corresponding numpy object.
     '''
-    orthophoto_win_tif_obj = rasterio.open(ORTHOPHOTO_PATH)
+    orthophoto_win_tif_obj = rasterio.open(orthophoto_path)
     orthophoto_win_np_obj = np.transpose(orthophoto_win_tif_obj.read()[:3, ...], [1, 2, 0]).copy()
     
     return orthophoto_win_tif_obj, orthophoto_win_np_obj
