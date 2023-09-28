@@ -425,7 +425,7 @@ cached_cnt_sources = [
 ]
 
 # choose the detectors
-# options: ["GT", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage"]
+# options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage"]
 detectors = ["detectron2"]
 
 # choose the tracker
@@ -483,7 +483,7 @@ segmenters = ["InternImage"]
     ########################################################
     # for det in detectors:
     #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisDetect")
 
     ########################################################
     # 3.5 run the detection post processing
