@@ -238,7 +238,7 @@ def get_reprojection_pkl_for_detection(args):
 def get_vis_cp_path_for_detection(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "VisContactPoints" + Puncuations.Dot + args.Detector+".bottom_points" + Puncuations.Dot+SubTaskExt.VisTracking)
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "VisContactPoints" + Puncuations.Dot + args.Detector+ Puncuations.Dot+ args.BackprojectionMethod + Puncuations.Dot+ args.TopView + Puncuations.Dot+ args.ContactPoint+Puncuations.Dot+SubTaskExt.VisTracking)
 
 def get_reprojection_pkl_meter(args):
     file_name, file_ext = os.path.splitext(args.Video)
