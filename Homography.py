@@ -4,6 +4,7 @@ import Track
 import Maps
 import DSM
 import Segment
+import Detect
 # import homographygui.tabbed_ui_func as tui
 
 #hints the vars set for homography are 
@@ -138,7 +139,7 @@ def reproj_point(args, x, y, method, **kwargs):
         return reproj_point_homography(x, y, kwargs["M"])
         
     elif method == "DSM":
-        return reproj_point_dsm(x, y, kwargs["GroundRaster"])
+        return reproj_point_dsm(x, y, kwargs["GroundRaster"], kwargs["TifObj"])
     
     else: raise NotImplemented
 
@@ -148,15 +149,19 @@ def reproj_point_homography(x, y, M):
     new_point /= new_point[2]
     return new_point
 
-def reproj_point_dsm(x, y, img_ground_raster):
+def reproj_point_dsm(x, y, img_ground_raster, orthophoto_win_tif_obj):
     u_int, v_int = int(x), int(y)
+    # mathced_coord are the real-world coordinates we need to change them to top-view pixel coordinates(for consistancy reasons)
     matched_coord =  img_ground_raster[v_int, u_int]
-    return matched_coord
+    orthophoto_proj_idx = orthophoto_win_tif_obj.index(*matched_coord[:-1])
+    # pass (orthophoto_proj_idx[1], orthophoto_proj_idx[0]) to csv.drawMarker
+    return orthophoto_proj_idx
 
 def reproject_df(args, df, out_path, method):
     # we will load M and Raster here and pass it on to speed up the projection
     M = None
     GroundRaster = None
+    orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
 
     if method == "Homography":
         homography_path = args.HomographyNPY
@@ -178,7 +183,7 @@ def reproject_df(args, df, out_path, method):
             # select contact point
             x, y = get_contact_point(row, args)
             # reproject contact point
-            new_point = reproj_point(args, x, y, method, M=M, GroundRaster=GroundRaster)
+            new_point = reproj_point(args, x, y, method, M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
             # complete the new entry
             new_entry = ""
             for col in df.columns:
@@ -352,3 +357,35 @@ def vis_reprojected_tracks(args):
     ax2.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
     plt.savefig(save_path)
     return SucLog("Plotting all trajectories execuded")
+
+def vis_contact_point(args):
+    # parse detection df using detector module
+    det_bp_df = pd.read_pickle(args.ReprojectedPklForDetection)
+
+    # open the original video and process it
+    cap = cv2.VideoCapture(args.Video)
+
+    if (cap.isOpened()== False): 
+        return FailLog("Error opening video stream or file")
+    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+
+    out_cap = cv2.VideoWriter(args.VisContactPointPth,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
+
+    if not args.ForNFrames is None:
+        frames = args.ForNFrames
+    for frame_num in tqdm(range(frames)):
+        if (not cap.isOpened()):
+            return FailLog("Error reading the video")
+        ret, frame = cap.read()
+        if not ret: continue
+        for i, row in det_bp_df[det_bp_df["fn"]==frame_num].iterrows():
+            frame = Detect.draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
+            frame = Detect.draw_point_on_image(frame, row.xcp, row.ycp)
+        out_cap.write(frame)
+
+    cap.release()
+    out_cap.release()
+    return SucLog("sucessfully viz-ed contact points")
