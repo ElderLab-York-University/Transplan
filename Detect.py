@@ -96,6 +96,10 @@ def draw_box_on_image(img, x1, y1, x2, y2, c=(255, 0, 0), thickness=2):
     img = cv2.rectangle(img, sta_point, end_point, c, thickness)
     return img
 
+def draw_point_on_image(img, x, y, radius = 5, c=(0, 255, 0), thickness=4):
+    cv.circle(img, (int(x),int(y)), radius=radius, color=c, thickness=thickness)
+    return img
+
 def detectpostproc(args):
     # args to use in this function
         # args.DetPostProc
