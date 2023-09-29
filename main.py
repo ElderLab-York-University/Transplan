@@ -14,7 +14,7 @@ from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop
 from Homography import homographygui
 from Homography import reproject
 from Homography import vishomographygui
-from Homography import vis_reprojected_tracks, vis_contact_point
+from Homography import vis_reprojected_tracks, vis_contact_point, vis_contact_point_top
 from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_tracks
 from Evaluate import evaluate
 from Maps import pix2meter
@@ -227,6 +227,13 @@ def VisContactPoint(args):
         return log
     else: return WarningLog("skipped vis contact point")
 
+def VisCPTop(args):
+    if args.VisCPTop:
+        print(ProcLog("vis cp top"))
+        log = vis_contact_point_top(args)
+        return log
+    else: return WarningLog("skipped vis cp top")
+
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
@@ -235,7 +242,7 @@ def main(args):
                 Segment, SegPostProc, VisSegment,
                 Detect, DetPostProc, VisDetect,
                 Track, VisTrack, Homography, Pix2Meter,
-                VisContactPoint, TrackPostProc, VisTrajectories, VisTrackTop,
+                VisContactPoint, VisCPTop, TrackPostProc, VisTrajectories, VisTrackTop,
                 FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories,
                 Count, VisTrackMoI, Evaluate]
     for subtask in subtasks:
@@ -327,6 +334,7 @@ if __name__ == "__main__":
     parser.add_argument("--BackprojectionMethod", help="Select back projection method  options = [Homography/DSM]", type=str)
     parser.add_argument("--ContactPoint", help="Select how to set the contact point  options = [BottomPoint/Center/BottomSeg/SegBottomLine]", type=str)
     parser.add_argument("--VisContactPoint", help="to visualize the contact point", action="store_true")
+    parser.add_argument("--VisCPTop", help="to visualize the contact points on the top view", action="store_true")
 
     parser.add_argument("--Segment", help="perform segmentation and store results", action='store_true')
     parser.add_argument("--VisSegment", help="Vis Segmentation Masks", action='store_true')

@@ -240,6 +240,11 @@ def get_vis_cp_path_for_detection(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "VisContactPoints" + Puncuations.Dot + args.Detector+ Puncuations.Dot+ args.BackprojectionMethod + Puncuations.Dot+ args.TopView + Puncuations.Dot+ args.ContactPoint+Puncuations.Dot+SubTaskExt.VisTracking)
 
+def get_vis_cp_top_for_detection(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "VisCPTop" + Puncuations.Dot + args.Detector+ Puncuations.Dot+ args.BackprojectionMethod + Puncuations.Dot+ args.TopView + Puncuations.Dot+ args.ContactPoint+Puncuations.Dot+SubTaskExt.VisTracking)
+
 def get_reprojection_pkl_meter(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -467,6 +472,8 @@ def add_homography_related_path_to_args(args):
     args.ReprojectedPointsForDetection = get_reprojection_path_for_detection(args)
     args.ReprojectedPklForDetection = get_reprojection_pkl_for_detection(args)
     args.VisContactPointPth = get_vis_cp_path_for_detection(args)
+    args.VisContactPointTopPth = get_vis_cp_top_for_detection(args)
+
     return args
 
 def add_dsm_related_path_to_args(args):
@@ -655,9 +662,9 @@ def complete_args(args):
 
     args = add_GT_path_to_args(args)
 
-    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Track or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW:
+    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Track or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop:
         args = add_homographygui_related_path_to_args(args)
-    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint:
+    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop:
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
     if args.VisHomographyGUI or args.VisLabelledTrajectories or args.Meter or args.FindOptimalKDEBW:

@@ -118,6 +118,38 @@ def find_cp_BottomSeg(det_row, args):
     x, y = (det_row['x2']+det_row['x1'])/2, det_row['y2']
     return (x, y)
 
+def find_cp_LineSeg(det_row, args):
+    fn = int(det_row["fn"])
+    # get the right segmentation file
+    seg_fn_path = Segment.get_results_path_with_frame(args.SegmentPkl, fn)
+    mask_df = pd.read_pickle(seg_fn_path)
+    mask_row = get_mask_with_max_iou(det_row, mask_df)
+    if mask_row is not None: # found a matching mask
+            mask_y_min_idx_to_look = int(min(max(det_row.y1 - mask_row.y1, 0), mask_row.y2 - mask_row.y1))
+            mask_y_max_idx_to_look = int(min(max(det_row.y2 - mask_row.y1, 0), mask_row.y2 - mask_row.y1))
+            mask_x_min_idx_to_look = int(min(max(det_row.x1 - mask_row.x1, 0), mask_row.x2 - mask_row.x1))
+            mask_x_max_idx_to_look = int(min(max(det_row.x2 - mask_row.x1, 0), mask_row.x2 - mask_row.x1))
+
+            mask_part_to_look = mask_row["mask"][mask_y_min_idx_to_look:mask_y_max_idx_to_look, mask_x_min_idx_to_look:mask_x_max_idx_to_look]
+            # transpose mask so that the indices are sorted on x coordinate
+            indices_x, indices_y = np.where(mask_part_to_look.T == 1)
+            if len(indices_x) > 0:
+                min_indices_x, max_indices_x = min(indices_x), max(indices_x)
+                min_indices_x_max_y = indices_y[np.where(indices_x == min_indices_x)[0][-1]]
+                max_indices_x_max_y = indices_y[np.where(indices_x == max_indices_x)[0][-1]]
+
+                x1 = min_indices_x + mask_x_min_idx_to_look + mask_row.x1
+                y1 = min_indices_x_max_y + mask_y_min_idx_to_look + mask_row.y1
+
+                x2 = max_indices_x + mask_x_min_idx_to_look + mask_row.x1
+                y2 = max_indices_x_max_y + mask_y_min_idx_to_look + mask_row.y1
+
+                x_cp, y_cp = int((x1 + x2)/2) , int((y1 + y2)/2)
+                return (x_cp, y_cp)
+            
+    # if could not find a contact point on Seg mask, return bottom point        
+    x, y = (det_row['x2']+det_row['x1'])/2, det_row['y2']
+    return (x, y)
 
 def get_contact_point(row, args):
     if args.ContactPoint == "BottomPoint":
@@ -130,6 +162,10 @@ def get_contact_point(row, args):
     
     elif args.ContactPoint == "BottomSeg":
         x, y = find_cp_BottomSeg(row, args)
+        return (x, y)
+    
+    elif args.ContactPoint == "LineSeg":
+        x, y = find_cp_LineSeg(row, args)
         return (x, y)
     
     else: raise NotImplemented
@@ -155,7 +191,7 @@ def reproj_point_dsm(x, y, img_ground_raster, orthophoto_win_tif_obj):
     matched_coord =  img_ground_raster[v_int, u_int]
     orthophoto_proj_idx = orthophoto_win_tif_obj.index(*matched_coord[:-1])
     # pass (orthophoto_proj_idx[1], orthophoto_proj_idx[0]) to csv.drawMarker
-    return orthophoto_proj_idx
+    return (orthophoto_proj_idx[1], orthophoto_proj_idx[0])
 
 def reproject_df(args, df, out_path, method):
     # we will load M and Raster here and pass it on to speed up the projection
@@ -389,3 +425,39 @@ def vis_contact_point(args):
     cap.release()
     out_cap.release()
     return SucLog("sucessfully viz-ed contact points")
+
+def vis_contact_point_top(args):
+    
+    save_path = args.VisContactPointTopPth
+
+    cap = cv2.VideoCapture(args.Video)
+    # Check if camera opened successfully
+    if (cap.isOpened()== False): return FailLog("could not open input video")
+
+    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    cap.release()
+
+    second_image_path = args.HomographyTopView
+    img2 = cv.imread(second_image_path)
+    rows2, cols2, dim2 = img2.shape
+    frame_width , frame_height  = cols2 , rows2
+
+    out_cap = cv2.VideoWriter(save_path,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
+    color = (0, 0, 102)
+
+    if not args.ForNFrames is None:
+        frames = int(min(frames, args.ForNFrames))
+
+    df = pd.read_pickle(args.ReprojectedPklForDetection)
+
+    for frame_num in tqdm(range(frames)):
+        img2_fn = copy.deepcopy(img2)
+        df_fn = df[df.fn==(frame_num)]
+        for i, row in df_fn.iterrows():
+
+            img2_fn = Detect.draw_point_on_image(img2_fn, row.x, row.y)
+
+        out_cap.write(img2_fn)
+    out_cap.release()
+    return SucLog("sucessfully viz-ed contact points on top view")
