@@ -118,6 +118,38 @@ def find_cp_BottomSeg(det_row, args):
     x, y = (det_row['x2']+det_row['x1'])/2, det_row['y2']
     return (x, y)
 
+def find_cp_LineSeg(det_row, args):
+    fn = int(det_row["fn"])
+    # get the right segmentation file
+    seg_fn_path = Segment.get_results_path_with_frame(args.SegmentPkl, fn)
+    mask_df = pd.read_pickle(seg_fn_path)
+    mask_row = get_mask_with_max_iou(det_row, mask_df)
+    if mask_row is not None: # found a matching mask
+            mask_y_min_idx_to_look = int(min(max(det_row.y1 - mask_row.y1, 0), mask_row.y2 - mask_row.y1))
+            mask_y_max_idx_to_look = int(min(max(det_row.y2 - mask_row.y1, 0), mask_row.y2 - mask_row.y1))
+            mask_x_min_idx_to_look = int(min(max(det_row.x1 - mask_row.x1, 0), mask_row.x2 - mask_row.x1))
+            mask_x_max_idx_to_look = int(min(max(det_row.x2 - mask_row.x1, 0), mask_row.x2 - mask_row.x1))
+
+            mask_part_to_look = mask_row["mask"][mask_y_min_idx_to_look:mask_y_max_idx_to_look, mask_x_min_idx_to_look:mask_x_max_idx_to_look]
+            # transpose mask so that the indices are sorted on x coordinate
+            indices_x, indices_y = np.where(mask_part_to_look.T == 1)
+            if len(indices_x) > 0:
+                min_indices_x, max_indices_x = min(indices_x), max(indices_x)
+                min_indices_x_max_y = indices_y[np.where(indices_x == min_indices_x)[0][-1]]
+                max_indices_x_max_y = indices_y[np.where(indices_x == max_indices_x)[0][-1]]
+
+                x1 = min_indices_x + mask_x_min_idx_to_look + mask_row.x1
+                y1 = min_indices_x_max_y + mask_y_min_idx_to_look + mask_row.y1
+
+                x2 = max_indices_x + mask_x_min_idx_to_look + mask_row.x1
+                y2 = max_indices_x_max_y + mask_y_min_idx_to_look + mask_row.y1
+
+                x_cp, y_cp = int((x1 + x2)/2) , int((y1 + y2)/2)
+                return (x_cp, y_cp)
+            
+    # if could not find a contact point on Seg mask, return bottom point        
+    x, y = (det_row['x2']+det_row['x1'])/2, det_row['y2']
+    return (x, y)
 
 def get_contact_point(row, args):
     if args.ContactPoint == "BottomPoint":
@@ -130,6 +162,10 @@ def get_contact_point(row, args):
     
     elif args.ContactPoint == "BottomSeg":
         x, y = find_cp_BottomSeg(row, args)
+        return (x, y)
+    
+    elif args.ContactPoint == "LineSeg":
+        x, y = find_cp_LineSeg(row, args)
         return (x, y)
     
     else: raise NotImplemented
