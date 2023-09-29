@@ -501,7 +501,7 @@ segmenters = ["InternImage"]
     # for det in detectors:
     #     for seg in segmenters:
     #         print(f"detecting ----> src:{src} det:{det}")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Segmenter={seg} --Tracker=NULL --Homography --BackprojectSource=detections --TopView=OrthoPhoto --BackprojectionMethod=Homography --ContactPoint=BottomSeg")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Segmenter={seg} --Tracker=NULL --Homography --BackprojectSource=detections --TopView=OrthoPhoto --BackprojectionMethod=DSM --ContactPoint=BottomPoint")
 
     ########################################################
     # 3.7 Vis Contact Points and BP Points
@@ -509,7 +509,8 @@ segmenters = ["InternImage"]
     ########################################################
     # for det in detectors:
     #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisContactPoint --BackprojectSource=detections --TopView=OrthoPhoto --BackprojectionMethod=Homography --ContactPoint=BottomSeg")
+    #     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisContactPoint --BackprojectSource=detections --TopView=OrthoPhoto --BackprojectionMethod=Homography --ContactPoint=BottomSeg")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisCPTop        --BackprojectSource=detections --TopView=OrthoPhoto --BackprojectionMethod=DSM --ContactPoint=BottomPoint")
 
     ########################################################
     # 4. run the tracking and backproject and convert to meter
