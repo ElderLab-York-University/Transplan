@@ -115,6 +115,11 @@ def get_detection_pkl(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot +SubTaskExt.Pkl)
 
+def get_detection_coco(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot+ "COCO"+ Puncuations.Dot+SubTaskExt.Json)
+
 def get_detection_pkl_back_up(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -324,6 +329,7 @@ def add_detection_pathes_to_args(args):
     args.DetectionDetectorPath = d_d_path
     args.DetectionPkl = d_pkl
     args.DetectionPklBackUp = d_pkl_bu
+    args.DetectionCOCO = get_detection_coco(args)
     return args
 
 def add_vis_detection_path_to_args(args):
@@ -651,7 +657,7 @@ def complete_args(args):
         # if Video path was not specified by the user grab a video from dataset
         args = add_videos_to_args(args)
 
-    if (not args.Detector is None) or args.DetPostProc:
+    if (not args.Detector is None) or args.DetPostProc or args.ConvertDetsToCOCO:
         args = add_detection_pathes_to_args(args)
         args = add_vis_detection_path_to_args(args)
 
