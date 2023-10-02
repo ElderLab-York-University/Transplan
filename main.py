@@ -9,7 +9,7 @@
 # import libs
 from Libs import *
 from Utils import *
-from Detect import detect, visdetect,detectpostproc, visroi
+from Detect import detect, visdetect,detectpostproc, visroi, extract_images, detections_to_coco
 from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop
 from Homography import homographygui
 from Homography import reproject
@@ -234,13 +234,26 @@ def VisCPTop(args):
         return log
     else: return WarningLog("skipped vis cp top")
 
+def ExtractImages(args):
+    if args.ExtractImages:
+        print(ProcLog("extracting images"))
+        log = extract_images(args)
+        return log
+    else: return WarningLog("skipped extarcting imagages")
+
+def ConvertDetsToCOCO(args):
+    if args.ConvertDetsToCOCO:
+        print(ProcLog("converting detections to coco format"))
+        log  = detections_to_coco(args)
+        return log
+    else: return WarningLog("skipped converting to coco format")
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess,
+    subtasks = [Preprocess, ExtractImages,
                 HomographyGUI, VisHomographyGUI, VisROI,
                 Segment, SegPostProc, VisSegment,
-                Detect, DetPostProc, VisDetect,
+                Detect, DetPostProc, VisDetect, ConvertDetsToCOCO,
                 Track, VisTrack, Homography, Pix2Meter,
                 VisContactPoint, VisCPTop, TrackPostProc, VisTrajectories, VisTrackTop,
                 FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories,
@@ -341,6 +354,9 @@ if __name__ == "__main__":
     parser.add_argument("--Segmenter", help="model for segmentation", type=str, default="Null")
     parser.add_argument("--SegTh", help="threshold to filter segmentation masks", type=float)
     parser.add_argument("--SegPostProc", help="perform segmentation post processing", action='store_true')
+    parser.add_argument("--ExtractImages", help="extract images from video and store under results/Images", action='store_true')
+    parser.add_argument("--ConvertDetsToCOCO", help="convert detection files to COCO format", action='store_true')
+    
 
     args = parser.parse_args()
 

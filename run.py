@@ -448,6 +448,13 @@ segmenters = ["InternImage"]
 
 # for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     ########################################################
+    # 0. extract images from video
+    # os.system(f"python3 main.py --Dataset={src} --ExtractImages)
+    ########################################################
+    # print(f" extracting images from : {src}")
+    # os.system(f"python3 main.py --Dataset={src} --ExtractImages")
+
+    ########################################################
     # 1. estimate the Homography Metrix using Homography GUI 
     # os.system(f"python3 main.py --Dataset={src}  --Detector=detectron2 --Tracker=sort --HomographyGUI --VisHomographyGUI --Frame=1 --TopView=GoogleMap")
     ########################################################
@@ -493,6 +500,14 @@ segmenters = ["InternImage"]
     #     print(f"detecting ----> src:{src} det:{det}")
     #     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --DetPostProc --DetTh=0.5 --VisDetect")
     #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisDetect --DetPostProc --DetTh=0.5 --classes_to_keep 2 5 7")
+
+    ########################################################
+    # 3.5.5 convert detections to coco format
+    # the full commonad looks like : os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL")
+    ########################################################
+    # for det in detectors:
+    #     print(f"converting to COCO ----> src:{src} det:{det}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --ConvertDetsToCOCO")
 
     ########################################################
     # 3.6 back project detections
