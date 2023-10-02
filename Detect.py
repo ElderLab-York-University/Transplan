@@ -201,3 +201,51 @@ def visroi(args):
     plt.savefig(args.VisROIPth)
 
     return SucLog("Vis ROI executed successfully")
+
+def format_frame_number(frame_number, number_of_frames):
+    # Calculate the number of digits needed to represent number_of_frames
+    num_digits = len(str(number_of_frames))
+    
+    # Format frame_number as a string with leading zeros
+    formatted_frame_number = str(frame_number).zfill(num_digits)
+    
+    return formatted_frame_number
+
+def extract_images(args):
+    output_directory = args.ExtractedImageDirectory
+
+    # Define the input video file path and output directory
+    input_video_path = args.Video
+
+    # Open the video file
+    cap = cv2.VideoCapture(input_video_path)
+    number_of_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    # Initialize frame counter
+    frame_number = 0
+
+    # Loop through the video frames
+    for _ in tqdm(range(number_of_frames)):
+        # Read a frame from the video
+        ret, frame = cap.read()
+        
+        # Break the loop if we have reached the end of the video
+        if not ret:
+            break
+        
+        # Construct the output file name
+        extension = '.jpg'
+        formated_frame_number = format_frame_number(frame_number, number_of_frames) # adds zero fills
+        output_filename = f'{formated_frame_number}{extension}'  # Use 4-digit frame number
+        
+        # Save the frame as an image in the output directory
+        output_path = os.path.join(output_directory, output_filename)
+        cv2.imwrite(output_path, frame)
+        
+        # Increment the frame counter
+        frame_number += 1
+
+    # Release the video capture object and close any open windows
+    cap.release()
+    cv2.destroyAllWindows()
+    return SucLog("extracted all images")

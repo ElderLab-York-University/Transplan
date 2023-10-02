@@ -634,6 +634,13 @@ def revert_args_with_params(args):
         args.CountMetric = args.CountMetric.split(".")[0]
     return args
 
+def get_extracted_image_dir(args):
+     return os.path.join(args.Dataset, "Results/Images/")
+
+def add_images_folder_to_args(args):
+    args.ExtractedImageDirectory = get_extracted_image_dir(args)
+    return args
+
 def complete_args(args):
     args = adjust_args_with_params(args)
 
@@ -661,6 +668,8 @@ def complete_args(args):
     args = add_metadata_to_args(args)
 
     args = add_GT_path_to_args(args)
+
+    args = add_images_folder_to_args(args)
 
     if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Track or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop:
         args = add_homographygui_related_path_to_args(args)
@@ -709,6 +718,7 @@ def check_config(args):
     clustering_path = os.path.join(results_path, "Clustering")
     segment_path    = os.path.join(results_path, "Segment")
     dsm_path    = os.path.join(results_path, "DSM")
+    images_path = os.path.join(results_path, "Images")
 
     try: os.system(f"mkdir -p {results_path}")
     except: pass
@@ -729,6 +739,8 @@ def check_config(args):
     try: os.system(f"mkdir -p {segment_path}")
     except: pass
     try: os.system(f"mkdir -p {dsm_path}")
+    except: pass
+    try: os.system(f"mkdir -p {images_path}")
     except: pass
 
 def get_conda_envs():

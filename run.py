@@ -448,6 +448,13 @@ segmenters = ["InternImage"]
 
 # for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
     ########################################################
+    # 0. extract images from video
+    # os.system(f"python3 main.py --Dataset={src} --ExtractImages)
+    ########################################################
+    # print(f" extracting images from : {src}")
+    # os.system(f"python3 main.py --Dataset={src} --ExtractImages")
+
+    ########################################################
     # 1. estimate the Homography Metrix using Homography GUI 
     # os.system(f"python3 main.py --Dataset={src}  --Detector=detectron2 --Tracker=sort --HomographyGUI --VisHomographyGUI --Frame=1 --TopView=GoogleMap")
     ########################################################
