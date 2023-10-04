@@ -437,10 +437,11 @@ def complete_args_mc(args, args_mc):
         args_mc[i] = arg
 
     check_config(args)
-    
-    args.Video = args_mc[0].Video
+    # completing the args(multicam one source)
+    args.Video = args.Dataset
+    args = complete_args(args)
 
-    if args.AverageCountsMC or EvalCountMC:
+    if args.AverageCountsMC or args.EvalCountMC:
         args = add_count_path_to_args(args)
 
     return args, args_mc
@@ -670,8 +671,10 @@ def complete_args(args):
     if args.Eval:
         args = add_eval_save_path(args)
     
-
-    args = add_metadata_to_args(args)
+    try:
+        args = add_metadata_to_args(args)
+    except:
+        pass
 
     args = add_GT_path_to_args(args)
 
@@ -709,6 +712,58 @@ def complete_args(args):
 
     args = revert_args_with_params(args)
     return args
+
+def get_args_split(args):
+    split = args.Dataset
+    source_paths = []
+    source_ids = []
+    
+    for source in os.listdir(split):
+        if ((not source.startswith(".")) and (not source == "Results")):
+            source_paths.append(os.path.join(split, source))
+            source_ids.append(source)
+
+    args_ms = []
+    for source, source_id in zip(source_paths, source_ids):
+        temp_args = copy.deepcopy(args)
+        temp_args.Dataset = source
+        temp_args.SourceID = source_ids
+        args_ms.append(temp_args)
+
+    return args_ms
+
+def modify_args_mc(args):
+    sp = args.Dataset
+    cam_paths = []
+    cam_ids = []
+    for cl in os.listdir(sp):
+        if (not cl.startswith(".")) and (not cl == "Results"):
+            cam_paths.append(os.path.join(sp, cl))
+            cam_ids.append(cl)
+    args_mc = []
+    for cam, cam_id in zip(cam_paths, cam_ids):
+        temp_args = copy.deepcopy(args)
+        temp_args.Dataset = cam
+        temp_args.CamID = cam_id
+        args_mc.append(temp_args)
+    return args_mc
+
+def complete_args_ms(args):
+    args_ms = get_args_split(args)
+    args_mcs = [modify_args_mc(args_s) for args_s in args_ms]
+    final_args_ms = []
+    final_args_mcs = []
+    for args_s , args_mc in zip(args_ms, args_mcs):
+        new_args_s, new_args_mc = complete_args_mc(args_s, args_mc)
+        final_args_ms.append(new_args_s)
+        final_args_mcs.append(new_args_mc)
+
+    check_config(args) # will create a results folder inside split(eg.test) folder
+    # complete args of split(multi source, multicam)
+    args.Video = args.Dataset
+    args = complete_args(args)
+
+    return args, final_args_ms, final_args_mcs
 
 def check_config(args):
     # check if args passed are valid

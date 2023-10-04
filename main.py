@@ -9,7 +9,7 @@
 # import libs
 from Libs import *
 from Utils import *
-from Detect import detect, visdetect,detectpostproc, visroi, extract_images, detections_to_coco
+from Detect import detect, visdetect,detectpostproc, visroi, extract_images, detections_to_coco, detections_to_coco_ms
 from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop
 from Homography import homographygui
 from Homography import reproject
@@ -247,6 +247,15 @@ def ConvertDetsToCOCO(args):
         log  = detections_to_coco(args)
         return log
     else: return WarningLog("skipped converting to coco format")
+
+def ConvertDetsToCOCO_MS(args, args_ms, args_mcs):
+    if args.ConvertDetsToCOCO:
+        print(ProcLog(f"converting detections to coco format for the {args.Dataset} split"))
+        log  = detections_to_coco_ms(args, args_ms, args_mcs)
+        return log
+    else: return WarningLog("skipped converting to coco format")
+
+
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
@@ -270,6 +279,14 @@ def main_mc(args, args_mc):
     subtasks = [AverageCounts, EvalCountMC]
     for subtask in subtasks:
         log = subtask(args,args_mc)
+        if not isinstance(log, WarningLog):
+            print(log)
+
+def main_ms(args, args_ms, args_mcs):
+    subtasks = [ConvertDetsToCOCO_MS]
+
+    for sub in subtasks:
+        log = sub(args, args_ms, args_mcs)
         if not isinstance(log, WarningLog):
             print(log)
     
@@ -356,6 +373,10 @@ if __name__ == "__main__":
     parser.add_argument("--SegPostProc", help="perform segmentation post processing", action='store_true')
     parser.add_argument("--ExtractImages", help="extract images from video and store under results/Images", action='store_true')
     parser.add_argument("--ConvertDetsToCOCO", help="convert detection files to COCO format", action='store_true')
+
+
+
+    parser.add_argument("--MultiSeg", help="operating on multiple segments(eg train segments)", action='store_true')
     
 
     args = parser.parse_args()
@@ -366,7 +387,11 @@ if __name__ == "__main__":
         args_mc = modify_args_mc(args)
         args , args_mc = complete_args_mc(args, args_mc)
         main_mc(args, args_mc)
-    
+
+    elif args.MultiSeg:
+        args, args_ms, args_mcs = complete_args_ms(args)
+        main_ms(args, args_ms, args_mcs)
+
     else:
         args = complete_args(args)
         check_config(args)

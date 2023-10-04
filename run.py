@@ -1,6 +1,12 @@
 import os
 # choose the segment/dataset/video
 
+splits = [
+######## HW7 splits
+    # "/mnt/data/HW7Leslie/train",
+    # "/mnt/data/HW7Leslie/valid",
+]
+
 segments = [
 ######### HW7 Train Segment
     # # # Seg03
@@ -611,7 +617,7 @@ segmenters = ["InternImage"]
     #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={met} --VisTrackMoI")
 
 
-    #_______________________MULTICAMERA_______________________#
+#_______________________MULTICAMERA_______________________#
 
 # for src in segments:
 #     print(f"running on seg:{src}")
@@ -624,3 +630,16 @@ segmenters = ["InternImage"]
     #         for metric in cnt_metrics:
     #             print(f"average MC counts ---> src:{src} det:{det} tra:{tra} cnt:{metric}")
     #             os.system(f"python3 main.py --MultiCam --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={metric} --AverageCountsMC --EvalCountMC")
+
+
+
+#_______________________MULTISOURCE_______________________#
+
+# for split in splits:
+#     # to run on split level add --MultiSeg
+#     print(f"running on split:{split}")
+#     ########################################################
+#     # 0. convert detections of all the data under split into COCO format
+#     ########################################################
+#     for det in detectors:
+#         os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --Tracker=NULL --ConvertDetsToCOCO")
