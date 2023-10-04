@@ -321,3 +321,79 @@ def detections_to_coco(args):
         json.dump(coco_annotations, f)
 
     return SucLog("annotations converted to COCO format")
+
+def detections_to_coco_ms(args_split, args_ms, args_mcs):
+    results_path = args_split.DetectionCOCO
+
+    images_list = []
+    annots_list = []
+    catego_list = []
+
+    all_category = []
+
+    for args_mc in tqdm(args_mcs):
+        for arg in args_mc:
+
+            input_video_path = arg.Video
+            file_name, file_ext = os.path.splitext(arg.Video)
+            video_name = file_name.split("/")[-1]
+
+            image_directory = arg.ExtractedImageDirectory
+            # convert detection pkl to coco formated json
+            detection_df = pd.read_pickle(arg.DetectionPkl)
+
+            cap = cv2.VideoCapture(arg.Video)
+            number_of_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+
+
+
+            unique_frames = sorted(detection_df.fn.unique())
+            for fn in unique_frames:
+                file_name = image_path_from_details(video_name, fn, number_of_frames, image_directory)
+                frame_id  = format_frame_id(video_name, fn, number_of_frames)
+
+                image_dict = {"file_name":file_name,
+                            "height":frame_height,
+                            "width":frame_width,
+                            "id":frame_id}
+
+                images_list.append(image_dict)
+
+                detection_df_fn = detection_df[detection_df.fn==fn]
+
+                for i, row in detection_df_fn.iterrows():
+                    bbox = [int(row.x1), int(row.y1), int(row.x2-row.x1), int(row.y2-row.y1)]
+                    category_id = int(row["class"])
+                    bbox_id = 1 #@TODO need to change that
+
+                    annot_dict = {"iscrowd":0,
+                                "image_id":frame_id,
+                                "bbox":bbox,
+                                "category_id":category_id,
+                                "id": bbox_id}
+
+                    annots_list.append(annot_dict)
+
+
+            unique_categories = sorted(detection_df["class"].unique())
+            for category in unique_categories:
+                all_category.append(category)
+
+
+    unique_categories = np.unique(all_category)
+    for category in unique_categories:
+        category_dict = {"id":int(category), "name":f"{category}"} #@TODO for now categories do not have name
+        catego_list.append(category_dict)
+
+    coco_annotations = {"images": images_list,
+                        "annotations": annots_list,
+                        "categories": catego_list}
+
+    # open a file for writing
+    with open(results_path, 'w') as f:
+        # write the dictionary to the file in JSON format
+        json.dump(coco_annotations, f)
+
+    return SucLog("annotations converted to COCO format")
