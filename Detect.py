@@ -212,11 +212,11 @@ def format_frame_number(frame_number, number_of_frames):
     return formatted_frame_number
 
 
-def image_path_from_details(frame_number, number_of_frames, output_directory):
+def image_path_from_details(video_name, frame_number, number_of_frames, output_directory):
         # Construct the output file name
         extension = '.jpg'
         formated_frame_number = format_frame_number(frame_number, number_of_frames) # adds zero fills
-        output_filename = f'{formated_frame_number}{extension}'  # Use 4-digit frame number
+        output_filename = f'{video_name}.{formated_frame_number}{extension}'  # Use 4-digit frame number
         
         # Save the frame as an image in the output directory
         output_path = os.path.join(output_directory, output_filename)
@@ -227,6 +227,8 @@ def extract_images(args):
 
     # Define the input video file path and output directory
     input_video_path = args.Video
+    file_name, file_ext = os.path.splitext(args.Video)
+    video_name = file_name.split("/")[-1]
 
     # Open the video file
     cap = cv2.VideoCapture(input_video_path)
@@ -245,7 +247,7 @@ def extract_images(args):
             break
         
         # Save the frame as an image in the output directory
-        output_path = image_path_from_details(frame_number, number_of_frames, output_directory)
+        output_path = image_path_from_details(video_name, frame_number, number_of_frames, output_directory)
         cv2.imwrite(output_path, frame)
         
         # Increment the frame counter
@@ -257,6 +259,11 @@ def extract_images(args):
     return SucLog("extracted all images")
 
 def detections_to_coco(args):
+
+    input_video_path = args.Video
+    file_name, file_ext = os.path.splitext(args.Video)
+    video_name = file_name.split("/")[-1]
+
     results_path = args.DetectionCOCO
     image_directory = args.ExtractedImageDirectory
     # convert detection pkl to coco formated json
@@ -273,7 +280,7 @@ def detections_to_coco(args):
 
     unique_frames = sorted(detection_df.fn.unique())
     for fn in unique_frames:
-        file_name = image_path_from_details(fn, number_of_frames, image_directory)
+        file_name = image_path_from_details(video_name, fn, number_of_frames, image_directory)
         frame_id = format_frame_number(fn, number_of_frames)
 
         image_dict = {"file_name":file_name,
