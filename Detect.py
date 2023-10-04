@@ -211,6 +211,8 @@ def format_frame_number(frame_number, number_of_frames):
     
     return formatted_frame_number
 
+def format_frame_id(video_name, frame_number, number_of_frames):
+    return hash(f"{video_name}{frame_number}{number_of_frames}")
 
 def image_path_from_details(video_name, frame_number, number_of_frames, output_directory):
         # Construct the output file name
@@ -281,7 +283,7 @@ def detections_to_coco(args):
     unique_frames = sorted(detection_df.fn.unique())
     for fn in unique_frames:
         file_name = image_path_from_details(video_name, fn, number_of_frames, image_directory)
-        frame_id = format_frame_number(fn, number_of_frames)
+        frame_id  = format_frame_id(video_name, fn, number_of_frames)
 
         image_dict = {"file_name":file_name,
                       "height":frame_height,
