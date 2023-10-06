@@ -619,9 +619,21 @@ def get_GT_path(args):
     file_name = file_name.split("/")[-1]
     gt_path = os.path.join(args.Dataset, file_name+".gt.txt")
     return gt_path
-
+def get_3DGT_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    gt_path = os.path.join(args.Dataset, file_name+".gt3d.json")
+    return gt_path
+    
 def add_GT_path_to_args(args):
     args.GT = get_GT_path(args)
+    return args
+
+
+def add_3DGT_path_to_args(args):
+    args.GT3D= get_3DGT_path(args)
+    args.INTRINSICS_PATH        = get_intrinsics_path(args)
+    args.EXTRINSICS_PATH        = get_extrinsics_path(args)    
     return args
 
 def adjust_args_with_params(args):
@@ -657,11 +669,10 @@ def complete_args(args):
     if args.Eval:
         args = add_eval_save_path(args)
     
-
     args = add_metadata_to_args(args)
 
     args = add_GT_path_to_args(args)
-
+    args= add_3DGT_path_to_args(args)
     if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Track or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop:
         args = add_homographygui_related_path_to_args(args)
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop:

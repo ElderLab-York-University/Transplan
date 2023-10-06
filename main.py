@@ -317,7 +317,7 @@ if __name__ == "__main__":
     parser.add_argument("--CacheCounter", help="Cache the counter after initialization", action='store_true')
     parser.add_argument("--VisTrackTop", help="Visualize tracks from top view", action='store_true')
     parser.add_argument("--CachedCounterPth", help="path to pre-initialized cached counter object", type=str)
-
+    parser.add_argument("--StartFrame", help="For if the video hasnt been cropped to the start frame yet, to be removed soon", type=int)
     parser.add_argument("--ForNFrames", help="visualize the N first frame instead of all of them", type=int)
     parser.add_argument("--ResampleTH", help="the threshold to resample tracks with", type=float, default=2)
 

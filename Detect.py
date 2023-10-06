@@ -73,7 +73,6 @@ def visdetect(args):
     fps = int(cap.get(cv2.CAP_PROP_FPS))
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-
     out_cap = cv2.VideoWriter(args.VisDetectionPth,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
 
     if not args.ForNFrames is None:
@@ -84,7 +83,23 @@ def visdetect(args):
         ret, frame = cap.read()
         if not ret: continue
         for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
-            frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
+                
+            if(args.Detector=="GTHW73D"):
+                pts = np.array([[row.x1,row.y1],[row.x2,row.y2],[row.x3,row.y3],[row.x4,row.y4]], np.int32)
+                pts = pts.reshape((-1,1,2))    
+                frame=cv2.polylines(frame,[pts],True,(0,255,255))
+                pts = np.array([[row.x5,row.y5],[row.x6,row.y6],[row.x7,row.y7],[row.x8,row.y8]], np.int32)
+                pts = pts.reshape((-1,1,2))  
+                frame=cv2.polylines(frame,[pts],True,(0,255,255))        
+                # frame = cv.circle(frame, (int(row.x3),int(row.y3)), 1, (255,0,0), 10)
+                frame=cv2.line(frame, (int(row.x1),int(row.y1)), (int(row.x5),int(row.y5)), (0,255,255))
+                frame=cv2.line(frame, (int(row.x2),int(row.y2)), (int(row.x6),int(row.y6)), (0,255,255))
+                frame=cv2.line(frame, (int(row.x3),int(row.y3)), (int(row.x7),int(row.y7)), (0,255,255))
+                frame=cv2.line(frame, (int(row.x4),int(row.y4)), (int(row.x8),int(row.y8)), (0,255,255))                   
+            else:     
+                frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
+                          
+
         out_cap.write(frame)
 
     cap.release()
