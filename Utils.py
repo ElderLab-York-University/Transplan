@@ -377,7 +377,15 @@ def get_eval_save_path(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results",file_name + Puncuations.Dot + SubTaskMarker.MCTrackDis + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot+"txt")
 
-
+def get_3d_gt_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot+"3D"+ Puncuations.Dot+"GT" + Puncuations.Dot + SubTaskExt.Pkl)
+def get_vis_3d_gt_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisDetection + Puncuations.Dot + "3D"+ Puncuations.Dot+"GT" + Puncuations.Dot +SubTaskExt.VisDetection)
+    
 def get_args_gt(args):
     args_gt = copy.deepcopy(args)
     args_gt.Detector = "GT"
@@ -386,6 +394,7 @@ def get_args_gt(args):
     args_gt=complete_args(args_gt)
     # args_gt , arg_mc_gt = complete_args_mc(args_gt, args_mc_gt)
     return args_gt
+
 
 
 # def modify_args(args):
@@ -516,6 +525,13 @@ def add_plot_all_traj_pth_to_args(args):
 def add_eval_save_path(args):
     args.EvalPth = get_eval_save_path(args)
     return args 
+def add_3d_gt_path(args):
+    args.GT3D= get_3d_gt_path(args)
+    return args
+
+def add_vis_3d_gt_path(args):
+    args.VisGT3D= get_vis_3d_gt_path(args)
+    return args
 
 def add_vis_labelled_tracks_pth_to_args(args):
     path = get_vis_labelled_tracks_path(args)
@@ -657,7 +673,9 @@ def complete_args(args):
     if args.Eval:
         args = add_eval_save_path(args)
     
-
+    if args.Vis3DGT:
+        args=add_3d_gt_path(args)
+        args=add_vis_3d_gt_path(args)
     args = add_metadata_to_args(args)
 
     args = add_GT_path_to_args(args)

@@ -9,7 +9,7 @@
 # import libs
 from Libs import *
 from Utils import *
-from Detect import detect, visdetect,detectpostproc, visroi
+from Detect import detect, visdetect,detectpostproc, visroi, vis3dgt
 from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop
 from Homography import homographygui
 from Homography import reproject
@@ -226,7 +226,12 @@ def VisContactPoint(args):
         log = vis_contact_point(args)
         return log
     else: return WarningLog("skipped vis contact point")
-
+def Vis3DGT(args):
+    if args.Vis3DGT:
+        print(ProcLog("Visualizing 3d Gt"))
+        log= vis3dgt(args)
+        return log
+    else: return WarningLog("Skipped visualizing 3D gt")
 def VisCPTop(args):
     if args.VisCPTop:
         print(ProcLog("vis cp top"))
@@ -244,7 +249,7 @@ def main(args):
                 Track, VisTrack, Homography, Pix2Meter,
                 VisContactPoint, VisCPTop, TrackPostProc, VisTrajectories, VisTrackTop,
                 FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories,
-                Count, VisTrackMoI, Evaluate]
+                Count, VisTrackMoI, Evaluate, Vis3DGT]
     for subtask in subtasks:
         log = subtask(args)
         if not isinstance(log, WarningLog):
@@ -335,7 +340,7 @@ if __name__ == "__main__":
     parser.add_argument("--ContactPoint", help="Select how to set the contact point  options = [BottomPoint/Center/BottomSeg/SegBottomLine]", type=str)
     parser.add_argument("--VisContactPoint", help="to visualize the contact point", action="store_true")
     parser.add_argument("--VisCPTop", help="to visualize the contact points on the top view", action="store_true")
-
+    parser.add_argument("--Vis3DGT", help= "to visualize 3d GT", action="store_true")
     parser.add_argument("--Segment", help="perform segmentation and store results", action='store_true')
     parser.add_argument("--VisSegment", help="Vis Segmentation Masks", action='store_true')
     parser.add_argument("--Segmenter", help="model for segmentation", type=str, default="Null")
