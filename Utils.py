@@ -70,6 +70,7 @@ class SubTaskMarker:
     Clustering = "clustering"
     VisROI = "visROI"
     IdMatched = "IdMatched"
+    MCDetectDis= "MCDetectDist"    
     MCTrackDis = "MCTrackDist"
     
 class Puncuations:
@@ -149,7 +150,15 @@ def get_vis_top_tracking_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "VisTrackingTop" + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
-
+def get_visdetection_gt_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisDetection + Puncuations.Dot + "GT" + Puncuations.Dot +args.Detector + Puncuations.Dot + SubTaskExt.VisDetection)
+def get_roi_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset,file_name + Puncuations.Dot + "roi.npz")
+    
 def get_vis_tracking_moi_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -174,7 +183,15 @@ def get_homography_streetview_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, file_name + Puncuations.Dot + SubTaskMarker.Homography + Puncuations.Dot + "street" + Puncuations.Dot + "png")
-
+def get_gt_mask_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "mask.npz")
+def get_masked_gt_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset,"Results/Detection", file_name + Puncuations.Dot+SubTaskMarker.Detection+Puncuations.Dot+"GT" +Puncuations.Dot +"Masked" + Puncuations.Dot +"pkl")
+    
 def get_metadata_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -264,6 +281,18 @@ def get_counting_idmatching_pth(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Counting",file_name + Puncuations.Dot + SubTaskMarker.IdMatched + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + args.CountMetric +Puncuations.Dot +SubTaskExt.Csv)
+def get_evalDet_save_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.MCDetectDis + Puncuations.Dot + args.Detector+ Puncuations.Dot+"txt")
+def get_evalDet_save_path2(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.MCDetectDis + Puncuations.Dot + args.Detector+Puncuations.Dot+"2" +Puncuations.Dot+"txt")
+def get_evalDet_plot_save_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.MCDetectDis + Puncuations.Dot + args.Detector+ Puncuations.Dot+"png")
 
 def add_detection_pathes_to_args(args):
     d_path = get_detection_path_from_args(args)
@@ -280,6 +309,14 @@ def add_vis_detection_path_to_args(args):
     vis_detection_path = get_vis_detection_path_from_args(args)
     args.VisDetectionPth = vis_detection_path
     return args
+
+def add_evalDet_save_path(args):
+    args.EvalDetPth = get_evalDet_save_path(args)
+    args.EvalDetPth2 = get_evalDet_save_path2(args)
+    args.EvalDetPthPlot = get_evalDet_plot_save_path(args)
+    
+    
+    return args 
 
 def videos_from_dataset(args):
     video_files = []
@@ -316,7 +353,13 @@ def add_vis_top_tracking_path_to_args(args):
     vis_top_tracking_path  = get_vis_top_tracking_path_from_args(args)
     args.VisTrackingTopPth = vis_top_tracking_path
     return args
-
+def add_visdetection_gt_path(args):
+    args.VisDetectionGTPth= get_visdetection_gt_path(args)
+    return args
+def add_roi_path(args):
+    rois=get_roi_path(args)
+    args.Rois=rois
+    return args
 def add_vis_tracking_moi_path_to_args(args):
     vis_tracking_pth = get_vis_tracking_moi_path_from_args(args)
     args.VisTrackingMoIPth = vis_tracking_pth
@@ -401,6 +444,12 @@ def complete_args_mc(args, args_mc):
 #     args_gt , arg_mc_gt = complete_args_mc(args_gt, args_mc_gt)
 #     return args_gt, args_mc_gt
 
+
+def add_gt_mask_path_to_args(args):
+    args.GTMask= get_gt_mask_path(args)
+    args.MaskedGT=get_masked_gt_path(args)
+    return args
+    
 def add_homographygui_related_path_to_args(args):
     streetview = get_homography_streetview_path(args)
     topview = get_homography_topview_path(args)
@@ -559,7 +608,14 @@ def complete_args(args):
     if args.Eval:
         args = add_eval_save_path(args)
     
-
+    if args.VisGTDet:
+        args= add_visdetection_gt_path(args)
+    if args.EvalDet:
+        args= add_evalDet_save_path(args)
+    if args.MaskGT:
+        args= add_gt_mask_path_to_args(args)
+    if args.UseRois:
+        args=add_roi_path(args)
     args = add_metadata_to_args(args)
     if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Track or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW:
         args = add_homographygui_related_path_to_args(args)

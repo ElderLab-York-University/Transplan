@@ -9,14 +9,14 @@
 # import libs
 from Libs import *
 from Utils import *
-from Detect import detect, visdetect,detectpostproc, visroi
+from Detect import detect, visdetect,detectpostproc, visroi, visGTDet
 from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop
 from Homography import homographygui
 from Homography import reproject
 from Homography import vishomographygui
 from Homography import vis_reprojected_tracks
 from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_tracks
-from Evaluate import evaluate
+from Evaluate import evaluate, evaluate_detections
 from Maps import pix2meter
 from counting import counting
 from counting.counting import find_opt_bw, eval_count
@@ -56,6 +56,13 @@ def VisDetect(args):
         return log
     else: return WarningLog("skipped viz-detection subtask")
 
+def VisGTDet(args):
+    if args.VisGTDet:
+        print("Viz GT with the Detection in progress")
+        
+        log=visGTDet(args)
+        return log
+    else: return WarningLog("Skipped VisGTDet")
 def Track(args):
     if args.Track:
         print(ProcLog("Tracking in Process"))
@@ -197,11 +204,19 @@ def EvalCountMC(args, args_mc):
         return log
     else:
         return WarningLog("skipped evaluating counts")
-
+    
+    
+def EvalDet(args):
+    if args.EvalDet:
+        print(ProcLog("Evaluate Detections"))
+        log = evaluate_detections(args)
+        return log
+    else: return WarningLog("skipped evaluate detections")
+    
 def main(args):
     # Pass the args to each subtask
     # Each subtask will validate its own inputs
-    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, VisROI, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, TrackPostProc, VisTrajectories, VisTrackTop, FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories, Count, VisTrackMoI, Evaluate]
+    subtasks = [Preprocess, Detect, DetPostProc, VisDetect, VisROI, Track, VisTrack, HomographyGUI,VisHomographyGUI, Homography, Pix2Meter, TrackPostProc, VisTrajectories, VisTrackTop, FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories, Count, VisTrackMoI, Evaluate, VisGTDet, EvalDet]
     for subtask in subtasks:
         log = subtask(args)
         if not isinstance(log, WarningLog):
@@ -274,9 +289,15 @@ if __name__ == "__main__":
     parser.add_argument("--CacheCounter", help="Cache the counter after initialization", action='store_true')
     parser.add_argument("--VisTrackTop", help="Visualize tracks from top view", action='store_true')
     parser.add_argument("--CachedCounterPth", help="path to pre-initialized cached counter object", type=str)
+    parser.add_argument("--VisGTDet", help="path to pre-initialized cached counter object", action='store_true')
+    parser.add_argument("--EvalDet", help="If Evaluate Detections", action='store_true')
 
     parser.add_argument("--ForNFrames", help="visualize the N first frame instead of all of them", type=int)
     parser.add_argument("--ResampleTH", help="the threshold to resample tracks with", type=float, default=2)
+    parser.add_argument("--UseRois", help="If To Use Rois", action="store_true")
+    parser.add_argument("--MaskGT", help="True/False if to use mask in evaluating ground truth", action="store_true")
+    parser.add_argument("--BboxMin", help="Min Size for Bboxes", type=int)
+    parser.add_argument("--BboxMax", help="Max Size for Bboxes", type=int)
 
     parser.add_argument("--FindOptimalKDEBW", help="find the optimal KDE band width", action='store_true')
 
