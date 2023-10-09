@@ -16,7 +16,7 @@ def track(args, detectors):
     mot_tracker = GSort(Homography_M=M, R_meter=R) #create instance of the SORT tracker
     # mot_tracker = Sort()
     with open(output_file,'w') as out_file:
-        for frame_num in tqdm(range(int(detection_df.fn.max()))): # this line might not work :))) 
+        for frame_num in tqdm(range(int(detection_df.fn.min()), int(detection_df.fn.max())+1)): # this line might not work :))) 
             frame_df = detection_df[detection_df.fn == frame_num]
             # create dets --> this is the part when information is converted/grouped
             dets = frame_df[["x1", "y1", "x2", "y2", "score"]].to_numpy()
@@ -24,7 +24,7 @@ def track(args, detectors):
             # print(dets)
             trackers = mot_tracker.update(dets)
             for d in trackers:
-                print('%d,%d,%.4f,%.4f,%.4f,%.4f'%(frame_num+1,d[4],d[0],d[1],d[2],d[3]),file=out_file)
+                print('%d,%d,%.4f,%.4f,%.4f,%.4f'%(frame_num,d[4],d[0],d[1],d[2],d[3]),file=out_file)
 
 def df(args):
     data = {}
