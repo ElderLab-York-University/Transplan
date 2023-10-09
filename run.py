@@ -184,76 +184,76 @@ sources = [
 #     "/mnt/data/HW7Leslie/train/Seg31/Seg31sc4",
 # #### # HW7 & Leslie  DATASET
 # #### # HW7 Valid Split
-#     # Seg00
-#     "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc4",
-#     # Seg01
-#     "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc4",
-#     # Seg02
-#     "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc4",
-#     # Seg04
-#     "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc4",
-#     # Seg10
-#     "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc4",
-#     # Seg14
-#     "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc4",
-#     # Seg16
-#     "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc4",
-#     # Seg17
-#     "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc4",
-#     # Seg18
-#     "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc4",
-#     # Seg19
-#     "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc4",
-#     # Seg23
-#     "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc4",
-#     # Seg25
-#     "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc4",
-#     # Seg26
-#     "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc4",
-#     # Seg28
-#     "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc4",
+    # # Seg00
+    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc4",
+    # # Seg01
+    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc4",
+    # # Seg02
+    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc4",
+    # # Seg04
+    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc4",
+    # # Seg10
+    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc4",
+    # # Seg14
+    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc4",
+    # # Seg16
+    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc4",
+    # # Seg17
+    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc4",
+    # # Seg18
+    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc4",
+    # # Seg19
+    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc4",
+    # # Seg23
+    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc4",
+    # # Seg25
+    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc4",
+    # # Seg26
+    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc4",
+    # # Seg28
+    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc4",
 ]
 
 cached_cnt_sources = [
@@ -365,76 +365,76 @@ cached_cnt_sources = [
 #     "/mnt/data/HW7Leslie/train/Seg31/Seg31sc4",
 # #### # HW7 & Leslie  DATASET
 # #### # HW7 Valid Split
-#     # Seg00
-#     "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc4",
-#     # Seg01
-#     "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc4",
-#     # Seg02
-#     "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc4",
-#     # Seg04
-#     "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc4",
-#     # Seg10
-#     "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc4",
-#     # Seg14
-#     "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc4",
-#     # Seg16
-#     "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc4",
-#     # Seg17
-#     "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc4",
-#     # Seg18
-#     "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc4",
-#     # Seg19
-#     "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc4",
-#     # Seg23
-#     "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc4",
-#     # Seg25
-#     "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc4",
-#     # Seg26
-#     "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc4",
-#     # Seg28
-#     "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc1",
-#     "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc2",
-#     "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc3",
-#     "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc4",
+    # # Seg00
+    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc4",
+    # # Seg01
+    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc4",
+    # # Seg02
+    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc4",
+    # # Seg04
+    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc4",
+    # # Seg10
+    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc4",
+    # # Seg14
+    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc4",
+    # # Seg16
+    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc4",
+    # # Seg17
+    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc4",
+    # # Seg18
+    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc4",
+    # # Seg19
+    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc4",
+    # # Seg23
+    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc4",
+    # # Seg25
+    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc4",
+    # # Seg26
+    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc4",
+    # # Seg28
+    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc1",
+    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc2",
+    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc3",
+    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc4",
 ]
 
 # choose the detectors

@@ -214,6 +214,9 @@ def format_frame_number(frame_number, number_of_frames):
 def format_frame_id(video_name, frame_number, number_of_frames):
     return hash(f"{video_name}{frame_number}{number_of_frames}")
 
+def format_bbox_id(bbox_index, video_name, frame_number, number_of_frames):
+    return hash(f"{video_name}{frame_number}{number_of_frames}{bbox_index}")
+
 def image_path_from_details(video_name, frame_number, number_of_frames, output_directory):
         # Construct the output file name
         extension = '.jpg'
@@ -282,7 +285,10 @@ def detections_to_coco(args):
 
     unique_frames = sorted(detection_df.fn.unique())
     for fn in unique_frames:
-        file_name = image_path_from_details(video_name, fn, number_of_frames, image_directory)
+        file_path = image_path_from_details(video_name, fn, number_of_frames, image_directory)
+        prefix = args.Dataset
+        file_name = os.path.relpath(file_path, prefix)
+
         frame_id  = format_frame_id(video_name, fn, number_of_frames)
 
         image_dict = {"file_name":file_name,
@@ -295,13 +301,15 @@ def detections_to_coco(args):
         for i, row in detection_df_fn.iterrows():
             bbox = [int(row.x1), int(row.y1), int(row.x2-row.x1), int(row.y2-row.y1)]
             category_id = int(row["class"])
-            bbox_id = 1 #@TODO need to change that
+            bbox_id = format_bbox_id(i, video_name, fn, number_of_frames) #@TODO need to change that
 
             annot_dict = {"iscrowd":0,
                           "image_id":frame_id,
                           "bbox":bbox,
                           "category_id":category_id,
-                          "id": bbox_id}
+                          "id": bbox_id,
+                          "area": (row.x2 - row.x1)*(row.y2 - row.y1)
+                        }
 
             annots_list.append(annot_dict)
 
@@ -351,7 +359,10 @@ def detections_to_coco_ms(args_split, args_ms, args_mcs):
 
             unique_frames = sorted(detection_df.fn.unique())
             for fn in unique_frames:
-                file_name = image_path_from_details(video_name, fn, number_of_frames, image_directory)
+                file_path = image_path_from_details(video_name, fn, number_of_frames, image_directory)
+                prefix = args_split.Dataset
+                file_name = os.path.relpath(file_path, prefix)
+                
                 frame_id  = format_frame_id(video_name, fn, number_of_frames)
 
                 image_dict = {"file_name":file_name,
@@ -366,13 +377,15 @@ def detections_to_coco_ms(args_split, args_ms, args_mcs):
                 for i, row in detection_df_fn.iterrows():
                     bbox = [int(row.x1), int(row.y1), int(row.x2-row.x1), int(row.y2-row.y1)]
                     category_id = int(row["class"])
-                    bbox_id = 1 #@TODO need to change that
+                    bbox_id = format_bbox_id(i, video_name, fn, number_of_frames) #@TODO need to change that
 
                     annot_dict = {"iscrowd":0,
                                 "image_id":frame_id,
                                 "bbox":bbox,
                                 "category_id":category_id,
-                                "id": bbox_id}
+                                "id": bbox_id,
+                                "area": (row.x2 - row.x1)*(row.y2 - row.y1)
+                                }
 
                     annots_list.append(annot_dict)
 
