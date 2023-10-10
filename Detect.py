@@ -13,6 +13,7 @@ import Detectors.YOLOv8.detect
 import Detectors.DDETR.detect
 import Detectors.InternImage.detect
 import Detectors.GTHW7.detect
+import Detectors.RTMDet.detect
 
 # --------------------------
 
@@ -24,6 +25,7 @@ detectors["YOLOv8"]      = Detectors.YOLOv8.detect
 detectors["DDETR"]       = Detectors.DDETR.detect
 detectors["InternImage"] = Detectors.InternImage.detect
 detectors["GTHW7"]       = Detectors.GTHW7.detect
+detectors["RTMDet"]      = Detectors.RTMDet.detect
 
 def detect(args):
     # check if detector names is valid

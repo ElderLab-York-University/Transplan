@@ -438,8 +438,8 @@ cached_cnt_sources = [
 ]
 
 # choose the detectors
-# options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage"]
-detectors = ["GTHW7"]
+# options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet"]
+detectors = ["RTMDet"]
 
 # choose the tracker
 # options: ["GT", sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
