@@ -17,6 +17,7 @@ import Detectors.RTMDet.detect
 import Detectors.YoloX.detect
 import Detectors.CascadeRCNN.detect
 import Detectors.DeformableDETR.detect
+import Detectors.CenterNet.detect
 # --------------------------
 detectors = {}
 detectors["detectron2"]     = Detectors.detectron2.detect
@@ -30,6 +31,7 @@ detectors["RTMDet"]         = Detectors.RTMDet.detect
 detectors["YoloX"]          = Detectors.YoloX.detect
 detectors["CascadeRCNN"]    = Detectors.CascadeRCNN.detect
 detectors["DeformableDETR"] = Detectors.DeformableDETR.detect
+detectors["CenterNet"]      = Detectors.CenterNet.detect
 
 def detect(args):
     # check if detector names is valid
