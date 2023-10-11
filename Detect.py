@@ -14,6 +14,7 @@ import Detectors.DDETR.detect
 import Detectors.InternImage.detect
 import Detectors.GTHW7.detect
 import Detectors.RTMDet.detect
+import Detectors.YoloX.detect
 
 # --------------------------
 
@@ -26,6 +27,7 @@ detectors["DDETR"]       = Detectors.DDETR.detect
 detectors["InternImage"] = Detectors.InternImage.detect
 detectors["GTHW7"]       = Detectors.GTHW7.detect
 detectors["RTMDet"]      = Detectors.RTMDet.detect
+detectors["YoloX"]       = Detectors.YoloX.detect
 
 def detect(args):
     # check if detector names is valid
@@ -220,6 +222,8 @@ def format_bbox_id(bbox_index, video_name, frame_number, number_of_frames):
     return hash(f"{video_name}{frame_number}{number_of_frames}{bbox_index}")
 
 def image_path_from_details(video_name, frame_number, number_of_frames, output_directory):
+        frame_number = int(frame_number)
+        number_of_frames = int(number_of_frames)
         # Construct the output file name
         extension = '.jpg'
         formated_frame_number = format_frame_number(frame_number, number_of_frames) # adds zero fills
@@ -287,11 +291,11 @@ def detections_to_coco(args):
 
     unique_frames = sorted(detection_df.fn.unique())
     for fn in unique_frames:
-        file_path = image_path_from_details(video_name, fn, number_of_frames, image_directory)
+        file_path = image_path_from_details(video_name, int(fn), number_of_frames, image_directory)
         prefix = args.Dataset
         file_name = os.path.relpath(file_path, prefix)
 
-        frame_id  = format_frame_id(video_name, fn, number_of_frames)
+        frame_id  = format_frame_id(video_name, int(fn), number_of_frames)
 
         image_dict = {"file_name":file_name,
                       "height":frame_height,
@@ -303,7 +307,7 @@ def detections_to_coco(args):
         for i, row in detection_df_fn.iterrows():
             bbox = [int(row.x1), int(row.y1), int(row.x2-row.x1), int(row.y2-row.y1)]
             category_id = int(row["class"])
-            bbox_id = format_bbox_id(i, video_name, fn, number_of_frames) #@TODO need to change that
+            bbox_id = format_bbox_id(i, video_name, int(fn), number_of_frames) #@TODO need to change that
 
             annot_dict = {"iscrowd":0,
                           "image_id":frame_id,
@@ -318,7 +322,7 @@ def detections_to_coco(args):
 
     unique_categories = sorted(detection_df["class"].unique())
     for category in unique_categories:
-        category_dict = {"id":int(category), "name":f"{category}"} #@TODO for now categories do not have name
+        category_dict = {"id":int(category), "name":f"{int(category)}"} #@TODO for now categories do not have name
         catego_list.append(category_dict)
 
     coco_annotations = {"images": images_list,
@@ -361,11 +365,11 @@ def detections_to_coco_ms(args_split, args_ms, args_mcs):
 
             unique_frames = sorted(detection_df.fn.unique())
             for fn in unique_frames:
-                file_path = image_path_from_details(video_name, fn, number_of_frames, image_directory)
+                file_path = image_path_from_details(video_name, int(fn), number_of_frames, image_directory)
                 prefix = args_split.Dataset
                 file_name = os.path.relpath(file_path, prefix)
                 
-                frame_id  = format_frame_id(video_name, fn, number_of_frames)
+                frame_id  = format_frame_id(video_name, int(fn), number_of_frames)
 
                 image_dict = {"file_name":file_name,
                             "height":frame_height,
@@ -379,7 +383,7 @@ def detections_to_coco_ms(args_split, args_ms, args_mcs):
                 for i, row in detection_df_fn.iterrows():
                     bbox = [int(row.x1), int(row.y1), int(row.x2-row.x1), int(row.y2-row.y1)]
                     category_id = int(row["class"])
-                    bbox_id = format_bbox_id(i, video_name, fn, number_of_frames) #@TODO need to change that
+                    bbox_id = format_bbox_id(i, video_name, int(fn), number_of_frames)
 
                     annot_dict = {"iscrowd":0,
                                 "image_id":frame_id,
@@ -399,12 +403,14 @@ def detections_to_coco_ms(args_split, args_ms, args_mcs):
 
     unique_categories = np.unique(all_category)
     for category in unique_categories:
-        category_dict = {"id":int(category), "name":f"{category}"} #@TODO for now categories do not have name
+        category_dict = {"id":int(category), "name":f"{int(category)}"} 
         catego_list.append(category_dict)
 
     coco_annotations = {"images": images_list,
                         "annotations": annots_list,
                         "categories": catego_list}
+
+    print(catego_list)
 
     # open a file for writing
     with open(results_path, 'w') as f:
