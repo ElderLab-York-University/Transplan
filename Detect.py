@@ -16,20 +16,20 @@ import Detectors.GTHW7.detect
 import Detectors.RTMDet.detect
 import Detectors.YoloX.detect
 import Detectors.CascadeRCNN.detect
-
+import Detectors.DeformableDETR.detect
 # --------------------------
-
 detectors = {}
-detectors["detectron2"]  = Detectors.detectron2.detect
-detectors["OpenMM"]      = Detectors.OpenMM.detect
-detectors["YOLOv5"]      = Detectors.YOLOv5.detect
-detectors["YOLOv8"]      = Detectors.YOLOv8.detect
-detectors["DDETR"]       = Detectors.DDETR.detect
-detectors["InternImage"] = Detectors.InternImage.detect
-detectors["GTHW7"]       = Detectors.GTHW7.detect
-detectors["RTMDet"]      = Detectors.RTMDet.detect
-detectors["YoloX"]       = Detectors.YoloX.detect
-detectors["CascadeRCNN"] = Detectors.CascadeRCNN.detect
+detectors["detectron2"]     = Detectors.detectron2.detect
+detectors["OpenMM"]         = Detectors.OpenMM.detect
+detectors["YOLOv5"]         = Detectors.YOLOv5.detect
+detectors["YOLOv8"]         = Detectors.YOLOv8.detect
+detectors["DDETR"]          = Detectors.DDETR.detect
+detectors["InternImage"]    = Detectors.InternImage.detect
+detectors["GTHW7"]          = Detectors.GTHW7.detect
+detectors["RTMDet"]         = Detectors.RTMDet.detect
+detectors["YoloX"]          = Detectors.YoloX.detect
+detectors["CascadeRCNN"]    = Detectors.CascadeRCNN.detect
+detectors["DeformableDETR"] = Detectors.DeformableDETR.detect
 
 def detect(args):
     # check if detector names is valid
