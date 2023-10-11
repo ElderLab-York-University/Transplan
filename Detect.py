@@ -15,6 +15,7 @@ import Detectors.InternImage.detect
 import Detectors.GTHW7.detect
 import Detectors.RTMDet.detect
 import Detectors.YoloX.detect
+import Detectors.CascadeRCNN.detect
 
 # --------------------------
 
@@ -28,6 +29,7 @@ detectors["InternImage"] = Detectors.InternImage.detect
 detectors["GTHW7"]       = Detectors.GTHW7.detect
 detectors["RTMDet"]      = Detectors.RTMDet.detect
 detectors["YoloX"]       = Detectors.YoloX.detect
+detectors["CascadeRCNN"] = Detectors.CascadeRCNN.detect
 
 def detect(args):
     # check if detector names is valid
