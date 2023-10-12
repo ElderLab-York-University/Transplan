@@ -20,3 +20,12 @@ conda update conda
 conda update anaconda
 conda config --set auto_activate_base false
 ```
+
+create a conda virtual environment, and install requirements.
+
+```
+conda create -n <ENV_NAME> python=3.8
+conda activate <ENV_NAME>
+conda install pip
+pip install -r requirements.txt
+```
