@@ -298,6 +298,7 @@ if __name__ == "__main__":
     parser.add_argument("--MaskGT", help="True/False if to use mask in evaluating ground truth", action="store_true")
     parser.add_argument("--BboxMin", help="Min Size for Bboxes", type=int)
     parser.add_argument("--BboxMax", help="Max Size for Bboxes", type=int)
+    parser.add_argument("--MaskDetections", help="Mask Detections if availible", action="store_true")
 
     parser.add_argument("--FindOptimalKDEBW", help="find the optimal KDE band width", action='store_true')
 

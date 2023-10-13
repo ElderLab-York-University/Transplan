@@ -154,6 +154,11 @@ def get_visdetection_gt_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisDetection + Puncuations.Dot + "GT" + Puncuations.Dot +args.Detector + Puncuations.Dot + SubTaskExt.VisDetection)
+def get_detection_mask_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset,file_name + Puncuations.Dot + "detections.mask.npz")
+    
 def get_roi_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -355,6 +360,10 @@ def add_vis_top_tracking_path_to_args(args):
     return args
 def add_visdetection_gt_path(args):
     args.VisDetectionGTPth= get_visdetection_gt_path(args)
+    return args
+
+def add_detection_mask_path_to_args(args):
+    args.DetectionMask= get_detection_mask_path(args)
     return args
 def add_roi_path(args):
     rois=get_roi_path(args)
@@ -607,7 +616,8 @@ def complete_args(args):
         
     if args.Eval:
         args = add_eval_save_path(args)
-    
+    if args.MaskDetections:
+        args= add_detection_mask_path_to_args(args)
     if args.VisGTDet:
         args= add_visdetection_gt_path(args)
     if args.EvalDet:

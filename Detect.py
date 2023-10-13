@@ -298,11 +298,11 @@ def get_overlapping_bboxes(df, args, intersecting_rectangles):
 
             # Only keep those boxes who has certain IoU - Overlapping boxes in the intersecting regions.
 
-            overlapping_pairs = np.where((ious > 0.7) & (ious < 1.0))
+            overlapping_pairs = np.where((ious > 0.9) & (ious < 1.0))
 
             overlapping_pairs = np.hstack((overlapping_pairs[0].reshape(-1, 1), overlapping_pairs[1].reshape(-1, 1)))
             
-            non_overlapping_pairs = np.where((ious <= 0.7) & (ious > 0.0))
+            non_overlapping_pairs = np.where((ious <= 0.9) & (ious > 0.0))
 
             non_overlapping_pairs = np.hstack((non_overlapping_pairs[0].reshape(-1, 1), non_overlapping_pairs[1].reshape(-1, 1)))
 
