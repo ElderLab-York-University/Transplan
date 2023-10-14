@@ -1,450 +1,38 @@
 import os
-# choose the segment/dataset/video
 
-splits = [
-######## HW7 splits
-    # "/mnt/data/HW7Leslie/train",
-    # "/mnt/data/HW7Leslie/valid",
-]
+def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"]):
+    subs_path = []
+    for root in roots:
+        subs = os.listdir(root)
+        for sub in subs:
+            sub_path = os.path.join(root, sub)
+            if os.path.isdir(sub_path) and\
+                (subs_to_exclude is None or sub not in subs_to_exclude) and\
+                (subs_to_include is None or sub in subs_to_include):
+                subs_path.append(sub_path)
+    return subs_path
 
-segments = [
-######### HW7 Train Segment
-    # # # Seg03
-    # "/mnt/data/HW7Leslie/trian/Seg03",
-    # # # Seg05
-    # "/mnt/data/HW7Leslie/trian/Seg05",
-    # # # Seg06
-    # "/mnt/data/HW7Leslie/trian/Seg06",
-    # #Seg07
-    # "/mnt/data/HW7Leslie/trian/Seg07",
-    # #Seg08
-    # "/mnt/data/HW7Leslie/trian/Seg08",
-    # # # Seg09
-    # "/mnt/data/HW7Leslie/trian/Seg09",
-    # # # Seg11
-    # "/mnt/data/HW7Leslie/trian/Seg11",
-    # # # Seg12
-    # "/mnt/data/HW7Leslie/trian/Seg12",
-    # # # Seg13
-    # "/mnt/data/HW7Leslie/trian/Seg13",
-    # #Seg15
-    # "/mnt/data/HW7Leslie/trian/Seg15",
-    # #Seg20
-    # "/mnt/data/HW7Leslie/trian/Seg20",
-    # #Seg21
-    # "/mnt/data/HW7Leslie/trian/Seg21",
-    # #Seg22
-    # "/mnt/data/HW7Leslie/trian/Seg22",
-    # #Seg24
-    # "/mnt/data/HW7Leslie/trian/Seg24",
-    # #Seg27
-    # "/mnt/data/HW7Leslie/trian/Seg27",
-    # #Seg29
-    # "/mnt/data/HW7Leslie/trian/Seg29",
-    # #Seg30
-    # "/mnt/data/HW7Leslie/trian/Seg30",
-    # #Seg31
-    # "/mnt/data/HW7Leslie/trian/Seg31",
-######### HW7 Valid Segment
-    # #Seg00
-    # "/mnt/data/HW7Leslie/valid/Seg00",
-    # #Seg01
-    # "/mnt/data/HW7Leslie/valid/Seg01",
-    # #Seg02
-    # "/mnt/data/HW7Leslie/valid/Seg02",
-    # #Seg04
-    # "/mnt/data/HW7Leslie/valid/Seg04",
-    # # # Seg10
-    # "/mnt/data/HW7Leslie/valid/Seg10",
-    # #Seg14
-    # "/mnt/data/HW7Leslie/valid/Seg14",
-    # #Seg16
-    # "/mnt/data/HW7Leslie/valid/Seg16",
-    # #Seg17
-    # "/mnt/data/HW7Leslie/valid/Seg17",
-    # #Seg18
-    # "/mnt/data/HW7Leslie/valid/Seg18",
-    # #Seg19
-    # "/mnt/data/HW7Leslie/valid/Seg19",
-    # #Seg23
-    # "/mnt/data/HW7Leslie/valid/Seg23",
-    # #Seg25
-    # "/mnt/data/HW7Leslie/valid/Seg25",
-    # #Seg26
-    # "/mnt/data/HW7Leslie/valid/Seg26",
-    # #Seg28
-    # "/mnt/data/HW7Leslie/valid/Seg28",
+# choose datasets/splits/segments/sources
+#  set to None if want to include all
+datasets     = ["/home/sajjad/HW7Leslie"]
+split_part   = ["train"]
+segment_part = ["Seg05"] 
+source_part  = ["Seg05sc1"]    
+splits       = get_sub_dirs(datasets, split_part)
+segments     = get_sub_dirs(splits, segment_part)
+sources      = get_sub_dirs(segments, source_part)
 
-]
-sources = [
-##### # TransPlan Dataset
-    # # D9L
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video2",
-    # # DBR
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video2",
-    # # DWP
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video2",
-    # # ECR
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video2",
-##### # HW7 & Leslie  DATASET
-##### # HW7 Train Split
-    # Seg03
-    # "/mnt/data/HW7Leslie/train/Seg03/Seg03sc1",
-#     "/mnt/data/HW7Leslie/train/Seg03/Seg03sc2",
-#     "/mnt/data/HW7Leslie/train/Seg03/Seg03sc3",
-#     "/mnt/data/HW7Leslie/train/Seg03/Seg03sc4",
-#     # Seg05
-    # "/mnt/data/HW7Leslie/train/Seg05/Seg05sc1",
-#     "/mnt/data/HW7Leslie/train/Seg05/Seg05sc2",
-#     "/mnt/data/HW7Leslie/train/Seg05/Seg05sc3",
-#     "/mnt/data/HW7Leslie/train/Seg05/Seg05sc4",
-#     # Seg06
-#     "/mnt/data/HW7Leslie/train/Seg06/Seg06sc1",
-#     "/mnt/data/HW7Leslie/train/Seg06/Seg06sc2",
-#     "/mnt/data/HW7Leslie/train/Seg06/Seg06sc3",
-#     "/mnt/data/HW7Leslie/train/Seg06/Seg06sc4",
-#     # Seg07
-#     "/mnt/data/HW7Leslie/train/Seg07/Seg07sc1",
-#     "/mnt/data/HW7Leslie/train/Seg07/Seg07sc2",
-#     "/mnt/data/HW7Leslie/train/Seg07/Seg07sc3",
-#     "/mnt/data/HW7Leslie/train/Seg07/Seg07sc4",
-#     # Seg08
-#     "/mnt/data/HW7Leslie/train/Seg08/Seg08sc1",
-#     "/mnt/data/HW7Leslie/train/Seg08/Seg08sc2",
-#     "/mnt/data/HW7Leslie/train/Seg08/Seg08sc3",
-#     "/mnt/data/HW7Leslie/train/Seg08/Seg08sc4",
-#     # Seg09
-#     "/mnt/data/HW7Leslie/train/Seg09/Seg09sc1",
-#     "/mnt/data/HW7Leslie/train/Seg09/Seg09sc2",
-#     "/mnt/data/HW7Leslie/train/Seg09/Seg09sc3",
-#     "/mnt/data/HW7Leslie/train/Seg09/Seg09sc4",
-#     # Seg11
-#     "/mnt/data/HW7Leslie/train/Seg11/Seg11sc1",
-#     "/mnt/data/HW7Leslie/train/Seg11/Seg11sc2",
-#     "/mnt/data/HW7Leslie/train/Seg11/Seg11sc3",
-#     "/mnt/data/HW7Leslie/train/Seg11/Seg11sc4",
-#     # Seg12
-#     "/mnt/data/HW7Leslie/train/Seg12/Seg12sc1",
-#     "/mnt/data/HW7Leslie/train/Seg12/Seg12sc2",
-#     "/mnt/data/HW7Leslie/train/Seg12/Seg12sc3",
-#     "/mnt/data/HW7Leslie/train/Seg12/Seg12sc4",
-#     # Seg13
-#     "/mnt/data/HW7Leslie/train/Seg13/Seg13sc1",
-#     "/mnt/data/HW7Leslie/train/Seg13/Seg13sc2",
-#     "/mnt/data/HW7Leslie/train/Seg13/Seg13sc3",
-#     "/mnt/data/HW7Leslie/train/Seg13/Seg13sc4",
-#     # # Seg15
-#     "/mnt/data/HW7Leslie/train/Seg15/Seg15sc1",
-#     "/mnt/data/HW7Leslie/train/Seg15/Seg15sc2",
-#     "/mnt/data/HW7Leslie/train/Seg15/Seg15sc3",
-#     "/mnt/data/HW7Leslie/train/Seg15/Seg15sc4",
-#     # Seg20
-#     "/mnt/data/HW7Leslie/train/Seg20/Seg20sc1",
-#     "/mnt/data/HW7Leslie/train/Seg20/Seg20sc2",
-#     "/mnt/data/HW7Leslie/train/Seg20/Seg20sc3",
-#     "/mnt/data/HW7Leslie/train/Seg20/Seg20sc4",
-#     # Seg21
-#     "/mnt/data/HW7Leslie/train/Seg21/Seg21sc1",
-#     "/mnt/data/HW7Leslie/train/Seg21/Seg21sc2",
-#     "/mnt/data/HW7Leslie/train/Seg21/Seg21sc3",
-#     "/mnt/data/HW7Leslie/train/Seg21/Seg21sc4",
-#     # Seg22
-#     "/mnt/data/HW7Leslie/train/Seg22/Seg22sc1",
-#     "/mnt/data/HW7Leslie/train/Seg22/Seg22sc2",
-#     "/mnt/data/HW7Leslie/train/Seg22/Seg22sc3",
-#     "/mnt/data/HW7Leslie/train/Seg22/Seg22sc4",
-#     # Seg24
-#     "/mnt/data/HW7Leslie/train/Seg24/Seg24sc1",
-#     "/mnt/data/HW7Leslie/train/Seg24/Seg24sc2",
-#     "/mnt/data/HW7Leslie/train/Seg24/Seg24sc3",
-#     "/mnt/data/HW7Leslie/train/Seg24/Seg24sc4",
-#     # Seg27
-#     "/mnt/data/HW7Leslie/train/Seg27/Seg27sc1",
-#     "/mnt/data/HW7Leslie/train/Seg27/Seg27sc2",
-#     "/mnt/data/HW7Leslie/train/Seg27/Seg27sc3",
-#     "/mnt/data/HW7Leslie/train/Seg27/Seg27sc4",
-#     # Seg29
-#     "/mnt/data/HW7Leslie/train/Seg29/Seg29sc1",
-#     "/mnt/data/HW7Leslie/train/Seg29/Seg29sc2",
-#     "/mnt/data/HW7Leslie/train/Seg29/Seg29sc3",
-#     "/mnt/data/HW7Leslie/train/Seg29/Seg29sc4",
-#     # Seg30
-#     "/mnt/data/HW7Leslie/train/Seg30/Seg30sc1",
-#     "/mnt/data/HW7Leslie/train/Seg30/Seg30sc2",
-#     "/mnt/data/HW7Leslie/train/Seg30/Seg30sc3",
-#     "/mnt/data/HW7Leslie/train/Seg30/Seg30sc4",
-#     # Seg31
-#     "/mnt/data/HW7Leslie/train/Seg31/Seg31sc1",
-#     "/mnt/data/HW7Leslie/train/Seg31/Seg31sc2",
-#     "/mnt/data/HW7Leslie/train/Seg31/Seg31sc3",
-#     "/mnt/data/HW7Leslie/train/Seg31/Seg31sc4",
-# #### # HW7 & Leslie  DATASET
-# #### # HW7 Valid Split
-    # # Seg00
-    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc4",
-    # # Seg01
-    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc4",
-    # # Seg02
-    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc4",
-    # # Seg04
-    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc4",
-    # # Seg10
-    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc4",
-    # # Seg14
-    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc4",
-    # # Seg16
-    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc4",
-    # # Seg17
-    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc4",
-    # # Seg18
-    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc4",
-    # # Seg19
-    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc4",
-    # # Seg23
-    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc4",
-    # # Seg25
-    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc4",
-    # # Seg26
-    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc4",
-    # # Seg28
-    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc4",
-]
-
-cached_cnt_sources = [
-# TransPlan Dataset
-   # TransPlan Dataset
-    # # D9L
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
-    # # DBR
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1",
-    # # DWP
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1",
-    # # ECR
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1",
-##### # HW7 & Leslie  DATASET
-##### # HW7 Train Split
-    # Seg03
-    # "/mnt/data/HW7Leslie/train/Seg03/Seg03sc1",
-#     "/mnt/data/HW7Leslie/train/Seg03/Seg03sc2",
-#     "/mnt/data/HW7Leslie/train/Seg03/Seg03sc3",
-#     "/mnt/data/HW7Leslie/train/Seg03/Seg03sc4",
-#     # Seg05
-    # "/mnt/data/HW7Leslie/train/Seg05/Seg05sc1",
-#     "/mnt/data/HW7Leslie/train/Seg05/Seg05sc2",
-#     "/mnt/data/HW7Leslie/train/Seg05/Seg05sc3",
-#     "/mnt/data/HW7Leslie/train/Seg05/Seg05sc4",
-#     # Seg06
-#     "/mnt/data/HW7Leslie/train/Seg06/Seg06sc1",
-#     "/mnt/data/HW7Leslie/train/Seg06/Seg06sc2",
-#     "/mnt/data/HW7Leslie/train/Seg06/Seg06sc3",
-#     "/mnt/data/HW7Leslie/train/Seg06/Seg06sc4",
-#     # Seg07
-#     "/mnt/data/HW7Leslie/train/Seg07/Seg07sc1",
-#     "/mnt/data/HW7Leslie/train/Seg07/Seg07sc2",
-#     "/mnt/data/HW7Leslie/train/Seg07/Seg07sc3",
-#     "/mnt/data/HW7Leslie/train/Seg07/Seg07sc4",
-#     # Seg08
-#     "/mnt/data/HW7Leslie/train/Seg08/Seg08sc1",
-#     "/mnt/data/HW7Leslie/train/Seg08/Seg08sc2",
-#     "/mnt/data/HW7Leslie/train/Seg08/Seg08sc3",
-#     "/mnt/data/HW7Leslie/train/Seg08/Seg08sc4",
-#     # Seg09
-#     "/mnt/data/HW7Leslie/train/Seg09/Seg09sc1",
-#     "/mnt/data/HW7Leslie/train/Seg09/Seg09sc2",
-#     "/mnt/data/HW7Leslie/train/Seg09/Seg09sc3",
-#     "/mnt/data/HW7Leslie/train/Seg09/Seg09sc4",
-#     # Seg11
-#     "/mnt/data/HW7Leslie/train/Seg11/Seg11sc1",
-#     "/mnt/data/HW7Leslie/train/Seg11/Seg11sc2",
-#     "/mnt/data/HW7Leslie/train/Seg11/Seg11sc3",
-#     "/mnt/data/HW7Leslie/train/Seg11/Seg11sc4",
-#     # Seg12
-#     "/mnt/data/HW7Leslie/train/Seg12/Seg12sc1",
-#     "/mnt/data/HW7Leslie/train/Seg12/Seg12sc2",
-#     "/mnt/data/HW7Leslie/train/Seg12/Seg12sc3",
-#     "/mnt/data/HW7Leslie/train/Seg12/Seg12sc4",
-#     # Seg13
-#     "/mnt/data/HW7Leslie/train/Seg13/Seg13sc1",
-#     "/mnt/data/HW7Leslie/train/Seg13/Seg13sc2",
-#     "/mnt/data/HW7Leslie/train/Seg13/Seg13sc3",
-#     "/mnt/data/HW7Leslie/train/Seg13/Seg13sc4",
-#     # # Seg15
-#     "/mnt/data/HW7Leslie/train/Seg15/Seg15sc1",
-#     "/mnt/data/HW7Leslie/train/Seg15/Seg15sc2",
-#     "/mnt/data/HW7Leslie/train/Seg15/Seg15sc3",
-#     "/mnt/data/HW7Leslie/train/Seg15/Seg15sc4",
-#     # Seg20
-#     "/mnt/data/HW7Leslie/train/Seg20/Seg20sc1",
-#     "/mnt/data/HW7Leslie/train/Seg20/Seg20sc2",
-#     "/mnt/data/HW7Leslie/train/Seg20/Seg20sc3",
-#     "/mnt/data/HW7Leslie/train/Seg20/Seg20sc4",
-#     # Seg21
-#     "/mnt/data/HW7Leslie/train/Seg21/Seg21sc1",
-#     "/mnt/data/HW7Leslie/train/Seg21/Seg21sc2",
-#     "/mnt/data/HW7Leslie/train/Seg21/Seg21sc3",
-#     "/mnt/data/HW7Leslie/train/Seg21/Seg21sc4",
-#     # Seg22
-#     "/mnt/data/HW7Leslie/train/Seg22/Seg22sc1",
-#     "/mnt/data/HW7Leslie/train/Seg22/Seg22sc2",
-#     "/mnt/data/HW7Leslie/train/Seg22/Seg22sc3",
-#     "/mnt/data/HW7Leslie/train/Seg22/Seg22sc4",
-#     # Seg24
-#     "/mnt/data/HW7Leslie/train/Seg24/Seg24sc1",
-#     "/mnt/data/HW7Leslie/train/Seg24/Seg24sc2",
-#     "/mnt/data/HW7Leslie/train/Seg24/Seg24sc3",
-#     "/mnt/data/HW7Leslie/train/Seg24/Seg24sc4",
-#     # Seg27
-#     "/mnt/data/HW7Leslie/train/Seg27/Seg27sc1",
-#     "/mnt/data/HW7Leslie/train/Seg27/Seg27sc2",
-#     "/mnt/data/HW7Leslie/train/Seg27/Seg27sc3",
-#     "/mnt/data/HW7Leslie/train/Seg27/Seg27sc4",
-#     # Seg29
-#     "/mnt/data/HW7Leslie/train/Seg29/Seg29sc1",
-#     "/mnt/data/HW7Leslie/train/Seg29/Seg29sc2",
-#     "/mnt/data/HW7Leslie/train/Seg29/Seg29sc3",
-#     "/mnt/data/HW7Leslie/train/Seg29/Seg29sc4",
-#     # Seg30
-#     "/mnt/data/HW7Leslie/train/Seg30/Seg30sc1",
-#     "/mnt/data/HW7Leslie/train/Seg30/Seg30sc2",
-#     "/mnt/data/HW7Leslie/train/Seg30/Seg30sc3",
-#     "/mnt/data/HW7Leslie/train/Seg30/Seg30sc4",
-#     # Seg31
-#     "/mnt/data/HW7Leslie/train/Seg31/Seg31sc1",
-#     "/mnt/data/HW7Leslie/train/Seg31/Seg31sc2",
-#     "/mnt/data/HW7Leslie/train/Seg31/Seg31sc3",
-#     "/mnt/data/HW7Leslie/train/Seg31/Seg31sc4",
-# #### # HW7 & Leslie  DATASET
-# #### # HW7 Valid Split
-    # # Seg00
-    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg00/Seg00sc4",
-    # # Seg01
-    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg01/Seg01sc4",
-    # # Seg02
-    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg02/Seg02sc4",
-    # # Seg04
-    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg04/Seg04sc4",
-    # # Seg10
-    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg10/Seg10sc4",
-    # # Seg14
-    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg14/Seg14sc4",
-    # # Seg16
-    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg16/Seg16sc4",
-    # # Seg17
-    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg17/Seg17sc4",
-    # # Seg18
-    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg18/Seg18sc4",
-    # # Seg19
-    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg19/Seg19sc4",
-    # # Seg23
-    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg23/Seg23sc4",
-    # # Seg25
-    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg25/Seg25sc4",
-    # # Seg26
-    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg26/Seg26sc4",
-    # # Seg28
-    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc1",
-    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc2",
-    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc3",
-    # "/mnt/data/HW7Leslie/valid/Seg28/Seg28sc4",
-]
+# choose the segmenter
+# options: ["InternImage"]
+segmenters = ["InternImage"]
 
 # choose the detectors
-# options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet"]
-detectors = ["RTMDet"]
+# options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN"]
+detectors = ["CascadeRCNN"]
 
 # choose the tracker
 # options: ["GT", sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
 trackers = ["ByteTrack"] 
-
 
 # choose the clustering algorithm
 # options: ["SpectralFull", "DBSCAN", "SpectralKNN"]
@@ -455,11 +43,8 @@ clusters = ["SpectralFull"]
 clt_metrics = ["tcos", "cmm"]
 cnt_metrics = ["kde"]
 
-# choose the segmenter
-# options: ["InternImage"]
-segmenters = ["InternImage"]
 
-# for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
+for src, cached_cnt_pth in zip(sources, sources):
     ########################################################
     # 0. extract images from video
     # os.system(f"python3 main.py --Dataset={src} --ExtractImages)
@@ -501,9 +86,9 @@ segmenters = ["InternImage"]
     # 3. run the detection
     # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=NULL --Detect --VisDetect")
     ########################################################
-    # for det in detectors:
-    #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect --VisDetect")
+    for det in detectors:
+        print(f"detecting ----> src:{src} det:{det}")
+        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect --VisDetect")
 
     ########################################################
     # 3.5 run the detection post processing
