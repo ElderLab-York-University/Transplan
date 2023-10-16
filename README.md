@@ -73,7 +73,7 @@ If you use this toolbox or benchmark in your research, please cite this project.
 
 ## License
 
-This project is released under the [Apache 2.0 license](LICENSE).
+This project is released under the [MIT license](LICENSE).
   
 IMPORTANT: do not install opencv via pip as it will have conflict with Qt5 dependencies. Install it using apt/apt-get
 ```
