@@ -163,7 +163,11 @@ def get_roi_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset,file_name + Puncuations.Dot + "roi.npz")
-    
+def get_vis_inference_roi_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot +"Rois" +Puncuations.Dot +"png")
+        
 def get_vis_tracking_moi_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -368,6 +372,10 @@ def add_detection_mask_path_to_args(args):
 def add_roi_path(args):
     rois=get_roi_path(args)
     args.Rois=rois
+    return args
+def add_vis_inference_roi_path(args):
+    VisInferenceRoi= get_vis_inference_roi_path(args)
+    args.VisInferenceRoi= VisInferenceRoi
     return args
 def add_vis_tracking_moi_path_to_args(args):
     vis_tracking_pth = get_vis_tracking_moi_path_from_args(args)
@@ -626,6 +634,8 @@ def complete_args(args):
         args= add_gt_mask_path_to_args(args)
     if args.UseRois:
         args=add_roi_path(args)
+    if args.VisInferenceRois:
+        args=add_vis_inference_roi_path(args)
     args = add_metadata_to_args(args)
     if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Track or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW:
         args = add_homographygui_related_path_to_args(args)

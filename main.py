@@ -291,6 +291,7 @@ if __name__ == "__main__":
     parser.add_argument("--CachedCounterPth", help="path to pre-initialized cached counter object", type=str)
     parser.add_argument("--VisGTDet", help="path to pre-initialized cached counter object", action='store_true')
     parser.add_argument("--EvalDet", help="If Evaluate Detections", action='store_true')
+    parser.add_argument("--VisInferenceRois", help="visualize the inference ROI", action='store_true')
 
     parser.add_argument("--ForNFrames", help="visualize the N first frame instead of all of them", type=int)
     parser.add_argument("--ResampleTH", help="the threshold to resample tracks with", type=float, default=2)
