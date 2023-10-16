@@ -1,4 +1,4 @@
-# TransPlan Pipeline
+# Introduction
 
 Welcome to the TransPlan Pipeline, a comprehensive open-source solution for detecting, tracking, segmenting, and counting objects in video streams. This repository offers a powerful suite of computer vision tools and algorithms, designed to assist researchers, developers, and enthusiasts in analyzing video data with unprecedented precision and efficiency.
 
