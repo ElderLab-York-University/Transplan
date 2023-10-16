@@ -1,0 +1,5 @@
+# ninja log v5
+0	6309	1682396189612714306	/home/sajjad/Transplan/Trackers/ByteTrack/ByteTrack/build/temp.linux-x86_64-cpython-38/home/sajjad/Transplan/Trackers/ByteTrack/ByteTrack/yolox/layers/csrc/cocoeval/cocoeval.o	ec3602e45fcc8106
+0	7798	1682396191100719048	/home/sajjad/Transplan/Trackers/ByteTrack/ByteTrack/build/temp.linux-x86_64-cpython-38/home/sajjad/Transplan/Trackers/ByteTrack/ByteTrack/yolox/layers/csrc/vision.o	b2f8f6115faffbf7
+2	6955	1692393500929747389	/home/sajjad/Transplan/Trackers/ByteTrack/ByteTrack/build/temp.linux-x86_64-cpython-38/home/sajjad/Transplan/Trackers/ByteTrack/ByteTrack/yolox/layers/csrc/cocoeval/cocoeval.o	faa18b845cf44fbf
+2	8361	1692393502337748114	/home/sajjad/Transplan/Trackers/ByteTrack/ByteTrack/build/temp.linux-x86_64-cpython-38/home/sajjad/Transplan/Trackers/ByteTrack/ByteTrack/yolox/layers/csrc/vision.o	280e583366fcd7a9
