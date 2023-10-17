@@ -33,9 +33,9 @@ jobs:
           
       - name: build jupyter book config
         run: |
-          curl -o _config.yml 'https://raw.githubusercontent.com/SajjadPSavoji/Booklet/main/_config.yml'
-          curl -o change_yml.py 'https://raw.githubusercontent.com/SajjadPSavoji/Booklet/main/change_yml.py'
-          curl -o change_yml_url.py 'https://raw.githubusercontent.com/SajjadPSavoji/Booklet/main/change_yml_url.py' 
+          curl -o _config.yml 'https://raw.githubusercontent.com/ElderLab-York-University/Pages/main/_config.yml'
+          curl -o change_yml.py 'https://raw.githubusercontent.com/ElderLab-York-University/Pages/main/change_yml.py'
+          curl -o change_yml_url.py 'https://raw.githubusercontent.com/ElderLab-York-University/Pages/main/change_yml_url.py' 
       
       - name: set config field in yml file
         run: |
