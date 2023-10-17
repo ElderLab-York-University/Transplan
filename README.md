@@ -10,7 +10,7 @@ Welcome to the TransPlan Pipeline, a comprehensive open-source solution for dete
   
   You have the option to add your custom detectors as well(from a github repository or any other sources).
   
-  See [Detectors Guide](https://github.com/ElderLab-York-University/Transplan/edit/booklet/README.md)
+  See [Detectors Guide](Docs/DETECTORS.md)
 
 * **Segmentation**: Currently the segmentation module only supports InternImage.
   
@@ -18,40 +18,40 @@ Welcome to the TransPlan Pipeline, a comprehensive open-source solution for dete
   
   You can also add your own segmentation module.
 
-  See [Segmenter Guide](https://github.com/ElderLab-York-University/Transplan/edit/booklet/README.md)
+  See [Segmenter Guide](Docs/SEGMENTERS.md)
 
 * **Tracking**: This pipeline focuses on tracking by detection methodology but it also has the capability to support off-line tracking models.
 
   You can also add your own tracker.
 
-  See [Tracker Guide](https://github.com/ElderLab-York-University/Transplan/edit/booklet/README.md)
+  See [Tracker Guide](Docs/TRACKERS.md)
 
 * **Benchmarking**: There is support for detection and tracking evaluation if a grand-truch is provided.
   
-    See [Benchmarking Guide](https://github.com/ElderLab-York-University/Transplan/edit/booklet/README.md)
+    See [Benchmarking Guide](Docs/BENCHMARKING.md)
 
 * **Reprojection**: There is support for reprojecting points on video to real-world coordinates.
   * If camera extrinsics are given this can be done with DSM terrain models.
   * In other cases we have GUI for solving homographies.
     
-  See [Reprojection Guide](https://github.com/ElderLab-York-University/Transplan/edit/booklet/README.md)
+  See [Reprojection Guide](Docs/REPROJECTION.md)
 
 ## Task Specific Features
 
 * **Object Counting**: There is support to categorize objects' movements if their entry and exit spots form a structured environemnt such as an InterSection.
 
-  See [Counting Guide](https://github.com/ElderLab-York-University/Transplan/edit/booklet/README.md)
+  See [Counting Guide](Docs/COUNTING.md)
 
 
 ## Install
   Most of the code is based on `Python=3.8`. We use conda virtural environments to mange model specific dependancies internally.
 
-  To install see [Installation Guide](./)
+  To install see [Installation Guide](Docs/INSTALL.md)
 
 ## Getting Started
   We provide a typical usage flow of the pipeline in `run.py`.
   
-  There is also task specific user instructions in [User Guide](./)
+  There is also task specific user instructions in [User Guide](Docs/USERGUIDE.md)
 
 ## Citation
 
