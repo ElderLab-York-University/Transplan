@@ -34,7 +34,7 @@ Welcome to the TransPlan Pipeline, a comprehensive open-source solution for dete
   * If camera extrinsics are given this can be done with DSM terrain models.
   * In other cases we have GUI for solving homographies.
     
-  See [Reprojection Guide](Docs/REPROJECTION.md)
+  See [Backprojection Guide](Docs/REPROJECTION.md)
 
 ## Task Specific Features
 
