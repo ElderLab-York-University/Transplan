@@ -186,9 +186,17 @@ visualize all results with turn labels, id labels, ...
 ```
 python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={met} --VisTrackMoI
 ```
+# Multi Source/Camera Operations
 
-## Step 10: Average Counts across sources
+## Step 1: Average Counts across sources
 This is only applicable to multi camera envs
 ```
 python3 main.py --MultiCam --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={metric} --AverageCountsMC --EvalCountMC
+```
+
+# Multi Segment Operations
+## Step1: Convert detections for coco format
+This can be used for external use such as training and finetunning detectors from MMLab
+```
+python3 main.py --MultiSeg --Dataset={split} --Detector={det} --ConvertDetsToCOCO
 ```
