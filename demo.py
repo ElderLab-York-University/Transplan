@@ -23,7 +23,7 @@ def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"]):
 #        |           |             |           |--VideoName.ext
 #________|___________|_____________|___________|--VideoName.metadata.json
 
-datasets     = ["DemoDataSet"]
+datasets     = ["./DemoDataSet"]
 split_part   = ["Split1"]
 segment_part = ["Segment1"] 
 source_part  = ["Source1"]  
@@ -54,96 +54,101 @@ cnt_metrics = ["kde"]
 
 
 for src, cached_cnt_pth in zip(sources, sources):
+    print(f"running on source:{src}")
     ########################################################
-    # 1. estimate the Homography Metrix using Homography GUI 
-    # os.system(f"python3 main.py --Dataset={src}  --Detector=detectron2 --Tracker=sort --HomographyGUI --VisHomographyGUI --Frame=1 --TopView=[GoogleMap/OrthoPhoto]")
+    # 1. extract images from video
+    # os.system(f"python3 main.py --Dataset={src} --ExtractImages)
     ########################################################
-    # print(f"src:{src}")
-    # os.system(f"python3 main.py --Dataset={src}  --VisHomographyGUI --TopView=GoogleMap")
+    # print(f"extracting images from : {src}")
+    # os.system(f"python3 main.py --Dataset={src} --ExtractImages")
 
     ########################################################
-    # 2. visualizing the region of interest 
+    # 2. estimate the Homography Metrix using Homography GUI 
+    # os.system(f"python3 main.py --Dataset={src} --HomographyGUI --VisHomographyGUI --Frame=1 --TopView=[GoogleMap/OrthoPhoto]")
+    ########################################################
+    # print(f"Homography GUI ----> src:{src}")
+    # os.system(f"python3 main.py --Dataset={src}  --HomographyGUI --VisHomographyGUI --TopView=GoogleMap")
+
+    ########################################################
+    # 3. visualizing the region of interest 
     # ROI is provided to pipeline via <Videoname>.metadata.json file
     # ROI is a closed polygon (for intersections that is achieved by choosing 4 points)
     # ROI coordiantes are on the video frame
     # See Docs/ROI.md for more info
-    # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --VisROI --TopView=GoogleMap")
+    # os.system(f"python3 main.py --Dataset={src}  --VisROI --TopView=GoogleMap")
     #######################################################
-    # print(f"src:{src}")
-    # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --VisROI --TopView=GoogleMap")
+    # print(f"Vis ROI ----> src:{src}")
+    # os.system(f"python3 main.py --Dataset={src} --VisROI --TopView=GoogleMap")
 
     #######################################################
-    # 2.5 Segment Video Frames  and visualize
-    # Segmentation 
-    #  os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --Segment --Segmenter={seg} --VisSegment --ForNFrames=2000")
+    # 4. Segment Video Frames  and visualize 
+    #  os.system(f"python3 main.py --Dataset={src} --Segment --Segmenter={seg} --VisSegment --ForNFrames=2000")
     #######################################################
     # for seg in segmenters:
     #     print(f" Segmenting ----> src:{src} seg:{seg}")
     #     os.system(f"python3 main.py --Dataset={src} --Segmenter={seg} --Segment --VisSegment")
 
     #######################################################
-    # 2.6 Segment Post Processing
+    # 4.5 Segment Post Processing
     # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --Segmenter={seg} --SegPostProc --VisSegment --SegTh=0.5 --classes_to_keep 2 5 7")
     #######################################################
     # for seg in segmenters:
-    #     print(f" Segmenting ----> src:{src} seg:{seg}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --Segmenter={seg} --SegPostProc --VisSegment --SegTh=0.5 --classes_to_keep 2 5 7")
+    #     print(f" Segment Post Proc ----> src:{src} seg:{seg}")
+    #     os.system(f"python3 main.py --Dataset={src} --Segmenter={seg} --SegPostProc --VisSegment --SegTh=0.5 --classes_to_keep 2 5 7")
 
     ########################################################
-    # 3. run the detection
-    # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=NULL --Detect --VisDetect")
+    # 5. run the detection
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Detect --VisDetect")
     ########################################################
     # for det in detectors:
     #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect --VisDetect")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Detect --VisDetect")
 
     ########################################################
-    # 3.5 run the detection post processing
+    # 5.1 run the detection post processing
     # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=NULL --Detect --DetPostProc --DetMask --DetTh=0.50 --VisDetect")
     ########################################################
     # for det in detectors:
-    #     print(f"detecting ----> src:{src} det:{det}")
-    #     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --DetPostProc --DetTh=0.5 --VisDetect")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisDetect --DetPostProc --DetTh=0.5 --classes_to_keep 2 5 7")
+    #     print(f"detect post processing ----> src:{src} det:{det}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --VisDetect --DetPostProc --DetTh=0.5 --classes_to_keep 2 5 7")
 
     ########################################################
-    # 3.5.5 convert detections to coco format
-    # the full commonad looks like : os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL")
+    # 5.2 convert detections to coco format
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --ConvertDetsToCOCO")
     ########################################################
     # for det in detectors:
     #     print(f"converting to COCO ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --ConvertDetsToCOCO")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --ConvertDetsToCOCO")
 
     ########################################################
-    # 3.6 back project detections
-    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Homography --BackprojectSource=detections --TopView=[GoogleMap/OrthoPhoto] --BackprojectionMethod=[Homography/DSM] --ContactPoint=[BottomPoint/Center/BottomSeg/LineSeg]")
+    # 5.3 back project detections
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Homography --BackprojectSource=detections --TopView=[GoogleMap/OrthoPhoto] --BackprojectionMethod=[Homography/DSM] --ContactPoint=[BottomPoint/Center/BottomSeg/LineSeg]")
     ########################################################
     # for det in detectors:
     #     for seg in segmenters:
-    #         print(f"detecting ----> src:{src} det:{det}")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Segmenter={seg} --Tracker=NULL --Homography --BackprojectSource=detections --TopView=OrthoPhoto --BackprojectionMethod=Homography --ContactPoint=LineSeg")
+    #         print(f"back project dets ----> src:{src} det:{det}")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Segmenter={seg}  --Homography --BackprojectSource=detections --TopView=OrthoPhoto --BackprojectionMethod=Homography --ContactPoint=LineSeg")
 
     ########################################################
-    # 3.7 Vis Contact Points and BP Points
+    # 5.4 Vis Contact Points and BP Points
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisContactPoint --BackprojectSource=detections --TopView=[GoogleMap/OrthoPhoto] --BackprojectionMethod=[Homography/DSM] --ContactPoint=[BottomPoint/Center/BottomSeg/LineSeg]")
     ########################################################
     # for det in detectors:
-    #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisContactPoint --BackprojectSource=detections --TopView=OrthoPhoto --BackprojectionMethod=Homography --ContactPoint=LineSeg")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisCPTop        --BackprojectSource=detections --TopView=OrthoPhoto --BackprojectionMethod=Homography --ContactPoint=LineSeg")
+    #     print(f"vis back proj dets ----> src:{src} det:{det}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --VisContactPoint --BackprojectSource=detections --TopView=OrthoPhoto --BackprojectionMethod=Homography --ContactPoint=LineSeg")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --VisCPTop        --BackprojectSource=detections --TopView=OrthoPhoto --BackprojectionMethod=Homography --ContactPoint=LineSeg")
 
     ########################################################
-    # 4. run the tracking and backproject and convert to meter
-    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --ForNFrames=1800 --Homography --Meter --VisTrajectories --VisTrackTop")
+    # 6. run the tracking and backproject and convert to meter
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --ForNFrames=1800 --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=[GoogleMap/OrthoPhoto]")
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
     #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
-    #         # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=[GoogleMap/OrthoPhoto]")
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=GoogleMap")
 
     ########################################################
-    # 5. run the track post processing
+    # 6.5. run the track post processing
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc --TrackTh=8 --RemoveInvalidTracks --SelectDifEdgeInROI --SelectEndingInROI --SelectBeginInROI --MaskGPFrame --HasPointsInROI --MaskROI  --CrossROI --CrossROIMulti --JustEnterROI --JustExitROI --WithinROI --Interpolate --ExitOrCrossROI  --BackprojectSource=tracks --TopView=[GoogleMap/OrthoPhoto]")
     ########################################################
     # for det in detectors:
@@ -151,36 +156,16 @@ for src, cached_cnt_pth in zip(sources, sources):
     #         print(f"tracking POSTPROC ---> src:{src} det:{det} tra:{tra}")
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc  --MaskGPFrame --HasPointsInROI --BackprojectSource=tracks --TopView=GoogleMap")
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=GoogleMap")
-
-    ########################################################
-    # 6. find optimum BW for kde fiting
-    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --FindOptimalKDEBW --ResampleTH=2.0 --TopView=GoogleMap")
-    ########################################################
-    # for det in detectors:
-    #     for tra in trackers:
-    #         print(f"finding optimal bw for kde ---> src:{src} det:{det} tra:{tra}")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --FindOptimalKDEBW --ResampleTH=2.0 --TopView=GoogleMap")
-
-    ########################################################
-    # 7. run clustering algorithm
-    # apperently the clustering visulaizaiton is harcodded at the moment
-    ########################################################
-    # for det in detectors:
-    #     for tra in trackers:
-    #         for met in clt_metrics:
-    #             for clt in clusters:
-    #                 print(f"clustering ----> det:{det} tra:{tra} met:{met} clt:{clt}")
-    #                 os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --ClusteringAlgo={clt} --ClusterMetric={met} --Cluster")
     
     ########################################################
-    # 8. Run the track labelling GUI / go to 9.
+    # 7.1 Run the track labelling GUI or go to 7.2.
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackLabelingGUI --VisLabelledTrajectories")
 
     ########################################################
-    # 9. Run automated track extraction and labelling
+    # 7.2 Run automated track extraction and labelling
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
@@ -188,18 +173,27 @@ for src, cached_cnt_pth in zip(sources, sources):
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --ExtractCommonTracks --VisLabelledTrajectories --ResampleTH=2.0 --TopView=GoogleMap")
 
     ########################################################
-    # 10. Run the classification(counting) part
+    # 8.0 find optimum BW for kde fiting
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --FindOptimalKDEBW --ResampleTH=2.0 --TopView=GoogleMap")
+    ########################################################
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"finding optimal bw for kde ---> src:{src} det:{det} tra:{tra}")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --FindOptimalKDEBW --ResampleTH=2.0 --TopView=GoogleMap")
+    
+    ########################################################
+    # 8.1 Run the classification(counting) part
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --CountVisPrompt --EvalCount --UseCachedCounter --CachedCounterPth={cached_cnt_pth} --CacheCounter --CountVisDensity")
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
     #         for metric in cnt_metrics:
     #             print(f"counting metric:{metric} det:{det} tra:{tra}")
-    #             # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --CacheCounter --CountVisDensity --ResampleTH=2.0 --TopView=GoogleMap")
+    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --CacheCounter --CountVisDensity --ResampleTH=2.0 --TopView=GoogleMap")
     #             # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --UseCachedCounter --CachedCounterPth={cached_cnt_pth} --TopView=GoogleMap")
 
     ########################################################
-    # 11. Visualizing the results on a video including track label and track id
+    # 9. Visualizing the results on a video including track label and track id
     # can be used to monitor the pipeline in detail
     ########################################################
     # for det in detectors:
@@ -210,11 +204,10 @@ for src, cached_cnt_pth in zip(sources, sources):
 
 
 #_______________________MULTICAMERA_______________________#
-
-# for src in segments:
-#     print(f"running on seg:{src}")
+for src in segments:
+    print(f"running on seg:{src}")
     # ########################################################
-    # # 0. Average Counts MC
+    # # 1. Average Counts MC
     # # os.system(f"python3 main.py --MultiCam --Dataset={src}  --Detector={det} --Tracker={tra} -- --VisTrackTopMC")
     # ########################################################
     # for det in detectors:
@@ -226,12 +219,10 @@ for src, cached_cnt_pth in zip(sources, sources):
 
 
 #_______________________MULTISOURCE_______________________#
-
-# for split in splits:
-#     # to run on split level add --MultiSeg
-#     print(f"running on split:{split}")
-#     ########################################################
-#     # 0. convert detections of all the data under split into COCO format
-#     ########################################################
-#     for det in detectors:
-#         os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --Tracker=NULL --ConvertDetsToCOCO")
+for split in splits:
+    print(f"running on split:{split}")
+    # ########################################################
+    # # 1. convert detections of all the data under split into COCO format
+    # ########################################################
+    # for det in detectors:
+    #     os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --Tracker=NULL --ConvertDetsToCOCO")
