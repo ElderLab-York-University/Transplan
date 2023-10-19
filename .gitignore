@@ -22,3 +22,6 @@ Thumbs.db
 ################
 *.pyc
 *__pychace__/*
+
+# The Resuls file under DemoDataset
+DemoDataset/Split1/Segment1/Source1/Results/*
