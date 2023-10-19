@@ -632,8 +632,8 @@ def add_GT_path_to_args(args):
 
 def add_3DGT_path_to_args(args):
     args.GT3D= get_3DGT_path(args)
-    args.INTRINSICS_PATH        = get_intrinsics_path(args)
-    args.EXTRINSICS_PATH        = get_extrinsics_path(args)    
+    # args.INTRINSICS_PATH        = get_intrinsics_path(args)
+    # args.EXTRINSICS_PATH        = get_extrinsics_path(args)    
     return args
 
 def adjust_args_with_params(args):
@@ -673,6 +673,8 @@ def complete_args(args):
 
     args = add_GT_path_to_args(args)
     args= add_3DGT_path_to_args(args)
+    args = add_dsm_related_path_to_args(args)
+    
     if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Track or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop:
         args = add_homographygui_related_path_to_args(args)
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop:
