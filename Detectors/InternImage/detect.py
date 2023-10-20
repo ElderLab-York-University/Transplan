@@ -74,27 +74,16 @@ def setup(args):
     if not env_name in get_conda_envs():
         make_conda_env(env_name, libs="python=3.7")
         # install library on conda env
-        print("here I am 1")
-        os.system(f"conda run --live-stream -n {args.Detector} conda install pip")
-        os.system(f"conda run --live-stream -n {args.Detector} pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113  -f https://download.pytorch.org/whl/torch_stable.html")
-        print("here I am 1.5")
-        os.system(f"conda run --live-stream -n {args.Detector} pip install easydict llvmlite numba pyyaml tqdm")
-        print("here I am 2")
-        os.system(f"conda run --live-stream -n {args.Detector} pip install openmim")
-        print("here I am 2.3")
-        os.system(f"conda run --live-stream -n {args.Detector} mim install mmcv-full==1.5.0")
-        print("here I am 2.6")
-        os.system(f"conda run --live-stream -n {args.Detector} pip install timm==0.6.11 mmdet==2.28.1")
-        print("here I am 3")
-        os.system(f"conda run --live-stream -n {args.Detector} pip install opencv-python termcolor yacs pyyaml scipy tqdm")
-        print("here I am 4")
-        os.system(f"conda run --live-stream -n {args.Detector} python3 ./Detectors/InternImage/InternImage/detection/ops_dcnv3/setup.py build install")        
-        os.system(f"conda run --live-stream -n {args.Detector} python3 ./Detectors/InternImage/InternImage/detection/ops_dcnv3/test.py")        
-   
-        
-
-
-
-  
-
-  # video_path = "./../Dataset/GX010069.avi"
+        os.system(f"conda run --live-stream -n {env_name} conda install pip -y")
+        os.system(f"conda run --live-stream -n {env_name} conda install pytorch==1.11.0 torchvision==0.12.0 torchaudio==0.11.0 cudatoolkit=11.3 -c pytorch -y")
+        os.system(f"conda run --live-stream -n {env_name} conda install -c nvidia cuda-nvcc=11.3 -y")  
+        os.system(f"conda run --live-stream -n {env_name} pip install easydict llvmlite numba pyyaml tqdm")
+        os.system(f"conda run --live-stream -n {env_name} pip install openmim")
+        os.system(f"conda run --live-stream -n {env_name} mim install mmcv-full==1.5.0")
+        os.system(f"conda run --live-stream -n {env_name} pip install timm==0.6.11 mmdet==2.28.1")
+        os.system(f"conda run --live-stream -n {env_name} pip install opencv-python termcolor yacs pyyaml scipy tqdm")
+        os.system(f"conda run --live-stream -n {env_name} wget -c https://github.com/OpenGVLab/InternImage/releases/download/whl_files/DCNv3-1.0+cu113torch1.11.0-cp37-cp37m-linux_x86_64.whl\
+                -O  ./Detectors/InternImage/InternImage/DCNv3-1.0+cu113torch1.11.0-cp37-cp37m-linux_x86_64.whl")
+        os.system(f"conda run --live-stream -n {env_name} pip install ./Detectors/InternImage/InternImage/DCNv3-1.0+cu113torch1.11.0-cp37-cp37m-linux_x86_64.whl")
+        os.system(f"conda run --live-stream -n {args.Detector} python3 ./Detectors/InternImage/InternImage/detection/ops_dcnv3/test.py")
+        os.system(f"conda run --live-stream -n {env_name} pip install pandas==1.1.5")
