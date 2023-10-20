@@ -98,6 +98,7 @@ def vistrack(args):
                 cv2.putText(frame, f'{int(bbid)}', (x1 + 60, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 5)
                 cv2.putText(frame, f'{int(bbid)}', (x1 + 60, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (144, 251, 144), 2)
             out_cap.write(frame)
+    return SucLog("track vis successful")
 
 def vistracktop(args):
     df = pd.read_pickle(args.ReprojectedPkl)
