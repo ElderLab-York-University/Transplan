@@ -103,5 +103,6 @@ def setup(args):
         os.system(f"conda run --live-stream -n {args.Tracker} pip install cython")
         os.system(f"conda run --live-stream -n {args.Tracker} pip install 'git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI'")
         os.system(f"conda run --live-stream -n {args.Tracker} pip install cython_bbox")
+        os.system(f"conda run --live-stream -n {args.Tracker} pip install protobuf==3.20.3")
 
         os.chdir(cwd)
