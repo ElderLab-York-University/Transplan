@@ -204,7 +204,9 @@ def trackpostproc(args):
         print(ProcLog("updating txt, pkl, reprojected, and meter files for tracking"))
         trackers[args.Tracker].df_txt(df, args.TrackingPth)
         store_df_pickle(args)
-        Homography.reproject(args, source= "tracks", from_back_up=False)
+        Homography.reproject(args, method=args.BackprojectionMethod,
+                            source = args.BackprojectSource, from_back_up=False)
+        
         Maps.pix2meter(args)
 
     # restore original tracks in txt and pkl
