@@ -127,35 +127,48 @@ for src, cached_cnt_pth in zip(sources, sources):
     # for det in detectors:
     #     for seg in segmenters:
     #         print(f"back project dets ----> src:{src} det:{det}")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Segmenter={seg}  --Homography --BackprojectSource=detections --TopView=OrthoPhoto --BackprojectionMethod=Homography --ContactPoint=LineSeg")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Segmenter={seg}  --Homography --BackprojectSource=detections --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
 
     ########################################################
     # 5.4 Vis Contact Points and BP Points
-    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisContactPoint --BackprojectSource=detections --TopView=[GoogleMap/OrthoPhoto] --BackprojectionMethod=[Homography/DSM] --ContactPoint=[BottomPoint/Center/BottomSeg/LineSeg]")
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --VisContactPoint --VisCPTop --BackprojectSource=detections --TopView=[GoogleMap/OrthoPhoto] --BackprojectionMethod=[Homography/DSM] --ContactPoint=[BottomPoint/Center/BottomSeg/LineSeg]")
     ########################################################
     # for det in detectors:
     #     print(f"vis back proj dets ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --VisContactPoint --BackprojectSource=detections --TopView=OrthoPhoto --BackprojectionMethod=Homography --ContactPoint=LineSeg")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --VisCPTop        --BackprojectSource=detections --TopView=OrthoPhoto --BackprojectionMethod=Homography --ContactPoint=LineSeg")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --VisContactPoint --BackprojectSource=detections --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --VisCPTop        --BackprojectSource=detections --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
 
     ########################################################
-    # 6. run the tracking and backproject and convert to meter
-    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --ForNFrames=1800 --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=[GoogleMap/OrthoPhoto]")
+    # 6. run tracking
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --ForNFrames=1800")
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
     #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=GoogleMap")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack")
+
+    ########################################################
+    # 6.2 back project tracks and convert to meter
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks  --ContactPoint=[BottomPoint/Center/BottomSeg/LineSeg] --BackprojectionMethod=[Homography/DSM] --TopView=[GoogleMap/OrthoPhoto] --ForNFrames=1800")
+    ########################################################
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"tracking backprojection ---> src:{src} det:{det} tra:{tra}")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
 
     ########################################################
     # 6.5. run the track post processing
+    # SHOULD HAVE THE SAME FLAGS AS BACK PROJECTION
+    # --BackprojectSource=tracks  --ContactPoint=[BottomPoint/Center/BottomSeg/LineSeg] --BackprojectionMethod=[Homography/DSM] --TopView=[GoogleMap/OrthoPhoto]
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc --TrackTh=8 --RemoveInvalidTracks --SelectDifEdgeInROI --SelectEndingInROI --SelectBeginInROI --MaskGPFrame --HasPointsInROI --MaskROI  --CrossROI --CrossROIMulti --JustEnterROI --JustExitROI --WithinROI --Interpolate --ExitOrCrossROI  --BackprojectSource=tracks --TopView=[GoogleMap/OrthoPhoto]")
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
     #         print(f"tracking POSTPROC ---> src:{src} det:{det} tra:{tra}")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc  --MaskGPFrame --HasPointsInROI --BackprojectSource=tracks --TopView=GoogleMap")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=GoogleMap")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc\
+    #                 --VisTrack --VisTrajectories --VisTrackTop\
+    #                 --BackprojectSource=tracks --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
+    #                 --MaskGPFrame --HasPointsInROI")
     
     ########################################################
     # 7.1 Run the track labelling GUI or go to 7.2.
