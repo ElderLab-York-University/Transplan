@@ -472,14 +472,16 @@ def add_homographygui_related_path_to_args(args):
     return args
 
 def add_homography_related_path_to_args(args):
-    reprojected_path = get_reprojection_path(args)
-    reprojected_pkl = get_reprojection_pkl(args)
-    args.ReprojectedPoints = reprojected_path
-    args.ReprojectedPkl = reprojected_pkl
-    args.ReprojectedPointsForDetection = get_reprojection_path_for_detection(args)
-    args.ReprojectedPklForDetection = get_reprojection_pkl_for_detection(args)
-    args.VisContactPointPth = get_vis_cp_path_for_detection(args)
-    args.VisContactPointTopPth = get_vis_cp_top_for_detection(args)
+    if args.Tracker is not None:
+        reprojected_path = get_reprojection_path(args)
+        reprojected_pkl = get_reprojection_pkl(args)
+        args.ReprojectedPoints = reprojected_path
+        args.ReprojectedPkl = reprojected_pkl
+    if args.Detector is not None:
+        args.ReprojectedPointsForDetection = get_reprojection_path_for_detection(args)
+        args.ReprojectedPklForDetection = get_reprojection_pkl_for_detection(args)
+        args.VisContactPointPth = get_vis_cp_path_for_detection(args)
+        args.VisContactPointTopPth = get_vis_cp_top_for_detection(args)
 
     return args
 
@@ -680,7 +682,7 @@ def complete_args(args):
 
     args = add_images_folder_to_args(args)
 
-    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Track or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop:
+    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop:
         args = add_homographygui_related_path_to_args(args)
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop:
         args = add_homography_related_path_to_args(args)
