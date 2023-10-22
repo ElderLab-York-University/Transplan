@@ -263,8 +263,8 @@ def main(args):
                 HomographyGUI, VisHomographyGUI, VisROI,
                 Segment, SegPostProc, VisSegment,
                 Detect, DetPostProc, VisDetect, ConvertDetsToCOCO,
-                Track, VisTrack, Homography, Pix2Meter,
-                VisContactPoint, VisCPTop, TrackPostProc, VisTrajectories, VisTrackTop,
+                Track, Homography, Pix2Meter, TrackPostProc,
+                VisTrack, VisContactPoint, VisCPTop, VisTrajectories, VisTrackTop,
                 FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories,
                 Count, VisTrackMoI, Evaluate]
     for subtask in subtasks:
