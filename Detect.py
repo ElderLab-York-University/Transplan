@@ -180,7 +180,8 @@ def visdetect(args):
         for roi in data:
             
             rois.append(np.int32(roi))
-        
+    ret, frame = cap.read()
+
     if not args.ForNFrames is None:
         frames = args.ForNFrames
     for frame_num in tqdm(range(frames)):
@@ -193,11 +194,14 @@ def visdetect(args):
             frame=draw_box_on_image(frame, q[0], q[1] , q[2] ,q[3], c=[255,255,255], thickness=2)            
         if args.VisInferenceRois:
             cv2.imwrite(args.VisInferenceRoi, frame)
+        
+        
             
         for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
             frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
+            
         out_cap.write(frame)
-
+    cv2.imwrite("GT.png", frame)
     cap.release()
     out_cap.release()
     return SucLog("Detection visualized on the video")
