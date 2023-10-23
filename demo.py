@@ -48,7 +48,7 @@ trackers = ["ByteTrack"]
 clusters = ["SpectralFull"]
 
 # choose the metric for clustering and classification pqrt
-# options: ["groi", "roi", "knn", "cos", "tcos", "cmm", "hausdorff", "kde",,"ccmm", "tccmm", "ptcos", "loskde", "hmmg"]
+# options: ["groi", "roi", "knn", "cos", "tcos", "cmm", "hausdorff", "kde","ccmm", "tccmm", "ptcos", "loskde", "hmmg"]
 clt_metrics = ["tcos"]
 cnt_metrics = ["kde"]
 
@@ -169,13 +169,26 @@ for src, cached_cnt_pth in zip(sources, sources):
     #                 --VisTrack --VisTrajectories --VisTrackTop\
     #                 --BackprojectSource=tracks --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
     #                 --MaskGPFrame --HasPointsInROI")
-    
+
     ########################################################
-    # 7.1 Run the track labelling GUI or go to 7.2.
+    # 7.0 run clustering algorithm
+    # this part needs to be modified moving forward
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackLabelingGUI --VisLabelledTrajectories")
+    #         for met in clt_metrics:
+    #             for clt in clusters:
+    #                 print(f"clustering ----> det:{det} tra:{tra} met:{met} clt:{clt}")
+    #                 os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --ClusteringAlgo={clt} --ClusterMetric={met} --Cluster\
+    #                           --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
+    
+    ########################################################
+    # 7.1 Run the track labelling GUI or go to 7.2.
+    # --TopView=[GoogleMap/OrthoPhoto]
+    ########################################################
+    # for det in detectors:
+    #     for tra in trackers:
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackLabelingGUI --VisLabelledTrajectories --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
 
     ########################################################
     # 7.2 Run automated track extraction and labelling
