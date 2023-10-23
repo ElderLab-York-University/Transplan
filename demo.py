@@ -50,7 +50,7 @@ clusters = ["SpectralFull"]
 # choose the metric for clustering and classification pqrt
 # options: ["groi", "roi", "knn", "cos", "tcos", "cmm", "hausdorff", "kde","ccmm", "tccmm", "ptcos", "loskde", "hmmg"]
 clt_metrics = ["tcos"]
-cnt_metrics = ["kde"]
+cnt_metrics = ["gkde"]
 
 
 for src, cached_cnt_pth in zip(sources, sources):
@@ -204,24 +204,26 @@ for src, cached_cnt_pth in zip(sources, sources):
     #                    --ResampleTH=2.0 --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
 
     ########################################################
-    # 8.0 find optimum BW for kde fiting
+    # 8.0 find optimum BW for kde fiting (right now only supports gp)
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --FindOptimalKDEBW --ResampleTH=2.0 --TopView=GoogleMap")
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
     #         print(f"finding optimal bw for kde ---> src:{src} det:{det} tra:{tra}")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --FindOptimalKDEBW --ResampleTH=2.0 --TopView=GoogleMap")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --FindOptimalKDEBW \
+    #                   --ResampleTH=2.0 --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
     
     ########################################################
     # 8.1 Run the classification(counting) part
-    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --CountVisPrompt --EvalCount --UseCachedCounter --CachedCounterPth={cached_cnt_pth} --CacheCounter --CountVisDensity")
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --CountVisPrompt --EvalCount --UseCachedCounter --CachedCounterPth={cached_cnt_pth} --CacheCounter --CountVisDensity --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
     #         for metric in cnt_metrics:
     #             print(f"counting metric:{metric} det:{det} tra:{tra}")
-    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --CacheCounter --CountVisDensity --ResampleTH=2.0 --TopView=GoogleMap")
-    #             # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Count --CountMetric={metric} --EvalCount --UseCachedCounter --CachedCounterPth={cached_cnt_pth} --TopView=GoogleMap")
+    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={metric} --Count --ResampleTH=2.0\
+    #                        --EvalCount --CacheCounter --CountVisDensity\
+    #                        --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
 
     ########################################################
     # 9. Visualizing the results on a video including track label and track id
