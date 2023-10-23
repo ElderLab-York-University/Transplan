@@ -193,14 +193,15 @@ for src, cached_cnt_pth in zip(sources, sources):
     #                 os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --ClusteringAlgo={clt} --ClusterMetric={met}\
     #                         --TrackLabelingGUI --VisLabelledTrajectorie\
     #                         --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
-    
+
     ########################################################
     # 7.2 Run automated track extraction and labelling
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
     #         print(f"extract common tracks ----> det:{det}, tra:{tra}")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --ExtractCommonTracks --VisLabelledTrajectories --ResampleTH=2.0 --TopView=GoogleMap")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --ExtractCommonTracks --VisLabelledTrajectories\
+    #                    --ResampleTH=2.0 --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
 
     ########################################################
     # 8.0 find optimum BW for kde fiting
