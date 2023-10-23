@@ -188,8 +188,12 @@ for src, cached_cnt_pth in zip(sources, sources):
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackLabelingGUI --VisLabelledTrajectories --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
-
+    #         for met in clt_metrics:
+    #             for clt in clusters:
+    #                 os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --ClusteringAlgo={clt} --ClusterMetric={met}\
+    #                         --TrackLabelingGUI --VisLabelledTrajectorie\
+    #                         --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
+    
     ########################################################
     # 7.2 Run automated track extraction and labelling
     ########################################################
