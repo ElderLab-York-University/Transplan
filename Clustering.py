@@ -25,6 +25,7 @@ from sklearn.cluster import SpectralClustering
 import pickle as pkl
 import copy
 import sys
+from counting.counting import group_tracks_by_id
 
 # add your clustering algorithms here
 # follow a sklearn-like API for consistency
@@ -92,35 +93,6 @@ def viz_all_tracks(all_tracks, labels, save_path, image_path):
         os.remove(save_path)
     cv2.imwrite(save_path, img)
 
-
-def group_tracks_by_id(df):
-    # this function was writtern for grouping the tracks with the same id
-    # usinig this one can load the data from a .txt file rather than .mat file
-    all_ids = np.unique(df['id'].to_numpy(dtype=np.int64))
-    data = {"id":[], "trajectory":[], "frames":[]}
-    for idd in tqdm(all_ids):
-        frames = df[df['id']==idd]["fn"].to_numpy(np.float32)
-        id = idd
-        trajectory = df[df['id']==idd][["x", "y"]].to_numpy(np.float32)
-        
-        data["id"].append(id)
-        data["frames"].append(frames)
-        data["trajectory"].append(trajectory)
-    df2 = pd.DataFrame(data)
-    return df2
-
-# def cmm_distance(traj_a, traj_b, cmmlib):
-#     traj_a = traj_a.astype(np.float64)
-#     traj_b = traj_b.astype(np.float64)
-#     if traj_a.shape[0] >= traj_b.shape[0]:
-#         c = cmmlib.cmm_truncate_sides(traj_a[:, 0], traj_a[:, 1], traj_b[:, 0], traj_b[:, 1], traj_a.shape[0],
-#                                         traj_b.shape[0])
-#     else:
-#         c = cmmlib.cmm_truncate_sides(traj_b[:, 0], traj_b[:, 1], traj_a[:, 0], traj_a[:, 1], traj_b.shape[0],
-#                                         traj_a.shape[0])
-#     return c
-
-
 def find_centers_MNAVG(df, labels, M):
     unique_labels = np.unique(labels)
     center_indexes = []
@@ -145,28 +117,18 @@ def find_centers_MXLEN(df, labels, M):
     return center_indexes
 
 def cluster(args):
-    # variables to be used from the args
-        # args.ReprojectedPklMeter
-        # args.ReprojectedPkl
-        # args.ClusterMetric
-    # save clustering result to the following args variables 
-        # args.ReprojectedPklMeterCluster
-        # args.ReprojectedPklCluster
-        # args.ClusteringDistanceMatrix
-        # args.ClusteringVis
-
     metric = Metric_Dict[args.ClusterMetric]
     df_meter_ungrouped = pd.read_pickle(args.ReprojectedPklMeter)
     df_reg_ungrouped   = pd.read_pickle(args.ReprojectedPkl)
 
-    df_meter = group_tracks_by_id(df_meter_ungrouped)
-    df_reg   = group_tracks_by_id(df_reg_ungrouped)
+    df_meter = group_tracks_by_id(df_meter_ungrouped, gp=True)
+    df_reg   = group_tracks_by_id(df_reg_ungrouped, gp=True)
     
     df_meter_resampled = copy.deepcopy(df_meter)
     df_reg_resampled   = copy.deepcopy(df_reg)
 
-    df_meter_resampled['trajectory'] = df_meter_resampled['trajectory'].apply(lambda x: track_resample(x).astype("float64"))
-    df_reg_resampled['trajectory'] = df_reg_resampled['trajectory'].apply(lambda x: track_resample(x).astype("float64"))
+    df_meter_resampled['trajectory'] = df_meter_resampled['trajectory'].apply(lambda x: track_resample(x, threshold=args.ResampleTH).astype("float64"))
+    df_reg_resampled['trajectory'] = df_reg_resampled['trajectory'].apply(lambda x: track_resample(x, threshold=args.ResampleTH).astype("float64"))
 
     indexes = np.array([i for i in range(len(df_meter))]).reshape(-1, 1)
 
@@ -192,7 +154,6 @@ def cluster(args):
     if args.ClusteringAlgo == "SpectralFull":
         M = np.exp(-1*M)
     labels = clt.fit_predict(M)
-    sns.histplot(labels)
     print(np.unique(labels))
 
     # save clustered trackes with labels for both meter and regular
@@ -203,39 +164,3 @@ def cluster(args):
 
     viz_all_tracks(df_reg["trajectory"], labels, save_path = args.ClusteringVis, image_path=args.HomographyTopView)
     return SucLog("clustering executed successfully")
-
-# center_indexes = find_centers_MNAVG(df, labels, M)
-# viz_all_tracks(df["trajectory"].iloc[center_indexes], labels[center_indexes], save_path = "./../../Results/DBSCAN_centers_MAVD.png")
-# center_indexes = find_centers_MXLEN(df, labels, M)
-# viz_all_tracks(df["trajectory"].iloc[center_indexes], labels[center_indexes], save_path = "./../../Results/DBSCAN_centers_MXLN.png")
-
-##### Agglomorative Clustering
-# clt = AgglomerativeClustering(n_clusters = 12, affinity="precomputed", linkage='average')
-# labels = clt.fit_predict(M)
-# sns.histplot(labels)
-# print(np.unique(labels))
-# plt.show()
-# print(labels)
-# viz_all_tracks(df["trajectory"], labels, save_path = "./../../Results/Agglomorattive.png")
-
-# center_indexes = find_centers_MNAVG(df, labels, M)
-# viz_all_tracks(df["trajectory"].iloc[center_indexes], labels[center_indexes], save_path = "./../../Results/Agglomorative_centers_MAVD.png")
-# center_indexes = find_centers_MXLEN(df, labels, M)
-# viz_all_tracks(df["trajectory"].iloc[center_indexes], labels[center_indexes], save_path = "./../../Results/Agglomorative_centers_MXLN.png")
-
-#### Affinity Propagation 
-# clt = AffinityPropagation(damping =0.5 , affinity="precomputed", max_iter=2000)
-# labels = clt.fit_predict(M)
-# sns.histplot(labels)
-# print(np.unique(labels))
-# plt.show()
-# print(labels)
-# viz_all_tracks(df["trajectory"], labels, save_path = "./../../Results/AffinityPropagation.png")
-# center_indexes = find_centers_MNAVG(df, labels, M)
-# viz_all_tracks(df["trajectory"].iloc[center_indexes], labels[center_indexes], save_path = "./../../Results/Agglomorative_centers_MAVD.png")
-# center_indexes = find_centers_MXLEN(df, labels, M)
-# viz_all_tracks(df["trajectory"].iloc[center_indexes], labels[center_indexes], save_path = "./../../Results/Agglomorative_centers_MXLN.png")
-
-
-# how to find cluster centers ??
-# idea 1: for each cluster find the trajectory that has the least average distance from all the other clusters
