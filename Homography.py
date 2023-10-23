@@ -51,7 +51,7 @@ def lunch_homographygui(args):
     csv = os.path.abspath(args.HomographyCSV)
     cwd = os.getcwd()
     os.chdir("./homographygui/")
-    os.system(f"sudo python3 main.py --StreetView='{street}' --TopView='{top}' --Txt='{txt}' --Npy='{npy}' --Csv='{csv}'")
+    os.system(f"python3 main.py --StreetView='{street}' --TopView='{top}' --Txt='{txt}' --Npy='{npy}' --Csv='{csv}'")
     os.chdir(cwd)
 
 def iou(det_row, mask_row):
