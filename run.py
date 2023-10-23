@@ -1,437 +1,38 @@
 import os
-# choose the segment/dataset/video
 
-segments = [
-    # # Seg01
-    # "/mnt/data/HW7Leslie/Seg01",
-    # # Seg02
-    # "/mnt/data/HW7Leslie/Seg02",
-    # # # Seg03
-    # "/mnt/data/HW7Leslie/Seg03",
-    # # # Seg05
-    # "/mnt/data/HW7Leslie/Seg05",
-    # # # Seg06
-    # "/mnt/data/HW7Leslie/Seg06",
-    # # # Seg09
-    # "/mnt/data/HW7Leslie/Seg09",
-    # # # Seg10
-    # "/mnt/data/HW7Leslie/Seg10",
-    # # # Seg11
-    # "/mnt/data/HW7Leslie/Seg11",
-    # # # Seg12
-    # "/mnt/data/HW7Leslie/Seg12",
-    # # # Seg13
-    # "/mnt/data/HW7Leslie/Seg13",
-    # #Seg17
-    # "/mnt/data/HW7Leslie/Seg17",
-    # #Seg00
-    # "/mnt/data/HW7Leslie/Seg00",
-    # #Seg04
-    # "/mnt/data/HW7Leslie/Seg04",
-    # #Seg07
-    # "/mnt/data/HW7Leslie/Seg07",
-    # #Seg08
-    # "/mnt/data/HW7Leslie/Seg08",
-    # #Seg14
-    # "/mnt/data/HW7Leslie/Seg14",
-    # #Seg15
-    # "/mnt/data/HW7Leslie/Seg15",
-    # #Seg16
-    # "/mnt/data/HW7Leslie/Seg16",
-    # #Seg18
-    # "/mnt/data/HW7Leslie/Seg18",
-    # #Seg19
-    # "/mnt/data/HW7Leslie/Seg19",
-    # #Seg20
-    # "/mnt/data/HW7Leslie/Seg20",
-    # #Seg21
-    # "/mnt/data/HW7Leslie/Seg21",
-    # #Seg22
-    # "/mnt/data/HW7Leslie/Seg22",
-    # #Seg23
-    # "/mnt/data/HW7Leslie/Seg23",
-    # #Seg24
-    # "/mnt/data/HW7Leslie/Seg24",
-    # #Seg25
-    # "/mnt/data/HW7Leslie/Seg25",
-    # #Seg26
-    # "/mnt/data/HW7Leslie/Seg26",
-    # #Seg27
-    # "/mnt/data/HW7Leslie/Seg27",
-    # #Seg28
-    # "/mnt/data/HW7Leslie/Seg28",
-    # #Seg29
-    # "/mnt/data/HW7Leslie/Seg29",
-    # #Seg30
-    # "/mnt/data/HW7Leslie/Seg30",
-    # #Seg31
-    # "/mnt/data/HW7Leslie/Seg31",
-]
-sources = [
-# TransPlan Dataset
-    # # D9L
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video2",
-    # # DBR
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video2",
-    # # DWP
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video2",
-    # # ECR
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video2",
-# HW7 & Leslie  DATASET
-    # # Seg01
-    # "/mnt/data/HW7Leslie/Seg01/Seg01sc1",
-    # "/mnt/data/HW7Leslie/Seg01/Seg01sc2",
-    # "/mnt/data/HW7Leslie/Seg01/Seg01sc3",
-    # "/mnt/data/HW7Leslie/Seg01/Seg01sc4",
-    # # Seg02
-    # "/mnt/data/HW7Leslie/Seg02/Seg02sc1",
-    # "/mnt/data/HW7Leslie/Seg02/Seg02sc2",
-    # "/mnt/data/HW7Leslie/Seg02/Seg02sc3",
-    # "/mnt/data/HW7Leslie/Seg02/Seg02sc4",
-    # # Seg03
-    # "/mnt/data/HW7Leslie/Seg03/Seg03sc1",
-    # "/mnt/data/HW7Leslie/Seg03/Seg03sc2",
-    # "/mnt/data/HW7Leslie/Seg03/Seg03sc3",
-    # "/mnt/data/HW7Leslie/Seg03/Seg03sc4",
-    # # Seg05
-    # "/mnt/data/HW7Leslie/Seg05/Seg05sc1",
-    # "/mnt/data/HW7Leslie/Seg05/Seg05sc2",
-    # "/mnt/data/HW7Leslie/Seg05/Seg05sc3",
-    # "/mnt/data/HW7Leslie/Seg05/Seg05sc4",
-    # # Seg06
-    # "/mnt/data/HW7Leslie/Seg06/Seg06sc1",
-    # "/mnt/data/HW7Leslie/Seg06/Seg06sc2",
-    # "/mnt/data/HW7Leslie/Seg06/Seg06sc3",
-    # "/mnt/data/HW7Leslie/Seg06/Seg06sc4",
-    # # Seg09
-    # "/mnt/data/HW7Leslie/Seg09/Seg09sc1",
-    # "/mnt/data/HW7Leslie/Seg09/Seg09sc2",
-    # "/mnt/data/HW7Leslie/Seg09/Seg09sc3",
-    # "/mnt/data/HW7Leslie/Seg09/Seg09sc4",
-    # # Seg10
-    # "/mnt/data/HW7Leslie/Seg10/Seg10sc1",
-    # "/mnt/data/HW7Leslie/Seg10/Seg10sc2",
-    # "/mnt/data/HW7Leslie/Seg10/Seg10sc3",
-    # "/mnt/data/HW7Leslie/Seg10/Seg10sc4",
-    # # Seg11
-    # "/mnt/data/HW7Leslie/Seg11/Seg11sc1",
-    # "/mnt/data/HW7Leslie/Seg11/Seg11sc2",
-    # "/mnt/data/HW7Leslie/Seg11/Seg11sc3",
-    # "/mnt/data/HW7Leslie/Seg11/Seg11sc4",
-    # # Seg12
-    # "/mnt/data/HW7Leslie/Seg12/Seg12sc1",
-    # "/mnt/data/HW7Leslie/Seg12/Seg12sc2",
-    # "/mnt/data/HW7Leslie/Seg12/Seg12sc3",
-    # "/mnt/data/HW7Leslie/Seg12/Seg12sc4",
-    # # Seg13
-    # "/mnt/data/HW7Leslie/Seg13/Seg13sc1",
-    # "/mnt/data/HW7Leslie/Seg13/Seg13sc2",
-    # "/mnt/data/HW7Leslie/Seg13/Seg13sc3",
-    # "/mnt/data/HW7Leslie/Seg13/Seg13sc4",
-    # # Seg17
-    # "/mnt/data/HW7Leslie/Seg17/Seg17sc1",
-    # "/mnt/data/HW7Leslie/Seg17/Seg17sc2",
-    # "/mnt/data/HW7Leslie/Seg17/Seg17sc3",
-    # "/mnt/data/HW7Leslie/Seg17/Seg17sc4",
-    # # Seg00
-    # "/mnt/data/HW7Leslie/Seg00/Seg00sc1",
-    # "/mnt/data/HW7Leslie/Seg00/Seg00sc2",
-    # "/mnt/data/HW7Leslie/Seg00/Seg00sc3",
-    # "/mnt/data/HW7Leslie/Seg00/Seg00sc4",
-    # # Seg04
-    # "/mnt/data/HW7Leslie/Seg04/Seg04sc1",
-    # "/mnt/data/HW7Leslie/Seg04/Seg04sc2",
-    # "/mnt/data/HW7Leslie/Seg04/Seg04sc3",
-    # "/mnt/data/HW7Leslie/Seg04/Seg04sc4",
-    # # Seg07
-    # "/mnt/data/HW7Leslie/Seg07/Seg07sc1",
-    # "/mnt/data/HW7Leslie/Seg07/Seg07sc2",
-    # "/mnt/data/HW7Leslie/Seg07/Seg07sc3",
-    # "/mnt/data/HW7Leslie/Seg07/Seg07sc4",
-    # # Seg08
-    # "/mnt/data/HW7Leslie/Seg08/Seg08sc1",
-    # "/mnt/data/HW7Leslie/Seg08/Seg08sc2",
-    # "/mnt/data/HW7Leslie/Seg08/Seg08sc3",
-    # "/mnt/data/HW7Leslie/Seg08/Seg08sc4",
-    # # Seg14
-    # "/mnt/data/HW7Leslie/Seg14/Seg14sc1",
-    # "/mnt/data/HW7Leslie/Seg14/Seg14sc2",
-    # "/mnt/data/HW7Leslie/Seg14/Seg14sc3",
-    # "/mnt/data/HW7Leslie/Seg14/Seg14sc4",
-    # # # Seg15
-    # "/mnt/data/HW7Leslie/Seg15/Seg15sc1",
-    # "/mnt/data/HW7Leslie/Seg15/Seg15sc2",
-    # "/mnt/data/HW7Leslie/Seg15/Seg15sc3",
-    # "/mnt/data/HW7Leslie/Seg15/Seg15sc4",
-    # # Seg16
-    # "/mnt/data/HW7Leslie/Seg16/Seg16sc1",
-    # "/mnt/data/HW7Leslie/Seg16/Seg16sc2",
-    # "/mnt/data/HW7Leslie/Seg16/Seg16sc3",
-    # "/mnt/data/HW7Leslie/Seg16/Seg16sc4",
-    # # Seg18
-    # "/mnt/data/HW7Leslie/Seg18/Seg18sc1",
-    # "/mnt/data/HW7Leslie/Seg18/Seg18sc2",
-    # "/mnt/data/HW7Leslie/Seg18/Seg18sc3",
-    # "/mnt/data/HW7Leslie/Seg18/Seg18sc4",
-    # # Seg19
-    # "/mnt/data/HW7Leslie/Seg19/Seg19sc1",
-    # "/mnt/data/HW7Leslie/Seg19/Seg19sc2",
-    # "/mnt/data/HW7Leslie/Seg19/Seg19sc3",
-    # "/mnt/data/HW7Leslie/Seg19/Seg19sc4",
-    # # Seg20
-    # "/mnt/data/HW7Leslie/Seg20/Seg20sc1",
-    # "/mnt/data/HW7Leslie/Seg20/Seg20sc2",
-    # "/mnt/data/HW7Leslie/Seg20/Seg20sc3",
-    # "/mnt/data/HW7Leslie/Seg20/Seg20sc4",
-    # # Seg21
-    # "/mnt/data/HW7Leslie/Seg21/Seg21sc1",
-    # "/mnt/data/HW7Leslie/Seg21/Seg21sc2",
-    # "/mnt/data/HW7Leslie/Seg21/Seg21sc3",
-    # "/mnt/data/HW7Leslie/Seg21/Seg21sc4",
-    # # Seg22
-    # "/mnt/data/HW7Leslie/Seg22/Seg22sc1",
-    # "/mnt/data/HW7Leslie/Seg22/Seg22sc2",
-    # "/mnt/data/HW7Leslie/Seg22/Seg22sc3",
-    # "/mnt/data/HW7Leslie/Seg22/Seg22sc4",
-    # # Seg23
-    # "/mnt/data/HW7Leslie/Seg23/Seg23sc1",
-    # "/mnt/data/HW7Leslie/Seg23/Seg23sc2",
-    # "/mnt/data/HW7Leslie/Seg23/Seg23sc3",
-    # "/mnt/data/HW7Leslie/Seg23/Seg23sc4",
-    # # Seg24
-    # "/mnt/data/HW7Leslie/Seg24/Seg24sc1",
-    # "/mnt/data/HW7Leslie/Seg24/Seg24sc2",
-    # "/mnt/data/HW7Leslie/Seg24/Seg24sc3",
-    # "/mnt/data/HW7Leslie/Seg24/Seg24sc4",
-    # # Seg25
-    # "/mnt/data/HW7Leslie/Seg25/Seg25sc1",
-    # "/mnt/data/HW7Leslie/Seg25/Seg25sc2",
-    # "/mnt/data/HW7Leslie/Seg25/Seg25sc3",
-    # "/mnt/data/HW7Leslie/Seg25/Seg25sc4",
-    # # Seg26
-    # "/mnt/data/HW7Leslie/Seg26/Seg26sc1",
-    # "/mnt/data/HW7Leslie/Seg26/Seg26sc2",
-    # "/mnt/data/HW7Leslie/Seg26/Seg26sc3",
-    # "/mnt/data/HW7Leslie/Seg26/Seg26sc4",
-    # # Seg27
-    # "/mnt/data/HW7Leslie/Seg27/Seg27sc1",
-    # "/mnt/data/HW7Leslie/Seg27/Seg27sc2",
-    # "/mnt/data/HW7Leslie/Seg27/Seg27sc3",
-    # "/mnt/data/HW7Leslie/Seg27/Seg27sc4",
-    # # Seg28
-    # "/mnt/data/HW7Leslie/Seg28/Seg28sc1",
-    # "/mnt/data/HW7Leslie/Seg28/Seg28sc2",
-    # "/mnt/data/HW7Leslie/Seg28/Seg28sc3",
-    # "/mnt/data/HW7Leslie/Seg28/Seg28sc4",
-    # # Seg29
-    # "/mnt/data/HW7Leslie/Seg29/Seg29sc1",
-    # "/mnt/data/HW7Leslie/Seg29/Seg29sc2",
-    # "/mnt/data/HW7Leslie/Seg29/Seg29sc3",
-    # "/mnt/data/HW7Leslie/Seg29/Seg29sc4",
-    # # Seg30
-    # "/mnt/data/HW7Leslie/Seg30/Seg30sc1",
-    # "/mnt/data/HW7Leslie/Seg30/Seg30sc2",
-    # "/mnt/data/HW7Leslie/Seg30/Seg30sc3",
-    # "/mnt/data/HW7Leslie/Seg30/Seg30sc4",
-    # # Seg31
-    # "/mnt/data/HW7Leslie/Seg31/Seg31sc1",
-    # "/mnt/data/HW7Leslie/Seg31/Seg31sc2",
-    # "/mnt/data/HW7Leslie/Seg31/Seg31sc3",
-    # "/mnt/data/HW7Leslie/Seg31/Seg31sc4",
+def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"]):
+    subs_path = []
+    for root in roots:
+        subs = os.listdir(root)
+        for sub in subs:
+            sub_path = os.path.join(root, sub)
+            if os.path.isdir(sub_path) and\
+                (subs_to_exclude is None or sub not in subs_to_exclude) and\
+                (subs_to_include is None or sub in subs_to_include):
+                subs_path.append(sub_path)
+    return subs_path
 
-]
+# choose datasets/splits/segments/sources
+#  set to None if want to include all
+datasets     = ["/home/sajjad/HW7Leslie"]
+split_part   = ["train"]
+segment_part = ["Seg05"] 
+source_part  = ["Seg05sc1"]    
+splits       = get_sub_dirs(datasets, split_part)
+segments     = get_sub_dirs(splits, segment_part)
+sources      = get_sub_dirs(segments, source_part)
 
-cached_cnt_sources = [
-# TransPlan Dataset
-   # TransPlan Dataset
-    # # D9L
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/D9L_Video1",
-    # # DBR
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DBR_Video1",
-    # # DWP
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/DWP_Video1",
-    # # ECR
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1",
-    # "/mnt/data/TransPlanData/Dataset/PreProcessedMain/ECR_Video1",
-    
-# HW7 & Leslie  DATASET
-    # # Seg01
-    # "/mnt/data/HW7Leslie/Seg01/Seg01sc1",
-    # "/mnt/data/HW7Leslie/Seg01/Seg01sc2",
-    # "/mnt/data/HW7Leslie/Seg01/Seg01sc3",
-    # "/mnt/data/HW7Leslie/Seg01/Seg01sc4",
-    # # Seg02
-    # "/mnt/data/HW7Leslie/Seg02/Seg02sc1",
-    # "/mnt/data/HW7Leslie/Seg02/Seg02sc2",
-    # "/mnt/data/HW7Leslie/Seg02/Seg02sc3",
-    # "/mnt/data/HW7Leslie/Seg02/Seg02sc4",
-    # # Seg03
-    # "/mnt/data/HW7Leslie/Seg03/Seg03sc1",
-    # "/mnt/data/HW7Leslie/Seg03/Seg03sc2",
-    # "/mnt/data/HW7Leslie/Seg03/Seg03sc3",
-    # "/mnt/data/HW7Leslie/Seg03/Seg03sc4",
-    # # Seg05
-    # "/mnt/data/HW7Leslie/Seg05/Seg05sc1",
-    # "/mnt/data/HW7Leslie/Seg05/Seg05sc2",
-    # "/mnt/data/HW7Leslie/Seg05/Seg05sc3",
-    # "/mnt/data/HW7Leslie/Seg05/Seg05sc4",
-    # # Seg06
-    # "/mnt/data/HW7Leslie/Seg06/Seg06sc1",
-    # "/mnt/data/HW7Leslie/Seg06/Seg06sc2",
-    # "/mnt/data/HW7Leslie/Seg06/Seg06sc3",
-    # "/mnt/data/HW7Leslie/Seg06/Seg06sc4",
-    # # Seg09
-    # "/mnt/data/HW7Leslie/Seg09/Seg09sc1",
-    # "/mnt/data/HW7Leslie/Seg09/Seg09sc2",
-    # "/mnt/data/HW7Leslie/Seg09/Seg09sc3",
-    # "/mnt/data/HW7Leslie/Seg09/Seg09sc4",
-    # # Seg10
-    # "/mnt/data/HW7Leslie/Seg10/Seg10sc1",
-    # "/mnt/data/HW7Leslie/Seg10/Seg10sc2",
-    # "/mnt/data/HW7Leslie/Seg10/Seg10sc3",
-    # "/mnt/data/HW7Leslie/Seg10/Seg10sc4",
-    # # Seg11
-    # "/mnt/data/HW7Leslie/Seg11/Seg11sc1",
-    # "/mnt/data/HW7Leslie/Seg11/Seg11sc2",
-    # "/mnt/data/HW7Leslie/Seg11/Seg11sc3",
-    # "/mnt/data/HW7Leslie/Seg11/Seg11sc4",
-    # # Seg12
-    # "/mnt/data/HW7Leslie/Seg12/Seg12sc1",
-    # "/mnt/data/HW7Leslie/Seg12/Seg12sc2",
-    # "/mnt/data/HW7Leslie/Seg12/Seg12sc3",
-    # "/mnt/data/HW7Leslie/Seg12/Seg12sc4",
-    # # Seg13
-    # "/mnt/data/HW7Leslie/Seg13/Seg13sc1",
-    # "/mnt/data/HW7Leslie/Seg13/Seg13sc2",
-    # "/mnt/data/HW7Leslie/Seg13/Seg13sc3",
-    # "/mnt/data/HW7Leslie/Seg13/Seg13sc4",
-    # # #Seg17
-    # "/mnt/data/HW7Leslie/Seg17/Seg17sc1",
-    # "/mnt/data/HW7Leslie/Seg17/Seg17sc2",
-    # "/mnt/data/HW7Leslie/Seg17/Seg17sc3",
-    # "/mnt/data/HW7Leslie/Seg17/Seg17sc4",
-    # # Seg00
-    # "/mnt/data/HW7Leslie/Seg00/Seg00sc1",
-    # "/mnt/data/HW7Leslie/Seg00/Seg00sc2",
-    # "/mnt/data/HW7Leslie/Seg00/Seg00sc3",
-    # "/mnt/data/HW7Leslie/Seg00/Seg00sc4",
-    # # Seg04
-    # "/mnt/data/HW7Leslie/Seg04/Seg04sc1",
-    # "/mnt/data/HW7Leslie/Seg04/Seg04sc2",
-    # "/mnt/data/HW7Leslie/Seg04/Seg04sc3",
-    # "/mnt/data/HW7Leslie/Seg04/Seg04sc4",
-    # # Seg07
-    # "/mnt/data/HW7Leslie/Seg07/Seg07sc1",
-    # "/mnt/data/HW7Leslie/Seg07/Seg07sc2",
-    # "/mnt/data/HW7Leslie/Seg07/Seg07sc3",
-    # "/mnt/data/HW7Leslie/Seg07/Seg07sc4",
-    # # Seg08
-    # "/mnt/data/HW7Leslie/Seg08/Seg08sc1",
-    # "/mnt/data/HW7Leslie/Seg08/Seg08sc2",
-    # "/mnt/data/HW7Leslie/Seg08/Seg08sc3",
-    # "/mnt/data/HW7Leslie/Seg08/Seg08sc4",
-    # # Seg14
-    # "/mnt/data/HW7Leslie/Seg14/Seg14sc1",
-    # "/mnt/data/HW7Leslie/Seg14/Seg14sc2",
-    # "/mnt/data/HW7Leslie/Seg14/Seg14sc3",
-    # "/mnt/data/HW7Leslie/Seg14/Seg14sc4",
-    # # Seg15
-    # "/mnt/data/HW7Leslie/Seg15/Seg15sc1",
-    # "/mnt/data/HW7Leslie/Seg15/Seg15sc2",
-    # "/mnt/data/HW7Leslie/Seg15/Seg15sc3",
-    # "/mnt/data/HW7Leslie/Seg15/Seg15sc4",
-    # # Seg16
-    # "/mnt/data/HW7Leslie/Seg16/Seg16sc1",
-    # "/mnt/data/HW7Leslie/Seg16/Seg16sc2",
-    # "/mnt/data/HW7Leslie/Seg16/Seg16sc3",
-    # "/mnt/data/HW7Leslie/Seg16/Seg16sc4",
-    # # Seg18
-    # "/mnt/data/HW7Leslie/Seg18/Seg18sc1",
-    # "/mnt/data/HW7Leslie/Seg18/Seg18sc2",
-    # "/mnt/data/HW7Leslie/Seg18/Seg18sc3",
-    # "/mnt/data/HW7Leslie/Seg18/Seg18sc4",
-    # # Seg19
-    # "/mnt/data/HW7Leslie/Seg19/Seg19sc1",
-    # "/mnt/data/HW7Leslie/Seg19/Seg19sc2",
-    # "/mnt/data/HW7Leslie/Seg19/Seg19sc3",
-    # "/mnt/data/HW7Leslie/Seg19/Seg19sc4",
-    # # Seg20
-    # "/mnt/data/HW7Leslie/Seg20/Seg20sc1",
-    # "/mnt/data/HW7Leslie/Seg20/Seg20sc2",
-    # "/mnt/data/HW7Leslie/Seg20/Seg20sc3",
-    # "/mnt/data/HW7Leslie/Seg20/Seg20sc4",
-    # # # Seg21
-    # "/mnt/data/HW7Leslie/Seg21/Seg21sc1",
-    # "/mnt/data/HW7Leslie/Seg21/Seg21sc2",
-    # "/mnt/data/HW7Leslie/Seg21/Seg21sc3",
-    # "/mnt/data/HW7Leslie/Seg21/Seg21sc4",
-    # # Seg22
-    # "/mnt/data/HW7Leslie/Seg22/Seg22sc1",
-    # "/mnt/data/HW7Leslie/Seg22/Seg22sc2",
-    # "/mnt/data/HW7Leslie/Seg22/Seg22sc3",
-    # "/mnt/data/HW7Leslie/Seg22/Seg22sc4",
-    # # Seg23
-    # "/mnt/data/HW7Leslie/Seg23/Seg23sc1",
-    # "/mnt/data/HW7Leslie/Seg23/Seg23sc2",
-    # "/mnt/data/HW7Leslie/Seg23/Seg23sc3",
-    # "/mnt/data/HW7Leslie/Seg23/Seg23sc4",
-    # # Seg24
-    # "/mnt/data/HW7Leslie/Seg24/Seg24sc1",
-    # "/mnt/data/HW7Leslie/Seg24/Seg24sc2",
-    # "/mnt/data/HW7Leslie/Seg24/Seg24sc3",
-    # "/mnt/data/HW7Leslie/Seg24/Seg24sc4",
-    # # Seg25
-    # "/mnt/data/HW7Leslie/Seg25/Seg25sc1",
-    # "/mnt/data/HW7Leslie/Seg25/Seg25sc2",
-    # "/mnt/data/HW7Leslie/Seg25/Seg25sc3",
-    # "/mnt/data/HW7Leslie/Seg25/Seg25sc4",
-    # # Seg26
-    # "/mnt/data/HW7Leslie/Seg26/Seg26sc1",
-    # "/mnt/data/HW7Leslie/Seg26/Seg26sc2",
-    # "/mnt/data/HW7Leslie/Seg26/Seg26sc3",
-    # "/mnt/data/HW7Leslie/Seg26/Seg26sc4",
-    # # Seg27
-    # "/mnt/data/HW7Leslie/Seg27/Seg27sc1",
-    # "/mnt/data/HW7Leslie/Seg27/Seg27sc2",
-    # "/mnt/data/HW7Leslie/Seg27/Seg27sc3",
-    # "/mnt/data/HW7Leslie/Seg27/Seg27sc4",
-    # # Seg28
-    # "/mnt/data/HW7Leslie/Seg28/Seg28sc1",
-    # "/mnt/data/HW7Leslie/Seg28/Seg28sc2",
-    # "/mnt/data/HW7Leslie/Seg28/Seg28sc3",
-    # "/mnt/data/HW7Leslie/Seg28/Seg28sc4",
-    # # Seg29
-    # "/mnt/data/HW7Leslie/Seg29/Seg29sc1",
-    # "/mnt/data/HW7Leslie/Seg29/Seg29sc2",
-    # "/mnt/data/HW7Leslie/Seg29/Seg29sc3",
-    # "/mnt/data/HW7Leslie/Seg29/Seg29sc4",
-    # # Seg30
-    # "/mnt/data/HW7Leslie/Seg30/Seg30sc1",
-    # "/mnt/data/HW7Leslie/Seg30/Seg30sc2",
-    # "/mnt/data/HW7Leslie/Seg30/Seg30sc3",
-    # "/mnt/data/HW7Leslie/Seg30/Seg30sc4",
-    # # Seg31
-    # "/mnt/data/HW7Leslie/Seg31/Seg31sc1",
-    # "/mnt/data/HW7Leslie/Seg31/Seg31sc2",
-    # "/mnt/data/HW7Leslie/Seg31/Seg31sc3",
-    # "/mnt/data/HW7Leslie/Seg31/Seg31sc4",
-]
+# choose the segmenter
+# options: ["InternImage"]
+segmenters = ["InternImage"]
 
 # choose the detectors
-# options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage"]
-detectors = ["detectron2"]
+# options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN"]
+detectors = ["CascadeRCNN"]
 
 # choose the tracker
 # options: ["GT", sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
 trackers = ["ByteTrack"] 
-
 
 # choose the clustering algorithm
 # options: ["SpectralFull", "DBSCAN", "SpectralKNN"]
@@ -442,11 +43,15 @@ clusters = ["SpectralFull"]
 clt_metrics = ["tcos", "cmm"]
 cnt_metrics = ["kde"]
 
-# choose the segmenter
-# options: ["InternImage"]
-segmenters = ["InternImage"]
 
-# for src, cached_cnt_pth in zip(sources, cached_cnt_sources):
+for src, cached_cnt_pth in zip(sources, sources):
+    ########################################################
+    # 0. extract images from video
+    # os.system(f"python3 main.py --Dataset={src} --ExtractImages)
+    ########################################################
+    # print(f" extracting images from : {src}")
+    # os.system(f"python3 main.py --Dataset={src} --ExtractImages")
+
     ########################################################
     # 1. estimate the Homography Metrix using Homography GUI 
     # os.system(f"python3 main.py --Dataset={src}  --Detector=detectron2 --Tracker=sort --HomographyGUI --VisHomographyGUI --Frame=1 --TopView=GoogleMap")
@@ -481,9 +86,9 @@ segmenters = ["InternImage"]
     # 3. run the detection
     # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=NULL --Detect --VisDetect")
     ########################################################
-    # for det in detectors:
-    #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisDetect")
+    for det in detectors:
+        print(f"detecting ----> src:{src} det:{det}")
+        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect --VisDetect")
 
     ########################################################
     # 3.5 run the detection post processing
@@ -493,6 +98,14 @@ segmenters = ["InternImage"]
     #     print(f"detecting ----> src:{src} det:{det}")
     #     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --DetPostProc --DetTh=0.5 --VisDetect")
     #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisDetect --DetPostProc --DetTh=0.5 --classes_to_keep 2 5 7")
+
+    ########################################################
+    # 3.5.5 convert detections to coco format
+    # the full commonad looks like : os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL")
+    ########################################################
+    # for det in detectors:
+    #     print(f"converting to COCO ----> src:{src} det:{det}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --ConvertDetsToCOCO")
 
     ########################################################
     # 3.6 back project detections
@@ -589,7 +202,7 @@ segmenters = ["InternImage"]
     #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={met} --VisTrackMoI")
 
 
-    #_______________________MULTICAMERA_______________________#
+#_______________________MULTICAMERA_______________________#
 
 # for src in segments:
 #     print(f"running on seg:{src}")
@@ -602,3 +215,16 @@ segmenters = ["InternImage"]
     #         for metric in cnt_metrics:
     #             print(f"average MC counts ---> src:{src} det:{det} tra:{tra} cnt:{metric}")
     #             os.system(f"python3 main.py --MultiCam --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={metric} --AverageCountsMC --EvalCountMC")
+
+
+
+#_______________________MULTISOURCE_______________________#
+
+# for split in splits:
+#     # to run on split level add --MultiSeg
+#     print(f"running on split:{split}")
+#     ########################################################
+#     # 0. convert detections of all the data under split into COCO format
+#     ########################################################
+#     for det in detectors:
+#         os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --Tracker=NULL --ConvertDetsToCOCO")

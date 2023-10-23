@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.cluster import DBSCAN, AgglomerativeClustering, AffinityPropagation
 import pickle as pkl
+from counting.counting import group_tracks_by_id
 
 def viz_CMM(current_track):
     image_path = "./../../Dataset/DundasStAtNinthLine.jpg"
@@ -54,23 +55,23 @@ def cmm_ref_distance(index_1, index_2):
     return cmm_distance(traj_a, traj_b)
 
 
-def group_tracks_by_id(tracks_path):
-    # this function was writtern for grouping the tracks with the same id
-    # usinig this one can load the data from a .txt file rather than .mat file
-    tracks = np.loadtxt(tracks_path, delimiter=",")
-    all_ids = np.unique(tracks[:, 1])
-    data = {"id":[], "trajectory":[], "frames":[]}
-    for idd in tqdm(all_ids):
-        mask = tracks[:, 1]==idd
-        selected_tracks = tracks[mask]
-        frames = [selected_tracks[: ,0]]
-        id = selected_tracks[0][1]
-        trajectory = selected_tracks[:, 2:4]
-        data["id"].append(id)
-        data["frames"].append(frames)
-        data["trajectory"].append(trajectory)
-    df = pd.DataFrame(data)
-    return df
+# def group_tracks_by_id(tracks_path):
+#     # this function was writtern for grouping the tracks with the same id
+#     # usinig this one can load the data from a .txt file rather than .mat file
+#     tracks = np.loadtxt(tracks_path, delimiter=",")
+#     all_ids = np.unique(tracks[:, 1])
+#     data = {"id":[], "trajectory":[], "frames":[]}
+#     for idd in tqdm(all_ids):
+#         mask = tracks[:, 1]==idd
+#         selected_tracks = tracks[mask]
+#         frames = [selected_tracks[: ,0]]
+#         id = selected_tracks[0][1]
+#         trajectory = selected_tracks[:, 2:4]
+#         data["id"].append(id)
+#         data["frames"].append(frames)
+#         data["trajectory"].append(trajectory)
+#     df = pd.DataFrame(data)
+#     return df
 
 def cmm_distance(traj_a, traj_b):
 

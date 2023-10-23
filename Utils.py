@@ -115,6 +115,11 @@ def get_detection_pkl(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot +SubTaskExt.Pkl)
 
+def get_detection_coco(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot+ "COCO"+ Puncuations.Dot+SubTaskExt.Json)
+
 def get_detection_pkl_back_up(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -324,6 +329,7 @@ def add_detection_pathes_to_args(args):
     args.DetectionDetectorPath = d_d_path
     args.DetectionPkl = d_pkl
     args.DetectionPklBackUp = d_pkl_bu
+    args.DetectionCOCO = get_detection_coco(args)
     return args
 
 def add_vis_detection_path_to_args(args):
@@ -431,10 +437,11 @@ def complete_args_mc(args, args_mc):
         args_mc[i] = arg
 
     check_config(args)
-    
-    args.Video = args_mc[0].Video
+    # completing the args(multicam one source)
+    args.Video = args.Dataset
+    args = complete_args(args)
 
-    if args.AverageCountsMC or EvalCountMC:
+    if args.AverageCountsMC or args.EvalCountMC:
         args = add_count_path_to_args(args)
 
     return args, args_mc
@@ -465,14 +472,16 @@ def add_homographygui_related_path_to_args(args):
     return args
 
 def add_homography_related_path_to_args(args):
-    reprojected_path = get_reprojection_path(args)
-    reprojected_pkl = get_reprojection_pkl(args)
-    args.ReprojectedPoints = reprojected_path
-    args.ReprojectedPkl = reprojected_pkl
-    args.ReprojectedPointsForDetection = get_reprojection_path_for_detection(args)
-    args.ReprojectedPklForDetection = get_reprojection_pkl_for_detection(args)
-    args.VisContactPointPth = get_vis_cp_path_for_detection(args)
-    args.VisContactPointTopPth = get_vis_cp_top_for_detection(args)
+    if args.Tracker is not None:
+        reprojected_path = get_reprojection_path(args)
+        reprojected_pkl = get_reprojection_pkl(args)
+        args.ReprojectedPoints = reprojected_path
+        args.ReprojectedPkl = reprojected_pkl
+    if args.Detector is not None:
+        args.ReprojectedPointsForDetection = get_reprojection_path_for_detection(args)
+        args.ReprojectedPklForDetection = get_reprojection_pkl_for_detection(args)
+        args.VisContactPointPth = get_vis_cp_path_for_detection(args)
+        args.VisContactPointTopPth = get_vis_cp_top_for_detection(args)
 
     return args
 
@@ -646,6 +655,13 @@ def revert_args_with_params(args):
         args.CountMetric = args.CountMetric.split(".")[0]
     return args
 
+def get_extracted_image_dir(args):
+     return os.path.join(args.Dataset, "Results/Images/")
+
+def add_images_folder_to_args(args):
+    args.ExtractedImageDirectory = get_extracted_image_dir(args)
+    return args
+
 def complete_args(args):
     args = adjust_args_with_params(args)
 
@@ -656,7 +672,7 @@ def complete_args(args):
         # if Video path was not specified by the user grab a video from dataset
         args = add_videos_to_args(args)
 
-    if (not args.Detector is None) or args.DetPostProc:
+    if (not args.Detector is None) or args.DetPostProc or args.ConvertDetsToCOCO:
         args = add_detection_pathes_to_args(args)
         args = add_vis_detection_path_to_args(args)
 
@@ -669,13 +685,17 @@ def complete_args(args):
     if args.Eval:
         args = add_eval_save_path(args)
     
-    args = add_metadata_to_args(args)
+    try:
+        args = add_metadata_to_args(args)
+    except:
+        pass
 
     args = add_GT_path_to_args(args)
     args= add_3DGT_path_to_args(args)
-    args = add_dsm_related_path_to_args(args)
-    
-    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Track or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop:
+
+    args = add_images_folder_to_args(args)
+
+    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop:
         args = add_homographygui_related_path_to_args(args)
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop:
         args = add_homography_related_path_to_args(args)
@@ -692,7 +712,7 @@ def complete_args(args):
         args = add_meter_path_to_args(args)
     if args.Count or args.VisTrackMoI or args.AverageCountsMC:
         args = add_count_path_to_args(args)
-    if args.Cluster:
+    if args.Cluster or args.TrackLabelingGUI:
         args = add_clustering_related_pth_to_args(args)
     if args.VisROI:
         args = add_visroi_path_to_args(args)
@@ -708,6 +728,58 @@ def complete_args(args):
     args = revert_args_with_params(args)
     return args
 
+def get_args_split(args):
+    split = args.Dataset
+    source_paths = []
+    source_ids = []
+    
+    for source in os.listdir(split):
+        if ((not source.startswith(".")) and (not source == "Results")):
+            source_paths.append(os.path.join(split, source))
+            source_ids.append(source)
+
+    args_ms = []
+    for source, source_id in zip(source_paths, source_ids):
+        temp_args = copy.deepcopy(args)
+        temp_args.Dataset = source
+        temp_args.SourceID = source_ids
+        args_ms.append(temp_args)
+
+    return args_ms
+
+def modify_args_mc(args):
+    sp = args.Dataset
+    cam_paths = []
+    cam_ids = []
+    for cl in os.listdir(sp):
+        if (not cl.startswith(".")) and (not cl == "Results"):
+            cam_paths.append(os.path.join(sp, cl))
+            cam_ids.append(cl)
+    args_mc = []
+    for cam, cam_id in zip(cam_paths, cam_ids):
+        temp_args = copy.deepcopy(args)
+        temp_args.Dataset = cam
+        temp_args.CamID = cam_id
+        args_mc.append(temp_args)
+    return args_mc
+
+def complete_args_ms(args):
+    args_ms = get_args_split(args)
+    args_mcs = [modify_args_mc(args_s) for args_s in args_ms]
+    final_args_ms = []
+    final_args_mcs = []
+    for args_s , args_mc in zip(args_ms, args_mcs):
+        new_args_s, new_args_mc = complete_args_mc(args_s, args_mc)
+        final_args_ms.append(new_args_s)
+        final_args_mcs.append(new_args_mc)
+
+    check_config(args) # will create a results folder inside split(eg.test) folder
+    # complete args of split(multi source, multicam)
+    args.Video = args.Dataset
+    args = complete_args(args)
+
+    return args, final_args_ms, final_args_mcs
+
 def check_config(args):
     # check if args passed are valid
     # create Results folders Accordigly
@@ -722,6 +794,7 @@ def check_config(args):
     clustering_path = os.path.join(results_path, "Clustering")
     segment_path    = os.path.join(results_path, "Segment")
     dsm_path    = os.path.join(results_path, "DSM")
+    images_path = os.path.join(results_path, "Images")
 
     try: os.system(f"mkdir -p {results_path}")
     except: pass
@@ -742,6 +815,8 @@ def check_config(args):
     try: os.system(f"mkdir -p {segment_path}")
     except: pass
     try: os.system(f"mkdir -p {dsm_path}")
+    except: pass
+    try: os.system(f"mkdir -p {images_path}")
     except: pass
 
 def get_conda_envs():

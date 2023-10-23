@@ -61,18 +61,15 @@ class tabbed_ui_func(QMainWindow):
     def set_image_paths(self, image1_path, image2_path):
         self.image1_path = image1_path
         self.image2_path = image2_path
-    # complete here
 
     def callback_OpenImage1(self):
-        fName = self.graphicsView_Image1.loadImageFromFile()
+        fName = self.graphicsView_Image1.loadImageFromFile(self.image1_path)
         self.b.setFileName1(fName)
         self.graphicsView_Image1.leftMouseButtonPressed.connect(self.img1HandleLeftClick)
-
         self.graphicsView_Image1.show()
         
-
     def callback_OpenImage2(self):
-        fName = self.graphicsView_Image2.loadImageFromFile()
+        fName = self.graphicsView_Image2.loadImageFromFile(self.image2_path)
         self.b.setFileName2(fName)
         self.graphicsView_Image2.leftMouseButtonPressed.connect(self.img2HandleLeftClick)
         self.graphicsView_Image2.show()

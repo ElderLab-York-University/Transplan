@@ -6,7 +6,6 @@ from Utils import *
 # import all detectros here
 # -------------------------- 
 # import Detectors.detectron2.detect
-import Detectors.OpenMM.detect
 import Detectors.YOLOv5.detect
 import Detectors.detectron2.detect
 import Detectors.YOLOv8.detect
@@ -15,18 +14,25 @@ import Detectors.InternImage.detect
 import Detectors.GTHW7.detect
 import Detectors.GTHW73D.detect
 
+import Detectors.RTMDet.detect
+import Detectors.YoloX.detect
+import Detectors.CascadeRCNN.detect
+import Detectors.DeformableDETR.detect
+import Detectors.CenterNet.detect
 # --------------------------
-
 detectors = {}
-detectors["detectron2"]  = Detectors.detectron2.detect
-detectors["OpenMM"]      = Detectors.OpenMM.detect
-detectors["YOLOv5"]      = Detectors.YOLOv5.detect
-detectors["YOLOv8"]      = Detectors.YOLOv8.detect
-detectors["DDETR"]       = Detectors.DDETR.detect
-detectors["InternImage"] = Detectors.InternImage.detect
-detectors["GTHW7"]       = Detectors.GTHW7.detect
+detectors["detectron2"]     = Detectors.detectron2.detect
+detectors["YOLOv5"]         = Detectors.YOLOv5.detect
+detectors["YOLOv8"]         = Detectors.YOLOv8.detect
+detectors["DDETR"]          = Detectors.DDETR.detect
+detectors["InternImage"]    = Detectors.InternImage.detect
+detectors["GTHW7"]          = Detectors.GTHW7.detect
+detectors["RTMDet"]         = Detectors.RTMDet.detect
+detectors["YoloX"]          = Detectors.YoloX.detect
+detectors["CascadeRCNN"]    = Detectors.CascadeRCNN.detect
+detectors["DeformableDETR"] = Detectors.DeformableDETR.detect
+detectors["CenterNet"]      = Detectors.CenterNet.detect
 detectors["GTHW73D"]     = Detectors.GTHW73D.detect
-
 def detect(args):
     # check if detector names is valid
     if args.Detector not in os.listdir("./Detectors/"):
@@ -254,3 +260,216 @@ def visroi(args):
     plt.savefig(args.VisROIPth)
 
     return SucLog("Vis ROI executed successfully")
+
+def format_frame_number(frame_number, number_of_frames):
+    # Calculate the number of digits needed to represent number_of_frames
+    num_digits = len(str(number_of_frames))
+    
+    # Format frame_number as a string with leading zeros
+    formatted_frame_number = str(frame_number).zfill(num_digits)
+    
+    return formatted_frame_number
+
+def format_frame_id(video_name, frame_number, number_of_frames):
+    return hash(f"{video_name}{frame_number}{number_of_frames}")
+
+def format_bbox_id(bbox_index, video_name, frame_number, number_of_frames):
+    return hash(f"{video_name}{frame_number}{number_of_frames}{bbox_index}")
+
+def image_path_from_details(video_name, frame_number, number_of_frames, output_directory):
+        frame_number = int(frame_number)
+        number_of_frames = int(number_of_frames)
+        # Construct the output file name
+        extension = '.jpg'
+        formated_frame_number = format_frame_number(frame_number, number_of_frames) # adds zero fills
+        output_filename = f'{video_name}.{formated_frame_number}{extension}'  # Use 4-digit frame number
+        
+        # Save the frame as an image in the output directory
+        output_path = os.path.join(output_directory, output_filename)
+        return output_path
+
+def extract_images(args):
+    output_directory = args.ExtractedImageDirectory
+
+    # Define the input video file path and output directory
+    input_video_path = args.Video
+    file_name, file_ext = os.path.splitext(args.Video)
+    video_name = file_name.split("/")[-1]
+
+    # Open the video file
+    cap = cv2.VideoCapture(input_video_path)
+    number_of_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    # Initialize frame counter
+    frame_number = 0
+
+    # Loop through the video frames
+    for _ in tqdm(range(number_of_frames)):
+        # Read a frame from the video
+        ret, frame = cap.read()
+        
+        # Break the loop if we have reached the end of the video
+        if not ret:
+            break
+        
+        # Save the frame as an image in the output directory
+        output_path = image_path_from_details(video_name, frame_number, number_of_frames, output_directory)
+        cv2.imwrite(output_path, frame)
+        
+        # Increment the frame counter
+        frame_number += 1
+
+    # Release the video capture object and close any open windows
+    cap.release()
+    cv2.destroyAllWindows()
+    return SucLog("extracted all images")
+
+def detections_to_coco(args):
+
+    input_video_path = args.Video
+    file_name, file_ext = os.path.splitext(args.Video)
+    video_name = file_name.split("/")[-1]
+
+    results_path = args.DetectionCOCO
+    image_directory = args.ExtractedImageDirectory
+    # convert detection pkl to coco formated json
+    detection_df = pd.read_pickle(args.DetectionPkl)
+
+    cap = cv2.VideoCapture(args.Video)
+    number_of_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+
+    images_list = []
+    annots_list = []
+    catego_list = []
+
+    unique_frames = sorted(detection_df.fn.unique())
+    for fn in unique_frames:
+        file_path = image_path_from_details(video_name, int(fn), number_of_frames, image_directory)
+        prefix = args.Dataset
+        file_name = os.path.relpath(file_path, prefix)
+
+        frame_id  = format_frame_id(video_name, int(fn), number_of_frames)
+
+        image_dict = {"file_name":file_name,
+                      "height":frame_height,
+                      "width":frame_width,
+                      "id":frame_id}
+
+        images_list.append(image_dict)
+        detection_df_fn = detection_df[detection_df.fn==fn]
+        for i, row in detection_df_fn.iterrows():
+            bbox = [int(row.x1), int(row.y1), int(row.x2-row.x1), int(row.y2-row.y1)]
+            category_id = int(row["class"])
+            bbox_id = format_bbox_id(i, video_name, int(fn), number_of_frames) #@TODO need to change that
+
+            annot_dict = {"iscrowd":0,
+                          "image_id":frame_id,
+                          "bbox":bbox,
+                          "category_id":category_id,
+                          "id": bbox_id,
+                          "area": (row.x2 - row.x1)*(row.y2 - row.y1)
+                        }
+
+            annots_list.append(annot_dict)
+
+
+    unique_categories = sorted(detection_df["class"].unique())
+    for category in unique_categories:
+        category_dict = {"id":int(category), "name":f"{int(category)}"} #@TODO for now categories do not have name
+        catego_list.append(category_dict)
+
+    coco_annotations = {"images": images_list,
+                        "annotations": annots_list,
+                        "categories": catego_list}
+
+    # open a file for writing
+    with open(results_path, 'w') as f:
+        # write the dictionary to the file in JSON format
+        json.dump(coco_annotations, f)
+
+    return SucLog("annotations converted to COCO format")
+
+def detections_to_coco_ms(args_split, args_ms, args_mcs):
+    results_path = args_split.DetectionCOCO
+
+    images_list = []
+    annots_list = []
+    catego_list = []
+
+    all_category = []
+
+    for args_mc in tqdm(args_mcs):
+        for arg in args_mc:
+
+            input_video_path = arg.Video
+            file_name, file_ext = os.path.splitext(arg.Video)
+            video_name = file_name.split("/")[-1]
+
+            image_directory = arg.ExtractedImageDirectory
+            # convert detection pkl to coco formated json
+            detection_df = pd.read_pickle(arg.DetectionPkl)
+
+            cap = cv2.VideoCapture(arg.Video)
+            number_of_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+
+
+
+            unique_frames = sorted(detection_df.fn.unique())
+            for fn in unique_frames:
+                file_path = image_path_from_details(video_name, int(fn), number_of_frames, image_directory)
+                prefix = args_split.Dataset
+                file_name = os.path.relpath(file_path, prefix)
+                
+                frame_id  = format_frame_id(video_name, int(fn), number_of_frames)
+
+                image_dict = {"file_name":file_name,
+                            "height":frame_height,
+                            "width":frame_width,
+                            "id":frame_id}
+
+                images_list.append(image_dict)
+
+                detection_df_fn = detection_df[detection_df.fn==fn]
+
+                for i, row in detection_df_fn.iterrows():
+                    bbox = [int(row.x1), int(row.y1), int(row.x2-row.x1), int(row.y2-row.y1)]
+                    category_id = int(row["class"])
+                    bbox_id = format_bbox_id(i, video_name, int(fn), number_of_frames)
+
+                    annot_dict = {"iscrowd":0,
+                                "image_id":frame_id,
+                                "bbox":bbox,
+                                "category_id":category_id,
+                                "id": bbox_id,
+                                "area": (row.x2 - row.x1)*(row.y2 - row.y1)
+                                }
+
+                    annots_list.append(annot_dict)
+
+
+            unique_categories = sorted(detection_df["class"].unique())
+            for category in unique_categories:
+                all_category.append(category)
+
+
+    unique_categories = np.unique(all_category)
+    for category in unique_categories:
+        category_dict = {"id":int(category), "name":f"{int(category)}"} 
+        catego_list.append(category_dict)
+
+    coco_annotations = {"images": images_list,
+                        "annotations": annots_list,
+                        "categories": catego_list}
+
+    print(catego_list)
+
+    # open a file for writing
+    with open(results_path, 'w') as f:
+        # write the dictionary to the file in JSON format
+        json.dump(coco_annotations, f)
+
+    return SucLog("annotations converted to COCO format")

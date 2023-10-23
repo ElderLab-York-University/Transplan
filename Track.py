@@ -8,6 +8,7 @@ import Homography
 import Maps
 import TrackLabeling
 import copy
+from counting.counting import group_tracks_by_id
 
 # import all detectros here
 # And add their names to the "trackers" dictionary
@@ -98,6 +99,7 @@ def vistrack(args):
                 cv2.putText(frame, f'{int(bbid)}', (x1 + 60, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 5)
                 cv2.putText(frame, f'{int(bbid)}', (x1 + 60, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (144, 251, 144), 2)
             out_cap.write(frame)
+    return SucLog("track vis successful")
 
 def vistracktop(args):
     df = pd.read_pickle(args.ReprojectedPkl)
@@ -203,7 +205,9 @@ def trackpostproc(args):
         print(ProcLog("updating txt, pkl, reprojected, and meter files for tracking"))
         trackers[args.Tracker].df_txt(df, args.TrackingPth)
         store_df_pickle(args)
-        Homography.reproject(args, source= "tracks", from_back_up=False)
+        Homography.reproject(args, method=args.BackprojectionMethod,
+                            source = args.BackprojectSource, from_back_up=False)
+        
         Maps.pix2meter(args)
 
     # restore original tracks in txt and pkl
@@ -457,8 +461,8 @@ def select_based_on_roi(args, condition, resample_tracks=False):
     M = np.load(HomographyNPY, allow_pickle=True)[0]
 
     # load data
-    tracks = group_tracks_by_id(pd.read_pickle(tracks_path))
-    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path))
+    tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
+    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
     tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
 
     # create roi polygon
@@ -570,8 +574,8 @@ def remove_short_tracks(args):
     th = args.TrackTh
     df_meter_ungrouped = pd.read_pickle(args.ReprojectedPklMeter)
     df_reg_ungrouped   = pd.read_pickle(args.ReprojectedPkl)
-    df_meter = group_tracks_by_id(df_meter_ungrouped)
-    df_reg   = group_tracks_by_id(df_reg_ungrouped)
+    df_meter = group_tracks_by_id(df_meter_ungrouped, gp=True)
+    df_reg   = group_tracks_by_id(df_reg_ungrouped, gp=True)
 
     main_df = pd.read_pickle(args.TrackingPkl)
 
@@ -590,22 +594,6 @@ def remove_short_tracks(args):
         else: mask.append(True)
 
     return main_df[mask]
-
-def group_tracks_by_id(df):
-    # this function was writtern for grouping the tracks with the same id
-    # usinig this one can load the data from a .txt file rather than .mat file
-    all_ids = np.unique(df['id'].to_numpy(dtype=np.int64))
-    data = {"id":[], "trajectory":[], "frames":[]}
-    for idd in tqdm(all_ids):
-        frames = df[df['id']==idd]["fn"].to_numpy(np.float32)
-        id = idd
-        trajectory = df[df['id']==idd][["x", "y"]].to_numpy(np.float32)
-        
-        data["id"].append(id)
-        data["frames"].append(frames)
-        data["trajectory"].append(trajectory)
-    df2 = pd.DataFrame(data)
-    return df2
 
 def arc_length(track):
         """
