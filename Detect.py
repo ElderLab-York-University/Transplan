@@ -22,6 +22,7 @@ detectors["YOLOv5"]      = Detectors.YOLOv5.detect
 detectors["YOLOv8"]      = Detectors.YOLOv8.detect
 detectors["DDETR"]       = Detectors.DDETR.detect
 detectors["InternImage"] = Detectors.InternImage.detect
+detectors["GTH7"] = Detectors.InternImage.detect
 
 def detect(args):
     # check if detector names is valid
@@ -180,8 +181,6 @@ def visdetect(args):
         for roi in data:
             
             rois.append(np.int32(roi))
-    ret, frame = cap.read()
-
     if not args.ForNFrames is None:
         frames = args.ForNFrames
     for frame_num in tqdm(range(frames)):
@@ -193,17 +192,22 @@ def visdetect(args):
             q=roi        
             frame=draw_box_on_image(frame, q[0], q[1] , q[2] ,q[3], c=[255,255,255], thickness=2)            
         if args.VisInferenceRois:
-            cv2.imwrite(args.VisInferenceRoi, frame)
-        
-        
-            
+            cv2.imwrite(args.VisInferenceRoi, frame)   
         for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
             frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
-            
         out_cap.write(frame)
-    cv2.imwrite("GT.png", frame)
     cap.release()
     out_cap.release()
+    cap = cv2.VideoCapture(args.Video)
+    ret, frame = cap.read()    
+    for frame_num in tqdm(range(frames)):
+        if (not cap.isOpened()):
+            return FailLog("Error reading the video")
+        if not ret: continue
+        for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
+            frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
+        out_cap.write(frame)
+    cv2.imwrite("GTALL.png", frame)
     return SucLog("Detection visualized on the video")
         
 
