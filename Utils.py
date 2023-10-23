@@ -699,7 +699,7 @@ def complete_args(args):
         args = add_meter_path_to_args(args)
     if args.Count or args.VisTrackMoI or args.AverageCountsMC:
         args = add_count_path_to_args(args)
-    if args.Cluster:
+    if args.Cluster or args.TrackLabelingGUI:
         args = add_clustering_related_pth_to_args(args)
     if args.VisROI:
         args = add_visroi_path_to_args(args)
