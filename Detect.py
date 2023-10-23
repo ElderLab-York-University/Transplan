@@ -191,7 +191,7 @@ def visdetect(args):
         for roi in rois:
             q=roi        
             frame=draw_box_on_image(frame, q[0], q[1] , q[2] ,q[3], c=[255,255,255], thickness=2)            
-        if args.VisInferenceRoi is not None:
+        if args.VisInferenceRois:
             cv2.imwrite(args.VisInferenceRoi, frame)
             
         for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
@@ -281,6 +281,7 @@ def get_overlapping_bboxes(df, args, intersecting_rectangles):
         for fn in np.unique(dets_inside['fn']):
 
             det = dets_inside[dets_inside['fn'] == fn]
+            det=det[0:4]
 
             conf, bboxes = det['score'].to_numpy(), det[['x1', 'y1', 'x2', 'y2']].to_numpy()
             boxes=bboxes[np.newaxis, :, :]            
@@ -298,14 +299,13 @@ def get_overlapping_bboxes(df, args, intersecting_rectangles):
 
             ious = np.triu(iou_scores[0])            
 
-
             # Only keep those boxes who has certain IoU - Overlapping boxes in the intersecting regions.
 
-            overlapping_pairs = np.where((ious > 0.9) & (ious < 1.0))
+            overlapping_pairs = np.where((ious > 0.5) & (ious < 1.0))
 
             overlapping_pairs = np.hstack((overlapping_pairs[0].reshape(-1, 1), overlapping_pairs[1].reshape(-1, 1)))
             
-            non_overlapping_pairs = np.where((ious <= 0.9) & (ious > 0.0))
+            non_overlapping_pairs = np.where((ious <= 0.5) & (ious > 0.0))
 
             non_overlapping_pairs = np.hstack((non_overlapping_pairs[0].reshape(-1, 1), non_overlapping_pairs[1].reshape(-1, 1)))
 
@@ -314,9 +314,12 @@ def get_overlapping_bboxes(df, args, intersecting_rectangles):
             confs_sort_idxs = np.argsort(-conf_pairs, axis=1)
 
             keep_indices = overlapping_pairs[np.arange(0, overlapping_pairs.shape[0]), confs_sort_idxs[:, 0]]
+            
+            remove_indices = overlapping_pairs[np.arange(0, overlapping_pairs.shape[0]), confs_sort_idxs[:, 1]]
 
             keep_indices = np.unique(keep_indices)
-
+            
+            remove_indices=np.unique(remove_indices)
            
 
             low_confs_pairs = np.hstack((conf[non_overlapping_pairs[:, 0]].reshape(-1, 1), conf[non_overlapping_pairs[:, 1]].reshape(-1, 1)))
@@ -329,11 +332,11 @@ def get_overlapping_bboxes(df, args, intersecting_rectangles):
 
            
 
-            keep_indices_low_confs = keep_indices_low_confs[np.where(conf[keep_indices_low_confs] > 0.6)]  
+            keep_indices_low_confs = keep_indices_low_confs[np.where(conf[keep_indices_low_confs] > 0.5)]  
 
-            dets_nms = pd.concat([dets_nms,det.iloc[keep_indices]])
+            dets_nms = pd.concat([dets_nms,det.iloc[np.delete(np.arange(len(det)), remove_indices)]])
 
-            dets_nms = pd.concat([dets_nms,det.iloc[keep_indices_low_confs]])
+            # dets_nms = pd.concat([dets_nms,det.iloc[keep_indices_low_confs]])
             
             
 
@@ -359,7 +362,7 @@ def get_overlapping_bboxes(df, args, intersecting_rectangles):
         # return dets_inside[~idxs_inside].append(dets_nms, ignore_index=True)
 
  
-
+        print('yo')
         return pd.concat([df[~idxs_inside],dets_nms])    
     # if args.Rois is not None:
     #     cap = cv2.VideoCapture(args.Video)
