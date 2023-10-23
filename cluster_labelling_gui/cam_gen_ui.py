@@ -48,14 +48,15 @@ def df_from_pickle(pickle_path):
 
 cam_mois = [4, 4, 4, 12, 12, 12, 12, 6, 12, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2]
 class ui_func(QMainWindow):
-    def __init__(self, export_path):
+    def __init__(self, export_path, topview, clusters_path):
         super(ui_func, self).__init__()
         # should be a pickle path
         self.export_path = export_path
+        self.topview = topview
+        self.clusters_path = clusters_path
+
         uic.loadUi('cam_gen.ui',self)
         # self.Cnt = Counting()
-
-
 
         self.pushButton_openimg = self.findChild(QPushButton,name='pushButton_openimg')
         self.pushButton_openimg.clicked.connect(self.c_pushButton_openimg)
@@ -260,13 +261,11 @@ class ui_func(QMainWindow):
             self.all_labels[i].setHidden(True)
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)", options=options)
+        fileName = self.topview
+        # fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)", options=options)
         
-        if ".jpg" or '.png'in fileName:
-            # strcamnum = fileName.split("/")[-1].replace(".jpg","").replace("cam_","")
-            # camnum = int(strcamnum)
-            # self.nummoi = cam_mois[camnum-1]
-            self.nummoi = cam_mois[3]
+        self.nummoi = 12
+
         for i in range(12):
             self.pushButtons[i].setEnabled(True)
             self.pushButtons[i].setHidden(False)
@@ -295,7 +294,8 @@ class ui_func(QMainWindow):
     def c_pushButton_opentrk(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)", options=options)
+        # fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)", options=options)
+        fileName = self.clusters_path
         self.tracks_file = fileName#'D:/projects/aicitychallenge/data/AIC21_Track1_Vehicle_Counting/AIC21_Track1_Vehicle_Counting/screen_shot_with_roi_and_movement/cam_5_3000.txt'
         # data = read_mat(self.tracks_file)
         # # self.df = pd.DataFrame(data['recorded_tracks'])

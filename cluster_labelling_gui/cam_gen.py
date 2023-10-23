@@ -14,15 +14,17 @@ import argparse
 import cam_gen_ui as tui
 
 # get export path usig argparse
-app = QApplication(sys.argv)
+if __name__ == "__main__":
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--Export", help="pkl path for exporting common trajectories", type=str)
+        parser.add_argument("--TopView", help="path to topview intersection image", type=str)
+        parser.add_argument("--ClustersPath", help="path to clustering pkl", type=str)
+        args = parser.parse_args()
 
+        app = QApplication(sys.argv)
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--Export", help="pkl path for exporting common trajectories", type=str)
-args = parser.parse_args()
-
-myapp = tui.ui_func(args.Export)
-#myapp.setupUi(self)
-#myapp.showMaximized()
-myapp.show()
-sys.exit(app.exec_())
+        myapp = tui.ui_func(args.Export, args.TopView, args.ClustersPath)
+        #myapp.setupUi(self)
+        #myapp.showMaximized()
+        myapp.show()
+        sys.exit(app.exec_())
