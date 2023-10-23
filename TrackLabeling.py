@@ -6,9 +6,11 @@ import Track
 
 def tracklabelinggui(args):
     export_path = os.path.abspath(args.TrackLabellingExportPth)
+    topview = os.path.abspath(args.HomographyTopView)
+    clusterspath = os.path.abspath(args.ReprojectedPklCluster)
     cwd = os.getcwd()
     os.chdir("./cluster_labelling_gui/")
-    ret = os.system(f"python3 cam_gen.py --Export='{export_path}'")
+    ret = os.system(f"python3 cam_gen.py --Export='{export_path}' --TopView='{topview}' --ClustersPath='{clusterspath}'")
     os.chdir(cwd)
 
     if ret==0:
