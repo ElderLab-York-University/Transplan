@@ -383,81 +383,6 @@ def get_eval_save_path(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results",file_name + Puncuations.Dot + SubTaskMarker.MCTrackDis + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot+"txt")
 
-
-def get_args_gt(args):
-    args_gt = copy.deepcopy(args)
-    args_gt.Detector = "GT"
-    args_gt.Tracker = "GT"
-    args_gt.Video=None
-    args_gt=complete_args(args_gt)
-    # args_gt , arg_mc_gt = complete_args_mc(args_gt, args_mc_gt)
-    return args_gt
-
-
-# def modify_args(args):
-#     sp = args.Dataset
-#     cam_paths = []
-#     cam_ids = []
-#     for cl in os.listdir(sp):
-#         print(cl)
-#         if (not cl.startswith(".") and not cl.endswith(".png")) and (not cl == "Results"):
-#             cam_paths.append(os.path.join(sp, cl))
-#             cam_ids.append(cl)
-#     args_mc = []
-#     for cam, cam_id in zip(cam_paths, cam_ids):
-#         temp_args = copy.deepcopy(args)
-#         temp_args.Dataset = cam
-#         temp_args.CamID = cam_id
-#         args_mc.append(temp_args)
-#     return args_mc
-
-
-def modify_args_mc(args):
-    sp = args.Dataset
-    cam_paths = []
-    cam_ids = []
-    for cl in os.listdir(sp):
-        if (not cl.startswith(".") and not cl.endswith(".png")) and (not cl == "Results"):
-            cam_paths.append(os.path.join(sp, cl))
-            cam_ids.append(cl)
-    args_mc = []
-    for cam, cam_id in zip(cam_paths, cam_ids):
-        temp_args = copy.deepcopy(args)
-        temp_args.Dataset = cam
-        temp_args.CamID = cam_id
-        args_mc.append(temp_args)
-    return args_mc
-
-
-def complete_args_mc(args, args_mc):
-     # compete args: complete specific path variables
-    for i, arg in enumerate(args_mc):
-        arg = complete_args(arg)
-        check_config(arg)
-        args_mc[i] = arg
-
-    check_config(args)
-    # completing the args(multicam one source)
-    args.Video = args.Dataset
-    args = complete_args(args)
-
-    if args.AverageCountsMC or args.EvalCountMC:
-        args = add_count_path_to_args(args)
-
-    return args, args_mc
-
-
-# def get_args_mc_gt(args):
-#     # make a duplicate from args
-#     args_gt = copy.deepcopy(args)
-#     args_gt.Detector = "GT"
-#     args_gt.Tracker = "GT"
-#     args_gt.Video=None
-#     args_mc_gt = modify_args_mc(args_gt)
-
-#     args_gt , arg_mc_gt = complete_args_mc(args_gt, args_mc_gt)
-#     return args_gt, args_mc_gt
-
 def add_homographygui_related_path_to_args(args):
     streetview = get_homography_streetview_path(args)
     topview = get_homography_topview_path(args)
@@ -645,6 +570,13 @@ def add_3DGT_path_to_args(args):
     # args.EXTRINSICS_PATH        = get_extrinsics_path(args)    
     return args
 
+def get_extracted_image_dir(args):
+     return os.path.join(args.Dataset, "Results/Images/")
+
+def add_images_folder_to_args(args):
+    args.ExtractedImageDirectory = get_extracted_image_dir(args)
+    return args
+
 def adjust_args_with_params(args):
     if args.CountMetric == "knn" or args.CountMetric == "gknn" :
         args.CountMetric += f".k={args.K}"
@@ -655,12 +587,77 @@ def revert_args_with_params(args):
         args.CountMetric = args.CountMetric.split(".")[0]
     return args
 
-def get_extracted_image_dir(args):
-     return os.path.join(args.Dataset, "Results/Images/")
+def get_args_gt(args):
+    args_gt = copy.deepcopy(args)
+    args_gt.Detector = "GT"
+    args_gt.Tracker = "GT"
+    args_gt.Video=None
+    args_gt=complete_args(args_gt)
+    # args_gt , arg_mc_gt = complete_args_mc(args_gt, args_mc_gt)
+    return args_gt
 
-def add_images_folder_to_args(args):
-    args.ExtractedImageDirectory = get_extracted_image_dir(args)
+def get_sub_args(args):
+    sp = args.Dataset
+    sub_paths = []
+    sub_ids = []
+    for cl in os.listdir(sp):
+        if (not cl.startswith(".")) and (not cl == "Results"):
+            sub_paths.append(os.path.join(sp, cl))
+            sub_ids.append(cl)
+    args_sub = []
+    for sub, sub_id in zip(sub_paths, sub_ids):
+        temp_args = copy.deepcopy(args)
+        temp_args.Dataset = sub
+        temp_args.SubID = sub_id
+        args_sub.append(temp_args)
+    return args_sub
+
+def get_args(args):
+    args = complete_args(args)
+    check_config(args)
     return args
+
+def get_args_mc(args):
+    args_mc = get_sub_args(args)
+    for i, arg_c in enumerate(args_mc):
+        arg_c = get_args(arg_c)
+        args_mc[i] = arg_c
+
+    args.Video = args.Dataset
+    args = get_args(args)
+    args = complete_args_mc(args)
+
+    return args, args_mc
+
+def get_args_ms(args):
+    args_ms = get_sub_args(args)
+    args_mcs = []
+    for i, arg_s in enumerate(args_ms):
+        arg_s, arg_s_mc = get_args_mc(arg_s)
+        args_ms[i] = arg_s
+        args_mcs.append(arg_s_mc)
+
+    args.Video = args.Dataset
+    args = get_args(args)
+    args = complete_args_ms(args)
+
+    return args, args_ms, args_mcs
+
+def get_args_mp(args):
+    args_mp = get_sub_args(args)
+    args_mss = []
+    args_mcs = []
+    for i, arg_m in enumerate(args_mp):
+        args_m, arg_m_mss, arg_m_mcs = get_args_ms(arg_m)
+        args_mp[i] = args_m
+        args_mss.appen(arg_m_mss)
+        args_mcs.append(arg_m_mcs)
+
+    args.Video = args.Dataset
+    args = get_args(args)
+    args = complete_args_mp(args)
+
+    return args, args_mp, args_mss, args_mcs
 
 def complete_args(args):
     args = adjust_args_with_params(args)
@@ -728,57 +725,17 @@ def complete_args(args):
     args = revert_args_with_params(args)
     return args
 
-def get_args_split(args):
-    split = args.Dataset
-    source_paths = []
-    source_ids = []
-    
-    for source in os.listdir(split):
-        if ((not source.startswith(".")) and (not source == "Results")):
-            source_paths.append(os.path.join(split, source))
-            source_ids.append(source)
+def complete_args_mc(args):
+    if args.AverageCountsMC or args.EvalCountMC:
+        args = add_count_path_to_args(args)
 
-    args_ms = []
-    for source, source_id in zip(source_paths, source_ids):
-        temp_args = copy.deepcopy(args)
-        temp_args.Dataset = source
-        temp_args.SourceID = source_ids
-        args_ms.append(temp_args)
-
-    return args_ms
-
-def modify_args_mc(args):
-    sp = args.Dataset
-    cam_paths = []
-    cam_ids = []
-    for cl in os.listdir(sp):
-        if (not cl.startswith(".")) and (not cl == "Results"):
-            cam_paths.append(os.path.join(sp, cl))
-            cam_ids.append(cl)
-    args_mc = []
-    for cam, cam_id in zip(cam_paths, cam_ids):
-        temp_args = copy.deepcopy(args)
-        temp_args.Dataset = cam
-        temp_args.CamID = cam_id
-        args_mc.append(temp_args)
-    return args_mc
+    return args
 
 def complete_args_ms(args):
-    args_ms = get_args_split(args)
-    args_mcs = [modify_args_mc(args_s) for args_s in args_ms]
-    final_args_ms = []
-    final_args_mcs = []
-    for args_s , args_mc in zip(args_ms, args_mcs):
-        new_args_s, new_args_mc = complete_args_mc(args_s, args_mc)
-        final_args_ms.append(new_args_s)
-        final_args_mcs.append(new_args_mc)
+    return args
 
-    check_config(args) # will create a results folder inside split(eg.test) folder
-    # complete args of split(multi source, multicam)
-    args.Video = args.Dataset
-    args = complete_args(args)
-
-    return args, final_args_ms, final_args_mcs
+def complete_args_mp(args):
+    return args
 
 def check_config(args):
     # check if args passed are valid
