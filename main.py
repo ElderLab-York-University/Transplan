@@ -9,7 +9,7 @@
 # import libs
 from Libs import *
 from Utils import *
-from Detect import detect, visdetect,detectpostproc, visroi, extract_images, detections_to_coco, detections_to_coco_ms
+from Detect import detect, visdetect,detectpostproc, visroi, extract_images, detections_to_coco, detections_to_coco_ms, fine_tune_detector_ds
 from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop
 from Homography import homographygui
 from Homography import reproject
@@ -255,10 +255,15 @@ def ConvertDetsToCOCO_MS(args, args_ms, args_mcs):
         return log
     else: return WarningLog("skipped converting to coco format")
 
+def FineTuneDetectorMP(args, args_mp, args_mss, args_mcs):
+    if args.FineTune:
+        print(ProcLog(f"Finetunning detectors"))
+        log = fine_tune_detector_ds(args, args_mp, args_mss, args_mcs)
+        return log
+    else: return WarningLog("skipped fine tunning detectors")
 
 def main(args):
-    # Pass the args to each subtask
-    # Each subtask will validate its own inputs
+    # main for one video
     subtasks = [Preprocess, ExtractImages,
                 HomographyGUI, VisHomographyGUI, VisROI,
                 Segment, SegPostProc, VisSegment,
@@ -273,8 +278,7 @@ def main(args):
             print(log)
 
 def main_mc(args, args_mc):
-    # Pass the args to each subtask
-    # Each subtask will validate its own inputs
+    # main for multi camera
 
     subtasks = [AverageCounts, EvalCountMC]
     for subtask in subtasks:
@@ -283,13 +287,22 @@ def main_mc(args, args_mc):
             print(log)
 
 def main_ms(args, args_ms, args_mcs):
+    # main for multi segments
     subtasks = [ConvertDetsToCOCO_MS]
 
     for sub in subtasks:
         log = sub(args, args_ms, args_mcs)
         if not isinstance(log, WarningLog):
             print(log)
-    
+
+def main_mp(args, args_mp, args_mss, args_mcs):
+    # main for multi parts
+    subtasks = [FineTuneDetectorMP]
+    for sub in subtasks:
+        log = sub(args, args_mp, args_mss, args_mcs)
+        if not isinstance(log, WarningLog):
+            print(log)
+
 if __name__ == "__main__":
     # ferch the arguments
     parser = argparse.ArgumentParser()
@@ -377,23 +390,26 @@ if __name__ == "__main__":
 
 
     parser.add_argument("--MultiSeg", help="operating on multiple segments(eg train segments)", action='store_true')
-    
+    parser.add_argument("--FineTune", help="fine tune detector", action='store_true')
+    parser.add_argument("--GTDetector", help="name of GT detector(typically used for fine turning or evaluation)", type=str)
+    parser.add_argument("--MultiPart", help="for multi part operations", action='store_true')
 
     args = parser.parse_args()
 
     # check if the opeerations should be performed cross camera
     if args.MultiCam:
-        # duplicate args and set new DataSet path for each
-        args_mc = modify_args_mc(args)
-        args , args_mc = complete_args_mc(args, args_mc)
+        args , args_mc = get_args_mc(args)
         main_mc(args, args_mc)
 
     elif args.MultiSeg:
-        args, args_ms, args_mcs = complete_args_ms(args)
+        args, args_ms, args_mcs = get_args_ms(args)
         main_ms(args, args_ms, args_mcs)
 
+    elif args.MultiPart:
+        args, args_mp, args_mss, args_mcs = get_args_mp(args)
+        main_mp(args, args_mp, args_mss, args_mcs)
+
     else:
-        args = complete_args(args)
-        check_config(args)
+        args = get_args(args)
         main(args)
 
