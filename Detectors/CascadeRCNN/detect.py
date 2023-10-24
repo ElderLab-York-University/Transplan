@@ -7,8 +7,8 @@ from Detectors.MMDet.detect import df_txt as mm_df_txt
 def detect(args, *oargs):
     env_name        = "MMDet"
     exec_path       = "./Detectors/MMDet/run.py"
-    config_file     = "./Detectors/MMDet/mmdetection/configs/cascade_rcnn/cascade-mask-rcnn_x101-64x4d_fpn_ms-3x_coco.py"
-    checkpoint_file = "./Detectors/MMDet/mmdetection/checkpoints/cascade_mask_rcnn_x101_64x4d_fpn_mstrain_3x_coco_20210719_210311-d3e64ba0.pth"
+    config_file     = "./Detectors/MMDet/mmdetection/configs/cascade_rcnn/cascade-rcnn_x101-64x4d_fpn_1x_coco.py"
+    checkpoint_file = "./Detectors/MMDet/mmdetection/checkpoints/cascade_rcnn_x101_64x4d_fpn_1x_coco_20200515_075702-43ce6a30.pth"
 
     setup(args)
     args.MMDetConfig = config_file 
@@ -22,8 +22,8 @@ def df_txt(df,text_result_path):
     return mm_df_txt(df,text_result_path)
 
 def setup(args):
-    checkpoint_file = "./Detectors/MMDet/mmdetection/checkpoints/cascade_mask_rcnn_x101_64x4d_fpn_mstrain_3x_coco_20210719_210311-d3e64ba0.pth"
-    checkpoint_url  = "https://download.openmmlab.com/mmdetection/v2.0/cascade_rcnn/cascade_mask_rcnn_x101_64x4d_fpn_mstrain_3x_coco/cascade_mask_rcnn_x101_64x4d_fpn_mstrain_3x_coco_20210719_210311-d3e64ba0.pth"
+    checkpoint_file = "./Detectors/MMDet/mmdetection/checkpoints/cascade_rcnn_x101_64x4d_fpn_1x_coco_20200515_075702-43ce6a30.pth"
+    checkpoint_url  = "https://download.openmmlab.com/mmdetection/v2.0/cascade_rcnn/cascade_rcnn_x101_64x4d_fpn_1x_coco/cascade_rcnn_x101_64x4d_fpn_1x_coco_20200515_075702-43ce6a30.pth"
     checkpoints_dir = "./Detectors/MMDet/mmdetection/checkpoints"
 
     mm_setup(args)
