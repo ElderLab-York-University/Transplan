@@ -15,12 +15,21 @@ def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"]):
 # choose datasets/splits/segments/sources
 #  set to None if want to include all
 datasets     = ["/home/sajjad/HW7Leslie"]
-split_part   = ["train"]
-segment_part = ["Seg05"] 
-source_part  = ["Seg05sc1"]    
+split_part   = None
+segment_part = None 
+source_part  = None
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
 sources      = get_sub_dirs(segments, source_part)
+
+# Train, Valid and GT specifications of Dataset
+GT_det    = "GTHW7"
+train_sp  = "train"
+valid_sp  = "valid"
+batch_size = 4
+num_workers = 2
+epochs = 4
+val_interval = 1
 
 # choose the segmenter
 # options: ["InternImage"]
@@ -28,7 +37,7 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN"]
-detectors = ["CascadeRCNN"]
+detectors = ["GTHW7"]
 
 # choose the tracker
 # options: ["GT", sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
@@ -45,6 +54,7 @@ cnt_metrics = ["kde"]
 
 
 for src, cached_cnt_pth in zip(sources, sources):
+    print(f"running on src:{src}")
     ########################################################
     # 0. extract images from video
     # os.system(f"python3 main.py --Dataset={src} --ExtractImages)
@@ -86,9 +96,9 @@ for src, cached_cnt_pth in zip(sources, sources):
     # 3. run the detection
     # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=NULL --Detect --VisDetect")
     ########################################################
-    for det in detectors:
-        print(f"detecting ----> src:{src} det:{det}")
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect --VisDetect")
+    # for det in detectors:
+    #     print(f"detecting ----> src:{src} det:{det}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect --VisDetect")
 
     ########################################################
     # 3.5 run the detection post processing
@@ -204,8 +214,8 @@ for src, cached_cnt_pth in zip(sources, sources):
 
 #_______________________MULTICAMERA_______________________#
 
-# for src in segments:
-#     print(f"running on seg:{src}")
+for src in segments:
+    print(f"running on seg:{src}")
     # ########################################################
     # # 0. Average Counts MC
     # # os.system(f"python3 main.py --MultiCam --Dataset={src}  --Detector={det} --Tracker={tra} -- --VisTrackTopMC")
@@ -218,13 +228,13 @@ for src, cached_cnt_pth in zip(sources, sources):
 
 
 
-#_______________________MULTISOURCE_______________________#
-
-# for split in splits:
-#     # to run on split level add --MultiSeg
-#     print(f"running on split:{split}")
-#     ########################################################
-#     # 0. convert detections of all the data under split into COCO format
-#     ########################################################
-#     for det in detectors:
-#         os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --Tracker=NULL --ConvertDetsToCOCO")
+#_______________________MULTIPART___________________________#
+for ds in datasets:
+    print(f"running on dataset:{ds}")
+    # ########################################################
+    # # 1. fine tune detector
+    # ########################################################
+    # for det in detectors:
+    #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
+    #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
+    #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval}")
