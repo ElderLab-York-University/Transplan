@@ -9,7 +9,7 @@
 # import libs
 from Libs import *
 from Utils import *
-from Detect import detect, visdetect,detectpostproc, visroi, extract_images, detections_to_coco, detections_to_coco_ms, fine_tune_detector_ds
+from Detect import detect, visdetect,detectpostproc, visroi, extract_images, detections_to_coco, fine_tune_detector_mp
 from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop
 from Homography import homographygui
 from Homography import reproject
@@ -244,21 +244,21 @@ def ExtractImages(args):
 def ConvertDetsToCOCO(args):
     if args.ConvertDetsToCOCO:
         print(ProcLog("converting detections to coco format"))
-        log  = detections_to_coco(args)
+        log  = detections_to_coco(args, args)
         return log
     else: return WarningLog("skipped converting to coco format")
 
 def ConvertDetsToCOCO_MS(args, args_ms, args_mcs):
     if args.ConvertDetsToCOCO:
         print(ProcLog(f"converting detections to coco format for the {args.Dataset} split"))
-        log  = detections_to_coco_ms(args, args_ms, args_mcs)
+        log  = detections_to_coco(args, args_mcs)
         return log
     else: return WarningLog("skipped converting to coco format")
 
 def FineTuneDetectorMP(args, args_mp, args_mss, args_mcs):
     if args.FineTune:
         print(ProcLog(f"Finetunning detectors"))
-        log = fine_tune_detector_ds(args, args_mp, args_mss, args_mcs)
+        log = fine_tune_detector_mp(args, args_mp, args_mss, args_mcs)
         return log
     else: return WarningLog("skipped fine tunning detectors")
 
@@ -390,9 +390,16 @@ if __name__ == "__main__":
 
 
     parser.add_argument("--MultiSeg", help="operating on multiple segments(eg train segments)", action='store_true')
-    parser.add_argument("--FineTune", help="fine tune detector", action='store_true')
-    parser.add_argument("--GTDetector", help="name of GT detector(typically used for fine turning or evaluation)", type=str)
     parser.add_argument("--MultiPart", help="for multi part operations", action='store_true')
+    parser.add_argument("--FineTune", help="fine tune detector", action='store_true')
+    parser.add_argument("--TrainPart", help="training SubID", type=str)
+    parser.add_argument("--ValidPart", help="validation SubID", type=str)
+    parser.add_argument("--GTDetector", help="name of GT detector(typically used for fine turning or evaluation)", type=str)
+    parser.add_argument("--BatchSize", help="set batch size", type=int)
+    parser.add_argument("--NumWorkers", help="number of workers for dataloader", type=int)
+    parser.add_argument("--Epochs", help="number of epochs", type=int)
+    parser.add_argument("--ValInterval", help="frequency of validation step(every x epochs)", type=int)
+
 
     args = parser.parse_args()
 
@@ -412,4 +419,3 @@ if __name__ == "__main__":
     else:
         args = get_args(args)
         main(args)
-
