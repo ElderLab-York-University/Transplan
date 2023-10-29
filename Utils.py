@@ -586,6 +586,26 @@ def revert_args_with_params(args):
     if args.CountMetric is not None:
         args.CountMetric = args.CountMetric.split(".")[0]
     return args
+def get_check_point_dir(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/CheckPoints")
+
+def add_check_points_path_to_args(args):
+    args.CheckPointDir = get_check_point_dir(args)
+    return args
+
+def flatten_args(args):
+    """
+    recursive func to flatten a nexted list of args
+    """
+    if not isinstance(args, list):
+        return [args]
+    args_flat = []
+    for arg in args:
+        arg_flat = flatten_args(arg)
+        args_flat += arg_flat
+    return args_flat
 
 def get_args_gt(args):
     args_gt = copy.deepcopy(args)
@@ -650,7 +670,7 @@ def get_args_mp(args):
     for i, arg_m in enumerate(args_mp):
         args_m, arg_m_mss, arg_m_mcs = get_args_ms(arg_m)
         args_mp[i] = args_m
-        args_mss.appen(arg_m_mss)
+        args_mss.append(arg_m_mss)
         args_mcs.append(arg_m_mcs)
 
     args.Video = args.Dataset
@@ -658,6 +678,14 @@ def get_args_mp(args):
     args = complete_args_mp(args)
 
     return args, args_mp, args_mss, args_mcs
+
+def get_args_mp_gt(args):
+    args = copy.deepcopy(args)
+    # modify stuff before passing
+    if args.GTDetector is not None:
+        args.Detector = args.GTDetector
+        
+    return get_args_mp(args)
 
 def complete_args(args):
     args = adjust_args_with_params(args)
@@ -669,7 +697,7 @@ def complete_args(args):
         # if Video path was not specified by the user grab a video from dataset
         args = add_videos_to_args(args)
 
-    if (not args.Detector is None) or args.DetPostProc or args.ConvertDetsToCOCO:
+    if (not args.Detector is None) or args.DetPostProc or args.ConvertDetsToCOCO or args.FineTune:
         args = add_detection_pathes_to_args(args)
         args = add_vis_detection_path_to_args(args)
 
@@ -691,6 +719,8 @@ def complete_args(args):
     args= add_3DGT_path_to_args(args)
 
     args = add_images_folder_to_args(args)
+
+    args = add_check_points_path_to_args(args)
 
     if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop:
         args = add_homographygui_related_path_to_args(args)
@@ -752,6 +782,7 @@ def check_config(args):
     segment_path    = os.path.join(results_path, "Segment")
     dsm_path    = os.path.join(results_path, "DSM")
     images_path = os.path.join(results_path, "Images")
+    check_points_path = os.path.join(results_path, "CheckPoints")
 
     try: os.system(f"mkdir -p {results_path}")
     except: pass
@@ -775,6 +806,8 @@ def check_config(args):
     except: pass
     try: os.system(f"mkdir -p {images_path}")
     except: pass
+    try: os.system(f"mkdir -p {check_points_path}")
+    except: pass
 
 def get_conda_envs():
     stream = os.popen("conda env list")
@@ -786,6 +819,12 @@ def get_conda_envs():
     a.remove("conda")
     a.remove("environments:")
     return a[::2]
+
+def get_numgpus_torch(env_name):
+    stream = os.popen(f"conda run -n {env_name} --live-stream python -c 'import torch; ngpus=torch.cuda.device_count(); print(ngpus);'")
+    output = stream.read()
+    ngpus = int(output)
+    return ngpus
 
 def make_conda_env(env_name, libs=""):
     os.system(f"conda create -n {env_name} -y "+libs)
