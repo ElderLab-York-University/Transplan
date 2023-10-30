@@ -392,6 +392,7 @@ if __name__ == "__main__":
     parser.add_argument("--MultiSeg", help="operating on multiple segments(eg train segments)", action='store_true')
     parser.add_argument("--MultiPart", help="for multi part operations", action='store_true')
     parser.add_argument("--FineTune", help="fine tune detector", action='store_true')
+    parser.add_argument("--Resume", help="resume fine tunning detectors", action='store_true')
     parser.add_argument("--TrainPart", help="training SubID", type=str)
     parser.add_argument("--ValidPart", help="validation SubID", type=str)
     parser.add_argument("--GTDetector", help="name of GT detector(typically used for fine turning or evaluation)", type=str)
