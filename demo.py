@@ -9,7 +9,8 @@ def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"]):
             sub_path = os.path.join(root, sub)
             if os.path.isdir(sub_path) and\
                 (subs_to_exclude is None or sub not in subs_to_exclude) and\
-                (subs_to_include is None or sub in subs_to_include):
+                (subs_to_include is None or sub in subs_to_include) and\
+                (not sub.startswith('.')):
                 subs_path.append(sub_path)
     return subs_path
 
