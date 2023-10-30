@@ -8,7 +8,8 @@ def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"]):
             sub_path = os.path.join(root, sub)
             if os.path.isdir(sub_path) and\
                 (subs_to_exclude is None or sub not in subs_to_exclude) and\
-                (subs_to_include is None or sub in subs_to_include):
+                (subs_to_include is None or sub in subs_to_include)and\
+                (not sub.startswith('.')):
                 subs_path.append(sub_path)
     return subs_path
 
@@ -26,10 +27,10 @@ sources      = get_sub_dirs(segments, source_part)
 GT_det    = "GTHW7"
 train_sp  = "train"
 valid_sp  = "valid"
-batch_size = 4
+batch_size = 2
 num_workers = 2
-epochs = 4
-val_interval = 1
+epochs = 25
+val_interval = 5
 
 # choose the segmenter
 # options: ["InternImage"]
@@ -37,7 +38,7 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN"]
-detectors = ["GTHW7"]
+detectors = ["YoloX"]
 
 # choose the tracker
 # options: ["GT", sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
@@ -226,7 +227,14 @@ for src in segments:
     #             print(f"average MC counts ---> src:{src} det:{det} tra:{tra} cnt:{metric}")
     #             os.system(f"python3 main.py --MultiCam --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={metric} --AverageCountsMC --EvalCountMC")
 
-
+#_______________________MULTISEGMENT _______________________#
+for split in splits:
+    print(f"running on split:{split}")
+    # ########################################################
+    # # 1. convert detections of all the data under split into COCO format
+    # ########################################################
+    # for det in detectors:
+    #     os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --ConvertDetsToCOCO")
 
 #_______________________MULTIPART___________________________#
 for ds in datasets:
@@ -237,4 +245,4 @@ for ds in datasets:
     # for det in detectors:
     #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
     #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
-    #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval}")
+    #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval} --Resume")
