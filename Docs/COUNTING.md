@@ -26,11 +26,8 @@ This command will pop-up a GUI based on QT5 and OpenGL allowing you to label tra
 python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackLabelingGUI
 ```
 Results will be stored under src/Results/Annotation/*.mp4
-<html>
-<video width="320" height="240" controls>
-  <source src="./Assets/ClusterlabellingGUI.mp4" type="video/mp4">
-</video>
-</html>
+
+./Assets/ClusterlabellingGUI.mp4
 
 As an alternative you can select prototypes based on how they interact with ROI.
 Simply we have a set of constraints which some tracks pass. We then cluster those tracks based on their starting and ending points.
