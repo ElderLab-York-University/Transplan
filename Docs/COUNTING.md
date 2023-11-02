@@ -27,6 +27,8 @@ python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackLabelin
 ```
 Results will be stored under src/Results/Annotation/*.mp4
 
+![ROI Annotation Sample](./Assets/ClusterlabellingGUI.mp4)
+
 As an alternative you can select prototypes based on how they interact with ROI.
 Simply we have a set of constraints which some tracks pass. We then cluster those tracks based on their starting and ending points.
 For automated prototype selection, run
