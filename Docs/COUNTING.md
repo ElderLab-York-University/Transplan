@@ -7,8 +7,10 @@ This pipeline supports:
 **NOTE**: there is a full-functionality template in `run.py`.
 
 ## Region of Interest (ROI)
-Our counting method is mostly based on a manually selected ROI. The ROI is a list of coordinates on a frame of video(image coordinates(x, y)).
+Our counting method is mostly based on a manually selected ROI.The ROI is a list of coordinates on a frame of video(image coordinates(x, y)).
+
 ROI should be added in the `<VideoName>.metadata.json`.
+
 To visualize the ROI you can run,
 ```
 python3 main.py --Dataset={src} --VisROI --TopView=<TopView>
