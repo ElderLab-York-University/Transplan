@@ -18,7 +18,7 @@ The `--VisHomographyGUI` will visualize this planer transformation.
 python3 main.py --Dataset={src} --HomographyGUI --VisHomographyGUI --Frame=1 --TopView=GoogleMap/OrthoPhoto")
 ```
 Results will be stored under src/Results/Visualization/*
-![Homography GUI Sample with Demo Dataset](./Assets/HomographyGUISample.mp4)
+https://github.com/ElderLab-York-University/Transplan/blob/main/Docs/Assets/HomographyGUISample.mp4
 
 ## Backproject detections
 The `--ContactPoint` will determine how to estimate object contact point to ground.
