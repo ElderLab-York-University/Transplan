@@ -15,6 +15,8 @@ python3 main.py --Dataset={src} --VisROI --TopView=<TopView>
 ```
 Results will be stored under src/Results/Visualization/*.[pkl/txt]
 
+![ROI Annotation Sample](./Assets/ROISample.png)
+
 ## Prototype Selection
 As the first option you can manually select the prototypes for each Movement of Interest.
 This command will pop-up a GUI based on QT5 and OpenGL allowing you to label tracks.
