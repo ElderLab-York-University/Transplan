@@ -18,6 +18,9 @@ The `--VisHomographyGUI` will visualize this planer transformation.
 python3 main.py --Dataset={src} --HomographyGUI --VisHomographyGUI --Frame=1 --TopView=GoogleMap/OrthoPhoto")
 ```
 Results will be stored under src/Results/Visualization/*
+
+See a sample video of working with GUI below
+
 https://github.com/ElderLab-York-University/Transplan/blob/main/Docs/Assets/HomographyGUISample.mp4
 
 ## Backproject detections
