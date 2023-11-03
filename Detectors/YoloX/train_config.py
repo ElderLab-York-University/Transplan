@@ -5,16 +5,17 @@ train_ann_file = 'Split1/Results/Detection/Split1.detection.GTHW7.COCO.json'
 train_data_prefix = 'Split1/'
 valid_ann_file = 'Split1/Results/Detection/Split1.detection.GTHW7.COCO.json'
 valid_data_prefix = 'Split1/'
-BatchSize = 6
-NumWorkers = 8
-Epochs = 100
-ValInterval = 10
+BatchSize = 2
+NumWorkers = 2
+Epochs = 10
+ValInterval = 1
 num_classes = 4
 classes = ('0', '2', '5', '7')
 #CHANGE#ABOVE#
 load_from = "https://download.openmmlab.com/mmdetection/v2.0/yolox/yolox_x_8x8_300e_coco/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth"
+find_unused_parameters=True # to support backbone freezing
 model = dict(
-    backbone=dict(deepen_factor=1.33, widen_factor=1.25),
+    backbone=dict(deepen_factor=1.33, widen_factor=1.25, frozen_stages=4),
     neck=dict(
         in_channels=[320, 640, 1280], out_channels=320, num_csp_blocks=4),
     bbox_head=dict(in_channels=320, feat_channels=320, num_classes=num_classes))
@@ -55,6 +56,7 @@ test_dataloader = val_dataloader
 test_evaluator = val_evaluator
 
 train_cfg = dict(max_epochs=Epochs, val_interval=ValInterval)
+test_cfg=dict(score_thr=0.25, nms=dict(type='nms', iou_threshold=0.65))
 
 # optimizer
 # default 8 gpu
@@ -62,16 +64,22 @@ base_lr = 0.01
 optim_wrapper = dict(
     type='OptimWrapper',
     optimizer=dict(
-        type='SGD', lr=base_lr, momentum=0.9, weight_decay=5e-4,
+        type='SGD', lr=base_lr, momentum=0.9, weight_decay=1e-3,
         nesterov=True),
     paramwise_cfg=dict(norm_decay_mult=0., bias_decay_mult=0.))
 
 param_scheduler = [
+    # Use a linear warm-up at [0, 1) epoch
+    dict(type='LinearLR',
+         start_factor=0.001,
+         by_epoch=True,
+         begin=0,
+         end=1),
     dict(
-        # use cosine lr from 5 to 285 epoch
+        # use cosine annealing lr from [1, end] epochs
         type='CosineAnnealingLR',
-        eta_min=base_lr * 0.05,
-        begin=0,
+        eta_min=base_lr * 0.01,
+        begin=1,
         T_max=Epochs,
         end=Epochs,
         by_epoch=True,
