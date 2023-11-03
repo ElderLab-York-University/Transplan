@@ -41,5 +41,9 @@ def fine_tune(args, args_mp, args_gt, args_mp_gt):
     # modify config file with args
     train_config_path = "./Detectors/YoloX/train_config.py"
     mm_modify_train_config(train_config_path, args, args_mp, args_gt, args_mp_gt)
-    work_dir = args.CheckPointDir
-    mm_fine_tune(train_config_path, work_dir)
+
+    work_dir = args.DetectorCheckPointDir
+    if not os.path.isdir(work_dir):
+        os.system(f"mkdir {work_dir}")
+
+    mm_fine_tune(train_config_path, work_dir, args.Resume)
