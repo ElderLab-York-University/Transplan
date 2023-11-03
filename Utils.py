@@ -591,8 +591,14 @@ def get_check_point_dir(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/CheckPoints")
 
+def get_detector_check_point_dir(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/CheckPoints", args.Detector)
+
 def add_check_points_path_to_args(args):
     args.CheckPointDir = get_check_point_dir(args)
+    args.DetectorCheckPointDir = get_detector_check_point_dir(args)
     return args
 
 def flatten_args(args):
