@@ -71,10 +71,11 @@ def df_txt(df,text_result_path):
 def fine_tune(train_config_path, work_dir, resume):
   env_name = "MMDet "
   ngpus = get_numgpus_torch(env_name)
+  port  = get_available_port()
   if resume:
-    os.system(f"conda run -n {env_name} --live-stream ./Detectors/MMDet/mmdetection/tools/dist_train.sh {train_config_path} {ngpus} --work-dir={work_dir} --resume")
+    os.system(f"conda run -n {env_name} --live-stream PORT={port} ./Detectors/MMDet/mmdetection/tools/dist_train.sh {train_config_path} {ngpus} --work-dir={work_dir} --resume")
   else:
-    os.system(f"conda run -n {env_name} --live-stream ./Detectors/MMDet/mmdetection/tools/dist_train.sh {train_config_path} {ngpus} --work-dir={work_dir}")
+    os.system(f"conda run -n {env_name} --live-stream PORT={port} ./Detectors/MMDet/mmdetection/tools/dist_train.sh {train_config_path} {ngpus} --work-dir={work_dir}")
 
 def modify_train_config(train_config_path, args, args_mp, args_gt, args_mp_gt):
   file_name = train_config_path
