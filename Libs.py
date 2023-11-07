@@ -27,3 +27,4 @@ import scipy
 from collections import defaultdict, OrderedDict
 import motmetrics as mm
 import shutil
+import socket
