@@ -5,7 +5,6 @@ from Utils import *
 
 # import all detectros here
 # -------------------------- 
-# import Detectors.detectron2.detect
 import Detectors.YOLOv5.detect
 import Detectors.detectron2.detect
 import Detectors.YOLOv8.detect
@@ -13,7 +12,6 @@ import Detectors.DDETR.detect
 import Detectors.InternImage.detect
 import Detectors.GTHW7.detect
 import Detectors.GTHW73D.detect
-
 import Detectors.RTMDet.detect
 import Detectors.YoloX.detect
 import Detectors.CascadeRCNN.detect
@@ -32,7 +30,8 @@ detectors["YoloX"]          = Detectors.YoloX.detect
 detectors["CascadeRCNN"]    = Detectors.CascadeRCNN.detect
 detectors["DeformableDETR"] = Detectors.DeformableDETR.detect
 detectors["CenterNet"]      = Detectors.CenterNet.detect
-detectors["GTHW73D"]     = Detectors.GTHW73D.detect
+detectors["GTHW73D"]        = Detectors.GTHW73D.detect
+
 def detect(args):
     # check if detector names is valid
     if args.Detector not in os.listdir("./Detectors/"):
@@ -405,6 +404,12 @@ def detections_to_coco(args_split, args_mcs):
         category_dict = {"id":int(category), "name":f"{int(category)}"}
         catego_list.append(category_dict)
 
+    if args_split.KeepCOCOClasses:
+        catego_list = []
+        for i, coco_class in enumerate(COCO_CLASSES):
+            category_dict = {"id":i, "name":coco_class}
+            catego_list.append(category_dict)
+
     coco_annotations = {"info": info,
                         "images": images_list,
                         "annotations": annots_list,
@@ -422,3 +427,18 @@ def fine_tune_detector_mp(args, args_mp, args_mss, args_mcs):
     args_gt, args_mp_gt, args_mss_gt, args_mcs_gt = get_args_mp_gt(args)
     current_detector = detectors[args.Detector]
     current_detector.fine_tune(args, args_mp, args_gt, args_mp_gt)
+
+# temporary hard code stuff
+COCO_CLASSES = ('person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train',
+'truck', 'boat', 'traffic light', 'fire hydrant', 'stop sign',
+'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep',
+'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella',
+'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard',
+'sports ball', 'kite', 'baseball bat', 'baseball glove', 'skateboard',
+'surfboard', 'tennis racket', 'bottle', 'wine glass', 'cup', 'fork',
+'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange',
+'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake', 'chair',
+'couch', 'potted plant', 'bed', 'dining table', 'toilet', 'tv',
+'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave',
+'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase',
+'scissors', 'teddy bear', 'hair drier', 'toothbrush')
