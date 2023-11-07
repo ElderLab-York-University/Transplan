@@ -598,7 +598,8 @@ def get_detector_check_point_dir(args):
 
 def add_check_points_path_to_args(args):
     args.CheckPointDir = get_check_point_dir(args)
-    args.DetectorCheckPointDir = get_detector_check_point_dir(args)
+    if args.Detector is not None:
+        args.DetectorCheckPointDir = get_detector_check_point_dir(args)
     return args
 
 def flatten_args(args):
@@ -832,6 +833,12 @@ def get_numgpus_torch(env_name):
     ngpus = int(output)
     return ngpus
 
+def get_available_port(host='localhost'):
+    with socket.socket() as sock:
+        sock.bind((host, 0))
+        port = sock.getsockname()[1]
+    return port
+    
 def make_conda_env(env_name, libs=""):
     os.system(f"conda create -n {env_name} -y "+libs)
 
