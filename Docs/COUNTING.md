@@ -19,6 +19,23 @@ Results will be stored under src/Results/Visualization/*.[pkl/txt]
 
 ![ROI Annotation Sample](./Assets/ROISample.png)
 
+To get a consistent result, select the four corners of intersection starting with the south-west corner and continuing counter clock-wise. Following this procedure you will the get the following mapping between MOIs and directions. 
+
+|MOI | Approach | turn|
+|--- | -------- | ----|
+|1 |South| Left Turn  |
+|2 |South| Through    |
+|3 |South| Right Turn |
+|4 |East | Left Turn  |
+|5 |East | Through    |
+|6 |East | Right Turn |
+|7 |North| Left Turn  |
+|8 |North| Through    |
+|9 |North| Right Turn |
+|10|West | Left Turn  |
+|11|West | Through    |
+|12|West | Right Turn |
+
 ## Prototype Selection
 As the first option you can manually select the prototypes for each Movement of Interest.
 This command will pop-up a GUI based on QT5 and OpenGL allowing you to label tracks.
