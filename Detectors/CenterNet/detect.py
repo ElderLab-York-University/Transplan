@@ -3,6 +3,8 @@ from Utils import *
 from Detectors.MMDet.detect import setup as mm_setup
 from Detectors.MMDet.detect import df as mm_df
 from Detectors.MMDet.detect import df_txt as mm_df_txt
+from Detectors.MMDet.detect import fine_tune as mm_fine_tune
+from Detectors.MMDet.detect import modify_train_config as mm_modify_train_config
 
 def detect(args, *oargs):
     env_name        = "MMDet"
@@ -34,3 +36,14 @@ def setup(args):
     if not os.path.isfile(checkpoint_file):
         print(f"downloading checkpoint: {checkpoint_url}\n storing to: {checkpoint_file}")
         download_url_to(checkpoint_url, checkpoint_file)
+
+def fine_tune(args, args_mp, args_gt, args_mp_gt):
+    # modify config file with args
+    train_config_path = "./Detectors/CenterNet/train_config.py"
+    mm_modify_train_config(train_config_path, args, args_mp, args_gt, args_mp_gt)
+
+    work_dir = args.DetectorCheckPointDir
+    if not os.path.isdir(work_dir):
+        os.system(f"mkdir {work_dir}")
+
+    mm_fine_tune(train_config_path, work_dir, args.Resume)
