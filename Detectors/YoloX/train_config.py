@@ -1,16 +1,16 @@
 _base_ = './../MMDet/mmdetection/configs/yolox/yolox_x_8xb8-300e_coco.py'
 #CHANGE#BELOW#
-data_root = '/home/sajjad/Transplan/DemoDataSet/'
-train_ann_file = 'Split1/Results/Detection/Split1.detection.GTHW7.COCO.json'
-train_data_prefix = 'Split1/'
-valid_ann_file = 'Split1/Results/Detection/Split1.detection.GTHW7.COCO.json'
-valid_data_prefix = 'Split1/'
+data_root = '/home/sajjad/HW7Leslie/'
+train_ann_file = 'train/Results/Detection/train.detection.GTHW7.COCO.json'
+train_data_prefix = 'train/'
+valid_ann_file = 'valid/Results/Detection/valid.detection.GTHW7.COCO.json'
+valid_data_prefix = 'valid/'
 BatchSize = 2
-NumWorkers = 2
+NumWorkers = 4
 Epochs = 10
 ValInterval = 1
-num_classes = 4
-classes = ('0', '2', '5', '7')
+num_classes = 80
+classes = ('person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket', 'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed', 'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush')
 #CHANGE#ABOVE#
 load_from = "https://download.openmmlab.com/mmdetection/v2.0/yolox/yolox_x_8x8_300e_coco/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth"
 find_unused_parameters=True # to support backbone freezing
@@ -56,7 +56,7 @@ test_dataloader = val_dataloader
 test_evaluator = val_evaluator
 
 train_cfg = dict(max_epochs=Epochs, val_interval=ValInterval)
-test_cfg=dict(score_thr=0.25, nms=dict(type='nms', iou_threshold=0.65))
+# test_cfg=dict(score_thr=0.25, nms=dict(type='nms', iou_threshold=0.65))
 
 # optimizer
 # default 8 gpu
@@ -74,7 +74,9 @@ param_scheduler = [
          start_factor=0.001,
          by_epoch=True,
          begin=0,
-         end=1),
+         end=1,
+         convert_to_iter_based=True
+        ),
     dict(
         # use cosine annealing lr from [1, end] epochs
         type='CosineAnnealingLR',
@@ -88,8 +90,10 @@ param_scheduler = [
 
 default_hooks = dict(
     checkpoint=dict(
+        type="CheckpointHook",
+        save_best="coco/bbox_mAP",
+        rule="greater",
         interval=ValInterval,
-        max_keep_ckpts=3  # only keep latest 3 checkpoints
-    ))
-
-custom_hooks = []
+        max_keep_ckpts=3
+    )
+)
