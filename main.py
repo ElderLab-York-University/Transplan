@@ -386,6 +386,7 @@ if __name__ == "__main__":
     parser.add_argument("--SegPostProc", help="perform segmentation post processing", action='store_true')
     parser.add_argument("--ExtractImages", help="extract images from video and store under results/Images", action='store_true')
     parser.add_argument("--ConvertDetsToCOCO", help="convert detection files to COCO format", action='store_true')
+    parser.add_argument("--KeepCOCOClasses", help="when converting to COCO keep coco class names", action='store_true')
 
 
 
