@@ -42,7 +42,7 @@ def prepare_df_for_motmetric(dfs, cam_ids):
     return OrderedDict([(cam_id, pd.DataFrame(rows).set_index(['FrameId', 'Id'])) for cam_id, rows in labels.items()])
 
 
-def evaluate_tracking(nested_args):
+def evaluate_tracking(base_args, nested_args):
     '''
     single source evaluation of tracking
     nested_args: a nested list of arg namespaces. Each arg is for one video
@@ -118,7 +118,7 @@ def evaluate_tracking(nested_args):
 
 
 
-    with open(args.TrackEvalPth, "w") as f:
+    with open(base_args.TrackEvalPth, "w") as f:
         f.write(strsummary)
         # f.write("\n")
         # f.write(strsummary_mc)
