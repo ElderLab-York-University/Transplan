@@ -381,7 +381,7 @@ def add_vis_tracking_moi_path_to_args(args):
 def get_track_eval_save_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results",file_name + Puncuations.Dot + SubTaskMarker.MCTrackDis + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot+"txt")
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + "EvaluateTracking" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.GTTracker + Puncuations.Dot+ args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot+"txt")
 
 def add_homographygui_related_path_to_args(args):
     streetview = get_homography_streetview_path(args)
