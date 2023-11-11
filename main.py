@@ -178,7 +178,7 @@ def VisTrackTop(args):
 def TrackEvaluate(args):
     if args.TrackEval:
         print(ProcLog("Evaluate Tracking"))
-        log = evaluate_tracking(args)
+        log = evaluate_tracking(args, args)
         return log
     else: return WarningLog("skipped vis tracking from top")
 
@@ -202,7 +202,7 @@ def EvalCountMC(args, args_mc):
 def TrackEvaluateMC(args, args_mc):
     if args.TrackEval:
         print(ProcLog("Single Source Evaluate Tracking"))
-        log = evaluate_tracking(args_mc)
+        log = evaluate_tracking(args, args_mc)
         return log
     else: return WarningLog("skipped TrackEvaluateMC")
     
@@ -262,6 +262,13 @@ def ConvertDetsToCOCO_MS(args, args_ms, args_mcs):
         return log
     else: return WarningLog("skipped converting to coco format")
 
+def TrackEvaluateMS(args, args_ms, args_mcs):
+    if args.TrackEval:
+        print(ProcLog("Single Source Evaluate Tracking"))
+        log = evaluate_tracking(args, args_mcs)
+        return log
+    else: return WarningLog("skipped TrackEvaluate on MS")
+
 def FineTuneDetectorMP(args, args_mp, args_mss, args_mcs):
     if args.FineTune:
         print(ProcLog(f"Finetunning detectors"))
@@ -295,7 +302,7 @@ def main_mc(args, args_mc):
 
 def main_ms(args, args_ms, args_mcs):
     # main for multi segments
-    subtasks = [ConvertDetsToCOCO_MS]
+    subtasks = [ConvertDetsToCOCO_MS, TrackEvaluateMS]
 
     for sub in subtasks:
         log = sub(args, args_ms, args_mcs)
