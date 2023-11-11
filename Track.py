@@ -23,6 +23,7 @@ import Trackers.GByteTrack.track
 import Trackers.GDeepSort.track
 # import Trackers.BOTSort.track
 import Trackers.StrongSort.track
+import Trackers.GTHW7.track
 # --------------------------
 trackers = {}
 trackers["sort"] = Trackers.sort.track
@@ -35,6 +36,7 @@ trackers["GByteTrack"] = Trackers.GByteTrack.track
 trackers["GDeepSort"] = Trackers.GDeepSort.track
 # trackers["BOTSort"] = Trackers.BOTSort.track
 trackers["StrongSort"] = Trackers.StrongSort.track
+trackers["GTHW7"] = Trackers.GTHW7.track
 # --------------------------
 
 def track(args):
