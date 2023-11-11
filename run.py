@@ -16,20 +16,21 @@ def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"]):
 # choose datasets/splits/segments/sources
 #  set to None if want to include all
 datasets     = ["/home/sajjad/HW7Leslie"]
-split_part   = ["train"]
-segment_part = ["Seg01"]
-source_part  = ["Seg01lc1"]
+split_part   = None
+segment_part = None
+source_part  = None
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
 sources      = get_sub_dirs(segments, source_part)
 
 # Train, Valid and GT specifications of Dataset
 GT_det    = "GTHW7"
+GT_tra    = "GTHW7"
 train_sp  = "train"
 valid_sp  = "valid"
 batch_size = 2
 num_workers = 4
-epochs = 10
+epochs = 20
 val_interval = 1
 
 # choose the segmenter
@@ -38,11 +39,11 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN"]
-detectors = ["GT"]
+detectors = ["YoloX"]
 
 # choose the tracker
 # options: ["GT", sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
-trackers = ["GT"] 
+trackers = ["GTHW7"] 
 
 # choose the clustering algorithm
 # options: ["SpectralFull", "DBSCAN", "SpectralKNN"]
@@ -140,11 +141,11 @@ for src, cached_cnt_pth in zip(sources, sources):
     # 4. run the tracking and backproject and convert to meter
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --ForNFrames=1800 --Homography --Meter --VisTrajectories --VisTrackTop")
     ########################################################
-    for det in detectors:
-        for tra in trackers:
-            print(f"tracking ---> src:{src} det:{det} tra:{tra}")
-            # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=[GoogleMap/OrthoPhoto]")
-            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack")
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
+    #         # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=[GoogleMap/OrthoPhoto]")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track")
 
     ########################################################
     # 5. run the track post processing
@@ -246,4 +247,4 @@ for ds in datasets:
     # for det in detectors:
     #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
     #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
-    #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval}")
+    #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval} --Resume")
