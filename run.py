@@ -39,7 +39,7 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN"]
-detectors = ["YoloX"]
+detectors = ["GTHW7"]
 
 # choose the tracker
 # options: ["GT", sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
@@ -158,6 +158,15 @@ for src, cached_cnt_pth in zip(sources, sources):
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=GoogleMap")
 
     ########################################################
+    # 5.5 Evaluate Tracking
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackEval --GTDetector={GT_det} --GTTracker={GT_tra}")
+    ########################################################
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"evaluate tracking ---> src:{src} det:{det} tra:{tra} gt_det:{GT_det} gt_tra:{GT_tra}")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackEval --GTDetector={GT_det} --GTTracker={GT_tra}")
+
+    ########################################################
     # 6. find optimum BW for kde fiting
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --FindOptimalKDEBW --ResampleTH=2.0 --TopView=GoogleMap")
     ########################################################
@@ -218,8 +227,18 @@ for src, cached_cnt_pth in zip(sources, sources):
 
 for src in segments:
     print(f"running on seg:{src}")
+    ########################################################
+    # 0 perform single camera tracking evaluation on all the sources under mc folder
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --MultiCam --TrackEval --GTDetector={GT_det} --GTTracker={GT_tra}")
+    ########################################################
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"evaluate tracking ---> src:{src} det:{det} tra:{tra} gt_det:{GT_det} gt_tra:{GT_tra}")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --MultiCam  --TrackEval\
+    #                    --GTDetector={GT_det} --GTTracker={GT_tra}")
+
     # ########################################################
-    # # 0. Average Counts MC
+    # # 1. Average Counts MC
     # # os.system(f"python3 main.py --MultiCam --Dataset={src}  --Detector={det} --Tracker={tra} -- --VisTrackTopMC")
     # ########################################################
     # for det in detectors:
@@ -238,6 +257,15 @@ for split in splits:
     # for det in detectors:
     #     os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --ConvertDetsToCOCO")
 
+    ########################################################
+    # 2. perform single camera tracking evaluation on all the sources under ms folder(split)
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --MultiSeg  --TrackEval --GTDetector={GT_det} --GTTracker={GT_tra}")
+    ########################################################
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"evaluate tracking ---> src:{split} det:{det} tra:{tra} gt_det:{GT_det} gt_tra:{GT_tra}")
+    #         os.system(f"python3 main.py --MultiSeg --Dataset={split}  --Detector={det} --Tracker={tra} --TrackEval\
+    #                    --GTDetector={GT_det} --GTTracker={GT_tra}")
 #_______________________MULTIPART___________________________#
 for ds in datasets:
     print(f"running on dataset:{ds}")
@@ -248,3 +276,13 @@ for ds in datasets:
     #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
     #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
     #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval} --Resume")
+
+    ########################################################
+    # 2. perform single camera tracking evaluation on all the sources under mp folder(dataset)
+    # os.system(f"python3 main.py --MultiPart --Dataset={src}  --Detector={det} --Tracker={tra} --TrackEval --GTDetector={GT_det} --GTTracker={GT_tra}")
+    ########################################################
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"evaluate tracking ---> src:{ds} det:{det} tra:{tra} gt_det:{GT_det} gt_tra:{GT_tra}")
+    #         os.system(f"python3 main.py --MultiPart --Dataset={ds}  --Detector={det} --Tracker={tra} --TrackEval\
+    #                    --GTDetector={GT_det} --GTTracker={GT_tra}")
