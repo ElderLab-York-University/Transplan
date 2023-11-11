@@ -614,15 +614,6 @@ def flatten_args(args):
         args_flat += arg_flat
     return args_flat
 
-def get_args_gt(args):
-    args_gt = copy.deepcopy(args)
-    args_gt.Detector = "GT"
-    args_gt.Tracker = "GT"
-    args_gt.Video=None
-    args_gt=complete_args(args_gt)
-    # args_gt , arg_mc_gt = complete_args_mc(args_gt, args_mc_gt)
-    return args_gt
-
 def get_sub_args(args):
     sp = args.Dataset
     sub_paths = []
@@ -643,6 +634,14 @@ def get_args(args):
     args = complete_args(args)
     check_config(args)
     return args
+
+def get_args_gt(args):
+    args_gt = copy.deepcopy(args)
+    args_gt.Detector = args.GTDetector
+    args_gt.Tracker = args.GTTracker
+    args_gt.Video=None
+    args_gt=complete_args(args_gt)
+    return get_args(args_gt)
 
 def get_args_mc(args):
     args_mc = get_sub_args(args)
