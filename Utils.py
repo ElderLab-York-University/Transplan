@@ -378,7 +378,7 @@ def add_vis_tracking_moi_path_to_args(args):
     args.VisTrackingMoIPth = vis_tracking_pth
     return args
 
-def get_eval_save_path(args):
+def get_track_eval_save_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results",file_name + Puncuations.Dot + SubTaskMarker.MCTrackDis + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot+"txt")
@@ -447,8 +447,8 @@ def add_plot_all_traj_pth_to_args(args):
     args.PlotAllTrajPth = path
     return args
 
-def add_eval_save_path(args):
-    args.EvalPth = get_eval_save_path(args)
+def add_track_eval_save_path(args):
+    args.TrackEvalPth = get_track_eval_save_path(args)
     return args 
 
 def add_vis_labelled_tracks_pth_to_args(args):
@@ -631,6 +631,7 @@ def get_sub_args(args):
     return args_sub
 
 def get_args(args):
+    args.SubID = args.Dataset.split("/")[-1]
     args = complete_args(args)
     check_config(args)
     return args
@@ -713,8 +714,8 @@ def complete_args(args):
         args = add_vis_top_tracking_path_to_args(args)
         args = add_tracking_pkl_to_args(args)
         
-    if args.Eval:
-        args = add_eval_save_path(args)
+    if args.TrackEval:
+        args = add_track_eval_save_path(args)
     
     try:
         args = add_metadata_to_args(args)

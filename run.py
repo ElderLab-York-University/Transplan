@@ -16,9 +16,9 @@ def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"]):
 # choose datasets/splits/segments/sources
 #  set to None if want to include all
 datasets     = ["/home/sajjad/HW7Leslie"]
-split_part   = None
-segment_part = None
-source_part  = None
+split_part   = ["train"]
+segment_part = ["Seg01"]
+source_part  = ["Seg01lc1"]
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
 sources      = get_sub_dirs(segments, source_part)
@@ -39,7 +39,7 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN"]
-detectors = ["YoloX"]
+detectors = ["GTHW7"]
 
 # choose the tracker
 # options: ["GT", sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
@@ -156,6 +156,15 @@ for src, cached_cnt_pth in zip(sources, sources):
     #         print(f"tracking POSTPROC ---> src:{src} det:{det} tra:{tra}")
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc  --MaskGPFrame --HasPointsInROI --BackprojectSource=tracks --TopView=GoogleMap")
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=GoogleMap")
+
+    ########################################################
+    # 5.5 Evaluate Tracking
+    # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackEval --GTDetector={GT_det} --GTTracker={GT_tra}")
+    ########################################################
+    for det in detectors:
+        for tra in trackers:
+            print(f"evaluate tracking ---> src:{src} det:{det} tra:{tra} gt_det:{GT_det} gt_tra:{GT_tra}")
+            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackEval --GTDetector={GT_det} --GTTracker={GT_tra}")
 
     ########################################################
     # 6. find optimum BW for kde fiting
