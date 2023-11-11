@@ -122,5 +122,5 @@ def evaluate_tracking(nested_args):
         f.write(strsummary)
         # f.write("\n")
         # f.write(strsummary_mc)
-        
-    
+
+    return SucLog("Track Evaluation Successful")
