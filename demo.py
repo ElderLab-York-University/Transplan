@@ -36,10 +36,10 @@ sources      = get_sub_dirs(segments, source_part)
 GT_det    = "GTHW7"
 train_sp  = "Split1"
 valid_sp  = "Split1"
-batch_size = 6
-num_workers = 8
-epochs = 100
-val_interval = 10
+batch_size = 2
+num_workers = 2
+epochs = 10
+val_interval = 1
 
 # choose the segmenter
 # options: ["InternImage"]
@@ -47,7 +47,7 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN", "YOLOv8"]
-detectors = ["InternImage"]
+detectors = ["DeformableDETR"]
 
 # choose the tracker
 # options: [sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
@@ -270,10 +270,10 @@ for split in splits:
     print(f"running on split:{split}")
     # ########################################################
     # # 1. convert detections of all the data under split into COCO format
+    # # os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --ConvertDetsToCOCO --KeepCOCOClasses")
     # ########################################################
     # for det in detectors:
     #     os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --ConvertDetsToCOCO")
-
 
 #_______________________MULTIPART___________________________#
 for ds in datasets:
@@ -281,7 +281,7 @@ for ds in datasets:
     # ########################################################
     # # 1. fine tune detector
     # ########################################################
-    # for det in detectors:
-    #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
-    #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
-    #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval}")
+    for det in detectors:
+        os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
+                   --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
+                   --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval}")
