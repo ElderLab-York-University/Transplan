@@ -174,13 +174,13 @@ def VisTrackTop(args):
         log = vistracktop(args)
         return log
     else: return WarningLog("skipped vis tracking from top")
+
 def TrackEvaluate(args):
     if args.TrackEval:
         print(ProcLog("Evaluate Tracking"))
         log = evaluate_tracking(args)
         return log
     else: return WarningLog("skipped vis tracking from top")
-
 
 def AverageCounts(args, args_mc):
     if args.AverageCountsMC:
@@ -198,6 +198,13 @@ def EvalCountMC(args, args_mc):
         return log
     else:
         return WarningLog("skipped evaluating counts")
+    
+def TrackEvaluateMC(args, args_mc):
+    if args.TrackEval:
+        print(ProcLog("Single Source Evaluate Tracking"))
+        log = evaluate_tracking(args_mc)
+        return log
+    else: return WarningLog("skipped TrackEvaluateMC")
     
 def Segment(args):
     if args.Segment:
@@ -280,7 +287,7 @@ def main(args):
 def main_mc(args, args_mc):
     # main for multi camera
 
-    subtasks = [AverageCounts, EvalCountMC]
+    subtasks = [TrackEvaluateMC, AverageCounts, EvalCountMC]
     for subtask in subtasks:
         log = subtask(args,args_mc)
         if not isinstance(log, WarningLog):
