@@ -276,6 +276,13 @@ def FineTuneDetectorMP(args, args_mp, args_mss, args_mcs):
         return log
     else: return WarningLog("skipped fine tunning detectors")
 
+def TrackEvaluateMP(args, args_mp, args_mss, args_mcs):
+    if args.TrackEval:
+        print(ProcLog("Single Source Evaluate Tracking"))
+        log = evaluate_tracking(args, args_mcs)
+        return log
+    else: return WarningLog("skipped TrackEvaluate on MP")
+
 def main(args):
     # main for one video
     subtasks = [Preprocess, ExtractImages,
@@ -311,7 +318,7 @@ def main_ms(args, args_ms, args_mcs):
 
 def main_mp(args, args_mp, args_mss, args_mcs):
     # main for multi parts
-    subtasks = [FineTuneDetectorMP]
+    subtasks = [FineTuneDetectorMP, TrackEvaluateMP]
     for sub in subtasks:
         log = sub(args, args_mp, args_mss, args_mcs)
         if not isinstance(log, WarningLog):

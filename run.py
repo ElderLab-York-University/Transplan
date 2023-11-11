@@ -276,3 +276,13 @@ for ds in datasets:
     #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
     #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
     #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval} --Resume")
+
+    ########################################################
+    # 2. perform single camera tracking evaluation on all the sources under mp folder(dataset)
+    # os.system(f"python3 main.py --MultiPart --Dataset={src}  --Detector={det} --Tracker={tra} --TrackEval --GTDetector={GT_det} --GTTracker={GT_tra}")
+    ########################################################
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"evaluate tracking ---> src:{ds} det:{det} tra:{tra} gt_det:{GT_det} gt_tra:{GT_tra}")
+    #         os.system(f"python3 main.py --MultiPart --Dataset={ds}  --Detector={det} --Tracker={tra} --TrackEval\
+    #                    --GTDetector={GT_det} --GTTracker={GT_tra}")
