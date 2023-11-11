@@ -16,9 +16,9 @@ def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"]):
 # choose datasets/splits/segments/sources
 #  set to None if want to include all
 datasets     = ["/home/sajjad/HW7Leslie"]
-split_part   = None
-segment_part = None 
-source_part  = None
+split_part   = ["train"]
+segment_part = ["Seg01"]
+source_part  = ["Seg01lc1"]
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
 sources      = get_sub_dirs(segments, source_part)
@@ -28,9 +28,9 @@ GT_det    = "GTHW7"
 train_sp  = "train"
 valid_sp  = "valid"
 batch_size = 2
-num_workers = 2
-epochs = 25
-val_interval = 5
+num_workers = 4
+epochs = 10
+val_interval = 1
 
 # choose the segmenter
 # options: ["InternImage"]
@@ -38,11 +38,11 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN"]
-detectors = ["YoloX"]
+detectors = ["GT"]
 
 # choose the tracker
 # options: ["GT", sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
-trackers = ["ByteTrack"] 
+trackers = ["GT"] 
 
 # choose the clustering algorithm
 # options: ["SpectralFull", "DBSCAN", "SpectralKNN"]
@@ -99,7 +99,7 @@ for src, cached_cnt_pth in zip(sources, sources):
     ########################################################
     # for det in detectors:
     #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect --VisDetect")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect")
 
     ########################################################
     # 3.5 run the detection post processing
@@ -140,11 +140,11 @@ for src, cached_cnt_pth in zip(sources, sources):
     # 4. run the tracking and backproject and convert to meter
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --ForNFrames=1800 --Homography --Meter --VisTrajectories --VisTrackTop")
     ########################################################
-    # for det in detectors:
-    #     for tra in trackers:
-    #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
-    #         # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=[GoogleMap/OrthoPhoto]")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=GoogleMap")
+    for det in detectors:
+        for tra in trackers:
+            print(f"tracking ---> src:{src} det:{det} tra:{tra}")
+            # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=[GoogleMap/OrthoPhoto]")
+            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack")
 
     ########################################################
     # 5. run the track post processing
@@ -230,9 +230,10 @@ for src in segments:
 #_______________________MULTISEGMENT _______________________#
 for split in splits:
     print(f"running on split:{split}")
-    # ########################################################
-    # # 1. convert detections of all the data under split into COCO format
-    # ########################################################
+    ########################################################
+    # 1. convert detections of all the data under split into COCO format
+    # os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --ConvertDetsToCOCO --KeepCOCOClasses")
+    ########################################################
     # for det in detectors:
     #     os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --ConvertDetsToCOCO")
 
@@ -245,4 +246,4 @@ for ds in datasets:
     # for det in detectors:
     #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
     #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
-    #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval} --Resume")
+    #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval}")
