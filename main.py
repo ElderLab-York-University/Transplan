@@ -397,6 +397,7 @@ if __name__ == "__main__":
     parser.add_argument("--TrainPart", help="training SubID", type=str)
     parser.add_argument("--ValidPart", help="validation SubID", type=str)
     parser.add_argument("--GTDetector", help="name of GT detector(typically used for fine turning or evaluation)", type=str)
+    parser.add_argument("--GTTracker",  help="name of GT tracker(typically used for fine turning or evaluation)", type=str)
     parser.add_argument("--BatchSize", help="set batch size", type=int)
     parser.add_argument("--NumWorkers", help="number of workers for dataloader", type=int)
     parser.add_argument("--Epochs", help="number of epochs", type=int)
