@@ -12,7 +12,12 @@ def track(args, detectors):
     detection_df = pd.read_pickle(args.DetectionPkl)
 
     output_file = args.TrackingPth
-    mot_tracker = Sort() #create instance of the SORT tracker
+    # tracking hypter parameters
+    max_age=19
+    min_hits=1
+    iou_threshold=0.5
+    # finish tracking hyperparams
+    mot_tracker = Sort(max_age, min_hits, iou_threshold) #create instance of the SORT tracker
     with open(output_file,'w') as out_file:
         for frame_num in tqdm(range(int(detection_df.fn.min()), int(detection_df.fn.max()+1))): #looping from df.fn.min to df.fn.max
             frame_df = detection_df[detection_df.fn == frame_num]
