@@ -32,8 +32,9 @@ if __name__ == "__main__":
         f"{track_buffer}", "--match_thresh", f"{match_thresh}", "--min-box-area", f"{min_box_area}"])
     tracker = BYTETracker(ByteArgs)
 
-    with open(args["DetectionPkl"],"rb") as f:
-        detections=pickle.load(f)
+    detections=pd.read_pickle(args["DetectionPkl"])
+    # with open(args["DetectionPkl"],"rb") as f:
+    #     detections=pickle.load(f)
 
     unique_frames = np.sort(np.unique(detections["fn"]))
     results = []
