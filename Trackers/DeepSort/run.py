@@ -1,7 +1,7 @@
 import sys
 # import pickle as pickle
 import json
-# import pickle5 as pickle
+import pickle5 as pickle
 import pandas as pd
 from DeepSort.deep_sort import nn_matching
 from DeepSort.deep_sort.detection import Detection
@@ -11,25 +11,29 @@ import cv2
 from tqdm import tqdm
 import numpy as np
 import sys
-CENTERTRACK_PATH = "./Trackers/CenterTrack/CenterTrack/src/lib/"
-sys.path.insert(0, CENTERTRACK_PATH)
+import tensorflow as tf
+# CENTERTRACK_PATH = "./Trackers/CenterTrack/CenterTrack/src/lib/"
+# sys.path.insert(0, CENTERTRACK_PATH)
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 if __name__ == "__main__":
     args = json.loads(sys.argv[-1]) # args in a dictionary here where it was a argparse.NameSpace in the main code
-    # print(args)
     video_path = args["Video"]
     text_result_path = args["DetectionDetectorPath"]
-    # print(detections.iloc[:,0])
+    # sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
     with open(args["TrackingPth"],"w") as out_file:
-
-        max_cosine_distance = 0.5
+        # ------------------------
+        max_cosine_distance = 0.7
+        max_iou_distance=0.7
+        max_age= 13
+        n_init=0
         nn_budget = None
+        # ------------------------
         model_filename = './Trackers/DeepSort/DeepSort/models/mars-small128.pb'
         encoder = gdet.create_box_encoder(model_filename, batch_size=1)
         metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
-        tracker = Tracker(metric)
+        tracker = Tracker(metric, max_iou_distance, max_age, n_init)
         cap = cv2.VideoCapture(video_path)
         results=[]
         # Check if camera opened successfully
@@ -41,10 +45,9 @@ if __name__ == "__main__":
         frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 
-        detections_df = pd.read_pickle(args["DetectionPkl"])
-
-        # with open(args["DetectionPkl"],"rb") as f:
-        #     detections_df=pickle.load(f)
+        # detections_df = pd.read_pickle(args["DetectionPkl"])
+        with open(args["DetectionPkl"],"rb") as f:
+            detections_df=pickle.load(f)
 
         for frame_num in tqdm(range(frames)):
             if (not cap.isOpened()):
@@ -69,16 +72,19 @@ if __name__ == "__main__":
             scores=np.array(scores)
             names=np.array(names)
             features = np.array(encoder(frame, bboxes))
+            # print(features)
             detections = [Detection(bbox, score, feature) for bbox, score, feature in zip(bboxes, scores, features)]
             tracker.predict()
             tracker.update(detections)
             tracked_bboxes = []
             for track in tracker.tracks:
-                if not track.is_confirmed() or track.time_since_update > 1:
+                # print(track.to_tlwh())
+                if not track.is_confirmed() or track.time_since_update >= 1:
                     continue 
                 bbox = track.to_tlwh()
                 results.append([frame_num, track.track_id, bbox[0], bbox[1], bbox[2], bbox[3]])
 
+        # print(results)
         for row in results:
             # print("YOO")
             print('%d,%d,%f,%f,%f,%f'%

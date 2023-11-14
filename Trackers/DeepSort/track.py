@@ -108,7 +108,7 @@ def setup(args):
         make_conda_env(env_name, libs="python=3.6")
         os.system(f"conda run --live-stream -n {args.Tracker} conda install pip")
         os.system(f"conda run --live-stream -n {args.Tracker} pip install --upgrade pip setuptools wheel")
-        os.system(f"conda run --live-stream -n {args.Tracker} pip install tensorflow==1.15.5 opencv-python==4.6.0.66 numpy scikit-learn==0.22.2 tqdm")
-        os.system(f"conda run --live-stream -n {args.Tracker} pip install wheel")
+        os.system(f"conda run --live-stream -n {args.Tracker} conda install -c anaconda cudatoolkit=10.0 cudnn=7.6.0 -y")
+        os.system(f"conda run --live-stream -n {args.Tracker} pip install tensorflow_gpu==1.15.0 opencv-python==4.6.0.66 numpy scikit-learn==0.22.2 tqdm")
         os.system(f"conda run --live-stream -n {args.Tracker} pip install pickle5 pandas")
-        print("______++++++++++++________")
+
