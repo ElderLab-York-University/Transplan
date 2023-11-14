@@ -8,7 +8,9 @@ def track(args, detectors):
     if args.Detector is None:
         return FailLog("To interpret detections you should specify detector")
     # parse detection df using detector module
-    detection_df = detectors[args.Detector].df(args)
+    # detection_df = detectors[args.Detector].df(args)
+    detection_df = pd.read_pickle(args.DetectionPkl)
+
     output_file = args.TrackingPth
     mot_tracker = Sort() #create instance of the SORT tracker
     with open(output_file,'w') as out_file:
