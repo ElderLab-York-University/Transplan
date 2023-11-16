@@ -358,6 +358,7 @@ if __name__ == "__main__":
     parser.add_argument("--DetMask", help="if to remove bboxes out of ROI", action="store_true")
     parser.add_argument("--TrackPostProc", help="if to perform tracking post processings", action="store_true")
     parser.add_argument("--Interpolate", help="if to perform interpolation on tracks", action="store_true")
+    parser.add_argument("--InterpolateTh", help="the threshold for interpolation", type=float)
     parser.add_argument("--TrackTh", help="the threshold for short track removal in meter", type=float)
     parser.add_argument("--MaskROI", help="if to remove bboxes out of ROI", action="store_true")
     parser.add_argument("--RemoveInvalidTracks", help="remove tracks with less than 3 points", action="store_true")
