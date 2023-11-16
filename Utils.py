@@ -619,9 +619,13 @@ def get_sub_args(args):
     sub_paths = []
     sub_ids = []
     for cl in os.listdir(sp):
-        if (not cl.startswith(".")) and (not cl == "Results"):
+        if (not cl.startswith(".")) and\
+           (not cl == "Results") and\
+           os.path.isdir(os.path.join(sp, cl)):
+            
             sub_paths.append(os.path.join(sp, cl))
             sub_ids.append(cl)
+            
     args_sub = []
     for sub, sub_id in zip(sub_paths, sub_ids):
         temp_args = copy.deepcopy(args)
