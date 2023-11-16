@@ -333,6 +333,7 @@ if __name__ == "__main__":
     parser.add_argument("--Detector", help="Name of detector to be used", type=str)
     parser.add_argument("--Tracker", help="Name of tracker to be used", type=str)
     parser.add_argument("--Detect", help="If perform detection", action="store_true")
+    parser.add_argument("--DetectorVersion", help="select detector version to load. Each version corresponds to a checkpoint file.", type=str, default="")
     parser.add_argument("--VisDetect", help="If create video of detections", action="store_true")
     parser.add_argument("--Track", help="If perform tracking", action="store_true")
     parser.add_argument("--VisTrack", help="If create video visualization of tracking", action="store_true")
