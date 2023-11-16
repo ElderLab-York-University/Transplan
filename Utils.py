@@ -580,12 +580,20 @@ def add_images_folder_to_args(args):
 def adjust_args_with_params(args):
     if args.CountMetric == "knn" or args.CountMetric == "gknn" :
         args.CountMetric += f".k={args.K}"
+
+    if not args.DetectorVersion == "":
+        args.Detector += "." + args.DetectorVersion
+
     return args
 
 def revert_args_with_params(args):
     if args.CountMetric is not None:
         args.CountMetric = args.CountMetric.split(".")[0]
+
+    if not args.DetectorVersion == "":
+        args.Detector  = args.Detector.split(".")[0]
     return args
+
 def get_check_point_dir(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]

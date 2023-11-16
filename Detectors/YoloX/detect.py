@@ -9,8 +9,8 @@ from Detectors.MMDet.detect import modify_train_config as mm_modify_train_config
 def detect(args, *oargs):
     env_name        = "MMDet"
     exec_path       = "./Detectors/MMDet/run.py"
-    config_file     = "./Detectors/MMDet/mmdetection/configs/yolox/yolox_x_8xb8-300e_coco.py"
-    checkpoint_file = "./Detectors/MMDet/mmdetection/checkpoints/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth"
+    config_file     = config_from_version(args.DetectorVersion)
+    checkpoint_file = checkpoint_from_version(args.DetectorVersion)
 
     setup(args)
     args.MMDetConfig = config_file 
@@ -47,3 +47,17 @@ def fine_tune(args, args_mp, args_gt, args_mp_gt):
         os.system(f"mkdir {work_dir}")
 
     mm_fine_tune(train_config_path, work_dir, args.Resume)
+
+def checkpoint_from_version(version):
+    c_2_v = {
+        ""      : "./Detectors/MMDet/mmdetection/checkpoints/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth",
+        "HW7FT" : "/home/sajjad/HW7Leslie/Results/CheckPoints/YoloX/20231111_144154_ft_5cls/best_coco_bbox_mAP_epoch_11.pth"
+    }
+    return c_2_v[version]
+
+def config_from_version(version):
+    c_2_v = {
+        ""      : "./Detectors/MMDet/mmdetection/configs/yolox/yolox_x_8xb8-300e_coco.py",
+        "HW7FT" : "/home/sajjad/HW7Leslie/Results/CheckPoints/YoloX/20231111_144154_ft_5cls/train_config.py"
+    }
+    return c_2_v[version]

@@ -1,6 +1,6 @@
 import os
 
-def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"]):
+def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"], be_inside=None, not_be_inside=None):
     subs_path = []
     for root in roots:
         subs = os.listdir(root)
@@ -9,7 +9,9 @@ def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"]):
             if os.path.isdir(sub_path) and\
                 (subs_to_exclude is None or sub not in subs_to_exclude) and\
                 (subs_to_include is None or sub in subs_to_include)and\
-                (not sub.startswith('.')):
+                (not sub.startswith('.')) and\
+                (be_inside is None or be_inside in sub) and\
+                (not_be_inside is None or not_be_inside not in sub):
                 subs_path.append(sub_path)
     return subs_path
 
@@ -30,7 +32,7 @@ train_sp  = "train"
 valid_sp  = "valid"
 batch_size = 2
 num_workers = 4
-epochs = 20
+epochs = 0
 val_interval = 1
 
 # choose the segmenter
@@ -39,10 +41,11 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN"]
-detectors = ["GTHW7"]
+detectors = ["CenterNet"]
+det_v = "HW7FT"
 
 # choose the tracker
-# options: ["GT", sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
+# options: ["GTHW7", sort", "ByteTrack",  "CenterTrack", "DeepSort", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
 trackers = ["GTHW7"] 
 
 # choose the clustering algorithm
@@ -96,20 +99,20 @@ for src, cached_cnt_pth in zip(sources, sources):
 
     ########################################################
     # 3. run the detection
-    # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=NULL --Detect --VisDetect")
+    # the full commonad looks like : os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect --VisDetect --DetectorVersion={HW7FT}")
     ########################################################
     # for det in detectors:
     #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker=NULL --Detect")
 
     ########################################################
     # 3.5 run the detection post processing
-    # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=NULL --Detect --DetPostProc --DetMask --DetTh=0.50 --VisDetect")
+    # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=NULL --Detect --DetPostProc --DetMask --DetTh=0.50 --VisDetect --DetectorVersion=HW7FT")
     ########################################################
     # for det in detectors:
     #     print(f"detecting ----> src:{src} det:{det}")
     #     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --DetPostProc --DetTh=0.5 --VisDetect")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --VisDetect --DetPostProc --DetTh=0.5 --classes_to_keep 2 5 7")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker=NULL --DetPostProc --DetTh=0.5")
 
     ########################################################
     # 3.5.5 convert detections to coco format
@@ -154,8 +157,9 @@ for src, cached_cnt_pth in zip(sources, sources):
     # for det in detectors:
     #     for tra in trackers:
     #         print(f"tracking POSTPROC ---> src:{src} det:{det} tra:{tra}")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc  --MaskGPFrame --HasPointsInROI --BackprojectSource=tracks --TopView=GoogleMap")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=GoogleMap")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc --Interpolate --InterpolateTh=10 --BackprojectSource=tracks --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=LineSeg")
+    #         # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackPostProc  --MaskGPFrame --HasPointsInROI --BackprojectSource=tracks --TopView=GoogleMap")
+    #         # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=GoogleMap")
 
     ########################################################
     # 5.5 Evaluate Tracking
@@ -224,7 +228,6 @@ for src, cached_cnt_pth in zip(sources, sources):
 
 
 #_______________________MULTICAMERA_______________________#
-
 for src in segments:
     print(f"running on seg:{src}")
     ########################################################
@@ -266,12 +269,13 @@ for split in splits:
     #         print(f"evaluate tracking ---> src:{split} det:{det} tra:{tra} gt_det:{GT_det} gt_tra:{GT_tra}")
     #         os.system(f"python3 main.py --MultiSeg --Dataset={split}  --Detector={det} --Tracker={tra} --TrackEval\
     #                    --GTDetector={GT_det} --GTTracker={GT_tra}")
+
 #_______________________MULTIPART___________________________#
 for ds in datasets:
     print(f"running on dataset:{ds}")
     # ########################################################
     # # 1. fine tune detector
-    # ########################################################
+    # # ########################################################
     # for det in detectors:
     #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
     #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
