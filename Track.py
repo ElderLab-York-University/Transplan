@@ -428,7 +428,7 @@ def interpolate_tracks(args):
                 print(cur_row["fn"])
             assert cur_row["fn"] > pre_row["fn"]
             frame_diff = int(cur_row["fn"] - pre_row["fn"])
-            if frame_diff > 1:
+            if frame_diff > 1 and frame_diff <= args.InterpolateTh:
                 weights = np.linspace(0, 1, frame_diff, endpoint=False)
                 for w in weights:
                     for col in regular_columns:
