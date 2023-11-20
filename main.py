@@ -410,8 +410,6 @@ if __name__ == "__main__":
     parser.add_argument("--ConvertDetsToCOCO", help="convert detection files to COCO format", action='store_true')
     parser.add_argument("--KeepCOCOClasses", help="when converting to COCO keep coco class names", action='store_true')
 
-
-
     parser.add_argument("--MultiSeg", help="operating on multiple segments(eg train segments)", action='store_true')
     parser.add_argument("--MultiPart", help="for multi part operations", action='store_true')
     parser.add_argument("--FineTune", help="fine tune detector", action='store_true')
@@ -425,6 +423,11 @@ if __name__ == "__main__":
     parser.add_argument("--Epochs", help="number of epochs", type=int)
     parser.add_argument("--ValInterval", help="frequency of validation step(every x epochs)", type=int)
 
+    parser.add_argument("--SAHI", help="run detection with SAHI", action='store_true')
+    parser.add_argument("--SahiPatchSize", help="patch size of sahi", type=int, default=640)
+    parser.add_argument("--SahiPatchOverlapRatio", help="overlap ration of sahi patches", type=float, default=0.25)
+    parser.add_argument("--SahiPatchBatchSize", help="batch size of patches of sahi", type=int, default=1)
+    parser.add_argument("--SahiNMSTh", help="IoU threshould for merging results when using sahi", type=float, default=0.25)
 
     args = parser.parse_args()
 
