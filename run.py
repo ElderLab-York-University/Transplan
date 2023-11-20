@@ -119,10 +119,10 @@ for src, cached_cnt_pth in zip(sources, sources):
     # 3.5 run the detection post processing
     # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=NULL --Detect --DetPostProc --DetMask --DetTh=0.50 --VisDetect --DetectorVersion=HW7FT")
     ########################################################
-    for det in detectors:
-        # print(f"detecting ----> src:{src} det:{det}")
-        # # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --DetPostProc --DetTh=0.5 --VisDetect")
-        # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker=NULL --DetPostProc --DetTh=0.5 --classes_to_keep 0 1 2 3 5 7")
+    # for det in detectors:
+    #     print(f"detecting ----> src:{src} det:{det}")
+    #     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --DetPostProc --DetTh=0.5 --VisDetect")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker=NULL --DetPostProc --DetTh=0.5 --classes_to_keep 0 1 2 3 5 7")
 
     ########################################################
     # 3.5.5 convert detections to coco format
