@@ -10,8 +10,127 @@ import sys
 import torch
 import mmcv
 from sahi.slicing import slice_image
-from mmdet.utils.large_image import merge_results_by_nms, shift_predictions
 
+# Nov 20 2023 NOTE
+# as of today SAHI does not support bbox with negatiev coordinate
+# while mmdet might output such bboxes in the model
+# to merge it with sahi there are two options
+# 1. clip bbox to be olways positive
+# 2. modify sahi to accept negative bbox values
+# I believe second option is better as it preserves more info about
+# detected bonding boxes
+# for that reason we will temporary implement the bbox shifring locally
+# and we will merge to late releases of SAHI or MMDet
+from typing import Sequence, Tuple
+import torch
+from mmcv.ops import batched_nms
+from mmengine.structures import InstanceData
+from mmdet.structures import DetDataSample, SampleList
+def merge_results_by_nms(results: SampleList, offsets: Sequence[Tuple[int,
+                                                                      int]],
+                         src_image_shape: Tuple[int, int],
+                         nms_cfg: dict) -> DetDataSample:
+    """Merge patch results by nms.
+
+    Args:
+        results (List[:obj:`DetDataSample`]): A list of patch results.
+        offsets (Sequence[Tuple[int, int]]): Positions of the left top points
+            of patches.
+        src_image_shape (Tuple[int, int]): A (height, width) tuple of the large
+            image's width and height.
+        nms_cfg (dict): it should specify nms type and other parameters
+            like `iou_threshold`.
+    Returns:
+        :obj:`DetDataSample`: merged results.
+    """
+    shifted_instances = shift_predictions(results, offsets, src_image_shape)
+
+    _, keeps = batched_nms(
+        boxes=shifted_instances.bboxes,
+        scores=shifted_instances.scores,
+        idxs=shifted_instances.labels,
+        nms_cfg=nms_cfg)
+    merged_instances = shifted_instances[keeps]
+
+    merged_result = results[0].clone()
+    merged_result.pred_instances = merged_instances
+    return merged_result
+
+def shift_predictions(det_data_samples: SampleList,
+                      offsets: Sequence[Tuple[int, int]],
+                      src_image_shape: Tuple[int, int]) -> SampleList:
+    """Shift predictions to the original image.
+
+    Args:
+        det_data_samples (List[:obj:`DetDataSample`]): A list of patch results.
+        offsets (Sequence[Tuple[int, int]]): Positions of the left top points
+            of patches.
+        src_image_shape (Tuple[int, int]): A (height, width) tuple of the large
+            image's width and height.
+    Returns:
+        (List[:obj:`DetDataSample`]): shifted results.
+    """
+    
+    assert len(det_data_samples) == len(
+        offsets), 'The `results` should has the ' 'same length with `offsets`.'
+    shifted_predictions = []
+    for det_data_sample, offset in zip(det_data_samples, offsets):
+        pred_inst = det_data_sample.pred_instances.clone()
+
+        # Check bbox type
+        if pred_inst.bboxes.size(-1) == 4:
+            # Horizontal bboxes
+            shifted_bboxes = shift_bboxes(pred_inst.bboxes, offset)
+        elif pred_inst.bboxes.size(-1) == 5:
+            # Rotated bboxes
+            shifted_bboxes = shift_rbboxes(pred_inst.bboxes, offset)
+        else:
+            raise NotImplementedError
+
+        # shift bboxes and masks
+        pred_inst.bboxes = shifted_bboxes
+        if 'masks' in det_data_sample:
+            pred_inst.masks = shift_masks(pred_inst.masks, offset,
+                                          src_image_shape)
+
+        shifted_predictions.append(pred_inst.clone())
+
+    shifted_predictions = InstanceData.cat(shifted_predictions)
+
+    return shifted_predictions
+
+def shift_rbboxes(bboxes: torch.Tensor, offset: Sequence[int]):
+    """Shift rotated bboxes with offset.
+
+    Args:
+        bboxes (Tensor): The rotated bboxes need to be translated.
+            With shape (n, 5), which means (x, y, w, h, a).
+        offset (Sequence[int]): The translation offsets with shape of (2, ).
+    Returns:
+        Tensor: Shifted rotated bboxes.
+    """
+    offset_tensor = bboxes.new_tensor(offset)
+    shifted_bboxes = bboxes.clone()
+    shifted_bboxes[:, 0:2] = shifted_bboxes[:, 0:2] + offset_tensor
+    return shifted_bboxes
+
+def shift_bboxes(bboxes: torch.Tensor, offset: Sequence[int]):
+    """Shift bboxes with offset.
+
+    Args:
+        bboxes (Tensor): The bboxes need to be translated.
+            With shape (n, 4), which means (x, y, x, y).
+        offset (Sequence[int]): The translation offsets with shape of (2, ).
+    Returns:
+        Tensor: Shifted rotated bboxes.
+    """
+    offset_tensor = bboxes.new_tensor(offset)
+    shifted_bboxes = bboxes.clone()
+    shifted_bboxes[:, 0:2] = shifted_bboxes[:, 0:2] + offset_tensor
+    shifted_bboxes[:, 2:4] = shifted_bboxes[:, 2:4] + offset_tensor
+    return shifted_bboxes
+
+# actual code begis
 def preds_from_result(result):
     if 'pred_instances' in result:
         instances = result.pred_instances
@@ -20,7 +139,6 @@ def preds_from_result(result):
         labels = instances.labels
     return bboxes, labels, scores
 
-@torch.no_grad
 def get_sahi_result(frame, model, test_pipeline, args):
     height, width = frame.shape[:2]
     sliced_image_object = slice_image(
@@ -32,11 +150,17 @@ def get_sahi_result(frame, model, test_pipeline, args):
         overlap_width_ratio=args["SahiPatchOverlapRatio"],
     )
 
+    # if patch batch is not specified, use all the patches all the time
+    if args["SahiPatchBatchSize"]:
+        SahiPatchBatchSize = args["SahiPatchBatchSize"]
+    else:
+        SahiPatchBatchSize = len(sliced_image_object)
+
     slice_results = []
     start = 0
     while True:
         # prepare batch slices
-        end = min(start + args["SahiPatchBatchSize"], len(sliced_image_object))
+        end = min(start + SahiPatchBatchSize, len(sliced_image_object))
         images = []
         for sliced_image in sliced_image_object.images[start:end]:
             images.append(sliced_image)
@@ -46,14 +170,7 @@ def get_sahi_result(frame, model, test_pipeline, args):
 
         if end >= len(sliced_image_object):
             break
-        start += args.batch_size
-
-    # shifted_instances = shift_predictions(
-    #     slice_results,
-    #     sliced_image_object.starting_pixels,
-    #     src_image_shape=(height, width))
-    # merged_result = slice_results[0].clone()
-    # merged_result.pred_instances = shifted_instances
+        start += SahiPatchBatchSize
 
     image_result = merge_results_by_nms(
     slice_results,
@@ -67,7 +184,6 @@ def get_sahi_result(frame, model, test_pipeline, args):
     result = image_result.cpu()
     return result
 
-@torch.no_grad
 def get_full_frame_result(frame, model, test_pipeline, args):
     result = inference_detector(model, frame, test_pipeline=test_pipeline)
     result = result.cpu()
