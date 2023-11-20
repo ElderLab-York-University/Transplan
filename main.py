@@ -427,7 +427,7 @@ if __name__ == "__main__":
     parser.add_argument("--SAHI", help="run detection with SAHI", action='store_true')
     parser.add_argument("--SahiPatchSize", help="patch size of sahi", type=int, default=640)
     parser.add_argument("--SahiPatchOverlapRatio", help="overlap ration of sahi patches", type=float, default=0.25)
-    parser.add_argument("--SahiPatchBatchSize", help="batch size of patches of sahi", type=int, default=1)
+    parser.add_argument("--SahiPatchBatchSize", help="batch size of patches of sahi", type=int, default=0)
     parser.add_argument("--SahiNMSTh", help="IoU threshould for merging results when using sahi", type=float, default=0.25)
 
     args = parser.parse_args()
