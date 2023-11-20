@@ -109,7 +109,9 @@ for src, cached_cnt_pth in zip(sources, sources):
 
     ########################################################
     # 3. run the detection
-    # the full commonad looks like : os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --Detect --VisDetect --DetectorVersion={HW7FT}")
+    # the full commonad looks like : os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL
+    #  --Detect --VisDetect --DetectorVersion={HW7FT} --SAHI --SahiPatchSize=640 --SahiPatchOverlapRatio=0.25 
+    #  --SahiPatchBatchSize=1 --SahiNMSTh=0.25")
     ########################################################
     # for det in detectors:
     #     print(f"detecting ----> src:{src} det:{det}")
@@ -117,7 +119,7 @@ for src, cached_cnt_pth in zip(sources, sources):
 
     ########################################################
     # 3.5 run the detection post processing
-    # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=NULL --Detect --DetPostProc --DetMask --DetTh=0.50 --VisDetect --DetectorVersion=HW7FT")
+    # the full commonad looks like : os.system(f"python3 main.py --Datas`et={src}  --Detector={det} --Tracker=NULL --Detect --DetPostProc --DetMask --DetTh=0.50 --VisDetect --DetectorVersion=HW7FT --SAHI")
     ########################################################
     # for det in detectors:
     #     print(f"detecting ----> src:{src} det:{det}")
