@@ -585,8 +585,8 @@ def adjust_args_with_params(args):
         args.Detector += "." + args.DetectorVersion
 
     if args.SAHI:
-        args.Detector += ".SAHI-" + args.SahiPatchSize + "-" +\
-            args.SahiPatchOverlapRatio + "-" + args.SahiNMSTh
+        args.Detector += f".SAHI-{args.SahiPatchSize}-\
+            {str(args.SahiPatchOverlapRatio).replace('.', 'D')}-{str(args.SahiNMSTh).replace('.', 'D')}"
 
     return args
 
@@ -599,7 +599,7 @@ def revert_args_with_params(args):
 
     if args.SAHI:
         args.Detector  = args.Detector.split(".")[0]
-        
+
     return args
 
 def get_check_point_dir(args):
