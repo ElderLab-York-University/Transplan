@@ -651,6 +651,7 @@ def get_args(args):
 def get_args_gt(args):
     args_gt = copy.deepcopy(args)
     args_gt.Detector = args.GTDetector
+    args_gt.DetectorVersion = ""
     args_gt.Tracker = args.GTTracker
     args_gt.Video=None
     args_gt=complete_args(args_gt)
@@ -703,6 +704,7 @@ def get_args_mp_gt(args):
     # modify stuff before passing
     if args.GTDetector is not None:
         args.Detector = args.GTDetector
+        args.DetectorVersion = ""
         
     return get_args_mp(args)
 
