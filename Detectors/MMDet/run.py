@@ -9,7 +9,8 @@ from tqdm import tqdm
 import sys
 import torch
 import mmcv
-
+from sahi.slicing import slice_image
+from mmdet.utils.large_image import merge_results_by_nms, shift_predictions
 
 def preds_from_result(result):
     if 'pred_instances' in result:
@@ -19,6 +20,58 @@ def preds_from_result(result):
         labels = instances.labels
     return bboxes, labels, scores
 
+@torch.no_grad
+def get_sahi_result(frame, model, test_pipeline, args):
+    height, width = frame.shape[:2]
+    sliced_image_object = slice_image(
+        frame,
+        slice_height=args["SahiPatchSize"],
+        slice_width=args["SahiPatchSize"],
+        auto_slice_resolution=False,
+        overlap_height_ratio=args["SahiPatchOverlapRatio"],
+        overlap_width_ratio=args["SahiPatchOverlapRatio"],
+    )
+
+    slice_results = []
+    start = 0
+    while True:
+        # prepare batch slices
+        end = min(start + args["SahiPatchBatchSize"], len(sliced_image_object))
+        images = []
+        for sliced_image in sliced_image_object.images[start:end]:
+            images.append(sliced_image)
+
+        # forward the model
+        slice_results.extend(inference_detector(model, images, test_pipeline=test_pipeline))
+
+        if end >= len(sliced_image_object):
+            break
+        start += args.batch_size
+
+    # shifted_instances = shift_predictions(
+    #     slice_results,
+    #     sliced_image_object.starting_pixels,
+    #     src_image_shape=(height, width))
+    # merged_result = slice_results[0].clone()
+    # merged_result.pred_instances = shifted_instances
+
+    image_result = merge_results_by_nms(
+    slice_results,
+    sliced_image_object.starting_pixels,
+    src_image_shape=(height, width),
+    nms_cfg={
+        'type': 'nms',
+        'iou_threshold': args["SahiNMSTh"]
+    })
+
+    result = image_result.cpu()
+    return result
+
+@torch.no_grad
+def get_full_frame_result(frame, model, test_pipeline, args):
+    result = inference_detector(model, frame, test_pipeline=test_pipeline)
+    result = result.cpu()
+    return result
 
 if __name__ == "__main__":
     args = json.loads(sys.argv[-1])
@@ -43,9 +96,11 @@ if __name__ == "__main__":
     fn=0
     with open (text_result_path,"w") as f: 
         for frame in tqdm(video_reader):
-            with torch.no_grad():
-                result = inference_detector(model, frame, test_pipeline=test_pipeline)
-                result = result.cpu()
+            if args["SAHI"]:
+                result = get_sahi_result(frame, model, test_pipeline, args)
+            else:
+                result = get_full_frame_result(frame, model, test_pipeline, args)
+
             bboxes, labels, scores = preds_from_result(result)
             for box, label, score in zip(bboxes,labels, scores):
                     r=box
