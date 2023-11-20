@@ -25,38 +25,48 @@ splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
 sources      = get_sub_dirs(segments, source_part)
 
-# Train, Valid and GT specifications of Dataset
-GT_det    = "GTHW7"
-GT_tra    = "GTHW7"
-train_sp  = "train"
-valid_sp  = "valid"
-batch_size = 2
-num_workers = 4
-epochs = 0
-val_interval = 1
-
 # choose the segmenter
 # options: ["InternImage"]
 segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN"]
-detectors = ["CenterNet"]
-det_v = "HW7FT"
+detectors = []
+
+# choose grandtruth detector
+# Options are the same as detector
+GT_det    = ""
+
+# choose detector version (checkpoints, ...)
+# options: ["", "HW7FT"]
+det_v = ""
 
 # choose the tracker
-# options: ["GTHW7", sort", "ByteTrack",  "CenterTrack", "DeepSort", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
-trackers = ["GTHW7"] 
+# options: ["GTHW7", "sort", "ByteTrack",  "CenterTrack", "DeepSort", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
+trackers = [] 
+
+# choose grandtruth tracker
+# options are the same as trackers
+GT_tra    = ""
 
 # choose the clustering algorithm
 # options: ["SpectralFull", "DBSCAN", "SpectralKNN"]
-clusters = ["SpectralFull"]
+clusters = []
 
 # choose the metric for clustering and classification pqrt
 # options: ["groi", "roi", "knn", "cos", "tcos", "cmm", "hausdorff", "kde",,"ccmm", "tccmm", "ptcos", "loskde", "hmmg"]
-clt_metrics = ["tcos", "cmm"]
-cnt_metrics = ["kde"]
+clt_metrics = []
+cnt_metrics = []
 
+# setup training hyperparameters
+# train split (train_sp) and valid split(valid_sp) should be selsected
+# from "splits"
+train_sp     = "train"
+valid_sp     = "valid"
+batch_size   = None
+num_workers  = None
+epochs       = None
+val_interval = None
 
 for src, cached_cnt_pth in zip(sources, sources):
     print(f"running on src:{src}")
@@ -112,7 +122,7 @@ for src, cached_cnt_pth in zip(sources, sources):
     # for det in detectors:
     #     print(f"detecting ----> src:{src} det:{det}")
     #     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL --DetPostProc --DetTh=0.5 --VisDetect")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker=NULL --DetPostProc --DetTh=0.5")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker=NULL --DetPostProc --DetTh=0.5 --classes_to_keep 0 1 2 3 5 7")
 
     ########################################################
     # 3.5.5 convert detections to coco format
@@ -148,7 +158,7 @@ for src, cached_cnt_pth in zip(sources, sources):
     #     for tra in trackers:
     #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
     #         # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track --VisTrack --Homography --Meter --VisTrajectories --VisTrackTop --BackprojectSource=tracks --TopView=[GoogleMap/OrthoPhoto]")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --Track")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra} --Track")
 
     ########################################################
     # 5. run the track post processing
@@ -267,7 +277,7 @@ for split in splits:
     # for det in detectors:
     #     for tra in trackers:
     #         print(f"evaluate tracking ---> src:{split} det:{det} tra:{tra} gt_det:{GT_det} gt_tra:{GT_tra}")
-    #         os.system(f"python3 main.py --MultiSeg --Dataset={split}  --Detector={det} --Tracker={tra} --TrackEval\
+    #         os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --DetectorVersion={det_v} --Tracker={tra} --TrackEval\
     #                    --GTDetector={GT_det} --GTTracker={GT_tra}")
 
 #_______________________MULTIPART___________________________#
