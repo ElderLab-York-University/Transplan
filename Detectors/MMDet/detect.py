@@ -31,6 +31,7 @@ def setup(args):
         os.system(f"conda run -n {env_name} --live-stream mim install mmcv>=2.0.0")
         os.chdir(rep_path)
         os.system(f"conda run -n {env_name} --live-stream pip install -v -e .")
+        os.system(f"conda run -n {env_name} --live-stream pip install sahi==0.11.15")
 
         # verify correct installation
         os.system(f"conda run -n {env_name} --live-stream mim download mmdet --config rtmdet_tiny_8xb32-300e_coco --dest .")
