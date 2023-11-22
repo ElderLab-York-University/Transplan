@@ -64,16 +64,18 @@ def prepare_df_for_motmetric(dfs, cam_ids):
 def compare_dfs(dfs_gts, pred_dfs, plot_path):
     z=0
     f_scores=[]
-    thresholds= np.asarray([ x/100.0 for x in range(5,105,10)])    
+    thresholds= np.asarray([ x/100.0 for x in range(50,105,5)])
     camera_aps=[]
-    classes=[ 0, 2, 5, 7]
+    classes=[ 0,1, 2,3, 5, 7]
     total_gt=np.zeros((len(thresholds)))
     total_tp=np.zeros((len(thresholds)))
     total_fp=np.zeros((len(thresholds)))
     for gtfull, predfull in zip(dfs_gts, pred_dfs):
+        class_counts=[]
         class_aps=[]
         for c in classes:
             gt= gtfull[gtfull['class']==c]
+
             pred= predfull[predfull['class']==c]
             z=z+1
             gt.insert(0, 'index', range(0, 0 + len(gt)))            
@@ -140,7 +142,7 @@ def compare_dfs(dfs_gts, pred_dfs, plot_path):
             fp_s= np.sum(FP, axis=0)
             
             tp_cs=np.cumsum(TP,axis=0)
-            fp_cs=np.cumsum(FP,axis=0)        
+            fp_cs=np.cumsum(FP,axis=0)     
             total_tp+=tp_s
             total_fp+=fp_s
             total_gt+=n_gt
@@ -150,8 +152,8 @@ def compare_dfs(dfs_gts, pred_dfs, plot_path):
             precision=np.divide(tp_cs,(tp_cs+fp_cs))
             aps=[]
             count=0
+            
             for rec, prec in zip(recall.T,precision.T):
-                # print(rec)
                 [ap, mpre, mrec, ii]=CalculateAveragePrecision(rec,prec)
                 aps.append(ap)
                 if(count==5 and c==2):
@@ -166,9 +168,15 @@ def compare_dfs(dfs_gts, pred_dfs, plot_path):
                     
                 count=count+1
             total_ap=np.mean(aps)
+            
             if not np.isnan(total_ap):
                 class_aps.append(total_ap)
-        camera_aps.append(np.mean(class_aps))
+                class_counts.append(len(gt))
+            else:
+                class_aps.append(0)
+                class_counts.append(len(gt))
+        print(class_aps)
+        camera_aps.append(np.average(class_aps, weights=class_counts))
         
         # print("Recalls for ", s_threshold, " camera number " , z, recall)
         # print("Precisions for ", s_threshold, " camera number " , z, precision)
@@ -194,6 +202,17 @@ def calculate_iou(pred,gt):
     res= inter_area/float(gt_area+pred_area - inter_area) if inter_left< inter_right and inter_top < inter_bottom else 0
     return res
 
+def remove_out_of_ROI(df, roi):
+    poly_path = mplPath.Path(np.array(roi))
+    mask = []
+    for i, row in tqdm(df.iterrows(), total=len(df), desc="rm oROI bbox"):
+        x1, y1, x2, y2 = row["x1"], row["y1"], row["x2"], row["y2"]
+        p = [(x2+x1)/2, y2]
+        if poly_path.contains_point(p):
+            mask.append(True)
+        else: mask.append(False)
+    m=list(~np.array(mask))
+    return df[mask], df[m]  
 
 def evaluate_detections(args):
     args_gt = get_args_gt(args)
@@ -207,7 +226,11 @@ def evaluate_detections(args):
     dfs_gt   =[]
     cam_ids  =[]
     print(args_gt.DetectionPkl)
-    df = pd.read_pickle(args_gt.DetectionPkl)
+        
+    if(args.MaskGT):
+        df=pd.read_pickle(args_gt.MaskedGT)
+    else:
+        df = pd.read_pickle(args_gt.DetectionPkl)
     vid = cv2.VideoCapture(args_gt.Video)
     frame_bottom = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
     frame_right = vid.get(cv2.CAP_PROP_FRAME_WIDTH) 
@@ -220,7 +243,9 @@ def evaluate_detections(args):
         
         # df=df[(((df['x2']-df['x1'])*(df['y2']- df['y1'])> args.BboxMin) & (df['x2']-df['x1'])*(df['y2']- df['y1'])> args.BboxMin)]
     print(len(df))
-    df=df[(df['x1']>frame_left) & (df['y1']>frame_top) & (df['x2'] < frame_right) & (df['y2'] < frame_bottom)]
+    # df=df[(df['x1']>frame_left) & (df['y1']>frame_top) & (df['x2'] < frame_right) & (df['y2'] < frame_bottom)]
+    # df=df[df['fn']==0]
+    print(df)
     print(len(df))               
     # print(df)
     # df2=pd.read_pickle(arg.TrackingPkl)
@@ -230,8 +255,13 @@ def evaluate_detections(args):
     # df=df[df['fn']<=2]
     dfs_gt.append(df)
             
-    print(args.DetectionPkl)
-    df = pd.read_pickle(args.DetectionPkl)
+    if(args.EvalRois):
+        df=pd.read_pickle(args.DetectionPklRois)
+        
+    else:
+        df = pd.read_pickle(args.DetectionPkl)
+    print(df)
+        
     g=(dfs_gt[0])
     max_fn=g.max(axis=0)['fn']
     min_fn=g.min(axis=0)['fn']
@@ -249,6 +279,9 @@ def evaluate_detections(args):
         a= args.BboxMax if args.BboxMax is not None else max((df['x2']-df['x1'])*(df['y2']-df['y1']))
         df=(df[(((df['x2']-df['x1']) * df['y2']-df['y1']) < a) & (((df['x2']-df['x1']) * df['y2']-df['y1']) > args.BboxMin) ])
         
+    df=df[(df['x1']>frame_left) & (df['y1']>frame_top) & (df['x2'] < frame_right) & (df['y2'] < frame_bottom)]        
+    # df=df[df['fn']==0]
+    print(df)        
     dfs_pred.append(df)
     
 
@@ -256,89 +289,6 @@ def evaluate_detections(args):
     pred_dfs= dfs_pred
     print(args.EvalDetPthPlot)
     result, total_tp, total_fp, total_gt= compare_dfs(dfs_gt, pred_dfs,args.EvalDetPthPlot)
-    # print(result)
-    # f_score, _=compare_dfs_fscore(gt_dfs, pred_dfs)
-    # print(f_score)
-    # input('yoo?')
-    # print("Camera ID                AP")
-    # for i,res in enumerate(result):
-    #     print(str(cam_ids[i]) + ": " +str(res) )
-    # print("Total TP :" , total_tp)
-    # print("Total_FP :", total_fp)
-        
-    # print("Average AP: " + str(np.mean(result)))
-    # myarray_reshaped = result.reshape(result.shape[0], -1)
-    # with open(args.EvalDetPth2, "w") as f:
-    #     np.savetxt(f, myarray_reshaped)
-    #     f.write(str(ap))
-
-    # fig, ax = plt.subplots()
-    # ax.plot(result[:,0], result[:,1], color='purple')
-
-    # # add axis labels to plot
-    # ax.set_title('Precision-Recall Curve')
-    # ax.set_ylabel('Precision')
-    # ax.set_xlabel('Recall')
-    # fig.savefig(args.EvalDetPthPlot)
-
-        # f.write("Camera ID                AP \n")
-        # for i,res in enumerate(result):
-        #     f.write(str(cam_ids[i]) + ": " +str(res)  +'\n')
-        # f.write("Average AP: " + str(np.mean(result))+ '\n')
-        # f.write("Total TP :" + str(total_tp)+'\n')
-        # f.write("Total_FP :"+ str(total_fp) + '\n')
-        # f.write("Total GT :" + str(total_gt  ))
-    
-    # prepare dfs for mot metrics(transfer from local format to mot format)
-    # gt_dfs = prepare_df_for_motmetric(dfs_gt, cam_ids)
-    # pred_dfs = prepare_df_for_motmetric(dfs_pred, cam_ids)
-
-    # accs, names = compare_dataframes(gt_dfs, pred_dfs)
-    # mh = mm.metrics.create()
-    # summary = mh.compute_many(accs, names=names, metrics=mm.metrics.motchallenge_metrics, generate_overall=True)
-
-    # strsummary = mm.io.render_summary(
-    #     summary,
-    #     formatters=mh.formatters,
-    #     namemap=mm.io.motchallenge_metric_names
-    # )
-    # print(strsummary)
-
-
-    # dfs_pred =[]
-    # dfs_gt   =[]
-    # cam_ids  =[]
-    # for arg in args_mc:
-    #     df = pd.read_pickle(arg.TrackingPkl)
-    #     dfs_pred.append(df)
-    #     cam_ids.append(arg.CamID)
-    
-    # for arg in args_mc_gt:
-    #     df = pd.read_pickle(arg.TrackingPkl)
-    #     dfs_gt.append(df)
-
-    # df_combined_pred = combine_dfs(dfs_pred, dfs_gt)
-    # df_combined_gt   = combine_dfs(dfs_gt, dfs_gt)
-    # gt_dfs = prepare_df_for_motmetric([df_combined_gt], ["MC"])
-    # pred_dfs = prepare_df_for_motmetric([df_combined_pred], ["MC"])
-
-    # accs, names = compare_dataframes(gt_dfs, pred_dfs)
-    # mh = mm.metrics.create()
-    # summary = mh.compute_many(accs, names=names, metrics=mm.metrics.motchallenge_metrics)
-
-    # strsummary_mc = mm.io.render_summary(
-    #     summary,
-    #     formatters=mh.formatters,
-    #     namemap=mm.io.motchallenge_metric_names
-    # )
-    # print(strsummary_mc)
-
-
-
-    # with open(args.EvalPth, "w") as f:
-        # f.write(strsummary)
-        # f.write("\n")
-        # f.write(strsummary_mc)    
     with open(args.EvalDetPth, "w") as f:
         f.write("Camera ID                AP \n")
         f.write(str("Camera") + ": " +str(result)  +'\n')
@@ -346,6 +296,71 @@ def evaluate_detections(args):
         f.write("Total TP :" + str(total_tp)+'\n')
         f.write("Total_FP :"+ str(total_fp) + '\n')
         f.write("Total GT :" + str(total_gt  ))    
+    if(args.EvalRois):
+        print(args.EvalRoiPth)
+        with open(args.EvalRoiPth, "w") as f:
+            f.write("Camera ID                AP \n")
+            f.write(str("Camera") + ": " +str(result)  +'\n')
+            f.write("Average AP: " + str(np.mean(result))+ '\n')
+            f.write("Total TP :" + str(total_tp)+'\n')
+            f.write("Total_FP :"+ str(total_fp) + '\n')
+            f.write("Total GT :" + str(total_gt  ))    
+    if(args.EvalIntersection):
+        dfs_gt_intersection=[]
+        pred_dfs_intersections=[]
+        dfs_gt_not_intersection=[]
+        pred_dfs_not_intersections=[]
+        for gt in dfs_gt:
+            gt1,gt2 =remove_out_of_ROI(gt, args.MetaData["roi"])
+            dfs_gt_intersection.append(gt1)
+            dfs_gt_not_intersection.append(gt2)
+        for pred in dfs_pred:
+            pred1,pred2=remove_out_of_ROI(pred, args.MetaData["roi"])
+            pred_dfs_intersections.append(pred1)
+            pred_dfs_not_intersections.append(pred2)
+        result, total_tp, total_fp, total_gt= compare_dfs(dfs_gt_intersection, pred_dfs_intersections,args.EvalDetPthPlot)
+        with open(args.EvalDetIntPth1, "w+") as f:
+            print(args.EvalDetIntPth1)            
+            f.write("Camera ID                AP \n")
+            f.write(str("Camera") + ": " +str(result)  +'\n')
+            f.write("Average AP: " + str(np.mean(result))+ '\n')
+            f.write("Total TP :" + str(total_tp)+'\n')
+            f.write("Total_FP :"+ str(total_fp) + '\n')
+            f.write("Total GT :" + str(total_gt  ))
+        if(args.EvalRois):
+            print(args.EvalDetRoiIntPth1)
+            with open(args.EvalDetRoiIntPth1, "w") as f:
+                f.write("Camera ID                AP \n")
+                f.write(str("Camera") + ": " +str(result)  +'\n')
+                f.write("Average AP: " + str(np.mean(result))+ '\n')
+                f.write("Total TP :" + str(total_tp)+'\n')
+                f.write("Total_FP :"+ str(total_fp) + '\n')
+                f.write("Total GT :" + str(total_gt  ))    
+                
+        result, total_tp, total_fp, total_gt= compare_dfs(dfs_gt_not_intersection, pred_dfs_not_intersections,args.EvalDetPthPlot)
+        with open(args.EvalDetIntPth2, "w+") as f:
+            print(args.EvalDetIntPth2)
+            f.write("Camera ID                AP \n")
+            f.write(str("Camera") + ": " +str(result)  +'\n')
+            f.write("Average AP: " + str(np.mean(result))+ '\n')
+            f.write("Total TP :" + str(total_tp)+'\n')
+            f.write("Total_FP :"+ str(total_fp) + '\n')
+            f.write("Total GT :" + str(total_gt  ))
+        if(args.EvalRois):
+            print(args.EvalDetRoiIntPth2)
+            with open(args.EvalDetRoiIntPth2, "w") as f:
+                f.write("Camera ID                AP \n")
+                f.write(str("Camera") + ": " +str(result)  +'\n')
+                f.write("Average AP: " + str(np.mean(result))+ '\n')
+                f.write("Total TP :" + str(total_tp)+'\n')
+                f.write("Total_FP :"+ str(total_fp) + '\n')
+                f.write("Total GT :" + str(total_gt  ))    
+                
+
+        
+
+
+        
 def evaluate(args):
     # get args_mc_gt 
     args_gt = get_args_gt(args)

@@ -32,6 +32,10 @@ trackers["gsort"] = Trackers.gsort.track
 trackers["OCSort"] = Trackers.OCSort.track
 trackers["GByteTrack"] = Trackers.GByteTrack.track
 trackers["GDeepSort"] = Trackers.GDeepSort.track
+trackers["PyGlobalFlow1"] = Trackers.GDeepSort.track
+trackers["GT"]=Trackers.GDeepSort.track
+trackers["PyGlobalFlow"] = Trackers.GDeepSort.track
+
 # trackers["BOTSort"] = Trackers.BOTSort.track
 trackers["StrongSort"] = Trackers.StrongSort.track
 # --------------------------

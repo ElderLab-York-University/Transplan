@@ -262,6 +262,8 @@ if __name__ == "__main__":
     parser.add_argument("--ClusteringAlgo", help="name of the clustering algorithm to be performed",type=str)
     parser.add_argument("--DetPostProc", help="if to perform detection post processings", action="store_true")
     parser.add_argument("--DetTh", help="the threshold for detection post processing", type=float)
+    parser.add_argument("--NmsTh", help="the threshold for overlap nms post processing", type=float, default=0.5)
+    
     parser.add_argument('--classes_to_keep', nargs='+', type=float, default=[])
     parser.add_argument("--DetMask", help="if to remove bboxes out of ROI", action="store_true")
     parser.add_argument("--TrackPostProc", help="if to perform tracking post processings", action="store_true")
@@ -300,8 +302,12 @@ if __name__ == "__main__":
     parser.add_argument("--BboxMin", help="Min Size for Bboxes", type=int)
     parser.add_argument("--BboxMax", help="Max Size for Bboxes", type=int)
     parser.add_argument("--MaskDetections", help="Mask Detections if availible", action="store_true")
-
+    parser.add_argument("--NumRois" ,help="Set the number of ROIs", type=str, default="")
     parser.add_argument("--FindOptimalKDEBW", help="find the optimal KDE band width", action='store_true')
+    parser.add_argument("--EvalRois", help="If to evaluate results with ROIs", action='store_true')
+    parser.add_argument("--SaveRoiResults", help="If to save ROI results", action='store_true')
+    parser.add_argument("--UseRoiResults", help="If to use ROI results", action='store_true')
+    parser.add_argument("--EvalIntersection", help="If to evaluate within vs outside intersection results", action='store_true')
 
     parser.add_argument("--K", help="K in KNN classifier", type=int, default=1)
 

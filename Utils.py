@@ -120,7 +120,38 @@ def get_detection_pkl_back_up(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot + "backup" + Puncuations.Dot +SubTaskExt.Pkl)
+def get_detection_roi_pkl_back_up(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    if args.UseRois and args.NumRois is not None:
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot + "backup" + Puncuations.Dot+ args.NumRois+ Puncuations.Dot +SubTaskExt.Pkl)
+    else:
+        print('eror here, please only use save flag for when rois are used')
+        input()
 
+def get_detection_roi_result_pkl(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    if args.UseRois and args.NumRois is not None:
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot + args.NumRois+ Puncuations.Dot +SubTaskExt.Pkl)
+    else:
+        print('eror here, please only use save flag for when rois are used')
+        input()
+
+def get_evalrois_save_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.MCDetectDis + Puncuations.Dot + args.Detector+ Puncuations.Dot+ args.NumRois+ Puncuations.Dot+"txt")
+
+def get_evalrois_int_save_path1(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.MCDetectDis + Puncuations.Dot + args.Detector+ Puncuations.Dot+ args.NumRois+ Puncuations.Dot+"Intersection"+Puncuations.Dot+"txt")
+def get_evalrois_int_save_path2(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.MCDetectDis + Puncuations.Dot + args.Detector+ Puncuations.Dot+ args.NumRois+ Puncuations.Dot+"NotIntersection"+Puncuations.Dot+"txt")
+    
 def get_vis_detection_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -162,7 +193,8 @@ def get_detection_mask_path(args):
 def get_roi_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset,file_name + Puncuations.Dot + "roi.npz")
+    roi_num=args.NumRois 
+    return os.path.join(args.Dataset,file_name + Puncuations.Dot+ "roi" + Puncuations.Dot+ roi_num+Puncuations.Dot+ "npz")
 def get_vis_inference_roi_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -302,6 +334,14 @@ def get_evalDet_plot_save_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.MCDetectDis + Puncuations.Dot + args.Detector+ Puncuations.Dot+"png")
+def get_evalInt_save_path1(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.MCDetectDis + Puncuations.Dot + args.Detector+ Puncuations.Dot+"Intersection"+ Puncuations.Dot+"txt")
+def get_evalInt_save_path2(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.MCDetectDis + Puncuations.Dot + args.Detector+ Puncuations.Dot+"NotIntersection"+ Puncuations.Dot+"txt")
 
 def add_detection_pathes_to_args(args):
     d_path = get_detection_path_from_args(args)
@@ -314,10 +354,27 @@ def add_detection_pathes_to_args(args):
     args.DetectionPklBackUp = d_pkl_bu
     return args
 
+
+def add_roi_result_path_to_args(args):
+    args.DetectionPklRois= get_detection_roi_result_pkl(args)
+    return args
+
+
+def add_roi_backup_path_to_args(args):
+    args.DetectionPklBackupRois= get_detection_roi_pkl_back_up(args)
+    return args
 def add_vis_detection_path_to_args(args):
     vis_detection_path = get_vis_detection_path_from_args(args)
     args.VisDetectionPth = vis_detection_path
     return args
+
+def add_evalroi_save_path(args):
+    args.EvalRoiPth = get_evalrois_save_path(args)
+    if(args.EvalIntersection):
+        args.EvalDetRoiIntPth1=get_evalrois_int_save_path1(args)
+        args.EvalDetRoiIntPth2=get_evalrois_int_save_path2(args)
+    return args 
+
 
 def add_evalDet_save_path(args):
     args.EvalDetPth = get_evalDet_save_path(args)
@@ -326,6 +383,15 @@ def add_evalDet_save_path(args):
     
     
     return args 
+
+
+def add_evalInt_save_path(args):
+    args.EvalDetIntPth1 = get_evalInt_save_path1(args)
+    args.EvalDetIntPth2 = get_evalInt_save_path2(args)
+    
+    
+    return args 
+
 
 def videos_from_dataset(args):
     video_files = []
@@ -390,8 +456,8 @@ def get_eval_save_path(args):
 
 def get_args_gt(args):
     args_gt = copy.deepcopy(args)
-    args_gt.Detector = "GT"
-    args_gt.Tracker = "GT"
+    args_gt.Detector = "GTHW7"
+    args_gt.Tracker = "GTHW7"
     args_gt.Video=None
     args_gt=complete_args(args_gt)
     # args_gt , arg_mc_gt = complete_args_mc(args_gt, args_mc_gt)
@@ -615,7 +681,10 @@ def complete_args(args):
     if (not args.Detector is None) or args.DetPostProc:
         args = add_detection_pathes_to_args(args)
         args = add_vis_detection_path_to_args(args)
-
+    
+    if(args.SaveRoiResults):
+        args=add_roi_result_path_to_args(args)
+        args=add_roi_backup_path_to_args(args)
     if not args.Tracker is None:
         args = add_tracking_path_to_args(args)
         args = add_vis_tracking_path_to_args(args)
@@ -630,6 +699,10 @@ def complete_args(args):
         args= add_visdetection_gt_path(args)
     if args.EvalDet:
         args= add_evalDet_save_path(args)
+    if args.EvalIntersection:
+        args=add_evalInt_save_path(args)
+    if args.EvalRois:
+        args=add_evalroi_save_path(args)
     if args.MaskGT:
         args= add_gt_mask_path_to_args(args)
     if args.UseRois:

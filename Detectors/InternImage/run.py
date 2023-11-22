@@ -56,68 +56,69 @@ if __name__ == "__main__":
             rois.append((roi.astype(int)))
     with open (text_result_path,"w") as f: 
         for frame in tqdm(video):
-            if "DetectionMask" in args and args["MaskDetections"] is not False:
-                container=np.load(args["DetectionMask"])
-                data = [container[key] for key in container]
-                for m in data:
-                    m=(m!=0).astype(np.uint8)
-                    if(m.shape!=(video.height,video.width)):
+            if i%6==0:
+                if "DetectionMask" in args and args["MaskDetections"] is not False:
+                    container=np.load(args["DetectionMask"])
+                    data = [container[key] for key in container]
+                    for m in data:
+                        m=(m!=0).astype(np.uint8)
                         
-                        # print(m.shape, (video.height, video.width))
-                        if (m.shape[0] == video.height-1 and m.shape[1] == video.width-1):
-                            m=m[0:-1, 0:-1]
-                        elif(m.shape[0]== video.height and m.shape[1]==video.width-1):
-                            m=m[0:, 0:-1]      
-                        elif(m.shape[0]==video.height-1 and m.shape[1] ==video.width):
-                            m=m[0:-1, 0:]
-                        elif(m.shape[0]== video.height and m.shape[1]==video.width+1):
-                            m=m[0:, 0:-1]      
-                        elif(m.shape[0]== video.height+1 and m.shape[1]==video.width):
-                            m=m[0:-1, 0:]
-                        elif(m.shape[0]==video.height+1 and m.shape[1]==video.width+1):
-                            m=m[0:-1, 0:-1]                            
-                        else:
-                            print(m.shape, (video.height, video.width) )
-                            # print('yo')
-                            # input()
-                        # print(m.shape, (video.height, video.width) )
+                        if(m.shape!=(video.height,video.width)):
+                            
+                            # print(m.shape, (video.height, video.width))
+                            if (m.shape[0] == video.height-1 and m.shape[1] == video.width-1):
+                                m=m[0:-1, 0:-1]
+                            elif(m.shape[0]== video.height and m.shape[1]==video.width-1):
+                                m=m[0:, 0:-1]      
+                            elif(m.shape[0]==video.height-1 and m.shape[1] ==video.width):
+                                m=m[0:-1, 0:]
+                            elif(m.shape[0]== video.height and m.shape[1]==video.width+1):
+                                m=m[0:, 0:-1]      
+                            elif(m.shape[0]== video.height+1 and m.shape[1]==video.width):
+                                m=m[0:-1, 0:]
+                            elif(m.shape[0]==video.height+1 and m.shape[1]==video.width+1):
+                                m=m[0:-1, 0:-1]                            
+                            else:
+                                print(m.shape, (video.height, video.width) )
+                                # print('yo')
+                                # input()
+                            # print(m.shape, (video.height, video.width) )
 
-                        # print(m.shape)
-                    if(m.shape ==(video.height, video.width)):
-                        frame=cv2.bitwise_and(frame,frame, mask=m)
-                frame=frame.astype(np.uint8)
-            if "Rois" in args and args["UseRois"] is not False:
-                
-                for roi in rois:
-                    # mask = np.zeros((np.shape(frame)[0], np.shape(frame)[1]), dtype=np.uint8)
-                    points = roi
-                    points[0]= max(0, points[0])
-                    points[1]= max(0,points[1])
-                    points[2]= min(video.width, points[2])
-                    points[3]= min(video.height, points[3])
+                            # print(m.shape)
+                        if(m.shape ==(video.height, video.width)):
+                            frame=cv2.bitwise_and(frame,frame, mask=m)
+                    frame=frame.astype(np.uint8)
+                if "Rois" in args and args["UseRois"] is not False:
                     
-                    # cv2.fillPoly(mask, np.int32(points), (255))
-                    # # print(roi[0][0])
-                    # rect = cv2.boundingRect(points) # returns (x,y,w,h) of the rect
-                    # res = cv2.bitwise_and(frame,frame,mask = mask)
-                    fr = frame[points[1]: points[3], points[0]: points[2]]
+                    for roi in rois:
+                        # mask = np.zeros((np.shape(frame)[0], np.shape(frame)[1]), dtype=np.uint8)
+                        points = roi
+                        points[0]= max(0, points[0])
+                        points[1]= max(0,points[1])
+                        points[2]= min(video.width, points[2])
+                        points[3]= min(video.height, points[3])
+                        
+                        # cv2.fillPoly(mask, np.int32(points), (255))
+                        # # print(roi[0][0])
+                        # rect = cv2.boundingRect(points) # returns (x,y,w,h) of the rect
+                        # res = cv2.bitwise_and(frame,frame,mask = mask)
+                        fr = frame[points[1]: points[3], points[0]: points[2]]
+                        with torch.no_grad():
+                            result = inference_detector(model, fr)
+                        res= getbboxes(result)
+                        bboxes=res[0]
+                        labels=res[1]
+                        for box,label in zip(bboxes,labels):
+                            r=box
+                            f.write(str(i) + " " + str(label) + " " + str(r[4]) + " " + str(r[0] +points[0])+ " " + str(r[1] +points[1]) + " " + str(r[2] +points[0])+ " " + str(r[3] +points[1]) +'\n')
+                else:
                     with torch.no_grad():
-                        result = inference_detector(model, fr)
+                        result = inference_detector(model, frame)
                     res= getbboxes(result)
                     bboxes=res[0]
                     labels=res[1]
                     for box,label in zip(bboxes,labels):
                         r=box
-                        f.write(str(i) + " " + str(label) + " " + str(r[4]) + " " + str(r[0] +points[0])+ " " + str(r[1] +points[1]) + " " + str(r[2] +points[0])+ " " + str(r[3] +points[1]) +'\n')
-                i=i+1
-            else:
-                with torch.no_grad():
-                    result = inference_detector(model, frame)
-                res= getbboxes(result)
-                bboxes=res[0]
-                labels=res[1]
-                for box,label in zip(bboxes,labels):
-                    r=box
-                    f.write(str(i) + " " + str(label) + " " + str(r[4]) + " " + str(r[0])+ " " + str(r[1]) + " " + str(r[2])+ " " + str(r[3]) +'\n')
-                i=i+1
+                        f.write(str(i) + " " + str(label) + " " + str(r[4]) + " " + str(r[0])+ " " + str(r[1]) + " " + str(r[2])+ " " + str(r[3]) +'\n')
+            i=i+1
             

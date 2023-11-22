@@ -58,8 +58,12 @@ def reproject(args, from_back_up = False):
         df = pd.read_pickle(args.TrackingPklBackUp)
     else:
         df = pd.read_pickle(args.TrackingPkl)
+    if(args.ForNFrames is not None):
+        df=df[df['fn']<args.ForNFrames]
     
-    M = np.load(homography_path, allow_pickle=True)[0]
+    # M = np.load(homography_path, allow_pickle=True)[0]
+    M = np.load(homography_path, allow_pickle=True)
+    
     with open(out_path, 'w') as out_file:
         for index, row in tqdm(df.iterrows(), total=len(df)):
             # fn, idd, x, y = track[0], track[1], (track[2] + track[4]/2), (track[3] + track[5])/2
@@ -82,6 +86,7 @@ def reproject(args, from_back_up = False):
 
 def store_to_pickle(args):
     df = reprojected_df(args)
+    
     df.to_pickle(args.ReprojectedPkl)   
 
 def reprojected_df(args):
@@ -135,9 +140,9 @@ def vishomographygui(args):
 def vis_reprojected_tracks(args):
     first_image_path = args.HomographyStreetView
     second_image_path = args.HomographyTopView
-    
     cam_df = pd.read_pickle(args.TrackingPkl)
     ground_df = pd.read_pickle(args.ReprojectedPkl)
+    
     save_path = args.PlotAllTrajPth
 
     # tracks_path = "./../Results/GX010069_tracking_sort.txt"
@@ -150,9 +155,11 @@ def vis_reprojected_tracks(args):
     img2 = cv.imread(second_image_path)
     rows1, cols1, dim1 = img1.shape
     rows2, cols2, dim2 = img2.shape
-
+    if(args.ForNFrames is not None):
+        cam_df=cam_df[cam_df['fn']<args.ForNFrames]
     alpha=0.6
-    M = np.load(args.HomographyNPY, allow_pickle=True)[0]
+    M = np.load(args.HomographyNPY, allow_pickle=True)    
+
     img12 = cv.warpPerspective(img1, M, (cols2, rows2))
     img2 = cv.addWeighted(img2, alpha, img12, 1 - alpha, 0)
 
@@ -179,8 +186,9 @@ def vis_reprojected_tracks(args):
             img2 = cv.circle(img2, (x,y), radius=1, color=(int(c/len(ground_df_id)*255), 70, int(255 - c/len(ground_df_id)*255)), thickness=1)
             c+=1
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+    fig, (ax1) = plt.subplots(1, figsize=(10, 5))
     ax1.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
-    ax2.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
+    # ax2.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
+    print(save_path)
     plt.savefig(save_path)
     return SucLog("Plotting all trajectories execuded")

@@ -20,9 +20,11 @@ detectors["detectron2"]  = Detectors.detectron2.detect
 detectors["OpenMM"]      = Detectors.OpenMM.detect
 detectors["YOLOv5"]      = Detectors.YOLOv5.detect
 detectors["YOLOv8"]      = Detectors.YOLOv8.detect
+detectors["YoloX"]      = Detectors.YOLOv8.detect
+
 detectors["DDETR"]       = Detectors.DDETR.detect
 detectors["InternImage"] = Detectors.InternImage.detect
-detectors["GTH7"] = Detectors.InternImage.detect
+detectors["GTHW7"] = Detectors.InternImage.detect
 
 def detect(args):
     # check if detector names is valid
@@ -98,11 +100,15 @@ def get_near_patch_boxes(args,boxes, intersecting_rectangles):
 def store_df_pickle_backup(args):
     df = detectors[args.Detector].df(args)
     df.to_pickle(args.DetectionPklBackUp)
+    if args.SaveRoiResults:
+        df.to_pickle(args.DetectionPklBackupRois)
 
 def store_df_pickle(args):
     df = detectors[args.Detector].df(args)
     df.to_pickle(args.DetectionPkl)
-
+    if args.SaveRoiResults:
+        print(args.DetectionPklRois)        
+        df.to_pickle(args.DetectionPklRois)
 def remove_out_of_ROI(df, roi):
     poly_path = mplPath.Path(np.array(roi))
     mask = []
@@ -116,8 +122,15 @@ def remove_out_of_ROI(df, roi):
 
 def visGTDet(args):
     args_gt=get_args_gt(args)
-    detection_df = pd.read_pickle(args.DetectionPkl)
-    gt_df= pd.read_pickle(args_gt.DetectionPkl)
+    if(args.EvalRois):
+        detection_df=pd.read_pickle(args.DetectionPklRois)
+        print(args.DetectionPklRois)
+    else:
+        detection_df = pd.read_pickle(args.DetectionPkl)
+    if(args.MaskGT):
+        gt_df= pd.read_pickle(args_gt.MaskedGT)
+    else:
+        gt_df= pd.read_pickle(args_gt.DetectionPkl)        
     gt_frames=np.unique(gt_df['fn'])
     # open the original video and process it
     cap = cv2.VideoCapture(args.Video)
@@ -140,29 +153,126 @@ def visGTDet(args):
     
     if not args.ForNFrames is None:
         frames = args.ForNFrames
-    for frame_num in tqdm(range(frames)):
-        if (not cap.isOpened()):
-            return FailLog("Error reading the video")
-        ret, frame = cap.read()
-        if not ret: continue
-        for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
-            if(frame_num in gt_frames):
-                frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
-        for i, row in gt_df[gt_df["fn"]==frame_num].iterrows():
-            frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2, c=(0,255,0))
+    
+    # for frame_num in tqdm(range(frames)):
+    #     if (not cap.isOpened()):
+    #         return FailLog("Error reading the video")
+    #     ret, frame = cap.read()
+    #     if not ret: continue
+    #     for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
+    #         if(frame_num in gt_frames):
+    #             frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
+    #     for i, row in gt_df[gt_df["fn"]==frame_num].iterrows():
+    #         frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2, c=(0,255,0))
             
-        out_cap.write(frame)
+    #     out_cap.write(frame)
 
     cap.release()
     out_cap.release()
+    out_cap = cv2.VideoWriter(args.VisDetectionGTPth,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))    
+    cap = cv2.VideoCapture(args.Video)
+    ret, frame = cap.read()
+    f1=np.array(frame)
+    f2=np.array(frame)
+    f3=np.array(frame)
+    f4=np.array(frame)
+    f5=np.array(frame)
+    nondetarr=[]
+    
+    if (cap.isOpened()== False): 
+        return FailLog("Error opening video stream or file")
+    cv2.imwrite("Reference.png", frame)
+    t=0
+    for frame_num in tqdm(range(frames)):
+        dont_use=[]    
+        not_used=[]    
+        if (not cap.isOpened()):
+            return FailLog("Error reading the video")
+        if not ret: continue
+        if frame_num %6 ==0:
+            for i, pred in detection_df[detection_df["fn"]==frame_num].iterrows():
+                iou_idx=-1
+                iou_max=0
+                for d, gt in gt_df[gt_df["fn"]==frame_num].iterrows():
+                    inter_left=max(gt.x1, pred.x1)
+                    inter_right=min(gt.x2, pred.x2)
+                    inter_top= max(gt.y1, pred.y1)
+                    inter_bottom= min(gt.y2, pred.y2)    
+                    inter_area= (inter_right-inter_left +1) *(inter_bottom- inter_top +1) 
+                    gt_area= (gt.x2-gt.x1 +1) * (gt.y2- gt.y1 +1)
+                    pred_area=(pred.x2-pred.x1 +1) * (pred.y2-pred.y1 +1)
+                    iou= inter_area/float(gt_area+pred_area - inter_area) if inter_left< inter_right and inter_top < inter_bottom else 0
+                    if(iou>iou_max):
+                        iou_idx=d
+                        iou_max=iou
+                if(iou_max>=0.5):
+                    dont_use.append(iou_idx)
+                else:
+                    t=t+1
+                    not_used.append(i)
+            
+        
+                
+            # gts=gt_df[gt_df["fn"]==frame_num]
+            # print(dets)
+            # print(gts)
+            # for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
+            #     if(args.Detector=="GTHW7"):
+            #         frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2, c=(0,255,0))
+            #     else:
+            #         frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
+        for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
+            f5=draw_box_on_image(f5, row.x1, row.y1, row.x2, row.y2, c=(0,0,255))
+        if frame_num%6 ==0:
+            for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
+                if i in not_used:
+                    frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2, c=(0,0,255))
+                    f4=draw_box_on_image(f4, row.x1, row.y1, row.x2, row.y2, c=(0,0,255))
+        for i, row in gt_df[gt_df["fn"]==frame_num].iterrows():
+            if i not in dont_use:
+                frame=draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2, c=(0,255,0))
+                f1 = draw_box_on_image(f1, row.x1, row.y1, row.x2, row.y2, c=(0,255,0))
+                f3 = draw_box_on_image(f3, row.x1, row.y1, row.x2, row.y2, c=(0,255,0))
+                nondetarr.append([frame_num, row.x1, row.y1, row.x2, row.y2])
+            else:
+                frame=draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2, c=(255,0,0))   
+                f1 = draw_box_on_image(f1, row.x1, row.y1, row.x2, row.y2, c=(255,0,0))                             
+            f2 = draw_box_on_image(f2, row.x1, row.y1, row.x2, row.y2, c=(255,0,0))
+        for roi in rois:
+            q=roi
+            frame=draw_box_on_image(frame, q[0], q[1] , q[2] ,q[3], c=[255,255,255], thickness=2)     
+
+        out_cap.write(frame)
+        ret, frame = cap.read()
+    print(t)
+    for roi in rois:
+        q=roi        
+        f1=draw_box_on_image(f1, q[0], q[1] , q[2] ,q[3], c=[255,255,255], thickness=2)     
+        f2=draw_box_on_image(f2, q[0], q[1] , q[2] ,q[3], c=[255,255,255], thickness=2)     
+        f3=draw_box_on_image(f3, q[0], q[1] , q[2] ,q[3], c=[255,255,255], thickness=2)     
+        f4=draw_box_on_image(f4, q[0], q[1] , q[2] ,q[3], c=[255,255,255], thickness=2)     
+        f5=draw_box_on_image(f5, q[0], q[1] , q[2] ,q[3], c=[255,255,255], thickness=2)     
+               
+    cv2.imwrite("GTALL.png", f2)
+    cv2.imwrite("DETGTALL.png", f1)
+    cv2.imwrite("NONDETGTALL.png", f3) 
+    cv2.imwrite("FPALL.png", f4    )
+    cv2.imwrite("DETALL.png", f5   )
+    
+    nondetdf=pd.DataFrame(nondetarr,columns=['fn','x1','y1','x2','y2'])
+    nondetdf.to_pickle("./NonDetDfs/NonDetGT."+    args.Video.split("/")[-1].split(".")[0]+"." + args.NumRois+".pkl")
+    detection_df.to_pickle("./DetDf/DetDf."+    args.Video.split("/")[-1].split(".")[0]+"." + args.NumRois+".pkl")
+    out_cap.release()
+    cap.release()
     return SucLog("GT+Detection visualized on the video")
     
 def visdetect(args):
     if args.Detector is None:
         return FailLog("To interpret detections you should specify detector")
+    
     # parse detection df using detector module
     detection_df = pd.read_pickle(args.DetectionPkl)
-
+    print(len(detection_df))
     # open the original video and process it
     cap = cv2.VideoCapture(args.Video)
 
@@ -194,7 +304,10 @@ def visdetect(args):
         if args.VisInferenceRois:
             cv2.imwrite(args.VisInferenceRoi, frame)   
         for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
-            frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
+            if(args.Detector=="GTHW7"):
+                frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2, c=(0,255,0))
+            else:
+                frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
         out_cap.write(frame)
     cap.release()
     out_cap.release()
@@ -204,9 +317,15 @@ def visdetect(args):
         if (not cap.isOpened()):
             return FailLog("Error reading the video")
         if not ret: continue
-        for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
-            frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
-        out_cap.write(frame)
+        if frame_num %6 ==0:
+            for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
+                if(args.Detector=="GTHW7"):
+                    frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2, c=(0,255,0))
+                else:
+                    frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
+    for roi in rois:
+        q=roi        
+        frame=draw_box_on_image(frame, q[0], q[1] , q[2] ,q[3], c=[255,255,255], thickness=2)            
     cv2.imwrite("GTALL.png", frame)
     return SucLog("Detection visualized on the video")
         
@@ -277,19 +396,13 @@ def draw_box_on_image(img, x1, y1, x2, y2, c=(255, 0, 0), thickness=2):
 #         return dets[~idxs_inside].append(dets_nms)
 
 
-
-def get_overlapping_bboxes(df, args, intersecting_rectangles):
-
-        idxs_inside = get_near_patch_boxes(args,df , intersecting_rectangles)
-        dets_inside = df[idxs_inside]
-        
- 
-
+def nms(df,args):
+        dets_inside = df
         dets_nms = pd.DataFrame()
         for fn in np.unique(dets_inside['fn']):
 
             det = dets_inside[dets_inside['fn'] == fn]
-            det=det[0:4]
+            # det=det[0:4]
 
             conf, bboxes = det['score'].to_numpy(), det[['x1', 'y1', 'x2', 'y2']].to_numpy()
             boxes=bboxes[np.newaxis, :, :]            
@@ -328,7 +441,8 @@ def get_overlapping_bboxes(df, args, intersecting_rectangles):
             keep_indices = np.unique(keep_indices)
             
             remove_indices=np.unique(remove_indices)
-           
+            # remove_indices= np.append(remove_indices, np.where(conf<0.9))
+            # remove_indices=np.unique(remove_indices)
 
             low_confs_pairs = np.hstack((conf[non_overlapping_pairs[:, 0]].reshape(-1, 1), conf[non_overlapping_pairs[:, 1]].reshape(-1, 1)))
 
@@ -338,7 +452,7 @@ def get_overlapping_bboxes(df, args, intersecting_rectangles):
 
             keep_indices_low_confs = np.unique(non_overlapping_pairs)
 
-           
+        
 
             keep_indices_low_confs = keep_indices_low_confs[np.where(conf[keep_indices_low_confs] > 0.5)]  
 
@@ -346,6 +460,7 @@ def get_overlapping_bboxes(df, args, intersecting_rectangles):
 
             # dets_nms = pd.concat([dets_nms,det.iloc[keep_indices_low_confs]])
             
+            # dets_nms = pd.concat([dets_nms, det.iloc[keep_indices]])
             
 
             # overlapping_pairs = np.where((ious > 0.5) & (ious < 1.0))
@@ -369,9 +484,110 @@ def get_overlapping_bboxes(df, args, intersecting_rectangles):
 
         # return dets_inside[~idxs_inside].append(dets_nms, ignore_index=True)
 
- 
-        print('yo')
-        return pd.concat([df[~idxs_inside],dets_nms])    
+
+        print('regular nms done')
+        return dets_nms
+
+def get_overlapping_bboxes(df, args, intersecting_rectangles):
+
+        idxs_inside = get_near_patch_boxes(args,df , intersecting_rectangles)
+        if idxs_inside is not None:
+            dets_inside = df[idxs_inside]
+            
+    
+
+            dets_nms = pd.DataFrame()
+            for fn in np.unique(dets_inside['fn']):
+
+                det = dets_inside[dets_inside['fn'] == fn]
+                # det=det[0:4]
+
+                conf, bboxes = det['score'].to_numpy(), det[['x1', 'y1', 'x2', 'y2']].to_numpy()
+                boxes=bboxes[np.newaxis, :, :]            
+                x1 = np.maximum(boxes[:, :, 0][:, :, np.newaxis], boxes[:, :, 0])
+                y1 = np.maximum(boxes[:, :, 1][:, :, np.newaxis], boxes[:, :, 1])
+                x2 = np.minimum(boxes[:, :, 2][:, :, np.newaxis], boxes[:, :, 2])
+                y2 = np.minimum(boxes[:, :, 3][:, :, np.newaxis], boxes[:, :, 3])
+                
+                intersection_area = np.maximum(0, x2 - x1) * np.maximum(0, y2 - y1)
+                area_bbox1 = (boxes[:, :, 2] - boxes[:, :, 0]) * (boxes[:, :, 3] - boxes[:, :, 1])
+                area_bbox2 = (boxes[:, :, 2] - boxes[:, :, 0]) * (boxes[:, :, 3] - boxes[:, :, 1])
+                union_area = area_bbox1[:, :, np.newaxis] + area_bbox2 - intersection_area
+                
+                iou_scores = intersection_area / union_area
+
+                ious = np.triu(iou_scores[0])            
+
+                # Only keep those boxes who has certain IoU - Overlapping boxes in the intersecting regions.
+
+                overlapping_pairs = np.where((ious > args.NmsTh) & (ious < 1.0))
+
+                overlapping_pairs = np.hstack((overlapping_pairs[0].reshape(-1, 1), overlapping_pairs[1].reshape(-1, 1)))
+                
+                non_overlapping_pairs = np.where((ious <= args.NmsTh) & (ious > 0.0))
+
+                non_overlapping_pairs = np.hstack((non_overlapping_pairs[0].reshape(-1, 1), non_overlapping_pairs[1].reshape(-1, 1)))
+
+                conf_pairs = np.hstack((conf[overlapping_pairs[:, 0]].reshape(-1, 1), conf[overlapping_pairs[:, 1]].reshape(-1, 1)))
+
+                confs_sort_idxs = np.argsort(-conf_pairs, axis=1)
+
+                keep_indices = overlapping_pairs[np.arange(0, overlapping_pairs.shape[0]), confs_sort_idxs[:, 0]]
+                
+                remove_indices = overlapping_pairs[np.arange(0, overlapping_pairs.shape[0]), confs_sort_idxs[:, 1]]
+
+                keep_indices = np.unique(keep_indices)
+                
+                remove_indices=np.unique(remove_indices)
+                # remove_indices= np.append(remove_indices, np.where(conf<0.9))
+                # remove_indices=np.unique(remove_indices)
+
+                low_confs_pairs = np.hstack((conf[non_overlapping_pairs[:, 0]].reshape(-1, 1), conf[non_overlapping_pairs[:, 1]].reshape(-1, 1)))
+
+                low_confs_sort_idxs = np.argsort(-low_confs_pairs, axis=1)
+
+                keep_indices_low_confs =  non_overlapping_pairs[np.arange(0, non_overlapping_pairs.shape[0]), low_confs_sort_idxs[:, 0]]
+
+                keep_indices_low_confs = np.unique(non_overlapping_pairs)
+
+            
+
+                keep_indices_low_confs = keep_indices_low_confs[np.where(conf[keep_indices_low_confs] > 0.5)]  
+
+                dets_nms = pd.concat([dets_nms,det.iloc[np.delete(np.arange(len(det)), remove_indices)]])
+
+                # dets_nms = pd.concat([dets_nms,det.iloc[keep_indices_low_confs]])
+                
+                # dets_nms = pd.concat([dets_nms, det.iloc[keep_indices]])
+                
+
+                # overlapping_pairs = np.where((ious > 0.5) & (ious < 1.0))
+
+                # overlapping_pairs = np.hstack((overlapping_pairs[0].reshape(-1, 1), overlapping_pairs[1].reshape(-1, 1)))
+
+                # conf_pairs = np.hstack((conf[overlapping_pairs[:, 0]].reshape(-1, 1), conf[overlapping_pairs[:, 1]].reshape(-1, 1)))
+
+                # confs_sort_idxs = np.argsort(-conf_pairs, axis=1)
+
+                # keep_indices = overlapping_pairs[np.arange(0, overlapping_pairs.shape[0]), confs_sort_idxs[:, 0]]
+
+                # keep_indices = np.unique(keep_indices)
+
+                # dets_nms = pd.concat([dets_nms, det.iloc[keep_indices]])
+
+
+            # return dets_inside[~idxs_inside].append(dets_nms)
+
+
+
+            # return dets_inside[~idxs_inside].append(dets_nms, ignore_index=True)
+
+    
+            print('overlap nms done')
+            return pd.concat([df[~idxs_inside],dets_nms])
+        else:
+            print('overlap nms done')            
+            return df
     # if args.Rois is not None:
     #     cap = cv2.VideoCapture(args.Video)
 
@@ -479,15 +695,28 @@ def detectpostproc(args):
         # args.DetMask
 
     # 0. load the pklfile first
+    
+    if(args.EvalRois):
+        df_rois=pd.read_pickle(args.DetectionPklBackupRois)    
     df = pd.read_pickle(args.DetectionPklBackUp)
     # 1. condition on the post processing flags
+    if args.UseRois:
+        df.to_pickle("./DetDf/DetDf.Backup."+    args.Video.split("/")[-1].split(".")[0]+"." + args.NumRois+".pkl")
     if not args.DetTh is None:
         df = detectionth(df, args)
+        if(args.EvalRois):
+            df_rois=detectionth(df_rois, args)  
+        
     if args.classes_to_keep:
         df = filter_det_class(df, args)
+        if(args.EvalRois):
+            df_rois=filter_det_class(df_rois, args)  
 
     if args.DetMask:
         df = remove_out_of_ROI(df, args.MetaData["roi"])
+        if(args.EvalRois):
+            df_rois=remove_out_of_ROI(df_rois, args.MetaData["roi"])  
+
     
     # store the edited df as txt
     intersecting_rectangles=find_intersecting_regions(args)
@@ -495,23 +724,70 @@ def detectpostproc(args):
     print(len(df))
     if args.UseRois:
         df=get_overlapping_bboxes(df, args, intersecting_rectangles)
+        if(args.EvalRois):
+            df_rois=get_overlapping_bboxes(df_rois, args, intersecting_rectangles)  
         
     print(len(df))
+    # df=nms(df,args)
+    print(len(df))
+
     
-    
-    detectors[args.Detector].df_txt(df, args.DetectionDetectorPath)
-    
-    store_df_pickle(args)
     
     
     if args.MaskGT:
         args_gt=get_args_gt(args)
-        gt_df= pd.read_pickle(args_gt.DetectionPkl)
-        # cap = cv2.VideoCapture(args.Video)
+        gt_df= pd.read_pickle(args_gt.DetectionPklBackUp)
+        cap = cv2.VideoCapture(args.Video)
+        if (cap.isOpened()== False): 
+            return FailLog("Error opening video stream or file")
+        ret, frame= cap.read()
+        m= np.load(args.GTMask)
+        mask=[]
+        for k in m:
+            mask= m[k]
+            
+        mask=mask.astype(np.uint8)
+        if(frame.shape[0]>mask.shape[0] and frame.shape[1]> mask.shape[1]):
+            mask=cv2.copyMakeBorder(mask, int((frame.shape[0]-mask.shape[0])/2), int((frame.shape[0]-mask.shape[0])/2), int((frame.shape[1]-mask.shape[1])/2), int((frame.shape[1]-mask.shape[1])/2),cv.BORDER_CONSTANT ,0)
+            # mask= np.pad(mask, [((int(frame.shape[0]-mask.shape[0])/2), int((frame.shape[0]-mask.shape[0])/2)), (int((frame.shape[1]-mask.shape[1])/2), int((frame.shape[1]-mask.shape[1])/2))], mode='constant', constant_values=0)
+        
+        mask = 255*((mask - np.min(mask)) / (np.max(mask) - np.min(mask)))
+        cv2.imwrite("mask.png", mask)
+        print(frame.shape)
+        bbox=gt_df[['x1', 'y1' ,'x2' ,'y2']].to_numpy().astype(np.int64)
+        areas= (bbox[:,2] -bbox[:,0]) * (bbox[:,3] -bbox[:,1])
+        bbox= bbox.tolist()
+        # q=np.array([np.arange(bbox[:,0] , bbox[:,2] ),  np.arange(bbox[:,1], bbox[:,3])])
+        zero=np.zeros((areas.shape))
+        for i,b in enumerate(bbox):
+            masked= mask[b[1] : b[3] , b[0]:b[2]]
+            # masked_img= frame[b[1] : b[3] , b[0]:b[2]]
+            zero[i] = np.count_nonzero(masked==0)
+            bbox_area_on_frame=(min(b[2],frame.shape[1])-b[0])* (min(b[3],frame.shape[0]) -b[1])
+            bbox_area= areas[i]            
+            # print(bbox_area_on_frame)
+            # print(bbox_area)
+            # print(b)
+            bbox_on_frame=[b[0], b[1], min(b[2],frame.shape[1]), min(b[3],frame.shape[0])]
+            # print(bbox_on_frame)
+            assert bbox_area>=bbox_area_on_frame
+            zero[i]+=bbox_area-bbox_area_on_frame
+        print(len(gt_df))
+        gt_df= gt_df[(zero/areas)<= 0] 
+        print(len(gt_df))
+        # print(gt_df)
+        # input()
+        
+        gt_df.to_pickle(args_gt.DetectionPkl)
+        gt_df.to_pickle(args_gt.MaskedGT)
+        
+        detections_df= df        
+        
+        cap = cv2.VideoCapture(args.Video)
 
-        # if (cap.isOpened()== False): 
-        #     return FailLog("Error opening video stream or file")
-        # ret, frame= cap.read()
+        if (cap.isOpened()== False): 
+            return FailLog("Error opening video stream or file")
+        ret, frame= cap.read()
         m= np.load(args.GTMask)
         mask=[]
         for k in m:
@@ -519,26 +795,79 @@ def detectpostproc(args):
             
         mask=mask.astype(np.uint8)
         mask = 255*((mask - np.min(mask)) / (np.max(mask) - np.min(mask)))
-            
-        bbox=gt_df[['x1', 'y1' ,'x2' ,'y2']].to_numpy().astype(np.int64)
+        
+        print(frame.shape)
+        bbox=detections_df[['x1', 'y1' ,'x2' ,'y2']].to_numpy().astype(np.int64)
         areas= (bbox[:,2] -bbox[:,0]) * (bbox[:,3] -bbox[:,1])
         bbox= bbox.tolist()
         # q=np.array([np.arange(bbox[:,0] , bbox[:,2] ),  np.arange(bbox[:,1], bbox[:,3])])
-        non_zero=np.zeros((areas.shape))
+        zero=np.zeros((areas.shape))
         for i,b in enumerate(bbox):
             masked= mask[b[1] : b[3] , b[0]:b[2]]
             # masked_img= frame[b[1] : b[3] , b[0]:b[2]]
 
-            non_zero[i] = np.count_nonzero(masked)
-        print(len(gt_df))
-        gt_df= gt_df[(non_zero/areas)> 0.7] 
-        print(len(gt_df))
-        gt_df.to_pickle(args_gt.MaskedGT)
+            zero[i] = np.count_nonzero(masked==0)
+            bbox_area_on_frame=(min(b[2],frame.shape[1])-b[0])* (min(b[3],frame.shape[0]) -b[1])
+            bbox_area= areas[i]
+            # print(bbox_area_on_frame)
+            # print(bbox_area)
+            # print(b)
+            bbox_on_frame=[b[0], b[1], min(b[2],frame.shape[1]), min(b[3],frame.shape[0])]
+            # print(bbox_on_frame)
+            assert bbox_area>=bbox_area_on_frame
+            zero[i]+=bbox_area-bbox_area_on_frame
+        print(len(detections_df))
+        detections_df= detections_df[(zero/areas)<= 0] 
+        print(len(detections_df))
+        detections_df.to_pickle(args.DetectionPkl)
+        if args.EvalRois:
+            detections_df= df_rois
+            cap = cv2.VideoCapture(args.Video)
+
+            if (cap.isOpened()== False): 
+                return FailLog("Error opening video stream or file")
+            ret, frame= cap.read()
+            m= np.load(args.GTMask)
+            mask=[]
+            for k in m:
+                mask= m[k]
+                
+            mask=mask.astype(np.uint8)
+            mask = 255*((mask - np.min(mask)) / (np.max(mask) - np.min(mask)))
+            
+            print(frame.shape)
+            bbox=detections_df[['x1', 'y1' ,'x2' ,'y2']].to_numpy().astype(np.int64)
+            areas= (bbox[:,2] -bbox[:,0]) * (bbox[:,3] -bbox[:,1])
+            bbox= bbox.tolist()
+            # q=np.array([np.arange(bbox[:,0] , bbox[:,2] ),  np.arange(bbox[:,1], bbox[:,3])])
+            zero=np.zeros((areas.shape))
+            for i,b in enumerate(bbox):
+                masked= mask[b[1] : b[3] , b[0]:b[2]]
+                # masked_img= frame[b[1] : b[3] , b[0]:b[2]]
+
+                zero[i] = np.count_nonzero(masked==0)
+                bbox_area_on_frame=(min(b[2],frame.shape[1])-b[0])* (min(b[3],frame.shape[0]) -b[1])
+                bbox_area= areas[i]
+                # print(bbox_area_on_frame)
+                # print(bbox_area)
+                # print(b)
+                bbox_on_frame=[b[0], b[1], min(b[2],frame.shape[1]), min(b[3],frame.shape[0])]
+                # print(bbox_on_frame)
+                assert bbox_area>=bbox_area_on_frame
+                zero[i]+=bbox_area-bbox_area_on_frame
+            print(len(detections_df))
+            detections_df= detections_df[(zero/areas)<= 0] 
+            print(len(detections_df))
+            detections_df.to_pickle(args.DetectionPklRois)   
+    else:
+        df.to_pickle(args.DetectionPkl)
+        if(args.SaveRoiResults):
+            df.to_pickle(args.DetectionPklRois)
         
         
     return SucLog("detection post processing done")
 
-
+    
 def detectionth(df, args):
     print("performing thresholding")
     df = df[df["score"] >= args.DetTh]
