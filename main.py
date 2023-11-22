@@ -182,6 +182,14 @@ def TrackEvaluate(args):
         return log
     else: return WarningLog("skipped vis tracking from top")
 
+
+def DetectEvaluate(args):
+    if args.TrackEval:
+        print(ProcLog("Evaluate Detection"))
+        log = evaluate_detection(args, args)
+        return log
+    else: return WarningLog("skipped vis tracking from top")
+
 def AverageCounts(args, args_mc):
     if args.AverageCountsMC:
         print(ProcLog("Averaging Counting on all cameras"))

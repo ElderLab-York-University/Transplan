@@ -124,3 +124,8 @@ def evaluate_tracking(base_args, nested_args):
         # f.write(strsummary_mc)
 
     return SucLog("Track Evaluation Successful")
+
+
+def evaluate_detection(base_args, nested_args):
+    return SucLog("Detection Evaluation Successful")
+    
