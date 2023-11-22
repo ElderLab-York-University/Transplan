@@ -17,7 +17,10 @@ def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"], b
 
 # choose datasets/splits/segments/sources
 #  set to None if want to include all
-datasets     = ["/home/sajjad/HW7Leslie"]
+datasets     = [
+                # "/home/sajjad/HW7Leslie",
+                "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
+            ]
 split_part   = None
 segment_part = None
 source_part  = None
@@ -31,7 +34,7 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN"]
-detectors = []
+detectors = ["InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN"]
 
 # choose grandtruth detector
 # Options are the same as detector
@@ -113,9 +116,9 @@ for src, cached_cnt_pth in zip(sources, sources):
     #  --Detect --VisDetect --DetectorVersion={HW7FT} --SAHI --SahiPatchSize=640 --SahiPatchOverlapRatio=0.25 
     #  --SahiPatchBatchSize=1 --SahiNMSTh=0.25")
     ########################################################
-    # for det in detectors:
-    #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker=NULL --Detect")
+    for det in detectors:
+        print(f"detecting ----> src:{src} det:{det}")
+        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker=NULL --Detect")
 
     ########################################################
     # 3.5 run the detection post processing
