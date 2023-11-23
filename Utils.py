@@ -658,8 +658,11 @@ def get_args(args):
 
 def get_args_gt(args):
     args_gt = copy.deepcopy(args)
+    args.GTDetector="GTHW7"
     args_gt.Detector = args.GTDetector
+    
     args_gt.DetectorVersion = ""
+    args.GTTracker="GTHW7"
     args_gt.Tracker = args.GTTracker
     args_gt.Video=None
     args_gt=complete_args(args_gt)

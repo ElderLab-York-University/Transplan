@@ -16,7 +16,7 @@ from Homography import reproject
 from Homography import vishomographygui
 from Homography import vis_reprojected_tracks, vis_contact_point, vis_contact_point_top
 from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_tracks
-from Evaluate import evaluate_tracking
+from Evaluate import evaluate_tracking, evaluate_detection
 from Maps import pix2meter
 from counting import counting
 from counting.counting import find_opt_bw, eval_count
@@ -184,7 +184,7 @@ def TrackEvaluate(args):
 
 
 def DetectEvaluate(args):
-    if args.TrackEval:
+    if args.DetectEval:
         print(ProcLog("Evaluate Detection"))
         log = evaluate_detection(args, args)
         return log
@@ -300,7 +300,7 @@ def main(args):
                 Track, Homography, Pix2Meter, TrackPostProc, TrackEvaluate,
                 VisTrack, VisContactPoint, VisCPTop, VisTrajectories, VisTrackTop,
                 FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories,
-                Count, VisTrackMoI]
+                Count, VisTrackMoI, DetectEvaluate]
     for subtask in subtasks:
         log = subtask(args)
         if not isinstance(log, WarningLog):
@@ -383,6 +383,7 @@ if __name__ == "__main__":
     parser.add_argument("--ExitOrCrossROI", help="select tracks that either exit or cross multi roi", action="store_true")
     parser.add_argument("--MaskGPFrame", help="remove dets on tracks that are outside gp frame", action="store_true")
     parser.add_argument("--TrackEval", help="Evaluate the tracking single camera", action="store_true")
+    parser.add_argument("--DetectEval", help="Evaluate the detection single camera", action='store_true')
     parser.add_argument("--VisROI", help="visualize the selected ROI", action='store_true')
     parser.add_argument("--VisTrackMoI", help="visualize tracking with moi labels", action='store_true')
     parser.add_argument("--LabelledTrajectories", help=" a pkl file containint the labelled trajectories on the ground plane",type=str)
