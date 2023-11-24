@@ -206,7 +206,13 @@ def EvalCountMC(args, args_mc):
         return log
     else:
         return WarningLog("skipped evaluating counts")
-    
+def DetectEvaluateMC(args, args_mc):
+    if args.DetectEval:
+        print(ProcLog("Multi Source Evaluate Detection"))
+        log = evaluate_detection(args, args_mc)
+        return log
+    else: return WarningLog("skipped TrackEvaluateMC")
+        
 def TrackEvaluateMC(args, args_mc):
     if args.TrackEval:
         print(ProcLog("Single Source Evaluate Tracking"))
@@ -269,6 +275,12 @@ def ConvertDetsToCOCO_MS(args, args_ms, args_mcs):
         log  = detections_to_coco(args, args_mcs)
         return log
     else: return WarningLog("skipped converting to coco format")
+def DetectEvaluateMS(args, args_ms, args_mcs):
+    if args.DetectEval:
+        print(ProcLog("Multi Segment evaluate detection"))
+        log = evaluate_detection(args, args_mcs)
+        return log
+    else: return WarningLog("skipped TrackEvaluate on MS")
 
 def TrackEvaluateMS(args, args_ms, args_mcs):
     if args.TrackEval:
@@ -283,6 +295,12 @@ def FineTuneDetectorMP(args, args_mp, args_mss, args_mcs):
         log = fine_tune_detector_mp(args, args_mp, args_mss, args_mcs)
         return log
     else: return WarningLog("skipped fine tunning detectors")
+def DetectEvaluateMP(args, args_mp, args_mss, args_mcs):
+    if args.DetectEval:
+        print(ProcLog("Multi Part evaluate detection"))
+        log = evaluate_detection(args, args_mcs)
+        return log
+    else: return WarningLog("skipped TrackEvaluate on MP")
 
 def TrackEvaluateMP(args, args_mp, args_mss, args_mcs):
     if args.TrackEval:
@@ -309,7 +327,7 @@ def main(args):
 def main_mc(args, args_mc):
     # main for multi camera
 
-    subtasks = [TrackEvaluateMC, AverageCounts, EvalCountMC]
+    subtasks = [DetectEvaluateMC,TrackEvaluateMC, AverageCounts, EvalCountMC]
     for subtask in subtasks:
         log = subtask(args,args_mc)
         if not isinstance(log, WarningLog):
@@ -317,7 +335,7 @@ def main_mc(args, args_mc):
 
 def main_ms(args, args_ms, args_mcs):
     # main for multi segments
-    subtasks = [ConvertDetsToCOCO_MS, TrackEvaluateMS]
+    subtasks = [ConvertDetsToCOCO_MS, TrackEvaluateMS,DetectEvaluateMS]
 
     for sub in subtasks:
         log = sub(args, args_ms, args_mcs)
@@ -326,7 +344,7 @@ def main_ms(args, args_ms, args_mcs):
 
 def main_mp(args, args_mp, args_mss, args_mcs):
     # main for multi parts
-    subtasks = [FineTuneDetectorMP, TrackEvaluateMP]
+    subtasks = [FineTuneDetectorMP, TrackEvaluateMP, DetectEvaluateMP]
     for sub in subtasks:
         log = sub(args, args_mp, args_mss, args_mcs)
         if not isinstance(log, WarningLog):
@@ -419,7 +437,7 @@ if __name__ == "__main__":
     parser.add_argument("--ExtractImages", help="extract images from video and store under results/Images", action='store_true')
     parser.add_argument("--ConvertDetsToCOCO", help="convert detection files to COCO format", action='store_true')
     parser.add_argument("--KeepCOCOClasses", help="when converting to COCO keep coco class names", action='store_true')
-
+    parser.add_argument("--Rois",help="If to use ROIs and which ROIS to use", nargs='+', type=str)
     parser.add_argument("--MultiSeg", help="operating on multiple segments(eg train segments)", action='store_true')
     parser.add_argument("--MultiPart", help="for multi part operations", action='store_true')
     parser.add_argument("--FineTune", help="fine tune detector", action='store_true')

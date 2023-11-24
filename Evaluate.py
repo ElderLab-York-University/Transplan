@@ -165,7 +165,7 @@ def evaluate_detection(base_args, nested_args):
         args_gt = get_args_gt(args)
 
         df_gt   = pd.read_pickle(args_gt.DetectionPkl)
-        df_pred = pd.read_pickle(args.DetectionPkl)
+        df_pred = pd.read_pickle(args.DetectionPklBackUp)
         df_id   = args.SubID
         gt_frames=np.unique(df_gt['fn'])
         df_pred=df_pred[df_pred['fn'].isin(gt_frames)]
@@ -176,26 +176,75 @@ def evaluate_detection(base_args, nested_args):
         dfs_ids.append(df_id)
     dfs_gt=pd.concat(dfs_gt)
     dfs_pred=pd.concat(dfs_pred)
-    mAP=compare_dfs(dfs_gt,dfs_pred)
-    
-    print(mAP)
-    
-    # prepare dfs for mot metrics(transfer from local format to mot format)
-    # gt_dfs = prepare_df_for_motmetric(dfs_gt, dfs_ids)
-    # pred_dfs = prepare_df_for_motmetric(dfs_pred, dfs_ids)
-
-    # accs, names = compare_dataframes(gt_dfs, pred_dfs)
-    # mh = mm.metrics.create()
-    # summary = mh.compute_many(accs, names=names, metrics=mm.metrics.motchallenge_metrics, generate_overall=True)
-
-    # strsummary = mm.io.render_summary(
-    #     summary,
-    #     formatters=mh.formatters,
-    #     namemap=mm.io.motchallenge_metric_names
-    # )
-    # print(strsummary)
-
-    
+    result, total_tp, total_fp, total_gt=compare_dfs(dfs_gt,dfs_pred)    
+    print(base_args.DetectEvalPth)
+    with open(base_args.DetectEvalPth, "w") as f:
+        f.write("Camera ID                AP \n")
+        f.write(str("Camera") + ": " +str(result)  +'\n')
+        f.write("Average AP: " + str(np.mean(result))+ '\n')
+        f.write("Total TP :" + str(total_tp)+'\n')
+        f.write("Total_FP :"+ str(total_fp) + '\n')
+        f.write("Total GT :" + str(total_gt  ))    
+    # if(args.EvalRois):
+    #     print(args.EvalRoiPth)
+    #     with open(args.EvalRoiPth, "w") as f:
+    #         f.write("Camera ID                AP \n")
+    #         f.write(str("Camera") + ": " +str(result)  +'\n')
+    #         f.write("Average AP: " + str(np.mean(result))+ '\n')
+    #         f.write("Total TP :" + str(total_tp)+'\n')
+    #         f.write("Total_FP :"+ str(total_fp) + '\n')
+    #         f.write("Total GT :" + str(total_gt  ))    
+    # if(args.EvalIntersection):
+    #     dfs_gt_intersection=[]
+    #     pred_dfs_intersections=[]
+    #     dfs_gt_not_intersection=[]
+    #     pred_dfs_not_intersections=[]
+    #     for gt in dfs_gt:
+    #         gt1,gt2 =remove_out_of_ROI(gt, args.MetaData["roi"])
+    #         dfs_gt_intersection.append(gt1)
+    #         dfs_gt_not_intersection.append(gt2)
+    #     for pred in dfs_pred:
+    #         pred1,pred2=remove_out_of_ROI(pred, args.MetaData["roi"])
+    #         pred_dfs_intersections.append(pred1)
+    #         pred_dfs_not_intersections.append(pred2)
+    #     result, total_tp, total_fp, total_gt= compare_dfs(dfs_gt_intersection, pred_dfs_intersections,args.EvalDetPthPlot)
+    #     with open(args.EvalDetIntPth1, "w+") as f:
+    #         print(args.EvalDetIntPth1)            
+    #         f.write("Camera ID                AP \n")
+    #         f.write(str("Camera") + ": " +str(result)  +'\n')
+    #         f.write("Average AP: " + str(np.mean(result))+ '\n')
+    #         f.write("Total TP :" + str(total_tp)+'\n')
+    #         f.write("Total_FP :"+ str(total_fp) + '\n')
+    #         f.write("Total GT :" + str(total_gt  ))
+    #     if(args.EvalRois):
+    #         print(args.EvalDetRoiIntPth1)
+    #         with open(args.EvalDetRoiIntPth1, "w") as f:
+    #             f.write("Camera ID                AP \n")
+    #             f.write(str("Camera") + ": " +str(result)  +'\n')
+    #             f.write("Average AP: " + str(np.mean(result))+ '\n')
+    #             f.write("Total TP :" + str(total_tp)+'\n')
+    #             f.write("Total_FP :"+ str(total_fp) + '\n')
+    #             f.write("Total GT :" + str(total_gt  ))    
+                
+    #     result, total_tp, total_fp, total_gt= compare_dfs(dfs_gt_not_intersection, pred_dfs_not_intersections,args.EvalDetPthPlot)
+    #     with open(args.EvalDetIntPth2, "w+") as f:
+    #         print(args.EvalDetIntPth2)
+    #         f.write("Camera ID                AP \n")
+    #         f.write(str("Camera") + ": " +str(result)  +'\n')
+    #         f.write("Average AP: " + str(np.mean(result))+ '\n')
+    #         f.write("Total TP :" + str(total_tp)+'\n')
+    #         f.write("Total_FP :"+ str(total_fp) + '\n')
+    #         f.write("Total GT :" + str(total_gt  ))
+    #     if(args.EvalRois):
+    #         print(args.EvalDetRoiIntPth2)
+    #         with open(args.EvalDetRoiIntPth2, "w") as f:
+    #             f.write("Camera ID                AP \n")
+    #             f.write(str("Camera") + ": " +str(result)  +'\n')
+    #             f.write("Average AP: " + str(np.mean(result))+ '\n')
+    #             f.write("Total TP :" + str(total_tp)+'\n')
+    #             f.write("Total_FP :"+ str(total_fp) + '\n')
+    #             f.write("Total GT :" + str(total_gt  ))    
+        
     return SucLog("Detection Evaluation Successful")
 
 
@@ -224,7 +273,9 @@ def CalculateAveragePrecision(rec, prec):
 def compare_dfs(dfs_gts, pred_dfs):
     thresholds= np.asarray([ x/100.0 for x in range(50,105,5)])
     # classes=[ 0,1, 2,3, 5, 7]
-    classes=np.unique(dfs_gts['class'])
+    classes=np.unique(pred_dfs['class'])
+    
+    # classes=np.unique(dfs_gts['class'])
     # print(gt_classes)
     # z=0
     thresholds= np.asarray([ x/100.0 for x in range(50,105,5)])
@@ -236,6 +287,7 @@ def compare_dfs(dfs_gts, pred_dfs):
     class_aps=[]
     class_counts=[]
     for c in classes:
+        print(c)
         aps=[]    
         gt=dfs_gts[dfs_gts['class']==c]
         pred=pred_dfs[pred_dfs['class']==c]
@@ -246,6 +298,7 @@ def compare_dfs(dfs_gts, pred_dfs):
         pred_frames=pred_byframe.keys()
         # common_frames=list(set(gt_frames).intersection(set(pred_frames)))
         n_gt=len(gt)
+        n_pred=len(pred)
         all_predictions=[]
         # fn_frames=list(set(gt_frames)- set(pred_frames))
         # fp_frames=list(set(pred_frames)- set(gt_frames))
@@ -288,8 +341,11 @@ def compare_dfs(dfs_gts, pred_dfs):
         for rec, prec in zip(recall.T,precision.T):
             [ap, mpre, mrec, ii]=CalculateAveragePrecision(rec,prec)
             aps.append(ap)
-        class_aps.append(np.mean(aps))
-        class_counts.append(n_gt)
+        if(np.isnan(np.mean(aps))):
+            class_aps.append(0)
+        else:
+            class_aps.append(np.mean(aps))
+        class_counts.append(n_pred)
     mAP=np.average(class_aps, weights=class_counts)
     print(total_tp, total_fp, total_gt)
     print(class_aps)

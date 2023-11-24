@@ -382,6 +382,10 @@ def get_track_eval_save_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + "EvaluateTracking" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.GTTracker + Puncuations.Dot+ args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot+"txt")
+def get_detect_eval_save_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+ Puncuations.Dot+"txt")
 
 def add_homographygui_related_path_to_args(args):
     streetview = get_homography_streetview_path(args)
@@ -449,6 +453,10 @@ def add_plot_all_traj_pth_to_args(args):
 
 def add_track_eval_save_path(args):
     args.TrackEvalPth = get_track_eval_save_path(args)
+    return args 
+
+def add_detect_eval_save_path(args):
+    args.DetectEvalPth = get_detect_eval_save_path(args)
     return args 
 
 def add_vis_labelled_tracks_pth_to_args(args):
@@ -656,6 +664,18 @@ def get_args(args):
     check_config(args)
     return args
 
+
+def add_roi_paths_to_args(args):
+    
+    roi_dict={}
+    for r in range(0,len(args.Rois),2):
+        roi_dict[args.Rois[r]]=args.Rois[r+1]
+    print(roi_dict)
+    if(args.Dataset[-3:] in roi_dict):
+        roi_num=roi_dict[args.Dataset[-3:]]
+        print(roi_num)        
+    return args
+
 def get_args_gt(args):
     args_gt = copy.deepcopy(args)
     args.GTDetector="GTHW7"
@@ -732,7 +752,9 @@ def complete_args(args):
     if (not args.Detector is None) or args.DetPostProc or args.ConvertDetsToCOCO or args.FineTune:
         args = add_detection_pathes_to_args(args)
         args = add_vis_detection_path_to_args(args)
-
+    if args.Rois is not None:
+        args=add_roi_paths_to_args(args)
+        
     if not args.Tracker is None:
         args = add_tracking_path_to_args(args)
         args = add_vis_tracking_path_to_args(args)
@@ -741,7 +763,9 @@ def complete_args(args):
         
     if args.TrackEval:
         args = add_track_eval_save_path(args)
-    
+    if args.DetectEval:
+        args.GTDetector="GTHW7"
+        args= add_detect_eval_save_path(args)
     try:
         args = add_metadata_to_args(args)
     except:
