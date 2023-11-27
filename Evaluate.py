@@ -168,16 +168,16 @@ def compare_dfs(dfs_gts, pred_dfs, plot_path):
                     
                 count=count+1
             total_ap=np.mean(aps)
-            
-            if not np.isnan(total_ap):
+            if(n_gt>0):
                 class_aps.append(total_ap)
-                class_counts.append(len(gt))
-            else:
-                class_aps.append(0)
-                class_counts.append(len(gt))
+            # if not np.isnan(total_ap):
+            #     class_aps.append(total_ap)
+            #     class_counts.append(len(gt))
+            # else:
+            #     class_aps.append(0)
+            #     class_counts.append(len(gt))
         print(class_aps)
-        camera_aps.append(np.average(class_aps, weights=class_counts))
-        
+        camera_aps.append(np.mean(class_aps))
         # print("Recalls for ", s_threshold, " camera number " , z, recall)
         # print("Precisions for ", s_threshold, " camera number " , z, precision)
         # f_betas=((1+beta**2)* (recall*precision))/(beta**2*(recall+precision))
@@ -453,4 +453,3 @@ def evaluate(args):
         # f.write("\n")
         # f.write(strsummary_mc)
         
-    
