@@ -197,13 +197,15 @@ def reproject_df(args, df, out_path, method):
     # we will load M and Raster here and pass it on to speed up the projection
     M = None
     GroundRaster = None
-    orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
+    orthophoto_win_tif_obj = None
 
     if method == "Homography":
         homography_path = args.HomographyNPY
         M = np.load(homography_path, allow_pickle=True)[0]
 
     elif method == "DSM":
+        # load OrthophotoTiffile
+        orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
         # creat/load raster
         if not os.path.exists(args.ToGroundRaster):
             coords = DSM.load_dsm_points(args)
