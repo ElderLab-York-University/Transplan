@@ -16,7 +16,7 @@ from Homography import reproject
 from Homography import vishomographygui
 from Homography import vis_reprojected_tracks, vis_contact_point, vis_contact_point_top
 from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_tracks
-from Evaluate import evaluate_tracking
+from Evaluate import evaluate_tracking, cvpr
 from Maps import pix2meter
 from counting import counting
 from counting.counting import find_opt_bw, eval_count
@@ -283,6 +283,14 @@ def TrackEvaluateMP(args, args_mp, args_mss, args_mcs):
         return log
     else: return WarningLog("skipped TrackEvaluate on MP")
 
+def CVPRMP(args, args_mp, args_mss, args_mcs):
+    if args.CVPR:
+        print(ProcLog("cvpr log"))
+        print(len(args_mcs))
+        log = cvpr(args, args_mcs)
+        return log
+    else: return WarningLog("skipped CVPR on MP")
+
 def main(args):
     # main for one video
     subtasks = [Preprocess, ExtractImages,
@@ -318,7 +326,7 @@ def main_ms(args, args_ms, args_mcs):
 
 def main_mp(args, args_mp, args_mss, args_mcs):
     # main for multi parts
-    subtasks = [FineTuneDetectorMP, TrackEvaluateMP]
+    subtasks = [FineTuneDetectorMP, TrackEvaluateMP, CVPRMP]
     for sub in subtasks:
         log = sub(args, args_mp, args_mss, args_mcs)
         if not isinstance(log, WarningLog):
@@ -429,6 +437,8 @@ if __name__ == "__main__":
     parser.add_argument("--SahiPatchOverlapRatio", help="overlap ration of sahi patches", type=float, default=0.25)
     parser.add_argument("--SahiPatchBatchSize", help="batch size of patches of sahi", type=int, default=0)
     parser.add_argument("--SahiNMSTh", help="IoU threshould for merging results when using sahi", type=float, default=0.25)
+
+    parser.add_argument("--CVPR", help="prepare CVPR stats of dataset", action='store_true')
 
     args = parser.parse_args()
 
