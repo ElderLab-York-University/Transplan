@@ -673,7 +673,6 @@ def add_roi_paths_to_args(args):
     print(roi_dict)
     if(args.Dataset[-3:] in roi_dict):
         roi_num=roi_dict[args.Dataset[-3:]]
-        print(roi_num)        
     return args
 
 def get_args_gt(args):

@@ -161,6 +161,30 @@ def evaluate_detection(base_args, nested_args):
     dfs_ids  = []
     
     flat_args = flatten_args(nested_args)
+    # classes=[]
+    # for args in flat_args:
+    #     args_gt = get_args_gt(args)
+    #     df_gt   = pd.read_pickle(args_gt.DetectionPkl)
+    #     df_pred = pd.read_pickle(args.DetectionPklBackUp)
+    #     n_classes=np.unique(df_pred['class'])
+    #     gt_frames=np.unique(df_gt['fn'])
+    #     df_pred=df_pred[df_pred['fn'].isin(gt_frames)]
+        
+    #     for c in n_classes:
+    #         if c not in classes:
+    #             classes.append(c)
+    # classes=np.sort(classes)        
+    # class_dict={}
+    # for c in range(len(classes)):
+    #     class_dict[classes[c]]=c
+    # det_results=[]
+    # annotations=[]    
+    class_dict={0:0,1:1,2:2,3:5,4:7}
+    print(class_dict)
+    preds=[]
+    gts=[]
+    q=0
+    print('starting')
     for args in flat_args:
         args_gt = get_args_gt(args)
 
@@ -169,13 +193,67 @@ def evaluate_detection(base_args, nested_args):
         df_id   = args.SubID
         gt_frames=np.unique(df_gt['fn'])
         df_pred=df_pred[df_pred['fn'].isin(gt_frames)]
-        df_gt['df_id']=df_id
-        df_pred['df_id']=df_id
+        
+        df_gt['df_id']=q
+        df_pred['df_id']=q
+        df_pred['class']= df_pred['class'].map(class_dict)
+        q=q+1
+        # for fn in np.unique(df_gt['fn']):
+        #     gt_frame=np.asarray(df_gt[df_gt['fn']==fn])
+        #     frame_gt=[]
+        #     for gt in gt_frame:
+        #         frame_gt.append([gt[1],gt[3],gt[4],gt[5],gt[6]])
+        #     pred_frame=np.asarray(df_pred[df_pred['fn']==fn])
+        #     frame_pred=[]
+        #     for pred in pred_frame:
+        #         frame_pred.append([pred[1],pred[2],pred[3],pred[4],pred[5],pred[6]])
+        #     preds.append(frame_pred)
+        #     gts.append(frame_gt)
+            
+            
+        # for fn in np.unique(
+            # df_gt['fn']):
+        #     frame_list=[]
+        #     preds_frame=(df_pred[df_pred['fn']==fn])    
+        #     for c in classes: 
+        #         preds_classes=np.asarray(preds_frame[preds_frame['class']==c])[:,3:-1]
+        #         frame_list.append(preds_classes)
+        #     det_results.append(frame_list)
+        # for fn in np.unique(df_gt['fn']):
+        #     frame_dict={}
+        #     gts_frame=(df_gt[df_gt['fn']==fn])    
+        #     gts_classes=np.asarray(gts_frame)[:,3:-1]
+        #     gts_ls=np.asarray(gts_frame)[:,1]
+        #     gts_labels=np.zeros(gts_ls.shape)
+        #     for i in range(len(gts_ls)):
+        #         if(gts_ls[i] in class_dict):
+        #             gts_labels[i]=class_dict[gts_ls[i]]
+        #         else:
+        #             gts_labels[i]=gts_ls[i]                    
+                    
+        #     frame_dict['bboxes']=gts_classes
+        #     frame_dict['labels']=gts_labels
+            
+        #     annotations.append(frame_dict)
+        
         dfs_gt.append(df_gt)
         dfs_pred.append(df_pred)
         dfs_ids.append(df_id)
+    gts=np.array(gts)
+    preds=np.array(preds)
     dfs_gt=pd.concat(dfs_gt)
     dfs_pred=pd.concat(dfs_pred)
+    classes=np.unique(dfs_pred['class'])
+    print(classes)
+    
+    classes=np.unique(dfs_pred['class'])
+    print(classes)
+    
+    print('done')
+    # with open("det_results", 'wb') as f:
+    #     pkl.dump(det_results, f)
+    # with open("annotations", 'wb') as f:
+    #     pkl.dump(annotations, f)    
     result, total_tp, total_fp, total_gt=compare_dfs(dfs_gt,dfs_pred)    
     print(base_args.DetectEvalPth)
     with open(base_args.DetectEvalPth, "w") as f:
@@ -269,16 +347,18 @@ def CalculateAveragePrecision(rec, prec):
         ap = ap + np.sum((mrec[i] - mrec[i - 1]) * mpre[i])
     # return [ap, mpre[1:len(mpre)-1], mrec[1:len(mpre)-1], ii]
     return [ap, mpre[0:len(mpre) - 1], mrec[0:len(mpre) - 1], ii]
-
+def compare_difs(dfs_np, pred_np):
+    thresholds= np.asarray([ x/100.0 for x in range(50,105,5)])
+    print(dfs_np,pred_np)    
 def compare_dfs(dfs_gts, pred_dfs):
     thresholds= np.asarray([ x/100.0 for x in range(50,105,5)])
     # classes=[ 0,1, 2,3, 5, 7]
-    classes=np.unique(pred_dfs['class'])
+    # classes=np.unique(pred_dfs['class'])
     
-    # classes=np.unique(dfs_gts['class'])
+    classes=np.unique(dfs_gts['class'])
     # print(gt_classes)
     # z=0
-    thresholds= np.asarray([ x/100.0 for x in range(50,105,5)])
+    # thresholds= np.asarray([0.5])
     class_counts=[]
     class_aps=[]
     total_tp=0
@@ -307,10 +387,13 @@ def compare_dfs(dfs_gts, pred_dfs):
         FP= np.zeros((len(pred_bboxes), len(thresholds)))
         # print(pred)
         # print(gt)
+        g_full=np.asarray(gt)
+
         used_ids=np.zeros((len(gt), len(thresholds)) , dtype=bool)
         for i in range(len(pred_bboxes)):
             pred_bbox=pred_bboxes[i]
-            gts=np.asarray(gt[(gt['fn']==pred_bbox[0]) & (gt['df_id']==pred_bbox[-1])])
+            g_= g_full[g_full[:,-1]==pred_bbox[-1]]
+            gts=g_[(g_[:,0]==pred_bbox[0])]
             iou_max=0
             p=pred_bbox[3:-1]
             iou_idx=-1            
@@ -338,15 +421,24 @@ def compare_dfs(dfs_gts, pred_dfs):
         total_gt+=n_gt
         recall=tp_cs/n_gt
         precision=np.divide(tp_cs,(tp_cs+fp_cs))
+        recall_thresholds = np.linspace(0.0,
+                                        1.00,
+                                        int(np.round((1.00 - 0.0) / 0.01)) + 1,
+                                        endpoint=True)            
+    
         for rec, prec in zip(recall.T,precision.T):
+            i_pr = np.maximum.accumulate(prec[::-1])[::-1]   
+            rec_idx = np.searchsorted(rec, recall_thresholds, side="left")      
+            n_recalls = len(recall_thresholds)             
+            i_pr = np.array([i_pr[r] if r < len(i_pr) else 0 for r in rec_idx])  
             [ap, mpre, mrec, ii]=CalculateAveragePrecision(rec,prec)
-            aps.append(ap)
-        if(np.isnan(np.mean(aps))):
-            class_aps.append(0)
-        else:
+            print(np.mean(i_pr), ap)
+            aps.append(np.mean(i_pr))
+        if n_gt>0:
             class_aps.append(np.mean(aps))
+            print("class ", c, " n_gt ", n_gt, "n_pred ", n_pred, ' ap ', np.mean(aps))
         class_counts.append(n_pred)
-    mAP=np.average(class_aps, weights=class_counts)
+    mAP=np.average(class_aps)
     print(total_tp, total_fp, total_gt)
     print(class_aps)
     return mAP, total_tp, total_fp, total_gt

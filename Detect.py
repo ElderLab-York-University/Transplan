@@ -350,8 +350,8 @@ def detections_to_coco(args_split, args_mcs):
 
         image_directory = arg.ExtractedImageDirectory
         # convert detection pkl to coco formated json
-        detection_df = pd.read_pickle(arg.DetectionPkl)
-
+        detection_df = pd.read_pickle(arg.DetectionPklBackUp)
+        detection_df=detection_df[detection_df['fn']%6==0]
         cap = cv2.VideoCapture(arg.Video)
         number_of_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -377,10 +377,11 @@ def detections_to_coco(args_split, args_mcs):
             images_list.append(image_dict)
 
             detection_df_fn = detection_df[detection_df.fn==fn]
+            cat_ids={0:0, 1:1,2:2,3:5,4:7}
 
             for i, row in detection_df_fn.iterrows():
                 bbox = [int(row.x1), int(row.y1), int(row.x2-row.x1), int(row.y2-row.y1)]
-                category_id = int(row["class"])
+                category_id = int((row["class"]))
                 bbox_id = format_bbox_id(i, file_path)
 
                 annot_dict = {
@@ -389,6 +390,7 @@ def detections_to_coco(args_split, args_mcs):
                           "category_id":category_id,
                           "area": float((row.x2 - row.x1)*(row.y2 - row.y1)),
                           "bbox":bbox,
+                          'score':float(row['score']),
                           "iscrowd":0,
                         }
 
