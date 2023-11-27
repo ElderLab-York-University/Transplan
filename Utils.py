@@ -114,6 +114,10 @@ def get_detection_pkl(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot +SubTaskExt.Pkl)
+def get_detection_roi_pkl(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot+ args.roi_num + Puncuations.Dot  +SubTaskExt.Pkl)
 
 def get_detection_coco(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -124,6 +128,10 @@ def get_detection_pkl_back_up(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot + "backup" + Puncuations.Dot +SubTaskExt.Pkl)
+def get_detection_roi_pkl_back_up(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot + "backup" + Puncuations.Dot+ args.roi_num+Puncuations.Dot +SubTaskExt.Pkl)
 
 def get_vis_detection_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -670,9 +678,10 @@ def add_roi_paths_to_args(args):
     roi_dict={}
     for r in range(0,len(args.Rois),2):
         roi_dict[args.Rois[r]]=args.Rois[r+1]
-    print(roi_dict)
     if(args.Dataset[-3:] in roi_dict):
-        roi_num=roi_dict[args.Dataset[-3:]]
+        args.roi_num=roi_dict[args.Dataset[-3:]]
+        args.DetectionPklRoi=get_detection_roi_pkl(args)
+        args.DetectionPklRoiBackup=get_detection_roi_pkl_back_up(args)
     return args
 
 def get_args_gt(args):

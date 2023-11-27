@@ -179,7 +179,7 @@ def evaluate_detection(base_args, nested_args):
     #     class_dict[classes[c]]=c
     # det_results=[]
     # annotations=[]    
-    class_dict={0:0,1:1,2:2,3:5,4:7}
+    class_dict={0:0,1:1,2:2,3:5,4:7,7:7}
     print(class_dict)
     preds=[]
     gts=[]
@@ -187,16 +187,18 @@ def evaluate_detection(base_args, nested_args):
     print('starting')
     for args in flat_args:
         args_gt = get_args_gt(args)
-
+            
         df_gt   = pd.read_pickle(args_gt.DetectionPkl)
-        df_pred = pd.read_pickle(args.DetectionPklBackUp)
+        if(args.Rois is not None):
+            df_pred=pd.read_pickle(args.DetectionPklRoi)
+        else:
+            df_pred = pd.read_pickle(args.DetectionPklBackUp)
         df_id   = args.SubID
         gt_frames=np.unique(df_gt['fn'])
         df_pred=df_pred[df_pred['fn'].isin(gt_frames)]
         
         df_gt['df_id']=q
         df_pred['df_id']=q
-        df_pred['class']= df_pred['class'].map(class_dict)
         q=q+1
         # for fn in np.unique(df_gt['fn']):
         #     gt_frame=np.asarray(df_gt[df_gt['fn']==fn])
@@ -245,6 +247,11 @@ def evaluate_detection(base_args, nested_args):
     dfs_pred=pd.concat(dfs_pred)
     classes=np.unique(dfs_pred['class'])
     print(classes)
+    print(np.unique(dfs_gt['class']))
+    # dfs_pred=dfs_pred[dfs_pred['class']==1]
+    # dfs_gt=dfs_gt[dfs_pred['class']==1]    
+    # dfs_pred['class']= dfs_pred['class'].map(class_dict)
+    
     
     classes=np.unique(dfs_pred['class'])
     print(classes)
@@ -351,7 +358,7 @@ def compare_difs(dfs_np, pred_np):
     thresholds= np.asarray([ x/100.0 for x in range(50,105,5)])
     print(dfs_np,pred_np)    
 def compare_dfs(dfs_gts, pred_dfs):
-    thresholds= np.asarray([ x/100.0 for x in range(50,105,5)])
+    thresholds= np.asarray([ x/100.0 for x in range(50,100,5)])
     # classes=[ 0,1, 2,3, 5, 7]
     # classes=np.unique(pred_dfs['class'])
     
@@ -366,6 +373,7 @@ def compare_dfs(dfs_gts, pred_dfs):
     total_gt=0
     class_aps=[]
     class_counts=[]
+    print(thresholds)
     for c in classes:
         print(c)
         aps=[]    
@@ -392,8 +400,9 @@ def compare_dfs(dfs_gts, pred_dfs):
         used_ids=np.zeros((len(gt), len(thresholds)) , dtype=bool)
         for i in range(len(pred_bboxes)):
             pred_bbox=pred_bboxes[i]
-            g_= g_full[g_full[:,-1]==pred_bbox[-1]]
-            gts=g_[(g_[:,0]==pred_bbox[0])]
+            g_= gt[gt['df_id']==pred_bbox[-1]]
+            gts=np.asarray(g_[(g_['fn']==pred_bbox[0])])
+            
             iou_max=0
             p=pred_bbox[3:-1]
             iou_idx=-1            
