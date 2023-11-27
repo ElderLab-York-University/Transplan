@@ -450,7 +450,9 @@ if __name__ == "__main__":
     parser.add_argument("--NumWorkers", help="number of workers for dataloader", type=int)
     parser.add_argument("--Epochs", help="number of epochs", type=int)
     parser.add_argument("--ValInterval", help="frequency of validation step(every x epochs)", type=int)
-
+    parser.add_argument("--Intersection", help='If to evaluate within the intersection', action='store_true')
+    parser.add_argument("--NotIntersection", help='If to evaluate outside the intersection', action='store_true')
+    
     parser.add_argument("--SAHI", help="run detection with SAHI", action='store_true')
     parser.add_argument("--SahiPatchSize", help="patch size of sahi", type=int, default=640)
     parser.add_argument("--SahiPatchOverlapRatio", help="overlap ration of sahi patches", type=float, default=0.25)

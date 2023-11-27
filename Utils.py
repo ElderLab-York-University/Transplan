@@ -394,7 +394,15 @@ def get_detect_eval_save_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+ Puncuations.Dot+"txt")
-
+def get_detect_eval_Intersections_save_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+Puncuations.Dot+"Intersection"+ Puncuations.Dot+"txt")
+def get_detect_eval_NonIntersections_save_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+Puncuations.Dot+"NonIntersection"+ Puncuations.Dot+"txt")
+    
 def add_homographygui_related_path_to_args(args):
     streetview = get_homography_streetview_path(args)
     topview = get_homography_topview_path(args)
@@ -464,7 +472,12 @@ def add_track_eval_save_path(args):
     return args 
 
 def add_detect_eval_save_path(args):
-    args.DetectEvalPth = get_detect_eval_save_path(args)
+    if not args.Intersection and not args.NotIntersection:
+        args.DetectEvalPth = get_detect_eval_save_path(args)
+    elif args.Intersection:
+        args.DetectEvalPth=get_detect_eval_Intersections_save_path(args)
+    else:
+        args.DetectEvalPth=get_detect_eval_NonIntersections_save_path(args)
     return args 
 
 def add_vis_labelled_tracks_pth_to_args(args):

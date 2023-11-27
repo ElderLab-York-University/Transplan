@@ -237,10 +237,25 @@ def evaluate_detection(base_args, nested_args):
         #     frame_dict['labels']=gts_labels
             
         #     annotations.append(frame_dict)
-        
-        dfs_gt.append(df_gt)
-        dfs_pred.append(df_pred)
-        dfs_ids.append(df_id)
+        if args.Intersection:
+            if args.Dataset[-3:-1]=='sc':
+                roi=args.MetaData['roi']
+                df_gt,_=remove_out_of_ROI(df_gt,roi)
+                df_pred,_=remove_out_of_ROI(df_pred,roi)  
+                dfs_gt.append(df_gt)
+                dfs_pred.append(df_pred)
+                              
+        elif args.NonIntersection:
+            if args.Dataset[-3:-1]=='sc':
+                roi=args.MetaData['roi']
+                _,df_gt=remove_out_of_ROI(df_gt,roi)
+                _,df_pred=remove_out_of_ROI(df_pred,roi)  
+                dfs_gt.append(df_gt)
+                dfs_pred.append(df_pred)
+        else:
+            dfs_gt.append(df_gt)
+            dfs_pred.append(df_pred)
+            dfs_ids.append(df_id)
     gts=np.array(gts)
     preds=np.array(preds)
     dfs_gt=pd.concat(dfs_gt)
