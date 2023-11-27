@@ -245,7 +245,7 @@ def evaluate_detection(base_args, nested_args):
                 dfs_gt.append(df_gt)
                 dfs_pred.append(df_pred)
                               
-        elif args.NonIntersection:
+        elif args.NotIntersection:
             if args.Dataset[-3:-1]=='sc':
                 roi=args.MetaData['roi']
                 _,df_gt=remove_out_of_ROI(df_gt,roi)
