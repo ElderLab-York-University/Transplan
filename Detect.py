@@ -70,6 +70,7 @@ def visdetect(args):
         visdetect_3d(args)
     else:
         visdetect_2d(args)
+        
 def visdetect_2d(args):
     if args.Detector is None:
         return FailLog("To interpret detections you should specify detector")
