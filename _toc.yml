@@ -1,0 +1,20 @@
+root: README
+entries:
+- file: Docs/BENCHMARKING
+  title: Benchmarking
+  entries:
+  - file: Docs/COUNTING
+    title: Counting
+  - file: Docs/DETECTORS
+    title: Detectors
+  - file: Docs/INSTALL
+    title: Install
+  - file: Docs/REPROJECTION
+    title: Reprojection
+  - file: Docs/SEGMENTERS
+    title: Segmenters
+  - file: Docs/TRACKERS
+    title: Trackers
+  - file: Docs/USERGUIDE
+    title: Userguide
+
