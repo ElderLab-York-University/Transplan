@@ -4,7 +4,7 @@ entries:
   title: Benchmarking
   entries:
   - file: Docs/COUNTING
-    title: Counting
+    title: Counting Changed
   - file: Docs/DETECTORS
     title: Detectors
   - file: Docs/INSTALL
