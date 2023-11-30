@@ -1,0 +1,981 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>ByteTrack &#8212; ElderLab-York-University/Transplan</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../../_static/design-tabs.js"></script>
+    <script async="async" src="https://www.googletagmanager.com/gtag/js?id=__G_ANALYTICS_ID__"></script>
+    <script>
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){ dataLayer.push(arguments); }
+                gtag('js', new Date());
+                gtag('config', '__G_ANALYTICS_ID__');
+            </script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../../_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'Trackers/GByteTrack/GByteTrack/README';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../../../README.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="https://www.elderlab.yorku.ca/wp-content/uploads/2017/10/Artboard-10@2x.png" class="logo__image only-light" alt="ElderLab-York-University/Transplan - Home"/>
+    <script>document.write(`<img src="https://www.elderlab.yorku.ca/wp-content/uploads/2017/10/Artboard-10@2x.png" class="logo__image only-dark" alt="ElderLab-York-University/Transplan - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../../README.html">
+                    Introduction
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../Docs/COUNTING.html">Counting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Docs/DETECTORS.html">Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Docs/INSTALL.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Docs/REPROJECTION.html">Reprojection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Docs/SEGMENTERS.html">Segmenters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Docs/TRACKERS.html">Trackers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Docs/USERGUIDE.html">User Guide</a></li>
+
+
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/ElderLab-York-University/Transplan" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/ElderLab-York-University/Transplan/edit/booklet/./Trackers/GByteTrack/GByteTrack/README.md" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/ElderLab-York-University/Transplan/issues/new?title=Issue%20on%20page%20%2FTrackers/GByteTrack/GByteTrack/README.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../../_sources/Trackers/GByteTrack/GByteTrack/README.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>ByteTrack</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bytetrack-is-a-simple-fast-and-strong-multi-object-tracker">ByteTrack is a simple, fast and strong multi-object tracker.</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demo-links">Demo Links</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#abstract">Abstract</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking-performance">Tracking performance</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#results-on-mot-challenge-test-set">Results on MOT challenge test set</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#visualization-results-on-mot-challenge-test-set">Visualization results on MOT challenge test set</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-on-the-host-machine">1. Installing on the host machine</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#docker-build">2. Docker build</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-preparation">Data preparation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-zoo">Model zoo</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ablation-model">Ablation model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mot17-test-model">MOT17 test model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mot20-test-model">MOT20 test model</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training">Training</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking">Tracking</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#applying-byte-to-other-trackers">Applying BYTE to other trackers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#combining-byte-with-other-detectors">Combining BYTE with other detectors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demo">Demo</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deploy">Deploy</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#citation">Citation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgement">Acknowledgement</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="bytetrack">
+<h1>ByteTrack<a class="headerlink" href="#bytetrack" title="Permalink to this heading">#</a></h1>
+<p><a class="reference external" href="https://paperswithcode.com/sota/multi-object-tracking-on-mot17?p=bytetrack-multi-object-tracking-by-1"><img alt="PWC" src="https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/bytetrack-multi-object-tracking-by-1/multi-object-tracking-on-mot17" /></a></p>
+<p><a class="reference external" href="https://paperswithcode.com/sota/multi-object-tracking-on-mot20-1?p=bytetrack-multi-object-tracking-by-1"><img alt="PWC" src="https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/bytetrack-multi-object-tracking-by-1/multi-object-tracking-on-mot20-1" /></a></p>
+<section id="bytetrack-is-a-simple-fast-and-strong-multi-object-tracker">
+<h2>ByteTrack is a simple, fast and strong multi-object tracker.<a class="headerlink" href="#bytetrack-is-a-simple-fast-and-strong-multi-object-tracker" title="Permalink to this heading">#</a></h2>
+<p align="center"><img src="assets/sota.png" width="500"/></p>
+<blockquote>
+<div><p><a class="reference external" href="https://arxiv.org/abs/2110.06864"><strong>ByteTrack: Multi-Object Tracking by Associating Every Detection Box</strong></a></p>
+<p>Yifu Zhang, Peize Sun, Yi Jiang, Dongdong Yu, Fucheng Weng, Zehuan Yuan, Ping Luo, Wenyu Liu, Xinggang Wang</p>
+<p><em><a class="reference external" href="https://arxiv.org/abs/2110.06864">arXiv 2110.06864</a></em></p>
+</div></blockquote>
+</section>
+<section id="demo-links">
+<h2>Demo Links<a class="headerlink" href="#demo-links" title="Permalink to this heading">#</a></h2>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head text-center"><p>Google Colab demo</p></th>
+<th class="head text-center"><p>Huggingface Demo</p></th>
+<th class="head text-center"><p>Original Paper: ByteTrack</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p><a class="reference external" href="https://colab.research.google.com/drive/1bDilg4cmXFa8HCKHbsZ_p16p0vrhLyu0?usp=sharing"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p></td>
+<td class="text-center"><p><a class="reference external" href="https://huggingface.co/spaces/akhaliq/bytetrack"><img alt="Hugging Face Spaces" src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue" /></a></p></td>
+<td class="text-center"><p><a class="reference external" href="https://arxiv.org/abs/2110.06864">arXiv 2110.06864</a></p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p>Integrated to <a class="reference external" href="https://huggingface.co/spaces">Huggingface Spaces</a> with <a class="reference external" href="https://github.com/gradio-app/gradio">Gradio</a>.</p></li>
+</ul>
+</section>
+<section id="abstract">
+<h2>Abstract<a class="headerlink" href="#abstract" title="Permalink to this heading">#</a></h2>
+<p>Multi-object tracking (MOT) aims at estimating bounding boxes and identities of objects in videos. Most methods obtain identities by associating detection boxes whose scores are higher than a threshold. The objects with low detection scores, e.g. occluded objects, are simply thrown away, which brings non-negligible true object missing and fragmented trajectories. To solve this problem, we present a simple, effective and generic association method, tracking by associating every detection box instead of only the high score ones. For the low score detection boxes, we utilize their similarities with tracklets to recover true objects and filter out the background detections. When applied to 9 different state-of-the-art trackers, our method achieves consistent improvement on IDF1 scores ranging from 1 to 10 points. To put forwards the state-of-the-art performance of MOT, we design a simple and strong tracker, named ByteTrack. For the first time, we achieve 80.3 MOTA, 77.3 IDF1 and 63.1 HOTA on the test set of MOT17 with 30 FPS running speed on a single V100 GPU.</p>
+<p align="center"><img src="assets/teasing.png" width="400"/></p>
+</section>
+<section id="tracking-performance">
+<h2>Tracking performance<a class="headerlink" href="#tracking-performance" title="Permalink to this heading">#</a></h2>
+<section id="results-on-mot-challenge-test-set">
+<h3>Results on MOT challenge test set<a class="headerlink" href="#results-on-mot-challenge-test-set" title="Permalink to this heading">#</a></h3>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Dataset</p></th>
+<th class="head"><p>MOTA</p></th>
+<th class="head"><p>IDF1</p></th>
+<th class="head"><p>HOTA</p></th>
+<th class="head"><p>MT</p></th>
+<th class="head"><p>ML</p></th>
+<th class="head"><p>FP</p></th>
+<th class="head"><p>FN</p></th>
+<th class="head"><p>IDs</p></th>
+<th class="head"><p>FPS</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>MOT17</p></td>
+<td><p>80.3</p></td>
+<td><p>77.3</p></td>
+<td><p>63.1</p></td>
+<td><p>53.2%</p></td>
+<td><p>14.5%</p></td>
+<td><p>25491</p></td>
+<td><p>83721</p></td>
+<td><p>2196</p></td>
+<td><p>29.6</p></td>
+</tr>
+<tr class="row-odd"><td><p>MOT20</p></td>
+<td><p>77.8</p></td>
+<td><p>75.2</p></td>
+<td><p>61.3</p></td>
+<td><p>69.2%</p></td>
+<td><p>9.5%</p></td>
+<td><p>26249</p></td>
+<td><p>87594</p></td>
+<td><p>1223</p></td>
+<td><p>13.7</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="visualization-results-on-mot-challenge-test-set">
+<h3>Visualization results on MOT challenge test set<a class="headerlink" href="#visualization-results-on-mot-challenge-test-set" title="Permalink to this heading">#</a></h3>
+<p><img src="assets/MOT17-01-SDP.gif" width="400"/>   <img src="assets/MOT17-07-SDP.gif" width="400"/>
+<img src="assets/MOT20-07.gif" width="400"/>   <img src="assets/MOT20-08.gif" width="400"/></p>
+</section>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h2>
+<section id="installing-on-the-host-machine">
+<h3>1. Installing on the host machine<a class="headerlink" href="#installing-on-the-host-machine" title="Permalink to this heading">#</a></h3>
+<p>Step1. Install ByteTrack.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/ifzhang/ByteTrack.git
+<span class="nb">cd</span><span class="w"> </span>ByteTrack
+pip3<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+python3<span class="w"> </span>setup.py<span class="w"> </span>develop
+</pre></div>
+</div>
+<p>Step2. Install <a class="reference external" href="https://github.com/cocodataset/cocoapi">pycocotools</a>.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>cython<span class="p">;</span><span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span><span class="s1">&#39;git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI&#39;</span>
+</pre></div>
+</div>
+<p>Step3. Others</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>cython_bbox
+</pre></div>
+</div>
+</section>
+<section id="docker-build">
+<h3>2. Docker build<a class="headerlink" href="#docker-build" title="Permalink to this heading">#</a></h3>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>bytetrack:latest<span class="w"> </span>.
+
+<span class="c1"># Startup sample</span>
+mkdir<span class="w"> </span>-p<span class="w"> </span>pretrained<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+mkdir<span class="w"> </span>-p<span class="w"> </span>YOLOX_outputs<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+xhost<span class="w"> </span>+local:<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+docker<span class="w"> </span>run<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w"> </span>-it<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span><span class="nv">$PWD</span>/pretrained:/workspace/ByteTrack/pretrained<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span><span class="nv">$PWD</span>/datasets:/workspace/ByteTrack/datasets<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span><span class="nv">$PWD</span>/YOLOX_outputs:/workspace/ByteTrack/YOLOX_outputs<span class="w"> </span><span class="se">\</span>
+-v<span class="w"> </span>/tmp/.X11-unix/:/tmp/.X11-unix:rw<span class="w"> </span><span class="se">\</span>
+--device<span class="w"> </span>/dev/video0:/dev/video0:mwr<span class="w"> </span><span class="se">\</span>
+--net<span class="o">=</span>host<span class="w"> </span><span class="se">\</span>
+-e<span class="w"> </span><span class="nv">XDG_RUNTIME_DIR</span><span class="o">=</span><span class="nv">$XDG_RUNTIME_DIR</span><span class="w"> </span><span class="se">\</span>
+-e<span class="w"> </span><span class="nv">DISPLAY</span><span class="o">=</span><span class="nv">$DISPLAY</span><span class="w"> </span><span class="se">\</span>
+--privileged<span class="w"> </span><span class="se">\</span>
+bytetrack:latest
+</pre></div>
+</div>
+</section>
+</section>
+<section id="data-preparation">
+<h2>Data preparation<a class="headerlink" href="#data-preparation" title="Permalink to this heading">#</a></h2>
+<p>Download <a class="reference external" href="https://motchallenge.net/">MOT17</a>, <a class="reference external" href="https://motchallenge.net/">MOT20</a>, <a class="reference external" href="https://www.crowdhuman.org/">CrowdHuman</a>, <a class="reference external" href="https://github.com/Zhongdao/Towards-Realtime-MOT/blob/master/DATASET_ZOO.md">Cityperson</a>, <a class="reference external" href="https://github.com/Zhongdao/Towards-Realtime-MOT/blob/master/DATASET_ZOO.md">ETHZ</a> and put them under &lt;ByteTrack_HOME&gt;/datasets in the following structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>datasets
+   |——————mot
+   |        └——————train
+   |        └——————test
+   └——————crowdhuman
+   |         └——————Crowdhuman_train
+   |         └——————Crowdhuman_val
+   |         └——————annotation_train.odgt
+   |         └——————annotation_val.odgt
+   └——————MOT20
+   |        └——————train
+   |        └——————test
+   └——————Cityscapes
+   |        └——————images
+   |        └——————labels_with_ids
+   └——————ETHZ
+            └——————eth01
+            └——————...
+            └——————eth07
+</pre></div>
+</div>
+<p>Then, you need to turn the datasets to COCO format and mix different training data:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>&lt;ByteTrack_HOME&gt;
+python3<span class="w"> </span>tools/convert_mot17_to_coco.py
+python3<span class="w"> </span>tools/convert_mot20_to_coco.py
+python3<span class="w"> </span>tools/convert_crowdhuman_to_coco.py
+python3<span class="w"> </span>tools/convert_cityperson_to_coco.py
+python3<span class="w"> </span>tools/convert_ethz_to_coco.py
+</pre></div>
+</div>
+<p>Before mixing different datasets, you need to follow the operations in <a class="reference external" href="https://github.com/ifzhang/ByteTrack/blob/c116dfc746f9ebe07d419caa8acba9b3acfa79a6/tools/mix_data_ablation.py#L6">mix_xxx.py</a> to create a data folder and link. Finally, you can mix the training data:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>&lt;ByteTrack_HOME&gt;
+python3<span class="w"> </span>tools/mix_data_ablation.py
+python3<span class="w"> </span>tools/mix_data_test_mot17.py
+python3<span class="w"> </span>tools/mix_data_test_mot20.py
+</pre></div>
+</div>
+</section>
+<section id="model-zoo">
+<h2>Model zoo<a class="headerlink" href="#model-zoo" title="Permalink to this heading">#</a></h2>
+<section id="ablation-model">
+<h3>Ablation model<a class="headerlink" href="#ablation-model" title="Permalink to this heading">#</a></h3>
+<p>Train on CrowdHuman and MOT17 half train, evaluate on MOT17 half val</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Model</p></th>
+<th class="head"><p>MOTA</p></th>
+<th class="head"><p>IDF1</p></th>
+<th class="head"><p>IDs</p></th>
+<th class="head"><p>FPS</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ByteTrack_ablation <a class="reference external" href="https://drive.google.com/file/d/1iqhM-6V_r1FpOlOzrdP_Ejshgk0DxOob/view?usp=sharing">[google]</a>, <a class="reference external" href="https://pan.baidu.com/s/1W5eRBnxc4x9V8gm7dgdEYg">[baidu(code:eeo8)]</a></p></td>
+<td><p>76.6</p></td>
+<td><p>79.3</p></td>
+<td><p>159</p></td>
+<td><p>29.6</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="mot17-test-model">
+<h3>MOT17 test model<a class="headerlink" href="#mot17-test-model" title="Permalink to this heading">#</a></h3>
+<p>Train on CrowdHuman, MOT17, Cityperson and ETHZ, evaluate on MOT17 train.</p>
+<ul class="simple">
+<li><p><strong>Standard models</strong></p></li>
+</ul>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Model</p></th>
+<th class="head"><p>MOTA</p></th>
+<th class="head"><p>IDF1</p></th>
+<th class="head"><p>IDs</p></th>
+<th class="head"><p>FPS</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>bytetrack_x_mot17 <a class="reference external" href="https://drive.google.com/file/d/1P4mY0Yyd3PPTybgZkjMYhFri88nTmJX5/view?usp=sharing">[google]</a>, <a class="reference external" href="https://pan.baidu.com/s/1OJKrcQa_JP9zofC6ZtGBpw">[baidu(code:ic0i)]</a></p></td>
+<td><p>90.0</p></td>
+<td><p>83.3</p></td>
+<td><p>422</p></td>
+<td><p>29.6</p></td>
+</tr>
+<tr class="row-odd"><td><p>bytetrack_l_mot17 <a class="reference external" href="https://drive.google.com/file/d/1XwfUuCBF4IgWBWK2H7oOhQgEj9Mrb3rz/view?usp=sharing">[google]</a>, <a class="reference external" href="https://pan.baidu.com/s/1242adimKM6TYdeLU2qnuRA">[baidu(code:1cml)]</a></p></td>
+<td><p>88.7</p></td>
+<td><p>80.7</p></td>
+<td><p>460</p></td>
+<td><p>43.7</p></td>
+</tr>
+<tr class="row-even"><td><p>bytetrack_m_mot17 <a class="reference external" href="https://drive.google.com/file/d/11Zb0NN_Uu7JwUd9e6Nk8o2_EUfxWqsun/view?usp=sharing">[google]</a>, <a class="reference external" href="https://pan.baidu.com/s/1fKemO1uZfvNSLzJfURO4TQ">[baidu(code:u3m4)]</a></p></td>
+<td><p>87.0</p></td>
+<td><p>80.1</p></td>
+<td><p>477</p></td>
+<td><p>54.1</p></td>
+</tr>
+<tr class="row-odd"><td><p>bytetrack_s_mot17 <a class="reference external" href="https://drive.google.com/file/d/1uSmhXzyV1Zvb4TJJCzpsZOIcw7CCJLxj/view?usp=sharing">[google]</a>, <a class="reference external" href="https://pan.baidu.com/s/1PiP1kQfgxAIrnGUbFP6Wfg">[baidu(code:qflm)]</a></p></td>
+<td><p>79.2</p></td>
+<td><p>74.3</p></td>
+<td><p>533</p></td>
+<td><p>64.5</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p><strong>Light models</strong></p></li>
+</ul>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Model</p></th>
+<th class="head"><p>MOTA</p></th>
+<th class="head"><p>IDF1</p></th>
+<th class="head"><p>IDs</p></th>
+<th class="head"><p>Params(M)</p></th>
+<th class="head"><p>FLOPs(G)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>bytetrack_nano_mot17 <a class="reference external" href="https://drive.google.com/file/d/1AoN2AxzVwOLM0gJ15bcwqZUpFjlDV1dX/view?usp=sharing">[google]</a>, <a class="reference external" href="https://pan.baidu.com/s/1dMxqBPP7lFNRZ3kFgDmWdw">[baidu(code:1ub8)]</a></p></td>
+<td><p>69.0</p></td>
+<td><p>66.3</p></td>
+<td><p>531</p></td>
+<td><p>0.90</p></td>
+<td><p>3.99</p></td>
+</tr>
+<tr class="row-odd"><td><p>bytetrack_tiny_mot17 <a class="reference external" href="https://drive.google.com/file/d/1LFAl14sql2Q5Y9aNFsX_OqsnIzUD_1ju/view?usp=sharing">[google]</a>, <a class="reference external" href="https://pan.baidu.com/s/1jgIqisPSDw98HJh8hqhM5w">[baidu(code:cr8i)]</a></p></td>
+<td><p>77.1</p></td>
+<td><p>71.5</p></td>
+<td><p>519</p></td>
+<td><p>5.03</p></td>
+<td><p>24.45</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="mot20-test-model">
+<h3>MOT20 test model<a class="headerlink" href="#mot20-test-model" title="Permalink to this heading">#</a></h3>
+<p>Train on CrowdHuman and MOT20, evaluate on MOT20 train.</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Model</p></th>
+<th class="head"><p>MOTA</p></th>
+<th class="head"><p>IDF1</p></th>
+<th class="head"><p>IDs</p></th>
+<th class="head"><p>FPS</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>bytetrack_x_mot20 <a class="reference external" href="https://drive.google.com/file/d/1HX2_JpMOjOIj1Z9rJjoet9XNy_cCAs5U/view?usp=sharing">[google]</a>, <a class="reference external" href="https://pan.baidu.com/s/1bowJJj0bAnbhEQ3_6_Am0A">[baidu(code:3apd)]</a></p></td>
+<td><p>93.4</p></td>
+<td><p>89.3</p></td>
+<td><p>1057</p></td>
+<td><p>17.5</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="training">
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this heading">#</a></h2>
+<p>The COCO pretrained YOLOX model can be downloaded from their <a class="reference external" href="https://github.com/Megvii-BaseDetection/YOLOX/tree/0.1.0">model zoo</a>. After downloading the pretrained models, you can put them under &lt;ByteTrack_HOME&gt;/pretrained.</p>
+<ul class="simple">
+<li><p><strong>Train ablation model (MOT17 half train and CrowdHuman)</strong></p></li>
+</ul>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>&lt;ByteTrack_HOME&gt;
+python3<span class="w"> </span>tools/train.py<span class="w"> </span>-f<span class="w"> </span>exps/example/mot/yolox_x_ablation.py<span class="w"> </span>-d<span class="w"> </span><span class="m">8</span><span class="w"> </span>-b<span class="w"> </span><span class="m">48</span><span class="w"> </span>--fp16<span class="w"> </span>-o<span class="w"> </span>-c<span class="w"> </span>pretrained/yolox_x.pth
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Train MOT17 test model (MOT17 train, CrowdHuman, Cityperson and ETHZ)</strong></p></li>
+</ul>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>&lt;ByteTrack_HOME&gt;
+python3<span class="w"> </span>tools/train.py<span class="w"> </span>-f<span class="w"> </span>exps/example/mot/yolox_x_mix_det.py<span class="w"> </span>-d<span class="w"> </span><span class="m">8</span><span class="w"> </span>-b<span class="w"> </span><span class="m">48</span><span class="w"> </span>--fp16<span class="w"> </span>-o<span class="w"> </span>-c<span class="w"> </span>pretrained/yolox_x.pth
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Train MOT20 test model (MOT20 train, CrowdHuman)</strong></p></li>
+</ul>
+<p>For MOT20, you need to clip the bounding boxes inside the image.</p>
+<p>Add clip operation in <a class="reference external" href="https://github.com/ifzhang/ByteTrack/blob/72cd6dd24083c337a9177e484b12bb2b5b3069a6/yolox/data/data_augment.py#L134">line 134-135 in data_augment.py</a>, <a class="reference external" href="https://github.com/ifzhang/ByteTrack/blob/72cd6dd24083c337a9177e484b12bb2b5b3069a6/yolox/data/datasets/mosaicdetection.py#L122">line 122-125 in mosaicdetection.py</a>, <a class="reference external" href="https://github.com/ifzhang/ByteTrack/blob/72cd6dd24083c337a9177e484b12bb2b5b3069a6/yolox/data/datasets/mosaicdetection.py#L217">line 217-225 in mosaicdetection.py</a>, <a class="reference external" href="https://github.com/ifzhang/ByteTrack/blob/72cd6dd24083c337a9177e484b12bb2b5b3069a6/yolox/utils/boxes.py#L115">line 115-118 in boxes.py</a>.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>&lt;ByteTrack_HOME&gt;
+python3<span class="w"> </span>tools/train.py<span class="w"> </span>-f<span class="w"> </span>exps/example/mot/yolox_x_mix_mot20_ch.py<span class="w"> </span>-d<span class="w"> </span><span class="m">8</span><span class="w"> </span>-b<span class="w"> </span><span class="m">48</span><span class="w"> </span>--fp16<span class="w"> </span>-o<span class="w"> </span>-c<span class="w"> </span>pretrained/yolox_x.pth
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Train custom dataset</strong></p></li>
+</ul>
+<p>First, you need to prepare your dataset in COCO format. You can refer to <a class="reference external" href="https://github.com/ifzhang/ByteTrack/blob/main/tools/convert_mot17_to_coco.py">MOT-to-COCO</a> or <a class="reference external" href="https://github.com/ifzhang/ByteTrack/blob/main/tools/convert_crowdhuman_to_coco.py">CrowdHuman-to-COCO</a>. Then, you need to create a Exp file for your dataset. You can refer to the <a class="reference external" href="https://github.com/ifzhang/ByteTrack/blob/main/exps/example/mot/yolox_x_ch.py">CrowdHuman</a> training Exp file. Don’t forget to modify get_data_loader() and get_eval_loader in your Exp file. Finally, you can train bytetrack on your dataset by running:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>&lt;ByteTrack_HOME&gt;
+python3<span class="w"> </span>tools/train.py<span class="w"> </span>-f<span class="w"> </span>exps/example/mot/your_exp_file.py<span class="w"> </span>-d<span class="w"> </span><span class="m">8</span><span class="w"> </span>-b<span class="w"> </span><span class="m">48</span><span class="w"> </span>--fp16<span class="w"> </span>-o<span class="w"> </span>-c<span class="w"> </span>pretrained/yolox_x.pth
+</pre></div>
+</div>
+</section>
+<section id="tracking">
+<h2>Tracking<a class="headerlink" href="#tracking" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>Evaluation on MOT17 half val</strong></p></li>
+</ul>
+<p>Run ByteTrack:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>&lt;ByteTrack_HOME&gt;
+python3<span class="w"> </span>tools/track.py<span class="w"> </span>-f<span class="w"> </span>exps/example/mot/yolox_x_ablation.py<span class="w"> </span>-c<span class="w"> </span>pretrained/bytetrack_ablation.pth.tar<span class="w"> </span>-b<span class="w"> </span><span class="m">1</span><span class="w"> </span>-d<span class="w"> </span><span class="m">1</span><span class="w"> </span>--fp16<span class="w"> </span>--fuse
+</pre></div>
+</div>
+<p>You can get 76.6 MOTA using our pretrained model.</p>
+<p>Run other trackers:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>tools/track_sort.py<span class="w"> </span>-f<span class="w"> </span>exps/example/mot/yolox_x_ablation.py<span class="w"> </span>-c<span class="w"> </span>pretrained/bytetrack_ablation.pth.tar<span class="w"> </span>-b<span class="w"> </span><span class="m">1</span><span class="w"> </span>-d<span class="w"> </span><span class="m">1</span><span class="w"> </span>--fp16<span class="w"> </span>--fuse
+python3<span class="w"> </span>tools/track_deepsort.py<span class="w"> </span>-f<span class="w"> </span>exps/example/mot/yolox_x_ablation.py<span class="w"> </span>-c<span class="w"> </span>pretrained/bytetrack_ablation.pth.tar<span class="w"> </span>-b<span class="w"> </span><span class="m">1</span><span class="w"> </span>-d<span class="w"> </span><span class="m">1</span><span class="w"> </span>--fp16<span class="w"> </span>--fuse
+python3<span class="w"> </span>tools/track_motdt.py<span class="w"> </span>-f<span class="w"> </span>exps/example/mot/yolox_x_ablation.py<span class="w"> </span>-c<span class="w"> </span>pretrained/bytetrack_ablation.pth.tar<span class="w"> </span>-b<span class="w"> </span><span class="m">1</span><span class="w"> </span>-d<span class="w"> </span><span class="m">1</span><span class="w"> </span>--fp16<span class="w"> </span>--fuse
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Test on MOT17</strong></p></li>
+</ul>
+<p>Run ByteTrack:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>&lt;ByteTrack_HOME&gt;
+python3<span class="w"> </span>tools/track.py<span class="w"> </span>-f<span class="w"> </span>exps/example/mot/yolox_x_mix_det.py<span class="w"> </span>-c<span class="w"> </span>pretrained/bytetrack_x_mot17.pth.tar<span class="w"> </span>-b<span class="w"> </span><span class="m">1</span><span class="w"> </span>-d<span class="w"> </span><span class="m">1</span><span class="w"> </span>--fp16<span class="w"> </span>--fuse
+python3<span class="w"> </span>tools/interpolation.py
+</pre></div>
+</div>
+<p>Submit the txt files to <a class="reference external" href="https://motchallenge.net/">MOTChallenge</a> website and you can get 79+ MOTA (For 80+ MOTA, you need to carefully tune the test image size and high score detection threshold of each sequence).</p>
+<ul class="simple">
+<li><p><strong>Test on MOT20</strong></p></li>
+</ul>
+<p>We use the input size 1600 x 896 for MOT20-04, MOT20-07 and 1920 x 736 for MOT20-06, MOT20-08. You can edit it in <a class="reference external" href="https://github.com/ifzhang/ByteTrack/blob/main/exps/example/mot/yolox_x_mix_mot20_ch.py">yolox_x_mix_mot20_ch.py</a></p>
+<p>Run ByteTrack:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>&lt;ByteTrack_HOME&gt;
+python3<span class="w"> </span>tools/track.py<span class="w"> </span>-f<span class="w"> </span>exps/example/mot/yolox_x_mix_mot20_ch.py<span class="w"> </span>-c<span class="w"> </span>pretrained/bytetrack_x_mot20.pth.tar<span class="w"> </span>-b<span class="w"> </span><span class="m">1</span><span class="w"> </span>-d<span class="w"> </span><span class="m">1</span><span class="w"> </span>--fp16<span class="w"> </span>--fuse<span class="w"> </span>--match_thresh<span class="w"> </span><span class="m">0</span>.7<span class="w"> </span>--mot20
+python3<span class="w"> </span>tools/interpolation.py
+</pre></div>
+</div>
+<p>Submit the txt files to <a class="reference external" href="https://motchallenge.net/">MOTChallenge</a> website and you can get 77+ MOTA (For higher MOTA, you need to carefully tune the test image size and high score detection threshold of each sequence).</p>
+</section>
+<section id="applying-byte-to-other-trackers">
+<h2>Applying BYTE to other trackers<a class="headerlink" href="#applying-byte-to-other-trackers" title="Permalink to this heading">#</a></h2>
+<p>See <a class="reference external" href="https://github.com/ifzhang/ByteTrack/tree/main/tutorials">tutorials</a>.</p>
+</section>
+<section id="combining-byte-with-other-detectors">
+<h2>Combining BYTE with other detectors<a class="headerlink" href="#combining-byte-with-other-detectors" title="Permalink to this heading">#</a></h2>
+<p>Suppose you have already got the detection results ‘dets’ (x1, y1, x2, y2, score) from other detectors, you can simply pass the detection results to BYTETracker (you need to first modify some post-processing code according to the format of your detection results in <a class="reference external" href="https://github.com/ifzhang/ByteTrack/blob/main/yolox/tracker/byte_tracker.py">byte_tracker.py</a>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">yolox.tracker.byte_tracker</span> <span class="kn">import</span> <span class="n">BYTETracker</span>
+<span class="n">tracker</span> <span class="o">=</span> <span class="n">BYTETracker</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">:</span>
+   <span class="n">dets</span> <span class="o">=</span> <span class="n">detector</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+   <span class="n">online_targets</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dets</span><span class="p">,</span> <span class="n">info_imgs</span><span class="p">,</span> <span class="n">img_size</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can get the tracking results in each frame from ‘online_targets’. You can refer to <a class="reference external" href="https://github.com/ifzhang/ByteTrack/blob/main/yolox/evaluators/mot_evaluator.py">mot_evaluators.py</a> to pass the detection results to BYTETracker.</p>
+</section>
+<section id="demo">
+<h2>Demo<a class="headerlink" href="#demo" title="Permalink to this heading">#</a></h2>
+<img src="assets/palace_demo.gif" width="600"/>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>&lt;ByteTrack_HOME&gt;
+python3<span class="w"> </span>tools/demo_track.py<span class="w"> </span>video<span class="w"> </span>-f<span class="w"> </span>exps/example/mot/yolox_x_mix_det.py<span class="w"> </span>-c<span class="w"> </span>pretrained/bytetrack_x_mot17.pth.tar<span class="w"> </span>--fp16<span class="w"> </span>--fuse<span class="w"> </span>--save_result
+</pre></div>
+</div>
+</section>
+<section id="deploy">
+<h2>Deploy<a class="headerlink" href="#deploy" title="Permalink to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p><span class="xref myst">ONNX export and ONNXRuntime</span></p></li>
+<li><p><span class="xref myst">TensorRT in Python</span></p></li>
+<li><p><span class="xref myst">TensorRT in C++</span></p></li>
+<li><p><span class="xref myst">ncnn in C++</span></p></li>
+<li><p><span class="xref myst">Deepstream</span></p></li>
+</ol>
+</section>
+<section id="citation">
+<h2>Citation<a class="headerlink" href="#citation" title="Permalink to this heading">#</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@article</span><span class="p">{</span><span class="n">zhang2022bytetrack</span><span class="p">,</span>
+  <span class="n">title</span><span class="o">=</span><span class="p">{</span><span class="n">ByteTrack</span><span class="p">:</span> <span class="n">Multi</span><span class="o">-</span><span class="n">Object</span> <span class="n">Tracking</span> <span class="n">by</span> <span class="n">Associating</span> <span class="n">Every</span> <span class="n">Detection</span> <span class="n">Box</span><span class="p">},</span>
+  <span class="n">author</span><span class="o">=</span><span class="p">{</span><span class="n">Zhang</span><span class="p">,</span> <span class="n">Yifu</span> <span class="ow">and</span> <span class="n">Sun</span><span class="p">,</span> <span class="n">Peize</span> <span class="ow">and</span> <span class="n">Jiang</span><span class="p">,</span> <span class="n">Yi</span> <span class="ow">and</span> <span class="n">Yu</span><span class="p">,</span> <span class="n">Dongdong</span> <span class="ow">and</span> <span class="n">Weng</span><span class="p">,</span> <span class="n">Fucheng</span> <span class="ow">and</span> <span class="n">Yuan</span><span class="p">,</span> <span class="n">Zehuan</span> <span class="ow">and</span> <span class="n">Luo</span><span class="p">,</span> <span class="n">Ping</span> <span class="ow">and</span> <span class="n">Liu</span><span class="p">,</span> <span class="n">Wenyu</span> <span class="ow">and</span> <span class="n">Wang</span><span class="p">,</span> <span class="n">Xinggang</span><span class="p">},</span>
+  <span class="n">booktitle</span><span class="o">=</span><span class="p">{</span><span class="n">Proceedings</span> <span class="n">of</span> <span class="n">the</span> <span class="n">European</span> <span class="n">Conference</span> <span class="n">on</span> <span class="n">Computer</span> <span class="n">Vision</span> <span class="p">(</span><span class="n">ECCV</span><span class="p">)},</span>
+  <span class="n">year</span><span class="o">=</span><span class="p">{</span><span class="mi">2022</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="acknowledgement">
+<h2>Acknowledgement<a class="headerlink" href="#acknowledgement" title="Permalink to this heading">#</a></h2>
+<p>A large part of the code is borrowed from <a class="reference external" href="https://github.com/Megvii-BaseDetection/YOLOX">YOLOX</a>, <a class="reference external" href="https://github.com/ifzhang/FairMOT">FairMOT</a>, <a class="reference external" href="https://github.com/PeizeSun/TransTrack">TransTrack</a> and <a class="reference external" href="https://github.com/samylee/Towards-Realtime-MOT-Cpp">JDE-Cpp</a>. Many thanks for their wonderful works.</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./Trackers/GByteTrack/GByteTrack"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bytetrack-is-a-simple-fast-and-strong-multi-object-tracker">ByteTrack is a simple, fast and strong multi-object tracker.</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demo-links">Demo Links</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#abstract">Abstract</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking-performance">Tracking performance</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#results-on-mot-challenge-test-set">Results on MOT challenge test set</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#visualization-results-on-mot-challenge-test-set">Visualization results on MOT challenge test set</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-on-the-host-machine">1. Installing on the host machine</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#docker-build">2. Docker build</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-preparation">Data preparation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-zoo">Model zoo</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ablation-model">Ablation model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mot17-test-model">MOT17 test model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mot20-test-model">MOT20 test model</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training">Training</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking">Tracking</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#applying-byte-to-other-trackers">Applying BYTE to other trackers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#combining-byte-with-other-detectors">Combining BYTE with other detectors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demo">Demo</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deploy">Deploy</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#citation">Citation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgement">Acknowledgement</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By ElderLab
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright ElderLab.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

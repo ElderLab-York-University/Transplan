@@ -1,0 +1,889 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>User Guide &#8212; ElderLab-York-University/Transplan</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js"></script>
+    <script async="async" src="https://www.googletagmanager.com/gtag/js?id=__G_ANALYTICS_ID__"></script>
+    <script>
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){ dataLayer.push(arguments); }
+                gtag('js', new Date());
+                gtag('config', '__G_ANALYTICS_ID__');
+            </script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'Docs/USERGUIDE';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Tracking Guide" href="TRACKERS.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../README.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="https://www.elderlab.yorku.ca/wp-content/uploads/2017/10/Artboard-10@2x.png" class="logo__image only-light" alt="ElderLab-York-University/Transplan - Home"/>
+    <script>document.write(`<img src="https://www.elderlab.yorku.ca/wp-content/uploads/2017/10/Artboard-10@2x.png" class="logo__image only-dark" alt="ElderLab-York-University/Transplan - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../README.html">
+                    Introduction
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="COUNTING.html">Counting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DETECTORS.html">Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALL.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="REPROJECTION.html">Reprojection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SEGMENTERS.html">Segmenters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TRACKERS.html">Trackers</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">User Guide</a></li>
+
+
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/ElderLab-York-University/Transplan" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/ElderLab-York-University/Transplan/edit/booklet/./Docs/USERGUIDE.md" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/ElderLab-York-University/Transplan/issues/new?title=Issue%20on%20page%20%2FDocs/USERGUIDE.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/Docs/USERGUIDE.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>User Guide</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">User Guide</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-0-dataset-structure-and-required-information">Step 0: Dataset structure and required information</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-verify-structure-of-your-data-extract-images">Step 1: Verify structure of your data / Extract Images</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-solve-homographies">Step 2: Solve homographies</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-visualize-roi">Step 3: Visualize ROI</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-run-segmentation-and-post-process">Step 4: Run Segmentation and Post Process</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-object-detection-and-post-process">Step 5: Object Detection and Post Process</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-multi-object-tracking-and-post-process">Step 6: Multi Object Tracking and Post Process</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-7-extract-prototypes">Step 7: Extract prototypes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-8-trun-counts">Step 8: Trun Counts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-9-visulize-results-on-video">Step 9: Visulize Results on Video</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-source-camera-operations">Multi Source/Camera Operations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-average-counts-across-sources">Step 1: Average Counts across sources</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-segment-operations">Multi Segment Operations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step1-convert-detections-for-coco-format">Step1: Convert detections for coco format</a></li>
+</ul>
+</li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="user-guide">
+<h1>User Guide<a class="headerlink" href="#user-guide" title="Permalink to this heading">#</a></h1>
+<p>For a typical intersection environment the following steps should be taken.</p>
+<p>These steps are consistent with <code class="docutils literal notranslate"><span class="pre">demo.py</span></code>.</p>
+<section id="step-0-dataset-structure-and-required-information">
+<h2>Step 0: Dataset structure and required information<a class="headerlink" href="#step-0-dataset-structure-and-required-information" title="Permalink to this heading">#</a></h2>
+<p>In general, the dataset you want to run the pipeline on should have the following format.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Dataset structure should be similar to below</span>
+<span class="c1"># Data---|</span>
+<span class="c1">#        |--Split1---|</span>
+<span class="c1">#        |           |--Segment1---|</span>
+<span class="c1">#        |           |             |--Source1--|</span>
+<span class="c1">#        |           |             |           |--VideoName.ext</span>
+<span class="c1">#________|___________|_____________|___________|--VideoName.metadata.json</span>
+</pre></div>
+</div>
+<p>For each <code class="docutils literal notranslate"><span class="pre">VideoName.mp4/ext</span></code> the <strong>MUST</strong> be a VideoName.meadata.json file.
+Consistent with the name of of file it includes metadata related to that intersection.
+An example is given below.</p>
+<p><code class="docutils literal notranslate"><span class="pre">VideoName.metadata.json</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;center&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="mf">43.844412</span><span class="p">,</span> <span class="o">-</span><span class="mf">79.382311</span>
+  <span class="p">],</span>
+  <span class="s2">&quot;Address&quot;</span><span class="p">:</span> <span class="s2">&quot;HW7 and Leslie&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;camera&quot;</span><span class="p">:</span> <span class="s2">&quot;Source1&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;roi&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">[</span><span class="mi">4132</span><span class="p">,</span> <span class="mi">1057</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">2786</span><span class="p">,</span> <span class="mi">834</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">874</span><span class="p">,</span> <span class="mi">1020</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">1226</span><span class="p">,</span> <span class="mi">2412</span><span class="p">]</span>     
+    <span class="p">],</span>
+  <span class="s2">&quot;roi_group&quot;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+  <span class="s2">&quot;gt&quot;</span><span class="p">:{</span><span class="s2">&quot;1&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;2&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;3&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;4&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;5&quot;</span><span class="p">:</span><span class="mi">19</span><span class="p">,</span> <span class="s2">&quot;6&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;7&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;8&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;9&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;10&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;11&quot;</span><span class="p">:</span><span class="mi">9</span><span class="p">,</span> <span class="s2">&quot;12&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">},</span>
+  <span class="s2">&quot;roi_percent&quot;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+  <span class="s2">&quot;moi_clusters&quot;</span><span class="p">:{</span><span class="s2">&quot;1&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;2&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;3&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;4&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;5&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;6&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;7&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;8&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;9&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;10&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;11&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;12&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>key</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">center</span></code></p></td>
+<td><p>long lat coordinates of the center of intersecion</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">adress</span></code></p></td>
+<td><p>adress of intersection (optional)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">camera</span></code></p></td>
+<td><p>video source in multi-camera environments</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">roi</span></code></p></td>
+<td><p>region of interest containing the intersection formed by connecting the list of coordinates</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">roi_group</span></code></p></td>
+<td><p>for flexible grouping, each edge of roi can be taged with a group number(for intersections 4 groups)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">gt</span></code></p></td>
+<td><p>the turn-counts grand truth</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">moi_clusters</span></code></p></td>
+<td><p>number of lanes per direction</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="step-1-verify-structure-of-your-data-extract-images">
+<h2>Step 1: Verify structure of your data / Extract Images<a class="headerlink" href="#step-1-verify-structure-of-your-data-extract-images" title="Permalink to this heading">#</a></h2>
+<p>To do so, you can extract images from the video.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span> <span class="o">--</span><span class="n">ExtractImages</span>
+</pre></div>
+</div>
+<p>Once you run this command, the will be a folder made called <code class="docutils literal notranslate"><span class="pre">Results</span></code> right next to the video.
+You can find your extracted images under <code class="docutils literal notranslate"><span class="pre">Results/Images</span></code>.</p>
+</section>
+<section id="step-2-solve-homographies">
+<h2>Step 2: Solve homographies<a class="headerlink" href="#step-2-solve-homographies" title="Permalink to this heading">#</a></h2>
+<p>For most of our subtasks we will need a homography planer translation between the camera view and top view.
+There is a GUI that you can run to solve this homography.
+For the homography you need to have a top view frame <code class="docutils literal notranslate"><span class="pre">VideoName.homography.top.&lt;TopView&gt;.png</span></code> and a camera view frame <code class="docutils literal notranslate"><span class="pre">VideoName.homography.street.png</span></code>.
+If these files are not provided the pipeline will extract camera view from video using <code class="docutils literal notranslate"><span class="pre">--Frame</span></code> flag while top view is extracted using GoogleMaps API using <code class="docutils literal notranslate"><span class="pre">metadata.json-&gt;center</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span>  <span class="o">--</span><span class="n">HomographyGUI</span> <span class="o">--</span><span class="n">VisHomographyGUI</span> <span class="o">--</span><span class="n">Frame</span><span class="o">=</span><span class="mi">1</span> <span class="o">--</span><span class="n">TopView</span><span class="o">=</span><span class="p">[</span><span class="n">GoogleMap</span><span class="o">/</span><span class="n">OrthoPhoto</span><span class="p">]</span>
+</pre></div>
+</div>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Flag</p></th>
+<th class="head"><p>Function</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--HomographyGUI</span></code></p></td>
+<td><p>launch GUI to solve homographies</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--VisHomographyGUI</span></code></p></td>
+<td><p>Visualize homography bu backprojecting cameara view to top view</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--Frame</span></code></p></td>
+<td><p>frame to extract from video as camera view</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--TopView</span></code></p></td>
+<td><p>GoogleMap or OrthoPhoto</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="step-3-visualize-roi">
+<h2>Step 3: Visualize ROI<a class="headerlink" href="#step-3-visualize-roi" title="Permalink to this heading">#</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span> <span class="o">--</span><span class="n">VisROI</span> <span class="o">--</span><span class="n">TopView</span><span class="o">=</span><span class="n">GoogleMap</span>
+</pre></div>
+</div>
+</section>
+<section id="step-4-run-segmentation-and-post-process">
+<h2>Step 4: Run Segmentation and Post Process<a class="headerlink" href="#step-4-run-segmentation-and-post-process" title="Permalink to this heading">#</a></h2>
+<p>The Segmentations results can be used to estimate the contact point of objects to ground surface.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span> <span class="o">--</span><span class="n">Segmenter</span><span class="o">=</span><span class="p">{</span><span class="n">seg</span><span class="p">}</span> <span class="o">--</span><span class="n">Segment</span> <span class="o">--</span><span class="n">VisSegment</span>
+</pre></div>
+</div>
+<p>You can filter segmentation masks based on their confidence scores or class labels</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span> <span class="o">--</span><span class="n">Segmenter</span><span class="o">=</span><span class="p">{</span><span class="n">seg</span><span class="p">}</span> <span class="o">--</span><span class="n">SegPostProc</span> <span class="o">--</span><span class="n">VisSegment</span> <span class="o">--</span><span class="n">SegTh</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">--</span><span class="n">classes_to_keep</span> <span class="mi">2</span> <span class="mi">5</span> <span class="mi">7</span>
+</pre></div>
+</div>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Flag</p></th>
+<th class="head"><p>Function</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--classes_to_keep</span></code></p></td>
+<td><p>object classes to keep based on COCO format</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--SegTh</span></code></p></td>
+<td><p>filter based on confidence threshold of masks</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="step-5-object-detection-and-post-process">
+<h2>Step 5: Object Detection and Post Process<a class="headerlink" href="#step-5-object-detection-and-post-process" title="Permalink to this heading">#</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span>  <span class="o">--</span><span class="n">Detector</span><span class="o">=</span><span class="p">{</span><span class="n">det</span><span class="p">}</span> <span class="o">--</span><span class="n">Detect</span> <span class="o">--</span><span class="n">VisDetect</span>
+<span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span>  <span class="o">--</span><span class="n">Detector</span><span class="o">=</span><span class="p">{</span><span class="n">det</span><span class="p">}</span> <span class="o">--</span><span class="n">VisDetect</span> <span class="o">--</span><span class="n">DetPostProc</span> <span class="o">--</span><span class="n">DetTh</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">--</span><span class="n">classes_to_keep</span> <span class="mi">2</span> <span class="mi">5</span> <span class="mi">7</span>
+</pre></div>
+</div>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Flag</p></th>
+<th class="head"><p>Function</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--classes_to_keep</span></code></p></td>
+<td><p>object classes to keep based on COCO format</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--DetTh</span></code></p></td>
+<td><p>filter based on confidence threshold of bboxes</p></td>
+</tr>
+</tbody>
+</table>
+<p>you can also convert the detections to coco format for external use</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span>  <span class="o">--</span><span class="n">Detector</span><span class="o">=</span><span class="p">{</span><span class="n">det</span><span class="p">}</span> <span class="o">--</span><span class="n">ConvertDetsToCOCO</span>
+</pre></div>
+</div>
+<p>You can get the contact point and backprojection points of the detections as below</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span>  <span class="o">--</span><span class="n">Detector</span><span class="o">=</span><span class="p">{</span><span class="n">det</span><span class="p">}</span> <span class="o">--</span><span class="n">Segmenter</span><span class="o">=</span><span class="p">{</span><span class="n">seg</span><span class="p">}</span>  <span class="o">--</span><span class="n">Homography</span> <span class="o">--</span><span class="n">BackprojectSource</span><span class="o">=</span><span class="n">detections</span>\ <span class="o">--</span><span class="n">TopView</span><span class="o">=&lt;</span><span class="n">TopView</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">BackprojectionMethod</span><span class="o">=&lt;</span><span class="n">Method</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">ContactPoint</span><span class="o">=&lt;</span><span class="n">CP</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Flag</p></th>
+<th class="head"><p>Function</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--Homography</span></code></p></td>
+<td><p>initiates backprojection module</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--BackprojectSource</span></code></p></td>
+<td><p>[detection, tracks]</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--TopView</span></code></p></td>
+<td><p>[GoogleMap, OrthoPhoto]</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--BackprojectionMethod</span></code></p></td>
+<td><p>[Homography, DSM]</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--ContactPoint</span></code></p></td>
+<td><p>[BottomPoint, Center, BottomSeg, LineSeg]</p></td>
+</tr>
+</tbody>
+</table>
+<p>To visualize the backprojected results</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span>  <span class="o">--</span><span class="n">Detector</span><span class="o">=</span><span class="p">{</span><span class="n">det</span><span class="p">}</span> <span class="o">--</span><span class="n">VisContactPoint</span> <span class="o">--</span><span class="n">VisCPTop</span> <span class="o">--</span><span class="n">BackprojectSource</span><span class="o">=</span><span class="n">detections</span>\
+<span class="o">--</span><span class="n">TopView</span><span class="o">=</span><span class="p">{</span><span class="n">tv</span><span class="p">}</span> <span class="o">--</span><span class="n">BackprojectionMethod</span><span class="o">=</span><span class="p">{</span><span class="n">bpm</span><span class="p">}</span> <span class="o">--</span><span class="n">ContactPoint</span><span class="o">=</span><span class="p">{</span><span class="n">cp</span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-6-multi-object-tracking-and-post-process">
+<h2>Step 6: Multi Object Tracking and Post Process<a class="headerlink" href="#step-6-multi-object-tracking-and-post-process" title="Permalink to this heading">#</a></h2>
+<p>perform tracking by detection</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span>  <span class="o">--</span><span class="n">Detector</span><span class="o">=</span><span class="p">{</span><span class="n">det</span><span class="p">}</span> <span class="o">--</span><span class="n">Tracker</span><span class="o">=</span><span class="p">{</span><span class="n">tra</span><span class="p">}</span> <span class="o">--</span><span class="n">Track</span> <span class="o">--</span><span class="n">VisTrack</span>
+</pre></div>
+</div>
+<p>back project tracks</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span>  <span class="o">--</span><span class="n">Detector</span><span class="o">=</span><span class="p">{</span><span class="n">det</span><span class="p">}</span> <span class="o">--</span><span class="n">Tracker</span><span class="o">=</span><span class="p">{</span><span class="n">tra</span><span class="p">}</span> <span class="o">--</span><span class="n">Homography</span> <span class="o">--</span><span class="n">Meter</span> <span class="o">--</span><span class="n">VisTrajectories</span> <span class="o">--</span><span class="n">VisTrackTop</span>
+<span class="o">--</span><span class="n">BackprojectSource</span><span class="o">=</span><span class="n">tracks</span> <span class="o">--</span><span class="n">TopView</span><span class="o">=</span><span class="p">{</span><span class="n">tv</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Once the tracking is done you would be able to run a series of postprocessing steps on tracks.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span>  <span class="o">--</span><span class="n">Detector</span><span class="o">=</span><span class="p">{</span><span class="n">det</span><span class="p">}</span> <span class="o">--</span><span class="n">Tracker</span><span class="o">=</span><span class="p">{</span><span class="n">tra</span><span class="p">}</span> <span class="o">--</span><span class="n">TrackPostProc</span> <span class="o">--</span><span class="n">TrackTh</span><span class="o">=</span><span class="p">{</span><span class="n">th</span><span class="p">}</span> <span class="o">--</span><span class="n">RemoveInvalidTracks</span>
+<span class="o">--</span><span class="n">SelectDifEdgeInROI</span> <span class="o">--</span><span class="n">SelectEndingInROI</span> <span class="o">--</span><span class="n">SelectBeginInROI</span> <span class="o">--</span><span class="n">MaskGPFrame</span> <span class="o">--</span><span class="n">HasPointsInROI</span> <span class="o">--</span><span class="n">MaskROI</span>  <span class="o">--</span><span class="n">CrossROI</span> <span class="o">--</span><span class="n">CrossROIMulti</span> <span class="o">--</span><span class="n">JustEnterROI</span> <span class="o">--</span><span class="n">JustExitROI</span> <span class="o">--</span><span class="n">WithinROI</span> <span class="o">--</span><span class="n">Interpolate</span> <span class="o">--</span><span class="n">ExitOrCrossROI</span>  <span class="o">--</span><span class="n">BackprojectSource</span><span class="o">=</span><span class="n">tracks</span> <span class="o">--</span><span class="n">TopView</span><span class="o">=</span><span class="p">[</span><span class="n">GoogleMap</span><span class="o">/</span><span class="n">OrthoPhoto</span><span class="p">]</span>
+</pre></div>
+</div>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Flag</p></th>
+<th class="head"><p>Function</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--TrackPostProc</span></code></p></td>
+<td><p>Flag to activate post processing module</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--TrackTh</span></code></p></td>
+<td><p>Resampling threshold on ground plane</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--Interpolate</span></code></p></td>
+<td><p>Interpolate tracks</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--RemoveInvalidTracks</span></code></p></td>
+<td><p>Remove tracks with only one ditection</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--SelectEndingInROI</span></code></p></td>
+<td><p>Select tracks that end in ROI</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--SelectBeginInROI</span></code></p></td>
+<td><p>Select tracks that start in ROI</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--MaskGPFrame</span></code></p></td>
+<td><p>Mask detections that are out of topview frame</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--HasPointsInROI</span></code></p></td>
+<td><p>Only keep tracks that has points in ROI</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--MaskROI</span></code></p></td>
+<td><p>Mask detections that are out of ROI</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--CrossROI</span></code></p></td>
+<td><p>Keep tracks that cross ROI edge</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--CrossROIMulti</span></code></p></td>
+<td><p>Keep tracks that cross multiple ROI edges(&gt;=2)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--JustEnterROI</span></code></p></td>
+<td><p>Keep tracks that just enter ROI but do not exit</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--JustExitROI</span></code></p></td>
+<td><p>Keep tracks that exit ROi but do not enter</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--WithinROI</span></code></p></td>
+<td><p>Keep tracks that neither enter nor exit ROI</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="step-7-extract-prototypes">
+<h2>Step 7: Extract prototypes<a class="headerlink" href="#step-7-extract-prototypes" title="Permalink to this heading">#</a></h2>
+<p>There are two methods to extract prototype tracks</p>
+<ul class="simple">
+<li><p>Using “Tack Labelling GUI” in which a human annotator can select tracks</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span>  <span class="o">--</span><span class="n">Detector</span><span class="o">=</span><span class="p">{</span><span class="n">det</span><span class="p">}</span> <span class="o">--</span><span class="n">Tracker</span><span class="o">=</span><span class="p">{</span><span class="n">tra</span><span class="p">}</span> <span class="o">--</span><span class="n">TrackLabelingGUI</span> <span class="o">--</span><span class="n">VisLabelledTrajectories</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Using automated track extraction based on ROI</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span>  <span class="o">--</span><span class="n">Detector</span><span class="o">=</span><span class="p">{</span><span class="n">det</span><span class="p">}</span> <span class="o">--</span><span class="n">Tracker</span><span class="o">=</span><span class="p">{</span><span class="n">tra</span><span class="p">}</span> <span class="o">--</span><span class="n">ExtractCommonTracks</span>
+<span class="o">--</span><span class="n">VisLabelledTrajectories</span> <span class="o">--</span><span class="n">ResampleTH</span><span class="o">=</span><span class="p">{</span><span class="n">th</span><span class="p">}</span> <span class="o">--</span><span class="n">TopView</span><span class="o">=</span><span class="p">{</span><span class="n">tp</span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-8-trun-counts">
+<h2>Step 8: Trun Counts<a class="headerlink" href="#step-8-trun-counts" title="Permalink to this heading">#</a></h2>
+<p>At the end you would perform counting on the tracks using prototype tracks or prototype densities</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span>  <span class="o">--</span><span class="n">Detector</span><span class="o">=</span><span class="p">{</span><span class="n">det</span><span class="p">}</span> <span class="o">--</span><span class="n">Tracker</span><span class="o">=</span><span class="p">{</span><span class="n">tra</span><span class="p">}</span> <span class="o">--</span><span class="n">Count</span> <span class="o">--</span><span class="n">CountMetric</span><span class="o">=</span><span class="p">{</span><span class="n">metric</span><span class="p">}</span>
+<span class="o">--</span><span class="n">EvalCount</span> <span class="o">--</span><span class="n">CacheCounter</span> <span class="o">--</span><span class="n">CountVisDensity</span> <span class="o">--</span><span class="n">ResampleTH</span><span class="o">=</span><span class="p">{</span><span class="n">th</span><span class="p">}</span> <span class="o">--</span><span class="n">TopView</span><span class="o">=</span><span class="p">{</span><span class="n">tp</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>if you are choosing kde as your metric, you would be able to optimize the kde bw prior to running counting with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span>  <span class="o">--</span><span class="n">Detector</span><span class="o">=</span><span class="p">{</span><span class="n">det</span><span class="p">}</span> <span class="o">--</span><span class="n">Tracker</span><span class="o">=</span><span class="p">{</span><span class="n">tra</span><span class="p">}</span> <span class="o">--</span><span class="n">FindOptimalKDEBW</span> <span class="o">--</span><span class="n">ResampleTH</span><span class="o">=</span><span class="p">{</span><span class="n">th</span><span class="p">}</span> <span class="o">--</span><span class="n">TopView</span><span class="o">=</span><span class="p">{</span><span class="n">tp</span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-9-visulize-results-on-video">
+<h2>Step 9: Visulize Results on Video<a class="headerlink" href="#step-9-visulize-results-on-video" title="Permalink to this heading">#</a></h2>
+<p>visualize all results with turn labels, id labels, …</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span>  <span class="o">--</span><span class="n">Detector</span><span class="o">=</span><span class="p">{</span><span class="n">det</span><span class="p">}</span> <span class="o">--</span><span class="n">Tracker</span><span class="o">=</span><span class="p">{</span><span class="n">tra</span><span class="p">}</span> <span class="o">--</span><span class="n">CountMetric</span><span class="o">=</span><span class="p">{</span><span class="n">met</span><span class="p">}</span> <span class="o">--</span><span class="n">VisTrackMoI</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="multi-source-camera-operations">
+<h1>Multi Source/Camera Operations<a class="headerlink" href="#multi-source-camera-operations" title="Permalink to this heading">#</a></h1>
+<section id="step-1-average-counts-across-sources">
+<h2>Step 1: Average Counts across sources<a class="headerlink" href="#step-1-average-counts-across-sources" title="Permalink to this heading">#</a></h2>
+<p>This is only applicable to multi camera envs</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">MultiCam</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">src</span><span class="p">}</span>  <span class="o">--</span><span class="n">Detector</span><span class="o">=</span><span class="p">{</span><span class="n">det</span><span class="p">}</span> <span class="o">--</span><span class="n">Tracker</span><span class="o">=</span><span class="p">{</span><span class="n">tra</span><span class="p">}</span> <span class="o">--</span><span class="n">CountMetric</span><span class="o">=</span><span class="p">{</span><span class="n">metric</span><span class="p">}</span> <span class="o">--</span><span class="n">AverageCountsMC</span> <span class="o">--</span><span class="n">EvalCountMC</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="multi-segment-operations">
+<h1>Multi Segment Operations<a class="headerlink" href="#multi-segment-operations" title="Permalink to this heading">#</a></h1>
+<section id="step1-convert-detections-for-coco-format">
+<h2>Step1: Convert detections for coco format<a class="headerlink" href="#step1-convert-detections-for-coco-format" title="Permalink to this heading">#</a></h2>
+<p>This can be used for external use such as training and finetunning detectors from MMLab</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">MultiSeg</span> <span class="o">--</span><span class="n">Dataset</span><span class="o">=</span><span class="p">{</span><span class="n">split</span><span class="p">}</span> <span class="o">--</span><span class="n">Detector</span><span class="o">=</span><span class="p">{</span><span class="n">det</span><span class="p">}</span> <span class="o">--</span><span class="n">ConvertDetsToCOCO</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./Docs"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="TRACKERS.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Tracking Guide</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">User Guide</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-0-dataset-structure-and-required-information">Step 0: Dataset structure and required information</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-verify-structure-of-your-data-extract-images">Step 1: Verify structure of your data / Extract Images</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-solve-homographies">Step 2: Solve homographies</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-visualize-roi">Step 3: Visualize ROI</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-run-segmentation-and-post-process">Step 4: Run Segmentation and Post Process</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-object-detection-and-post-process">Step 5: Object Detection and Post Process</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-multi-object-tracking-and-post-process">Step 6: Multi Object Tracking and Post Process</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-7-extract-prototypes">Step 7: Extract prototypes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-8-trun-counts">Step 8: Trun Counts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-9-visulize-results-on-video">Step 9: Visulize Results on Video</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-source-camera-operations">Multi Source/Camera Operations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-average-counts-across-sources">Step 1: Average Counts across sources</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-segment-operations">Multi Segment Operations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step1-convert-detections-for-coco-format">Step1: Convert detections for coco format</a></li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By ElderLab
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright ElderLab.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

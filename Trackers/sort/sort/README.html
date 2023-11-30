@@ -1,0 +1,679 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>SORT &#8212; ElderLab-York-University/Transplan</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../../_static/design-tabs.js"></script>
+    <script async="async" src="https://www.googletagmanager.com/gtag/js?id=__G_ANALYTICS_ID__"></script>
+    <script>
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){ dataLayer.push(arguments); }
+                gtag('js', new Date());
+                gtag('config', '__G_ANALYTICS_ID__');
+            </script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../../../_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'Trackers/sort/sort/README';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../../../README.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="https://www.elderlab.yorku.ca/wp-content/uploads/2017/10/Artboard-10@2x.png" class="logo__image only-light" alt="ElderLab-York-University/Transplan - Home"/>
+    <script>document.write(`<img src="https://www.elderlab.yorku.ca/wp-content/uploads/2017/10/Artboard-10@2x.png" class="logo__image only-dark" alt="ElderLab-York-University/Transplan - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../../README.html">
+                    Introduction
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../Docs/COUNTING.html">Counting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Docs/DETECTORS.html">Detectors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Docs/INSTALL.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Docs/REPROJECTION.html">Reprojection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Docs/SEGMENTERS.html">Segmenters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Docs/TRACKERS.html">Trackers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Docs/USERGUIDE.html">User Guide</a></li>
+
+
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/ElderLab-York-University/Transplan" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/ElderLab-York-University/Transplan/edit/booklet/./Trackers/sort/sort/README.md" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/ElderLab-York-University/Transplan/issues/new?title=Issue%20on%20page%20%2FTrackers/sort/sort/README.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../../_sources/Trackers/sort/sort/README.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>SORT</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">License</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#citing-sort">Citing SORT</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dependencies">Dependencies:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demo">Demo:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#main-results">Main Results</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-sort-in-your-own-project">Using SORT in your own project</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="sort">
+<h1>SORT<a class="headerlink" href="#sort" title="Permalink to this heading">#</a></h1>
+<p>A simple online and realtime tracking algorithm for 2D multiple object tracking in video sequences.
+See an example <a class="reference external" href="https://alex.bewley.ai/misc/SORT-MOT17-06-FRCNN.webm">video here</a>.</p>
+<p>By Alex Bewley</p>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">#</a></h2>
+<p>SORT is a barebones implementation of a visual multiple object tracking framework based on rudimentary data association and state estimation techniques. It is designed for online tracking applications where only past and current frames are available and the method produces object identities on the fly. While this minimalistic tracker doesn’t handle occlusion or re-entering objects its purpose is to serve as a baseline and testbed for the development of future trackers.</p>
+<p>SORT was initially described in <a class="reference external" href="http://arxiv.org/abs/1602.00763">this paper</a>. At the time of the initial publication, SORT was ranked the best <em>open source</em> multiple object tracker on the <a class="reference external" href="https://motchallenge.net/results/2D_MOT_2015/">MOT benchmark</a>.</p>
+<p><strong>Note:</strong> A significant proportion of SORT’s accuracy is attributed to the detections.
+For your convenience, this repo also contains <em>Faster</em> RCNN detections for the MOT benchmark sequences in the <a class="reference external" href="https://motchallenge.net/instructions/">benchmark format</a>. To run the detector yourself please see the original <a class="reference external" href="https://github.com/ShaoqingRen/faster_rcnn"><em>Faster</em> RCNN project</a> or the python reimplementation of <a class="reference external" href="https://github.com/rbgirshick/py-faster-rcnn">py-faster-rcnn</a> by Ross Girshick.</p>
+<p><strong>Also see:</strong>
+A new and improved version of SORT with a Deep Association Metric implemented in tensorflow is available at <a class="github reference external" href="https://github.com/nwojke/deep_sort">nwojke/deep_sort</a> .</p>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this heading">#</a></h2>
+<p>SORT is released under the GPL License (refer to the LICENSE file for details) to promote the open use of the tracker and future improvements. If you require a permissive license contact Alex (<a class="reference external" href="mailto:alex&#37;&#52;&#48;bewley&#46;ai">alex<span>&#64;</span>bewley<span>&#46;</span>ai</a>).</p>
+</section>
+<section id="citing-sort">
+<h2>Citing SORT<a class="headerlink" href="#citing-sort" title="Permalink to this heading">#</a></h2>
+<p>If you find this repo useful in your research, please consider citing:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>@inproceedings{Bewley2016_sort,
+  author={Bewley, Alex and Ge, Zongyuan and Ott, Lionel and Ramos, Fabio and Upcroft, Ben},
+  booktitle={2016 IEEE International Conference on Image Processing (ICIP)},
+  title={Simple online and realtime tracking},
+  year={2016},
+  pages={3464-3468},
+  keywords={Benchmark testing;Complexity theory;Detectors;Kalman filters;Target tracking;Visualization;Computer Vision;Data Association;Detection;Multiple Object Tracking},
+  doi={10.1109/ICIP.2016.7533003}
+}
+</pre></div>
+</div>
+</section>
+<section id="dependencies">
+<h2>Dependencies:<a class="headerlink" href="#dependencies" title="Permalink to this heading">#</a></h2>
+<p>To install required dependencies run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install -r requirements.txt
+</pre></div>
+</div>
+</section>
+<section id="demo">
+<h2>Demo:<a class="headerlink" href="#demo" title="Permalink to this heading">#</a></h2>
+<p>To run the tracker with the provided detections:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd path/to/sort
+$ python sort.py
+</pre></div>
+</div>
+<p>To display the results you need to:</p>
+<ol class="arabic simple">
+<li><p>Download the <a class="reference external" href="https://motchallenge.net/data/2D_MOT_2015/#download">2D MOT 2015 benchmark dataset</a></p></li>
+<li><p>Create a symbolic link to the dataset</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ln -s /path/to/MOT2015_challenge/data/2DMOT2015 mot_benchmark
+</pre></div>
+</div>
+<ol class="arabic simple" start="0">
+<li><p>Run the demo with the <code class="docutils literal notranslate"><span class="pre">--display</span></code> flag</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python sort.py --display
+</pre></div>
+</div>
+</section>
+<section id="main-results">
+<h2>Main Results<a class="headerlink" href="#main-results" title="Permalink to this heading">#</a></h2>
+<p>Using the <a class="reference external" href="https://motchallenge.net/devkit/">MOT challenge devkit</a> the method produces the following results (as described in the paper).</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Sequence</p></th>
+<th class="head text-center"><p>Rcll</p></th>
+<th class="head text-center"><p>Prcn</p></th>
+<th class="head text-center"><p>FAR</p></th>
+<th class="head text-center"><p>GT  MT  PT  ML</p></th>
+<th class="head text-center"><p>FP    FN  IDs   FM</p></th>
+<th class="head text-center"><p>MOTA  MOTP MOTAL</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>TUD-Campus</p></td>
+<td class="text-center"><p>68.5</p></td>
+<td class="text-center"><p>94.3</p></td>
+<td class="text-center"><p>0.21</p></td>
+<td class="text-center"><p>8   6   2   0</p></td>
+<td class="text-center"><p>15   113    6    9</p></td>
+<td class="text-center"><p>62.7  73.7  64.1</p></td>
+</tr>
+<tr class="row-odd"><td><p>ETH-Sunnyday</p></td>
+<td class="text-center"><p>77.5</p></td>
+<td class="text-center"><p>81.9</p></td>
+<td class="text-center"><p>0.90</p></td>
+<td class="text-center"><p>30  11  16   3</p></td>
+<td class="text-center"><p>319   418   22   54</p></td>
+<td class="text-center"><p>59.1  74.4  60.3</p></td>
+</tr>
+<tr class="row-even"><td><p>ETH-Pedcross2</p></td>
+<td class="text-center"><p>51.9</p></td>
+<td class="text-center"><p>90.8</p></td>
+<td class="text-center"><p>0.39</p></td>
+<td class="text-center"><p>133  17  60  56</p></td>
+<td class="text-center"><p>330  3014   77  103</p></td>
+<td class="text-center"><p>45.4  74.8  46.6</p></td>
+</tr>
+<tr class="row-odd"><td><p>ADL-Rundle-8</p></td>
+<td class="text-center"><p>44.3</p></td>
+<td class="text-center"><p>75.8</p></td>
+<td class="text-center"><p>1.47</p></td>
+<td class="text-center"><p>28   6  16   6</p></td>
+<td class="text-center"><p>959  3781  103  211</p></td>
+<td class="text-center"><p>28.6  71.1  30.1</p></td>
+</tr>
+<tr class="row-even"><td><p>Venice-2</p></td>
+<td class="text-center"><p>42.5</p></td>
+<td class="text-center"><p>64.8</p></td>
+<td class="text-center"><p>2.75</p></td>
+<td class="text-center"><p>26   7   9  10</p></td>
+<td class="text-center"><p>1650  4109   57  106</p></td>
+<td class="text-center"><p>18.6  73.4  19.3</p></td>
+</tr>
+<tr class="row-odd"><td><p>KITTI-17</p></td>
+<td class="text-center"><p>67.1</p></td>
+<td class="text-center"><p>92.3</p></td>
+<td class="text-center"><p>0.26</p></td>
+<td class="text-center"><p>9   1   8   0</p></td>
+<td class="text-center"><p>38   225    9   16</p></td>
+<td class="text-center"><p>60.2  72.3  61.3</p></td>
+</tr>
+<tr class="row-even"><td><p><em>Overall</em></p></td>
+<td class="text-center"><p>49.5</p></td>
+<td class="text-center"><p>77.5</p></td>
+<td class="text-center"><p>1.24</p></td>
+<td class="text-center"><p>234  48 111  75</p></td>
+<td class="text-center"><p>3311 11660  274  499</p></td>
+<td class="text-center"><p>34.0  73.3  35.1</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="using-sort-in-your-own-project">
+<h2>Using SORT in your own project<a class="headerlink" href="#using-sort-in-your-own-project" title="Permalink to this heading">#</a></h2>
+<p>Below is the gist of how to instantiate and update SORT. See the <a class="reference external" href="https://github.com/abewley/sort/blob/master/sort.py#L239">‘<strong>main</strong>’</a> section of <a class="reference external" href="https://github.com/abewley/sort/blob/master/sort.py#L239">sort.py</a> for a complete example.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>from sort import *
+
+#create instance of SORT
+mot_tracker = Sort() 
+
+# get detections
+...
+
+# update SORT
+track_bbs_ids = mot_tracker.update(detections)
+
+# track_bbs_ids is a np array where each row contains a valid bounding box and track_id (last column)
+...
+</pre></div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./Trackers/sort/sort"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">License</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#citing-sort">Citing SORT</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dependencies">Dependencies:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demo">Demo:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#main-results">Main Results</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-sort-in-your-own-project">Using SORT in your own project</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By ElderLab
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright ElderLab.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
