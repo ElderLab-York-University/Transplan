@@ -430,6 +430,8 @@ if __name__ == "__main__":
     parser.add_argument("--SahiPatchBatchSize", help="batch size of patches of sahi", type=int, default=0)
     parser.add_argument("--SahiNMSTh", help="IoU threshould for merging results when using sahi", type=float, default=0.25)
 
+    parser.add_argument("--OSR", help="over sampling reatio after resampling", type=int, default=10)
+
     args = parser.parse_args()
 
     # check if the opeerations should be performed cross camera

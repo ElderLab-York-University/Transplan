@@ -548,6 +548,21 @@ def add_vis_segment_path_to_args(args):
     args.VisSegmentPath = get_vis_segment_path(args)
     return args
 
+def get_opt_bw_image(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "OptBW.Image" + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +f"{args.OSR}"+ Puncuations.Dot +f"{args.ResampleTH}" +Puncuations.Dot + "png")
+
+def get_opt_bw_ground(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "OptBW.GP" + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +f"{args.OSR}"+ Puncuations.Dot +f"{args.ResampleTH}"+ Puncuations.Dot+ args.BackprojectionMethod + Puncuations.Dot + args.TopView + Puncuations.Dot + args.ContactPoint+ Puncuations.Dot +"png")
+
+def add_opt_bw_path(args):
+    args.OptBWImage = get_opt_bw_image(args)
+    args.OptBWGround = get_opt_bw_ground(args)
+    return args
+
 def get_GT_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -780,6 +795,9 @@ def complete_args(args):
     if args.Segment or args.SegPostProc or args.Homography:
         args = add_segmentation_path_to_args(args)
         args = add_vis_segment_path_to_args(args)
+
+    if args.FindOptimalKDEBW:
+        args = add_opt_bw_path(args)
 
     args = revert_args_with_params(args)
     return args

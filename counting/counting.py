@@ -134,22 +134,26 @@ def interpolate_traj(traj, frames):
 
 
 # you should optimize the bw for image as well @TODO
-def find_opt_bw(args):
-    osr = 10
+
+def find_opt_bw_of_surf(args, gp):
+    osr = args.OSR
     tracks_path = args.ReprojectedPkl
     tracks_meter_path = args.ReprojectedPklMeter
-    top_image = args.HomographyTopView
+    if gp:
+        top_image = args.HomographyTopView
+    else:
+        top_image = args.HomographyStreetView
     meta_data = args.MetaData # dict is already loaded
-    HomographyNPY = args.HomographyNPY
+    # HomographyNPY = args.HomographyNPY @Del
 
     # load data
-    tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
-    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
+    tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=gp)
+    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=gp)
     # resample gp tracks
     tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
     tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
     img = plt.imread(top_image)
-    img1 = cv.imread(top_image)
+    # img1 = cv.imread(top_image) @Del
 
     # make data ready for kde training
     kde_data = []
@@ -174,20 +178,16 @@ def find_opt_bw(args):
 
     kde_data = np.array(kde_data)
 
-    #shuffle data
-    np.random.seed(1234)
-    # np.random.shuffle(kde_data)
-
+    # our data is repatative in time, temporal split
     split_idx = int(len(kde_data) * 0.5)
     
-    # 80 percent train and 20 percent test
+    # 50 percent train and 50 percent test
     kde_data_train = kde_data[:split_idx]
     kde_data_test  = kde_data[split_idx:]
     
     # use optimized 2D KDE
-    h_range = np.linspace(1, 5, 100)
-
-
+    max_d = np.max(img.shape)
+    h_range = np.linspace(1, int(max_d * 0.01), 100)
     scores = []
     for h in tqdm(h_range):
         kde = KDE2D()
@@ -196,13 +196,25 @@ def find_opt_bw(args):
 
     scores = np.array(scores)
 
-    plt.plot(h_range, scores)
-    plt.xlabel('Bandwidth h (pixels)')
+    plt.plot(h_range, scores, color="black")
+    plt.xlabel('Bandwidth [pixels]')
     plt.ylabel('log likelihood')
-    plt.savefig("sweep_h.png")
-
     h_opt = h_range[np.argmax(scores)]
+    plt.plot(h_opt,np.max(scores),marker='*', color="red")
+
+    plt.plot([h_opt, h_opt], [np.min(scores), np.max(scores)], color="red", linestyle="dashed")
+    plt.plot([np.min(h_range), h_opt], [np.max(scores), np.max(scores)], color="red", linestyle="dashed")
+    if gp:
+        plt.savefig(args.OptBWGround)
+    else:
+        plt.savefig(args.OptBWImage)
+
     return h_opt
+
+def find_opt_bw(args):
+    h_opt_ground = find_opt_bw_of_surf(args, True)
+    h_opt_image  = find_opt_bw_of_surf(args, False)
+    return h_opt_ground, h_opt_image
 
 class KDE2D(object):
     def __init__(self):
@@ -224,19 +236,26 @@ class KDE2D(object):
         # note reversal of x and y
         #
         # datamap[data[:,1].astype(int), data[:,0].astype(int)] += 1 ?
+        missed_counts = 0
         for point in data.astype(int):
             try:
                 datamap[point[1],point[0]] += 1
-            except:
-                print(f"datamap shape:{datamap.shape} y:{point[1]} x:{point[0]}")
+            except: #TODO some points are on the edge of image with incorrect coordinates
+                missed_counts += 1
+                pass
+                # print(f"datamap shape:{datamap.shape} y:{point[1]} x:{point[0]}")
 
 
-        self.pmap = self.KDE2D(datamap, h, n)
+        self.pmap = self.KDE2D(datamap, h, n - missed_counts)
 
     def score_samples(self, test_data):
         scores = []
         for test_point in test_data.astype(int):
-            scores.append(np.log(self.pmap[test_point[1], test_point[0]]))
+            try:
+                scores.append(np.log(self.pmap[test_point[1], test_point[0]]))
+            except: #TODO some points are on the edge of image with incorrect coordinates
+                pass
+                # print(f"test_point coordinates: y:{test_point[1]} x:{test_point[0]}")   
         return np.array(scores)
     
     def find_opt_h(self, data, im, h_range = range(5, 55, 5), M=10):
