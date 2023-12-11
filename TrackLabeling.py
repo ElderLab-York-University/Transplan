@@ -79,6 +79,7 @@ def get_in_roi_points(traj, poly_path):
             mask.append(False)
     return traj[mask]
 
+# @TODO add backprojection method 
 def get_proper_tracks(args, gp):
     tracks_path = args.ReprojectedPkl
     tracks_meter_path = args.ReprojectedPklMeter
@@ -93,19 +94,13 @@ def get_proper_tracks(args, gp):
         moi_clusters[int(mi)] = args.MetaData["moi_clusters"][mi]
 
     img = plt.imread(top_image)
-    img1 = cv.imread(top_image)
+    img1 = cv.imread(top_image if gp else street_image)
     img_street = plt.imread(street_image)
 
-    # load data
-    if gp:
-        tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
-        tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
-        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
-    else:
-        tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=False)
-        tracks['index_mask'] = tracks['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
-
-    # tracks_meter['trajectory'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=False, threshold=args.ResampleTH))
+    # load data (for both gp and image)
+    tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=gp)
+    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=gp)
+    tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
 
     # create roi polygon
     if gp:
@@ -153,7 +148,7 @@ def get_proper_tracks(args, gp):
 
     print(f"percentage of complete tracks: {counter/len(tracks)}")
     plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
-    plt.savefig("multicross.png")
+    plt.savefig(f"multicross_gp={gp}.png")
     plt.close("all")
 
     # modify dfs with mask
@@ -226,8 +221,8 @@ def make_uniform_clt_per_moi(tracks, args):
 
     return tracks.loc[indexes_to_keep]
 
-
-def extract_common_tracks(args):
+# @TODO add backprojection methods
+def extract_common_tracks(args, gp):
     tracks_path = args.ReprojectedPkl
     tracks_meter_path = args.ReprojectedPklMeter
     top_image = args.HomographyTopView
@@ -244,22 +239,25 @@ def extract_common_tracks(args):
     img = plt.imread(top_image)
     img1 = cv.imread(top_image)
     img_street = plt.imread(street_image)
+    img_top    = plt.imread(top_image)
 
     # create roi polygon
-    roi_rep = []
-    for p in args.MetaData["roi"]:
-        point = np.array([p[0], p[1], 1])
-        new_point = M.dot(point)
-        new_point /= new_point[2]
-        roi_rep.append([new_point[0], new_point[1]])
+    if gp:
+        roi_rep = []
+        for p in args.MetaData["roi"]:
+            point = np.array([p[0], p[1], 1])
+            new_point = M.dot(point)
+            new_point /= new_point[2]
+            roi_rep.append([new_point[0], new_point[1]])
+    else:
+        roi_rep = [p for p in args.MetaData["roi"]]
 
     pg = MyPoly(roi_rep, args.MetaData["roi_group"])
     th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
     poly_path = mplPath.Path(np.array(roi_rep))
 
     # get proper tracks
-    # you can also add the gp flag for extract common tracks @TODO
-    tracks = get_proper_tracks(args, gp=True)
+    tracks = get_proper_tracks(args, gp=gp)
 
     # extract all starts and ends from proper tracks
     starts = []
@@ -270,12 +268,10 @@ def extract_common_tracks(args):
 
     starts = np.array(starts)
     ends = np.array(ends)
-    plt.imshow(img)
+    plt.imshow(img_top if gp else img_street)
     plt.scatter(starts[:, 0],starts[:, 1], alpha=0.3)
-    plt.savefig("multicorss_points.png")
+    plt.savefig(f"multicorss_points_gp={gp}.png")
     plt.close("all")
-
-    
 
     # cluster tracks and choose common tracks as cluster centers
     chosen_indexes = []
@@ -299,9 +295,9 @@ def extract_common_tracks(args):
         c_start = clt.predict(starts)
         p_start = np.array([clt.score(x.reshape(1, -1)) for x in starts])
         cluster_labels = np.unique(c_start)
-        plt.imshow(img)
+        plt.imshow(img_top if gp else img_street)
         plt.scatter(starts[:, 0], starts[:, 1], c=c_start)
-        plt.savefig(f"int_lane_clt_{mi}.png")
+        plt.savefig(f"int_lane_clt_{mi}_gp={gp}.png")
         plt.close("all")
 
         for c_label in cluster_labels:
@@ -322,7 +318,7 @@ def extract_common_tracks(args):
     tracks_labelled["moi"] = tracks.loc[chosen_indexes]["moi"].apply(lambda x: int(x))
     tracks_labelled.to_pickle(exportpathimage)
 
-    return SucLog("common trakces extracted successfully")
+    return SucLog("common tracks extracted successfully")
 
 class MyPoly():
     def __init__(self, roi, roi_group):
@@ -405,7 +401,8 @@ class MyPoly():
     @property
     def area(self):
         return abs(float(self.poly.area))
-
+    
+# @TODO change to check for loops
 def is_monotonic(traj):
     if len(traj) < 1:
         return False
