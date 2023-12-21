@@ -3,6 +3,8 @@ from Utils import *
 from Libs import *
 from counting.resample_gt_MOI.resample_typical_tracks import track_resample
 import Track
+import Homography
+import DSM
 
 def tracklabelinggui(args):
     export_path = os.path.abspath(args.TrackLabellingExportPth)
@@ -49,11 +51,8 @@ def vis_labelled_tracks(args):
     tracks = pd.read_pickle(args.TrackLabellingExportPthImage)
     tracks = tracks.sort_values("moi")
     img1 = cv.imread(args.HomographyStreetView)
-    # img2 = cv.imread(args.HomographyTopView)
     M = np.load(args.HomographyNPY, allow_pickle=True)[0]
     rows2, cols2, dim2 = img2.shape
-    # img12 = cv.warpPerspective(img1, M, (cols2, rows2))
-    # img2 = cv.addWeighted(img2, alpha, img12, 1 - alpha, 0)
 
     for i in range(len(tracks)):
         track = tracks.iloc[i]
@@ -79,23 +78,20 @@ def get_in_roi_points(traj, poly_path):
             mask.append(False)
     return traj[mask]
 
-# @TODO add backprojection method 
 def get_proper_tracks(args, gp):
     tracks_path = args.ReprojectedPkl
     tracks_meter_path = args.ReprojectedPklMeter
     top_image = args.HomographyTopView
     street_image = args.HomographyStreetView
-    # exportpath = args.TrackLabellingExportPth
     meta_data = args.MetaData # dict is already loaded
-    HomographyNPY = args.HomographyNPY
-    M = np.load(HomographyNPY, allow_pickle=True)[0]
-    moi_clusters = {}
-    for mi in  args.MetaData["moi_clusters"].keys():
-        moi_clusters[int(mi)] = args.MetaData["moi_clusters"][mi]
+
+    # moi_clusters = {} @TODO Detele
+    # for mi in  args.MetaData["moi_clusters"].keys():
+    #     moi_clusters[int(mi)] = args.MetaData["moi_clusters"][mi]
 
     img = plt.imread(top_image)
-    img1 = cv.imread(top_image if gp else street_image)
     img_street = plt.imread(street_image)
+    img1 = cv.imread(top_image if gp else street_image)
 
     # load data (for both gp and image)
     tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=gp)
@@ -103,12 +99,34 @@ def get_proper_tracks(args, gp):
     tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
 
     # create roi polygon
+    method = args.BackprojectionMethod
+    M = None
+    GroundRaster = None
+    orthophoto_win_tif_obj = None
+
+    if method == "Homography":
+        homography_path = args.HomographyNPY
+        M = np.load(homography_path, allow_pickle=True)[0]
+
+    elif method == "DSM":
+        # load OrthophotoTiffile
+        orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
+        # creat/load raster
+        if not os.path.exists(args.ToGroundRaster):
+            coords = DSM.load_dsm_points(args)
+            intrinsic_dict = DSM.load_json_file(args.INTRINSICS_PATH)
+            projection_dict = DSM.load_json_file(args.EXTRINSICS_PATH)
+            DSM.create_raster(args, args.MetaData["camera"], coords, projection_dict, intrinsic_dict)
+        
+        with open(args.ToGroundRaster, 'rb') as f:
+            GroundRaster = DSM.pickle.load(f)
+
     if gp:
         roi_rep = []
         for p in args.MetaData["roi"]:
-            point = np.array([p[0], p[1], 1])
-            new_point = M.dot(point)
-            new_point /= new_point[2]
+            x , y = p[0], p[1]
+            new_point = Homography.reproj_point(args, x, y, method,
+                         M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
             roi_rep.append([new_point[0], new_point[1]])
     else:
         roi_rep = [p for p in args.MetaData["roi"] ]
@@ -157,7 +175,7 @@ def get_proper_tracks(args, gp):
     # temporarily add info to track dataframe
     tracks['i_str'] = i_strs
     tracks['i_end'] = i_ends
-    tracks['moi'] = moi
+    tracks['moi']   = moi
     tracks['p_str'] = p_strs
     tracks['p_end'] = p_ends
 
@@ -208,12 +226,8 @@ def make_uniform_clt_per_moi(tracks, args):
     indexes_to_keep = []
     for mi in np.unique(tracks.moi):
         tracks_mi = tracks[tracks['moi']==mi].sort_values(by="traj_len", ascending=False)
-        # print(tracks_mi.clt)
         uni_vals, uni_counts = np.unique(tracks_mi.clt, return_counts=True)
-        # print(uni_vals)
-        # print(uni_counts)
         num_tracks_to_get_from_clt_per_moi = min(np.min(uni_counts), 10)
-
         print(f"nums to take: {num_tracks_to_get_from_clt_per_moi} moi:{mi} num_clt:{len(uni_vals)} tot_tracks_chosen:{len(uni_vals)*num_tracks_to_get_from_clt_per_moi}")
         for uv in uni_vals:
             idxs_mi_clt  = tracks_mi[tracks_mi.clt == uv].index[:num_tracks_to_get_from_clt_per_moi]
@@ -221,7 +235,6 @@ def make_uniform_clt_per_moi(tracks, args):
 
     return tracks.loc[indexes_to_keep]
 
-# @TODO add backprojection methods
 def extract_common_tracks(args, gp):
     tracks_path = args.ReprojectedPkl
     tracks_meter_path = args.ReprojectedPklMeter
@@ -240,21 +253,6 @@ def extract_common_tracks(args, gp):
     img1 = cv.imread(top_image)
     img_street = plt.imread(street_image)
     img_top    = plt.imread(top_image)
-
-    # create roi polygon
-    if gp:
-        roi_rep = []
-        for p in args.MetaData["roi"]:
-            point = np.array([p[0], p[1], 1])
-            new_point = M.dot(point)
-            new_point /= new_point[2]
-            roi_rep.append([new_point[0], new_point[1]])
-    else:
-        roi_rep = [p for p in args.MetaData["roi"]]
-
-    pg = MyPoly(roi_rep, args.MetaData["roi_group"])
-    th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
-    poly_path = mplPath.Path(np.array(roi_rep))
 
     # get proper tracks
     tracks = get_proper_tracks(args, gp=gp)
