@@ -184,78 +184,81 @@ def evaluate_detection(base_args, nested_args):
     preds=[]
     gts=[]
     q=0
+    
     print('starting')
     for args in flat_args:
-        args_gt = get_args_gt(args)
+        camera=args.Dataset[-3:]
+        if(args.Camera is None or camera in args.Camera):
+            args_gt = get_args_gt(args)
+                
+            df_gt   = pd.read_pickle(args_gt.DetectionPkl)
+            if(args.Rois is not None):
+                df_pred=pd.read_pickle(args.DetectionPklRoi)
+            else:
+                df_pred = pd.read_pickle(args.DetectionPklBackUp)
+            df_id   = args.SubID
+            gt_frames=np.unique(df_gt['fn'])
+            df_pred=df_pred[df_pred['fn'].isin(gt_frames)]
             
-        df_gt   = pd.read_pickle(args_gt.DetectionPkl)
-        if(args.Rois is not None):
-            df_pred=pd.read_pickle(args.DetectionPklRoi)
-        else:
-            df_pred = pd.read_pickle(args.DetectionPklBackUp)
-        df_id   = args.SubID
-        gt_frames=np.unique(df_gt['fn'])
-        df_pred=df_pred[df_pred['fn'].isin(gt_frames)]
-        
-        df_gt['df_id']=q
-        df_pred['df_id']=q
-        q=q+1
-        # for fn in np.unique(df_gt['fn']):
-        #     gt_frame=np.asarray(df_gt[df_gt['fn']==fn])
-        #     frame_gt=[]
-        #     for gt in gt_frame:
-        #         frame_gt.append([gt[1],gt[3],gt[4],gt[5],gt[6]])
-        #     pred_frame=np.asarray(df_pred[df_pred['fn']==fn])
-        #     frame_pred=[]
-        #     for pred in pred_frame:
-        #         frame_pred.append([pred[1],pred[2],pred[3],pred[4],pred[5],pred[6]])
-        #     preds.append(frame_pred)
-        #     gts.append(frame_gt)
-            
-            
-        # for fn in np.unique(
-            # df_gt['fn']):
-        #     frame_list=[]
-        #     preds_frame=(df_pred[df_pred['fn']==fn])    
-        #     for c in classes: 
-        #         preds_classes=np.asarray(preds_frame[preds_frame['class']==c])[:,3:-1]
-        #         frame_list.append(preds_classes)
-        #     det_results.append(frame_list)
-        # for fn in np.unique(df_gt['fn']):
-        #     frame_dict={}
-        #     gts_frame=(df_gt[df_gt['fn']==fn])    
-        #     gts_classes=np.asarray(gts_frame)[:,3:-1]
-        #     gts_ls=np.asarray(gts_frame)[:,1]
-        #     gts_labels=np.zeros(gts_ls.shape)
-        #     for i in range(len(gts_ls)):
-        #         if(gts_ls[i] in class_dict):
-        #             gts_labels[i]=class_dict[gts_ls[i]]
-        #         else:
-        #             gts_labels[i]=gts_ls[i]                    
-                    
-        #     frame_dict['bboxes']=gts_classes
-        #     frame_dict['labels']=gts_labels
-            
-        #     annotations.append(frame_dict)
-        if args.Intersection:
-            if args.Dataset[-3:-1]=='sc':
-                roi=args.MetaData['roi']
-                df_gt,_=remove_out_of_ROI(df_gt,roi)
-                df_pred,_=remove_out_of_ROI(df_pred,roi)  
+            df_gt['df_id']=q
+            df_pred['df_id']=q
+            q=q+1
+            # for fn in np.unique(df_gt['fn']):
+            #     gt_frame=np.asarray(df_gt[df_gt['fn']==fn])
+            #     frame_gt=[]
+            #     for gt in gt_frame:
+            #         frame_gt.append([gt[1],gt[3],gt[4],gt[5],gt[6]])
+            #     pred_frame=np.asarray(df_pred[df_pred['fn']==fn])
+            #     frame_pred=[]
+            #     for pred in pred_frame:
+            #         frame_pred.append([pred[1],pred[2],pred[3],pred[4],pred[5],pred[6]])
+            #     preds.append(frame_pred)
+            #     gts.append(frame_gt)
+                
+                
+            # for fn in np.unique(
+                # df_gt['fn']):
+            #     frame_list=[]
+            #     preds_frame=(df_pred[df_pred['fn']==fn])    
+            #     for c in classes: 
+            #         preds_classes=np.asarray(preds_frame[preds_frame['class']==c])[:,3:-1]
+            #         frame_list.append(preds_classes)
+            #     det_results.append(frame_list)
+            # for fn in np.unique(df_gt['fn']):
+            #     frame_dict={}
+            #     gts_frame=(df_gt[df_gt['fn']==fn])    
+            #     gts_classes=np.asarray(gts_frame)[:,3:-1]
+            #     gts_ls=np.asarray(gts_frame)[:,1]
+            #     gts_labels=np.zeros(gts_ls.shape)
+            #     for i in range(len(gts_ls)):
+            #         if(gts_ls[i] in class_dict):
+            #             gts_labels[i]=class_dict[gts_ls[i]]
+            #         else:
+            #             gts_labels[i]=gts_ls[i]                    
+                        
+            #     frame_dict['bboxes']=gts_classes
+            #     frame_dict['labels']=gts_labels
+                
+            #     annotations.append(frame_dict)
+            if args.Intersection:
+                if args.Dataset[-3:-1]=='sc':
+                    roi=args.MetaData['roi']
+                    df_gt,_=remove_out_of_ROI(df_gt,roi)
+                    df_pred,_=remove_out_of_ROI(df_pred,roi)  
+                    dfs_gt.append(df_gt)
+                    dfs_pred.append(df_pred)
+                                
+            elif args.NotIntersection:
+                if args.Dataset[-3:-1]=='sc':
+                    roi=args.MetaData['roi']
+                    _,df_gt=remove_out_of_ROI(df_gt,roi)
+                    _,df_pred=remove_out_of_ROI(df_pred,roi)  
+                    dfs_gt.append(df_gt)
+                    dfs_pred.append(df_pred)
+            else:
                 dfs_gt.append(df_gt)
                 dfs_pred.append(df_pred)
-                              
-        elif args.NotIntersection:
-            if args.Dataset[-3:-1]=='sc':
-                roi=args.MetaData['roi']
-                _,df_gt=remove_out_of_ROI(df_gt,roi)
-                _,df_pred=remove_out_of_ROI(df_pred,roi)  
-                dfs_gt.append(df_gt)
-                dfs_pred.append(df_pred)
-        else:
-            dfs_gt.append(df_gt)
-            dfs_pred.append(df_pred)
-            dfs_ids.append(df_id)
+                dfs_ids.append(df_id)
     gts=np.array(gts)
     preds=np.array(preds)
     dfs_gt=pd.concat(dfs_gt)

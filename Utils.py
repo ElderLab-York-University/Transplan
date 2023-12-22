@@ -25,6 +25,10 @@ roi_color_dict = {
     2:(170, 110, 40),
     3:(128, 128, 0),
     4:(0, 0, 128),
+    5:(0, 0, 0),
+    6:(0, 0, 0),
+    7:(0, 0, 0),
+
 }
 class bcolors:
     HEADER = '\033[95m'
@@ -393,16 +397,42 @@ def get_track_eval_save_path(args):
 def get_detect_eval_save_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+ Puncuations.Dot+"txt")
+    if(args.Rois is not None):
+        roistr="".join([str(args.Rois[i]+args.Rois[i+1]) for i in range(0, len(args.Rois),2)])+ Puncuations.Dot
+    else:
+        roistr=""
+    if(args.Camera is None):
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+ Puncuations.Dot+roistr+"txt")
+    else:
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+Puncuations.Dot+ "".join((args.Camera)) + Puncuations.Dot+roistr+"txt")
 def get_detect_eval_Intersections_save_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+Puncuations.Dot+"Intersection"+ Puncuations.Dot+"txt")
+    if(args.Rois is not None):
+        roistr="".join([str(args.Rois[i]+args.Rois[i+1]) for i in range(0, len(args.Rois),2)])+ Puncuations.Dot
+    else:
+        roistr=""
+    
+    if(args.Camera is None):
+    
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+Puncuations.Dot+"Intersection"+ Puncuations.Dot+roistr+"txt")
+    else:
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+Puncuations.Dot+"Intersection"+Puncuations.Dot+ "".join((args.Camera)) + roistr+Puncuations.Dot+"txt")
+        
 def get_detect_eval_NonIntersections_save_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+Puncuations.Dot+"NonIntersection"+ Puncuations.Dot+"txt")
+    if(args.Rois is not None):
+        roistr="".join([str(args.Rois[i]+args.Rois[i+1]) for i in range(0, len(args.Rois),2)])+ Puncuations.Dot
+    else:
+        roistr=""
     
+    if(args.Camera is None):
+    
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+Puncuations.Dot+"NonIntersection"+ Puncuations.Dot+ roistr+"txt")
+    else:
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+Puncuations.Dot+"NonIntersection"+ Puncuations.Dot+ "".join((args.Camera))+ Puncuations.Dot+ roistr+"txt")
+        
 def add_homographygui_related_path_to_args(args):
     streetview = get_homography_streetview_path(args)
     topview = get_homography_topview_path(args)
@@ -587,6 +617,19 @@ def get_3DGT_path(args):
     file_name = file_name.split("/")[-1]
     gt_path = os.path.join(args.Dataset, file_name+".gt3d.json")
     return gt_path
+
+def get_detections_mask_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    mask_path = os.path.join(args.Dataset, file_name+".detections.mask.npz")
+    return mask_path
+
+def get_detection_mask_vis_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    mask_path = os.path.join(args.Dataset,"Results/Visualization", file_name+ ".VisDetectionMask.png")
+    return mask_path
+    
     
 def add_GT_path_to_args(args):
     args.GT = get_GT_path(args)
@@ -691,12 +734,17 @@ def add_roi_paths_to_args(args):
     roi_dict={}
     for r in range(0,len(args.Rois),2):
         roi_dict[args.Rois[r]]=args.Rois[r+1]
+        
     if(args.Dataset[-3:] in roi_dict):
         args.roi_num=roi_dict[args.Dataset[-3:]]
         args.DetectionPklRoi=get_detection_roi_pkl(args)
         args.DetectionPklRoiBackup=get_detection_roi_pkl_back_up(args)
+        # args.DetectionRoiEvalPath= get_detect_eval_roi_save_path(args)
     return args
-
+def add_detection_mask_path_to_args(args):
+    args.DetectionMask=get_detections_mask_path(args)
+    args.DetectionMaskVis=get_detection_mask_vis_path(args)
+    return args
 def get_args_gt(args):
     args_gt = copy.deepcopy(args)
     args.GTDetector="GTHW7"
@@ -828,7 +876,8 @@ def complete_args(args):
     if args.Segment or args.SegPostProc or args.Homography:
         args = add_segmentation_path_to_args(args)
         args = add_vis_segment_path_to_args(args)
-
+    if args.MaskDetections:
+        args=add_detection_mask_path_to_args(args)
     args = revert_args_with_params(args)
     return args
 

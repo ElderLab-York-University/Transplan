@@ -27,9 +27,15 @@ detectors["InternImage"]    = Detectors.InternImage.detect
 detectors["GTHW7"]          = Detectors.GTHW7.detect
 detectors["RTMDet"]         = Detectors.RTMDet.detect
 detectors["YoloX"]          = Detectors.YoloX.detect
+detectors["YoloX.HW7FT"]          = Detectors.YoloX.detect
+
 detectors["CascadeRCNN"]    = Detectors.CascadeRCNN.detect
+detectors["CascadeRCNN.HW7FT"]    = Detectors.CascadeRCNN.detect
+
 detectors["DeformableDETR"] = Detectors.DeformableDETR.detect
 detectors["CenterNet"]      = Detectors.CenterNet.detect
+detectors["CenterNet.HW7FT"]      = Detectors.CenterNet.detect
+
 detectors["GTHW73D"]        = Detectors.GTHW73D.detect
 
 def detect(args):
@@ -62,7 +68,17 @@ def remove_out_of_ROI(df, roi):
             mask.append(True)
         else: mask.append(False)
     return df[mask]  
-
+def remove_inside_of_ROI(df,roi):
+    poly_path = mplPath.Path(np.array(roi))
+    mask = []
+    for i, row in tqdm(df.iterrows(), total=len(df), desc="rm oROI bbox"):
+        x1, y1, x2, y2 = row["x1"], row["y1"], row["x2"], row["y2"]
+        p = [(x2+x1)/2, y2]
+        if poly_path.contains_point(p):
+            mask.append(False)
+        else: mask.append(True)
+    return df[mask]  
+    
 def visdetect(args):
     if args.Detector is None:
         return FailLog("To interpret detections you should specify detector")    
@@ -175,6 +191,9 @@ def detectpostproc(args):
 
     if args.DetMask:
         df = remove_out_of_ROI(df, args.MetaData["roi"])
+        
+    if args.MaskDetections:
+        df= mask_detections(df,args)
     
     # store the edited df as txt
     detectors[args.Detector].df_txt(df, args.DetectionDetectorPath)
@@ -182,6 +201,52 @@ def detectpostproc(args):
     store_df_pickle(args)
     return SucLog("detection post processing done")
 
+def mask_detections(df, args):
+    cap = cv2.VideoCapture(args.Video)
+
+    if (cap.isOpened()== False): 
+        return FailLog("Error opening video stream or file")
+    ret, frame=cap.read()
+    masked=frame.copy()
+    a=np.load(args.DetectionMask)
+    for arr in a:
+        rois=a[arr]
+        m=a[arr]
+    for roi in rois:
+        # print(roi)
+        # print("[")
+        # for r in roi:
+        #     print(f"[{r[0]},{r[1]}],")
+        # print("]")
+        roi=np.array(roi)
+        roi=roi.astype(np.int32)
+        masked=    cv2.fillPoly(masked, pts=[roi], color=(0, 0, 0))
+        df=remove_inside_of_ROI(df, roi)        
+    cv2.imwrite("detection_mask.png",masked)
+    print(args.DetectionMaskVis)
+    cv2.imwrite(args.DetectionMaskVis,masked)
+    # for arr in a:
+    #     masked=a[arr]
+        
+    # masked=(masked!=0)
+    # masked=masked.astype(np.uint8)
+    # masked_image=cv2.bitwise_and(frame,frame,mask=masked)
+    # cv2.imwrite(args.DetectionMaskVis,masked_image)
+    # keep_arr=[]
+    # dets=df.to_numpy()
+    # for det in tqdm(dets):
+    #     bbox=[det[3],det[4],det[5],det[6]]
+    #     bp=(int((bbox[2]+bbox[0])/2),int(bbox[3]))
+    #     if(masked[bp[1],bp[0]]==0):
+    #         keep_arr.append(False)
+    #     else:
+    #         keep_arr.append(True)
+    # df=df[keep_arr]
+    # print(args.DetectionMaskVis)
+    
+    cap.release()
+    
+    return df
 
 def detectionth(df, args):
     print("performing thresholding")
@@ -244,18 +309,21 @@ def visroi(args):
         p2 = tuple(roi[i])
         q1 = tuple(roi_rep[i-1])
         q2 = tuple(roi_rep[i])
-        group= roi_group[i-1]
-        color = roi_color_dict[group]
+        # if(i-1<len(roi_group)):
+        #     group= roi_group[i-1]
+        #     color = roi_color_dict[group]
+        # else:
+        color=(255,0,0)
         cv2.line(img1, p1, p2, color, 25)
         cv2.line(img2, q1, q2, color, 5)
 
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+    fig, ax1 = plt.subplots(1,figsize=(10, 5))
 
     ax1.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
     ax1.set_title("camera view ROI")
-    ax2.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
-    ax2.set_title("top view ROI")
+    # ax2.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
+    # ax2.set_title("top view ROI")
     plt.savefig(args.VisROIPth)
 
     return SucLog("Vis ROI executed successfully")
