@@ -162,7 +162,7 @@ def VisTrackMoI(args):
 def ExtractCommonTracks(args):
     if args.ExtractCommonTracks:
         print(ProcLog("Extract Common Trajectories from video"))
-        log = extract_common_tracks(args)
+        log = extract_common_tracks(args, args.GP)
         log_temp = pix2meter(args)
         print(log_temp)
         return log
@@ -439,6 +439,8 @@ if __name__ == "__main__":
     parser.add_argument("--SahiNMSTh", help="IoU threshould for merging results when using sahi", type=float, default=0.25)
 
     parser.add_argument("--CVPR", help="prepare CVPR stats of dataset", action='store_true')
+    parser.add_argument("--OSR", help="over sampling reatio after resampling", type=int, default=10)
+    parser.add_argument("--GP", help="operate on ground plane", action='store_true')
 
     args = parser.parse_args()
 

@@ -3,6 +3,8 @@ from Utils import *
 from Libs import *
 from counting.resample_gt_MOI.resample_typical_tracks import track_resample
 import Track
+import Homography
+import DSM
 
 def tracklabelinggui(args):
     export_path = os.path.abspath(args.TrackLabellingExportPth)
@@ -49,11 +51,8 @@ def vis_labelled_tracks(args):
     tracks = pd.read_pickle(args.TrackLabellingExportPthImage)
     tracks = tracks.sort_values("moi")
     img1 = cv.imread(args.HomographyStreetView)
-    # img2 = cv.imread(args.HomographyTopView)
     M = np.load(args.HomographyNPY, allow_pickle=True)[0]
     rows2, cols2, dim2 = img2.shape
-    # img12 = cv.warpPerspective(img1, M, (cols2, rows2))
-    # img2 = cv.addWeighted(img2, alpha, img12, 1 - alpha, 0)
 
     for i in range(len(tracks)):
         track = tracks.iloc[i]
@@ -84,36 +83,50 @@ def get_proper_tracks(args, gp):
     tracks_meter_path = args.ReprojectedPklMeter
     top_image = args.HomographyTopView
     street_image = args.HomographyStreetView
-    # exportpath = args.TrackLabellingExportPth
     meta_data = args.MetaData # dict is already loaded
-    HomographyNPY = args.HomographyNPY
-    M = np.load(HomographyNPY, allow_pickle=True)[0]
-    moi_clusters = {}
-    for mi in  args.MetaData["moi_clusters"].keys():
-        moi_clusters[int(mi)] = args.MetaData["moi_clusters"][mi]
+
+    # moi_clusters = {} @TODO Detele
+    # for mi in  args.MetaData["moi_clusters"].keys():
+    #     moi_clusters[int(mi)] = args.MetaData["moi_clusters"][mi]
 
     img = plt.imread(top_image)
-    img1 = cv.imread(top_image)
     img_street = plt.imread(street_image)
+    img1 = cv.imread(top_image if gp else street_image)
 
-    # load data
-    if gp:
-        tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
-        tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
-        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
-    else:
-        tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=False)
-        tracks['index_mask'] = tracks['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
-
-    # tracks_meter['trajectory'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=False, threshold=args.ResampleTH))
+    # load data (for both gp and image)
+    tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=gp)
+    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=gp)
+    tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
 
     # create roi polygon
+    method = args.BackprojectionMethod
+    M = None
+    GroundRaster = None
+    orthophoto_win_tif_obj = None
+
+    if method == "Homography":
+        homography_path = args.HomographyNPY
+        M = np.load(homography_path, allow_pickle=True)[0]
+
+    elif method == "DSM":
+        # load OrthophotoTiffile
+        orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
+        # creat/load raster
+        if not os.path.exists(args.ToGroundRaster):
+            coords = DSM.load_dsm_points(args)
+            intrinsic_dict = DSM.load_json_file(args.INTRINSICS_PATH)
+            projection_dict = DSM.load_json_file(args.EXTRINSICS_PATH)
+            DSM.create_raster(args, args.MetaData["camera"], coords, projection_dict, intrinsic_dict)
+        
+        with open(args.ToGroundRaster, 'rb') as f:
+            GroundRaster = DSM.pickle.load(f)
+
     if gp:
         roi_rep = []
         for p in args.MetaData["roi"]:
-            point = np.array([p[0], p[1], 1])
-            new_point = M.dot(point)
-            new_point /= new_point[2]
+            x , y = p[0], p[1]
+            new_point = Homography.reproj_point(args, x, y, method,
+                         M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
             roi_rep.append([new_point[0], new_point[1]])
     else:
         roi_rep = [p for p in args.MetaData["roi"] ]
@@ -153,7 +166,7 @@ def get_proper_tracks(args, gp):
 
     print(f"percentage of complete tracks: {counter/len(tracks)}")
     plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
-    plt.savefig("multicross.png")
+    plt.savefig(f"multicross_gp={gp}.png")
     plt.close("all")
 
     # modify dfs with mask
@@ -162,7 +175,7 @@ def get_proper_tracks(args, gp):
     # temporarily add info to track dataframe
     tracks['i_str'] = i_strs
     tracks['i_end'] = i_ends
-    tracks['moi'] = moi
+    tracks['moi']   = moi
     tracks['p_str'] = p_strs
     tracks['p_end'] = p_ends
 
@@ -213,12 +226,8 @@ def make_uniform_clt_per_moi(tracks, args):
     indexes_to_keep = []
     for mi in np.unique(tracks.moi):
         tracks_mi = tracks[tracks['moi']==mi].sort_values(by="traj_len", ascending=False)
-        # print(tracks_mi.clt)
         uni_vals, uni_counts = np.unique(tracks_mi.clt, return_counts=True)
-        # print(uni_vals)
-        # print(uni_counts)
         num_tracks_to_get_from_clt_per_moi = min(np.min(uni_counts), 10)
-
         print(f"nums to take: {num_tracks_to_get_from_clt_per_moi} moi:{mi} num_clt:{len(uni_vals)} tot_tracks_chosen:{len(uni_vals)*num_tracks_to_get_from_clt_per_moi}")
         for uv in uni_vals:
             idxs_mi_clt  = tracks_mi[tracks_mi.clt == uv].index[:num_tracks_to_get_from_clt_per_moi]
@@ -226,8 +235,7 @@ def make_uniform_clt_per_moi(tracks, args):
 
     return tracks.loc[indexes_to_keep]
 
-
-def extract_common_tracks(args):
+def extract_common_tracks(args, gp):
     tracks_path = args.ReprojectedPkl
     tracks_meter_path = args.ReprojectedPklMeter
     top_image = args.HomographyTopView
@@ -244,22 +252,10 @@ def extract_common_tracks(args):
     img = plt.imread(top_image)
     img1 = cv.imread(top_image)
     img_street = plt.imread(street_image)
-
-    # create roi polygon
-    roi_rep = []
-    for p in args.MetaData["roi"]:
-        point = np.array([p[0], p[1], 1])
-        new_point = M.dot(point)
-        new_point /= new_point[2]
-        roi_rep.append([new_point[0], new_point[1]])
-
-    pg = MyPoly(roi_rep, args.MetaData["roi_group"])
-    th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
-    poly_path = mplPath.Path(np.array(roi_rep))
+    img_top    = plt.imread(top_image)
 
     # get proper tracks
-    # you can also add the gp flag for extract common tracks @TODO
-    tracks = get_proper_tracks(args, gp=True)
+    tracks = get_proper_tracks(args, gp=gp)
 
     # extract all starts and ends from proper tracks
     starts = []
@@ -270,12 +266,10 @@ def extract_common_tracks(args):
 
     starts = np.array(starts)
     ends = np.array(ends)
-    plt.imshow(img)
+    plt.imshow(img_top if gp else img_street)
     plt.scatter(starts[:, 0],starts[:, 1], alpha=0.3)
-    plt.savefig("multicorss_points.png")
+    plt.savefig(f"multicorss_points_gp={gp}.png")
     plt.close("all")
-
-    
 
     # cluster tracks and choose common tracks as cluster centers
     chosen_indexes = []
@@ -299,9 +293,9 @@ def extract_common_tracks(args):
         c_start = clt.predict(starts)
         p_start = np.array([clt.score(x.reshape(1, -1)) for x in starts])
         cluster_labels = np.unique(c_start)
-        plt.imshow(img)
+        plt.imshow(img_top if gp else img_street)
         plt.scatter(starts[:, 0], starts[:, 1], c=c_start)
-        plt.savefig(f"int_lane_clt_{mi}.png")
+        plt.savefig(f"int_lane_clt_{mi}_gp={gp}.png")
         plt.close("all")
 
         for c_label in cluster_labels:
@@ -322,7 +316,7 @@ def extract_common_tracks(args):
     tracks_labelled["moi"] = tracks.loc[chosen_indexes]["moi"].apply(lambda x: int(x))
     tracks_labelled.to_pickle(exportpathimage)
 
-    return SucLog("common trakces extracted successfully")
+    return SucLog("common tracks extracted successfully")
 
 class MyPoly():
     def __init__(self, roi, roi_group):
@@ -405,7 +399,8 @@ class MyPoly():
     @property
     def area(self):
         return abs(float(self.poly.area))
-
+    
+# @TODO change to check for loops
 def is_monotonic(traj):
     if len(traj) < 1:
         return False
