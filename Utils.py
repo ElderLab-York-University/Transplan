@@ -298,12 +298,12 @@ def get_dsm_points_path(args):
 def get_intrinsics_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "intrinsic_calibrations" + Puncuations.Dot + "json")
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "intrinsic_calibration" + Puncuations.Dot + "json")
 
 def get_extrinsics_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "extrinsic_calibrations" + Puncuations.Dot + "json")
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "extrinsic_calibration" + Puncuations.Dot + "json")
 
 def get_orthophoto_tif_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -410,10 +410,13 @@ def add_homography_related_path_to_args(args):
 
     return args
 
+def add_calibration_related_path_to_args(args):
+    args.INTRINSICS_PATH = get_intrinsics_path(args)
+    args.EXTRINSICS_PATH = get_extrinsics_path(args)
+    return args
+
 def add_dsm_related_path_to_args(args):
     args.DSM_POINTS_PATH        = get_dsm_points_path(args)
-    args.INTRINSICS_PATH        = get_intrinsics_path(args)
-    args.EXTRINSICS_PATH        = get_extrinsics_path(args)
     args.ToGroundCorrespondance = get_to_ground_correspondance_path(args)
     args.ToGroundRaster         = get_to_ground_raster_path(args)
     args.OrthoPhotoTif          = get_orthophoto_tif_path(args)
@@ -756,6 +759,11 @@ def complete_args(args):
     
     try:
         args = add_metadata_to_args(args)
+    except:
+        pass
+
+    try:
+        args = add_calibration_related_path_to_args(args)
     except:
         pass
 
