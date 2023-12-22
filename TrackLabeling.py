@@ -69,14 +69,16 @@ def vis_labelled_tracks(args):
 
     return SucLog("labeled trackes plotted successfully")
 
-def get_in_roi_points(traj, poly_path):
+def get_in_roi_points(traj, poly_path, return_mask=False):
     mask = []
     for p in traj:
         if poly_path.contains_point(p):
             mask.append(True)
         else:
             mask.append(False)
-    return traj[mask]
+
+    if return_mask: return mask
+    else: return traj[mask]
 
 def get_proper_tracks(args, gp):
     tracks_path = args.ReprojectedPkl
@@ -134,6 +136,8 @@ def get_proper_tracks(args, gp):
     pg = MyPoly(roi_rep, args.MetaData["roi_group"])
     th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
     poly_path = mplPath.Path(np.array(roi_rep))
+
+    tracks['ROI_mask'] = tracks.apply(lambda row: get_in_roi_points(row.trajectory[row.index_mask], poly_path, return_mask=True), axis=1)
 
     # select only tracks that have two interactions with Intersection
     counter = 0
@@ -271,7 +275,7 @@ def extract_common_tracks(args, gp):
     plt.savefig(f"multicorss_points_gp={gp}.png")
     plt.close("all")
 
-    # cluster tracks and choose common tracks as cluster centers
+    # cluster tracks and choose common tracks as cluster centers based on CMM
     chosen_indexes = []
     for mi in moi_clusters.keys():
         tracks_mi = tracks[tracks['moi']==mi]
@@ -298,9 +302,32 @@ def extract_common_tracks(args, gp):
         plt.savefig(f"int_lane_clt_{mi}_gp={gp}.png")
         plt.close("all")
 
+        metric = Metric_Dict["cmm"]
         for c_label in cluster_labels:
             mask_c = c_start == c_label
-            i_c = np.argmax(p_start[mask_c])
+            tracks_mi_cl = tracks_mi[mask_c]
+            indexes_mi_cl = np.array([i for i in range(len(tracks_mi_cl))]).reshape(-1, 1)
+            M = np.zeros(shape=(len(indexes_mi_cl), len(indexes_mi_cl)))
+            for i in indexes_mi_cl:
+                for j in range(int(i)+1, len(indexes_mi_cl)):
+                    traj_a = tracks_mi_cl['trajectory'].iloc[int(i)]
+                    traj_b = tracks_mi_cl['trajectory'].iloc[int(j)]
+                    # only look at the resampled points
+                    idx_mask  = tracks_mi_cl['index_mask'].iloc[int(i)]
+                    roi_mask  = tracks_mi_cl['ROI_mask'].iloc[int(i)]
+                    traj_a    = traj_a[idx_mask][roi_mask]
+
+                    idx_mask = tracks_mi_cl['index_mask'].iloc[int(j)]
+                    roi_mask = tracks_mi_cl['ROI_mask'].iloc[int(j)]
+                    traj_b  = traj_b[idx_mask][roi_mask]
+
+                    # compute pairwise distance
+                    c =  metric(traj_a, traj_b)
+                    M[int(i), int(j)] = c
+                    M[int(j), int(i)] = c
+            M_avg = np.mean(M, axis=0)
+            i_c = np.argmin(M_avg)
+            # i_c = np.argmax(p_start[mask_c])
             chosen_index = index_mi[mask_c][i_c]
             chosen_indexes.append(chosen_index)
 
@@ -339,6 +366,17 @@ class MyPoly():
         distances = np.array(distances)
         min_pos = np.argmin(distances)
         return distances[min_pos], int(self.roi_group[min_pos])
+
+    def all_distances(self, point):
+        p = sympy.Point(*point)
+        distances = []
+        for line, gp in zip(self.lines, self.roi_group):
+            d_line = float(line.distance(p))
+            if gp <=0 : d_line = float('inf')
+            distances.append(d_line)
+        distances = np.array(distances)
+        min_pos = np.argmin(distances)
+        return distances, self.roi_group
 
     def distance_angle_filt(self, p_main, p_second):
         imaginary_line = sympy.Line(sympy.Point(p_main), sympy.Point(p_second))
