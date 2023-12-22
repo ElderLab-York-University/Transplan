@@ -87,10 +87,6 @@ def get_proper_tracks(args, gp):
     street_image = args.HomographyStreetView
     meta_data = args.MetaData # dict is already loaded
 
-    # moi_clusters = {} @TODO Detele
-    # for mi in  args.MetaData["moi_clusters"].keys():
-    #     moi_clusters[int(mi)] = args.MetaData["moi_clusters"][mi]
-
     img = plt.imread(top_image)
     img_street = plt.imread(street_image)
     img1 = cv.imread(top_image if gp else street_image)
