@@ -343,7 +343,7 @@ class KDE2D(object):
 
 class Counting:
     def __init__(self, args, gp):
-        #ground truth labelled trajactories
+        # ground truth labelled trajactories
         # validated tracks with moi labels
         # args.ReprojectedPklMeter
         # args.TrackLabellingExportPthMeter
@@ -1095,23 +1095,49 @@ class ROICounting(KDECounting):
         else:
             self.init_image(args)
 
+
     def init_gp(self, args):
         self.args = args
         # load ROI 
         meta_data = args.MetaData # dict is already loaded
-        HomographyNPY = args.HomographyNPY
-        self.M = np.load(HomographyNPY, allow_pickle=True)[0]
+        # HomographyNPY = args.HomographyNPY
+        # self.M = np.load(HomographyNPY, allow_pickle=True)[0]
         roi_rep = []
+        # create roi polygon according to backproj method
+        method = args.BackprojectionMethod
+        M = None
+        GroundRaster = None
+        orthophoto_win_tif_obj = None
+
+        if method == "Homography":
+            homography_path = args.HomographyNPY
+            M = np.load(homography_path, allow_pickle=True)[0]
+
+        elif method == "DSM":
+            # load OrthophotoTiffile
+            orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
+            # creat/load raster
+            if not os.path.exists(args.ToGroundRaster):
+                coords = DSM.load_dsm_points(args)
+                intrinsic_dict = DSM.load_json_file(args.INTRINSICS_PATH)
+                projection_dict = DSM.load_json_file(args.EXTRINSICS_PATH)
+                DSM.create_raster(args, args.MetaData["camera"], coords, projection_dict, intrinsic_dict)
+            
+            with open(args.ToGroundRaster, 'rb') as f:
+                GroundRaster = DSM.pickle.load(f)
 
         for p in args.MetaData["roi"]:
-            point = np.array([p[0], p[1], 1])
-            new_point = self.M.dot(point)
-            new_point /= new_point[2]
+            x , y = p[0], p[1]
+            new_point = Homography.reproj_point(args, x, y, method,
+                        M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
             roi_rep.append([new_point[0], new_point[1]])
 
         self.pg = MyPoly(roi_rep, args.MetaData["roi_group"])
         self.poly_path = mplPath.Path(np.array(roi_rep))
         self.th = self.args.MetaData["roi_percent"] * np.sqrt(self.pg.area)
+        self.M = M
+        self.GroundRaster = GroundRaster
+        self.orthophoto_win_tif_obj = orthophoto_win_tif_obj
 
     def init_image(self, args):
         self.args = args
@@ -1152,27 +1178,69 @@ class ROICounting(KDECounting):
         for i, row in tqdm(tracks.iterrows(), total=len(tracks)):
             traj = row["trajectory"]
 
-            if Track.just_enter_roi(self.pg, traj, self.th, self.poly_path):
-                int_indxes = pg.doIntersect(traj, ret_points=False)
-                i_str = int_indxes[0]
+            if Track.within_roi(self.pg, traj, self.th, self.poly_path):
                 d_end, i_end = pg.distance(traj[-1])
-
-            elif Track.just_exit_roi(self.pg, traj, self.th, self.poly_path):
-                int_indxes = pg.doIntersect(traj, ret_points=False)
-                i_end = int_indxes[-1]
-                d_str, i_str = pg.distance(traj[0])
-
-            elif Track.within_roi(self.pg, traj, self.th, self.poly_path):
-                d_str, i_str = pg.distance(traj[0])
-                d_end, i_end = pg.distance(traj[-1])
+                # need to find the closest edge to track start
+                # the edge should be different from ending edge
+                ds_str, is_str = pg.all_distances(traj[0])
+                paired_sorted = sorted(zip(ds_str, is_str))
+                ds_sorted, is_reorganized = zip(*paired_sorted)
+                ds_sorted = list(ds_sorted)
+                is_reorganized = list(is_reorganized)
+                for d_s, i_s in zip(ds_sorted, is_reorganized):
+                    if not i_s == i_end:
+                        d_str, i_str = d_s, i_s
 
             elif Track.cross_roi_multiple(self.pg, traj, self.th, self.poly_path):
                 int_indxes = pg.doIntersect(traj, ret_points=False)
                 i_str , i_end = int_indxes[0], int_indxes[-1]
 
-            else:
-                d_str, i_str = pg.distance(traj[0])
-                d_end, i_end = pg.distance(traj[-1])
+            elif Track.just_enter_roi(self.pg, traj, self.th, self.poly_path):
+                int_indxes = pg.doIntersect(traj, ret_points=False)
+                i_str = int_indxes[0]
+
+                # find the edge closest to end of track
+                # it can not be the edge we had for track beginning
+                # Pair the elements of a and b, and sort the pairs based on elements of a
+                # Unzip the pairs back into two lists
+                # Convert the tuples back to lists if needed
+                ds_end , is_end = pg.all_distances(traj[-1])
+                paired_sorted = sorted(zip(ds_end, is_end))
+                ds_sorted, is_reorganized = zip(*paired_sorted)
+                ds_sorted = list(ds_sorted)
+                is_reorganized = list(is_reorganized)
+                for d_e, i_e in zip(ds_sorted, is_reorganized):
+                    if not i_e == i_str:
+                        d_end, i_end = d_e, i_e
+
+            # elif Track.just_exit_roi(self.pg, traj, self.th, self.poly_path):
+            else: # else is for just exit
+                int_indxes = pg.doIntersect(traj, ret_points=False)
+                i_end = int_indxes[-1]
+
+                # need to find the closest edge to track start
+                # the edge should be different from ending edge
+                ds_str, is_str = pg.all_distances(traj[0])
+                paired_sorted = sorted(zip(ds_str, is_str))
+                ds_sorted, is_reorganized = zip(*paired_sorted)
+                ds_sorted = list(ds_sorted)
+                is_reorganized = list(is_reorganized)
+                for d_s, i_s in zip(ds_sorted, is_reorganized):
+                    if not i_s == i_end:
+                        d_str, i_str = d_s, i_s
+
+            # else:
+            #     d_end, i_end = pg.distance(traj[-1])
+            #     # need to find the closest edge to track start
+            #     # the edge should be different from ending edge
+            #     ds_str, is_str = pg.all_distances(traj[0])
+            #     paired_sorted = sorted(zip(ds_str, is_str))
+            #     ds_sorted, is_reorganized = zip(*paired_sorted)
+            #     ds_sorted = list(ds_sorted)
+            #     is_reorganized = list(is_reorganized)
+            #     for d_s, i_s in zip(ds_sorted, is_reorganized):
+            #         if not i_s == i_end:
+            #             d_str, i_str = d_s, i_s
 
             i_strs.append(i_str)
             i_ends.append(i_end)
