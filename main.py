@@ -438,6 +438,7 @@ if __name__ == "__main__":
     parser.add_argument("--ConvertDetsToCOCO", help="convert detection files to COCO format", action='store_true')
     parser.add_argument("--KeepCOCOClasses", help="when converting to COCO keep coco class names", action='store_true')
     parser.add_argument("--Rois",help="If to use ROIs and which ROIS to use", nargs='+', type=str)
+    parser.add_argument("--Camera", help="Which cameras to evaluate", nargs="+", type=str)
     parser.add_argument("--MultiSeg", help="operating on multiple segments(eg train segments)", action='store_true')
     parser.add_argument("--MultiPart", help="for multi part operations", action='store_true')
     parser.add_argument("--FineTune", help="fine tune detector", action='store_true')
@@ -452,7 +453,7 @@ if __name__ == "__main__":
     parser.add_argument("--ValInterval", help="frequency of validation step(every x epochs)", type=int)
     parser.add_argument("--Intersection", help='If to evaluate within the intersection', action='store_true')
     parser.add_argument("--NotIntersection", help='If to evaluate outside the intersection', action='store_true')
-    
+    parser.add_argument("--MaskDetections", help="Use mask to mask detections during post-proc", action='store_true')
     parser.add_argument("--SAHI", help="run detection with SAHI", action='store_true')
     parser.add_argument("--SahiPatchSize", help="patch size of sahi", type=int, default=640)
     parser.add_argument("--SahiPatchOverlapRatio", help="overlap ration of sahi patches", type=float, default=0.25)
