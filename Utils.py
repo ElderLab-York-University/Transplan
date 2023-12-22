@@ -1003,15 +1003,15 @@ def ptcos_dist(traj_a, traj_b):
     return tc_dist(traj_a, traj_b) * minvc_dist(traj_a, traj_b)
 
 def hausdorff_directed(traj_a, traj_b, dist_func = lambda va, vb: np.linalg.norm(va-vb)):
-    max_dist = float('-inf')
-    for va in traj_a:
-        min_dist = float('inf')
-        for vb in traj_b:
-            dist_vavb = dist_func(va, vb)
-            if dist_vavb < min_dist:
-                min_dist = dist_vavb
-        if min_dist > max_dist:
-            max_dist = min_dist
+    diffs = traj_a[:, np.newaxis, :] - traj_b[np.newaxis, :, :]
+    # Compute the squared distances
+    squared_diffs = diffs ** 2
+    # Sum the squared differences across the columns to get squared distances
+    squared_distances = np.sum(squared_diffs, axis=2)
+    # Take the square root to get the Euclidean distances
+    D = np.sqrt(squared_distances)
+    mins = np.min(D, axis = 1)
+    max_dist = np.max(mins)
     return max_dist
             
 def hausdorff_dist(traj_a, traj_b):
