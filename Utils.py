@@ -747,11 +747,11 @@ def add_detection_mask_path_to_args(args):
     return args
 def get_args_gt(args):
     args_gt = copy.deepcopy(args)
-    args.GTDetector="GTHW7"
+    # args.GTDetector="GTHW7"
     args_gt.Detector = args.GTDetector
     
     args_gt.DetectorVersion = ""
-    args.GTTracker="GTHW7"
+    # args.GTTracker="GTHW7"
     args_gt.Tracker = args.GTTracker
     args_gt.Video=None
     args_gt=complete_args(args_gt)
@@ -833,7 +833,6 @@ def complete_args(args):
     if args.TrackEval:
         args = add_track_eval_save_path(args)
     if args.DetectEval:
-        args.GTDetector="GTHW7"
         args= add_detect_eval_save_path(args)
     try:
         args = add_metadata_to_args(args)
