@@ -42,7 +42,8 @@ def vis_labelled_tracks(args):
             img2 = cv.circle(img2, (x,y), radius=2, color=c, thickness=2)
 
     plt.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
-    plt.savefig(save_path)
+    plt.axis('off')
+    plt.savefig(save_path, bbox_inches='tight')
     plt.close("all")
 
     # plot labelled tracks on image domain as well
@@ -64,7 +65,8 @@ def vis_labelled_tracks(args):
             img2 = cv.circle(img1, (x,y), radius=3, color=c, thickness=3)
 
     plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
-    plt.savefig(save_path_street)
+    plt.axis('off')
+    plt.savefig(save_path_street, bbox_inches='tight')
     plt.close("all")
 
     return SucLog("labeled trackes plotted successfully")
