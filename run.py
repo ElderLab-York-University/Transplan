@@ -18,7 +18,8 @@ def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"], b
 # choose datasets/splits/segments/sources
 #  set to None if want to include all
 datasets     = [
-                "/home/sajjad/HW7Leslie",
+                # "/home/sajjad/HW7Leslie",
+                "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie"
                 # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
             ]
 split_part   = ["train"]
@@ -33,7 +34,8 @@ sources      = get_sub_dirs(segments, source_part)
 #  set to None if want to include all
 # this pathes are used to load cached counters
 cached_datasets     = [
-                "/home/sajjad/HW7Leslie",
+                # "/home/sajjad/HW7Leslie",
+                "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie"
                 # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
             ]
 cached_split_part   = ["train"]
@@ -99,11 +101,11 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
 
     ########################################################
     # 1. estimate the Homography Metrix using Homography GUI 
-    # os.system(f"python3 main.py --Dataset={src}  --Detector=detectron2 --Tracker=sort --HomographyGUI --VisHomographyGUI --Frame=1
+    # os.system(f"python3 main.py --Dataset={src} --HomographyGUI --VisHomographyGUI --Frame=1
     #  --TopView=GoogleMap")
     ########################################################
-    # print(f"src:{src}")
-    # os.system(f"python3 main.py --Dataset={src}  --Detector=Null --Tracker=Null --VisHomographyGUI --TopView=GoogleMap")
+    print(f"src:{src}")
+    os.system(f"python3 main.py --Dataset={src} --VisHomographyGUI --TopView=GoogleMap")
 
     ########################################################
     # 2. visualizing the region of interest 
