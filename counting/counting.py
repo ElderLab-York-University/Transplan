@@ -59,6 +59,25 @@ color_dict = moi_color_dict
 #     df = pd.DataFrame(data)
 #     return df
 
+def over_sample(traj, osr):
+    # oversample a downsampled trajectory to fill in gaps
+    osr_traj = []
+    tot_ps_to_add = len(traj) * osr
+    # compute arch length of traj
+    t1 = np.array(traj[1:])
+    t2 = np.array(traj[:-1])
+    distances = np.linalg.norm(t1 - t2, axis=1)
+    arc = np.sum(distances)
+    num_points = distances / arc * tot_ps_to_add
+
+    for i in range(1, len(traj)):
+        p1, p2 = traj[i-1], traj[i]
+        for r in np.linspace(0, 1, num=int(num_points[i-1]+1)):
+            p_temp = (1-r)*p1 + r*p2
+            x, y = p_temp
+            osr_traj.append([x, y])
+    osr_traj.append(traj[-1])
+    return np.array(osr_traj)
 
 def my_viz_CMM(current_track, img, alpha=0.3, matched_id=0, track_id=-1):
 
@@ -131,9 +150,6 @@ def interpolate_traj(traj, frames):
             int_traj.append(traj[i])
 
     return int_traj, int_frames
-
-
-# you should optimize the bw for image as well @TODO
 
 def find_opt_bw_of_surf(args, gp):
     osr = args.OSR
@@ -222,7 +238,7 @@ class KDE2D(object):
         self.im = None
         self.eps = 1e-20
 
-    def fit(self, data, im, h=3.4):
+    def fit(self, data, im, h):
         # Fit KDE model to 2D data points and plots results, overlaid on image im.
         # Input:
         # data: Nx2 data matrix
@@ -359,16 +375,57 @@ class Counting:
         self.args = args
         if self.args.LabelledTrajectories is None:
             print("loaded track labelling from previous path")
-            validated_trakcs_path = self.args.TrackLabellingExportPthMeter
+            validated_trakcs_path = self.args.TrackLabellingExportPth
+            validated_tracks_path_meter = self.args.TrackLabellingExportPthMeter
         else: validated_trakcs_path = self.args.LabelledTrajectories; print("loaded track labelling from external source")
 
         df = pd.read_pickle(validated_trakcs_path)
-        # print(len(df))
-        df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=False, threshold=args.ResampleTH))
+        df_meter = pd.read_pickle(validated_tracks_path_meter)
+        df['index_mask'] = df_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+        df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        df["trajectory"] = df.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
+#TODO oversample tracks with args.OSR
+
+        # create the intersection ROI and filter prototypes and tracks
+        # to be within intersection
+        # create roi polygon
+        method = args.BackprojectionMethod
+        M = None
+        GroundRaster = None
+        orthophoto_win_tif_obj = None
+
+        if method == "Homography":
+            homography_path = args.HomographyNPY
+            M = np.load(homography_path, allow_pickle=True)[0]
+
+        elif method == "DSM":
+            # load OrthophotoTiffile
+            orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
+            # creat/load raster
+            if not os.path.exists(args.ToGroundRaster):
+                coords = DSM.load_dsm_points(args)
+                intrinsic_dict = DSM.load_json_file(args.INTRINSICS_PATH)
+                projection_dict = DSM.load_json_file(args.EXTRINSICS_PATH)
+                DSM.create_raster(args, args.MetaData["camera"], coords, projection_dict, intrinsic_dict)
+            
+            with open(args.ToGroundRaster, 'rb') as f:
+                GroundRaster = DSM.pickle.load(f)
+
+        roi_rep = []
+        for p in args.MetaData["roi"]:
+            x , y = p[0], p[1]
+            new_point = Homography.reproj_point(args, x, y, method,
+                        M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
+            roi_rep.append([new_point[0], new_point[1]])
+
+        self.pg = MyPoly(roi_rep, args.MetaData["roi_group"])
+        self.poly_path = mplPath.Path(np.array(roi_rep))
+
+        # df['trajectory'] = df['trajectory'].apply(lambda x: get_in_roi_points(x, self.poly_path, return_mask=False))
 
         self.typical_mois = defaultdict(list)
         for index, row in df.iterrows():
-            self.typical_mois[row['moi']].append(row["trajectory"])
+            self.typical_mois[row['moi']].append(get_in_roi_points(row["trajectory"], self.poly_path, return_mask=False))
 
     def init_image(self, args):
         self.CountMetric = args.CountMetric
@@ -381,16 +438,22 @@ class Counting:
         else: validated_trakcs_path = self.args.LabelledTrajectories; print("loaded track labelling from external source")
 
         df = pd.read_pickle(validated_trakcs_path)
-        # print(len(df))
-        df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=False, threshold=args.ResampleTH))
+        df['index_mask'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+        df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        df["trajectory"] = df.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
+#TODO oversample tracks with args.OSR
+        roi_rep = [p for p in args.MetaData["roi"]]
+        self.pg = MyPoly(roi_rep, args.MetaData["roi_group"])
+        self.poly_path = mplPath.Path(np.array(roi_rep))
+        # df['trajectory'] = df['trajectory'].apply(lambda x: get_in_roi_points(x, self.poly_path, return_mask=False))
 
         self.typical_mois = defaultdict(list)
         for index, row in df.iterrows():
-            self.typical_mois[row['moi']].append(row["trajectory"])
+            self.typical_mois[row['moi']].append(get_in_roi_points(row["trajectory"], self.poly_path, return_mask=False))
     
     def counting(self, current_trajectory, track_id=-1):
-        # counting_start_time = time.time()
-        resampled_trajectory = current_trajectory
+        # only get the points in intersectin ROI
+        resampled_trajectory = get_in_roi_points(current_trajectory, self.poly_path, return_mask=False)
         
         min_c = float('inf')
         matched_id = -1
@@ -497,18 +560,24 @@ class Counting:
 
         # file_path to all trajectories .txt file(at the moment
         # ** do not confuse it with selected trajectories
-        file_name = args.ReprojectedPklMeter
+        df_meter = pd.read_pickle(args.ReprojectedPklMeter)
+        df       = pd.read_pickle(args.ReprojectedPkl)
+
         result_paht = args.CountingResPth
-        df_temp = pd.read_pickle(file_name)
 
         # get deffrent trajectory reps depending on if gp or image reasoning
         if self.gp:
-            df = group_tracks_by_id(df_temp, gp=True)
+            df_meter = group_tracks_by_id(df_meter, gp=True)
+            df       = group_tracks_by_id(df, gp=True)
         else:
-            df = group_tracks_by_id(df_temp, gp=False)
+            df_meter = group_tracks_by_id(df_meter, gp=False)
+            df       = group_tracks_by_id(df, gp=False)
             
         # resample tracks
-        df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=False, threshold=args.ResampleTH))
+        df['index_mask'] = df_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+        df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        df["trajectory"] = df.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
+#TODO oversample tracks with args.OSR
 
         data = {}
         data['id'], data['moi'] = [], []
@@ -569,6 +638,8 @@ class KNNCounting(Counting):
         # resample tracks on gp
         df['index_mask'] = df_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
         df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        df["trajectory"] = df.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
+#TODO oversample tracks with args.OSR
 
         # add prototype tracks as KNN data points
         x = []
@@ -602,7 +673,8 @@ class KNNCounting(Counting):
         # resample tracks on gp
         df['index_mask'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
         df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
-
+        df["trajectory"] = df.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
+#TODO oversample tracks with args.OSR
         # add prototype tracks as KNN data points
         x = []
         y = []
@@ -669,6 +741,8 @@ class KNNCounting(Counting):
             tracks['index_mask'] = tracks['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
             tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
 
+        tracks["trajectory"] = tracks.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
+#TODO oversample tracks with args.OSR
         moi = []
         for i, row in tqdm(tracks.iterrows(), total=len(tracks), desc="knn classifier infer"):
             x = [p for p in row.trajectory]
@@ -693,7 +767,7 @@ class KNNCounting(Counting):
         
 # change IKDE code to propagate bw to 2D KDE instead of hardcoding. this is important for Image Counters @TODO
 class IKDE():
-    def __init__(self, kernel="gaussian", bandwidth=None, os_ratio = 1):
+    def __init__(self, bandwidth, os_ratio, kernel="gaussian"):
         self.kernel = kernel
         self.bw = bandwidth
         self.osr = os_ratio
@@ -748,13 +822,8 @@ class IKDE():
                         x, y = p_temp
                         kde_data.append([x, y])
 
-                #         sequence_data.append(p_temp)
-                # for i , p in enumerate(sequence_data):
-                #     x, y = p
-                #     kde_data.append([x, y])
-
             kde_data = np.array(kde_data)
-            self.kdes[moi].fit(kde_data, img)
+            self.kdes[moi].fit(kde_data, img, self.bw)
 
     def make_inference_maps(self, img, vis_path):
         for moi in tqdm(self.kdes.keys(), desc="estimating inference maps"):
@@ -820,17 +889,8 @@ class IKDE():
                 log_score += infer_map[(x, y)]
             except:
                 pass
-        # add prior to it
-        # log_score += np.log(self.priors[moi])
+
         return log_score
-            
-        ## use this code to compute exact score
-        # traj_data = []
-        # for i in range(len(traj)):
-        #     x, y = traj[i]
-        #     traj_data.append([x, y])
-        # traj_data = np.array(traj_data)
-        # return np.sum(self.kdes[moi].score_samples(traj_data))+ np.log(self.priors[moi])
     
     def predict_traj(self, traj):
         moi_scores = []
@@ -846,38 +906,38 @@ class IKDE():
             max_mois.append(self.predict_traj(traj))
         return max_mois
 
-class LOSIKDE(IKDE):
-    def __init__(self, kernel="gaussian", bandwidth=3.2, os_ratio = 2):
-        super().__init__(kernel, bandwidth, os_ratio)
+# class LOSIKDE(IKDE):
+#     def __init__(self, kernel="gaussian", bandwidth=3.2, os_ratio = 2):
+#         super().__init__(kernel, bandwidth, os_ratio)
 
-    def fit(self, tracks):
-        self.mois = np.unique(tracks["moi"])
-        self.kdes = {}
-        for moi in self.mois:
-            self.kdes[moi] = sklearn.neighbors.KernelDensity(kernel=self.kernel, bandwidth=self.bw)
-        for moi in self.mois:
-            kde_data = []
-            sequence_data = []
-            for i, row in tracks[tracks["moi"] == moi].iterrows():
-                traj = row["trajectory"]
-                for i in range(1, len(traj)):
-                    p1, p2 = traj[i-1], traj[i]
-                    for r in np.linspace(0, 1, num=self.osr):
-                        p_temp = (1-r)*p1 + r*p2
-                        sequence_data.append(p_temp)
-                for i , p in enumerate(sequence_data):
-                    x, y = p
-                    kde_data.append([x, y, i/len(sequence_data)])
-            kde_data = np.array(kde_data)
-            self.kdes[moi].fit(kde_data)
+#     def fit(self, tracks):
+#         self.mois = np.unique(tracks["moi"])
+#         self.kdes = {}
+#         for moi in self.mois:
+#             self.kdes[moi] = sklearn.neighbors.KernelDensity(kernel=self.kernel, bandwidth=self.bw)
+#         for moi in self.mois:
+#             kde_data = []
+#             sequence_data = []
+#             for i, row in tracks[tracks["moi"] == moi].iterrows():
+#                 traj = row["trajectory"]
+#                 for i in range(1, len(traj)):
+#                     p1, p2 = traj[i-1], traj[i]
+#                     for r in np.linspace(0, 1, num=self.osr):
+#                         p_temp = (1-r)*p1 + r*p2
+#                         sequence_data.append(p_temp)
+#                 for i , p in enumerate(sequence_data):
+#                     x, y = p
+#                     kde_data.append([x, y, i/len(sequence_data)])
+#             kde_data = np.array(kde_data)
+#             self.kdes[moi].fit(kde_data)
 
-    def get_traj_score(self, traj, moi):
-        traj_data = []
-        for i in range(len(traj)):
-            x, y = traj[i]
-            traj_data.append([x, y, i/len(traj)])
-        traj_data = np.array(traj_data)
-        return np.sum(self.kdes[moi].score_samples(traj_data))
+#     def get_traj_score(self, traj, moi):
+#         traj_data = []
+#         for i in range(len(traj)):
+#             x, y = traj[i]
+#             traj_data.append([x, y, i/len(traj)])
+#         traj_data = np.array(traj_data)
+#         return np.sum(self.kdes[moi].score_samples(traj_data))
 
 class HMMG():
     def __init__(self, n_components=5):
@@ -948,11 +1008,9 @@ class KDECounting(Counting):
         # tracks["frames"] = os_frames
             
         if self.args.CountMetric == "kde":
-            self.ikde = IKDE()
+            self.ikde = IKDE(self.args.KDEBW, self.args.OSR)
         elif self.args.CountMetric == "gkde":
-            self.ikde = IKDE()
-        elif self.args.CountMetric == "loskde":
-            self.ikde = LOSIKDE()
+            self.ikde = IKDE(self.args.KDEBW, self.args.OSR)
         elif self.args.CountMetric == "hmmg":
             self.ikde = HMMG()
         else: raise "it should not happen"
@@ -993,6 +1051,8 @@ class KDECounting(Counting):
 
         # resample gp tracks
         tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        tracks["trajectory"] = tracks.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
+#TODO oversample tracks with args.OSR
         tracks["moi"] = self.ikde.predict_tracks(tracks)
 
         counted_tracks  = tracks[["id", "moi"]]
