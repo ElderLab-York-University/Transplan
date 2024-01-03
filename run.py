@@ -27,7 +27,7 @@ segment_part = ["Seg01"]
 source_part  = ["Seg01sc1"]
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
-sources      = get_sub_dirs(segments, source_part)
+sources      = get_sub_dirs(segments, source_part, not_be_inside="lc")
 
 
 # choose datasets/splits/segments/sources
@@ -43,7 +43,7 @@ cached_segment_part = ["Seg01"]
 cached_source_part  = ["Seg01sc1"]
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
-cached_sources      = get_sub_dirs(cached_segments, cached_source_part)
+cached_sources      = get_sub_dirs(cached_segments, cached_source_part, not_be_inside="lc")
 
 
 # choose the segmenter
@@ -52,7 +52,7 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN"]
-detectors = ["InternImage"]
+detectors = ["GTHW7"]
 
 # choose grandtruth detector
 # Options are the same as detector
@@ -64,7 +64,7 @@ det_v = ""
 
 # choose the tracker
 # options: ["GTHW7", "sort", "ByteTrack",  "CenterTrack", "DeepSort", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
-trackers = ["ByteTrack"] 
+trackers = ["GTHW7"] 
 
 # choose grandtruth tracker
 # options are the same as trackers
@@ -112,9 +112,9 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     # os.system(f"python3 main.py --Dataset={src} --VisROI --TopView=GoogleMap\
     #  --ROIFromTop --BackprojectionMethod=[Homography/DSM]")
     #######################################################
-    print(f"src:{src}")
-    os.system(f"python3 main.py --Dataset={src} --VisROI --TopView=GoogleMap\
-               --ROIFromTop --BackprojectionMethod=Homography")
+    # print(f"src:{src}")
+    # os.system(f"python3 main.py --Dataset={src} --VisROI --TopView=GoogleMap\
+    #            --ROIFromTop --BackprojectionMethod=Homography")
 
     #######################################################
     # 2.5 Segment Video Frames 
@@ -204,9 +204,10 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra} --Track")
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra} --Homography --Meter\
     #              --BackprojectSource=tracks --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
-    #         # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-    #         #      --VisTrack --VisTrackTop --VisTrajectories --ForNFrames=600\
-    #         #      --BackprojectSource=tracks --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
+
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+    #              --VisTrack --VisTrackTop --VisTrajectories --ForNFrames=600\
+    #              --BackprojectSource=tracks --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
 
     ########################################################
     # 5. run the track post processing
@@ -215,20 +216,21 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     # --BackprojectionMethod=[Homography/DSM] --ContactPoint=[BottomPoint/Center/BottomSeg/LineSeg] 
     # --TrackPostProc --TrackTh=8 --Interpolate --InterpolateTh=10 --RemoveInvalidTracks --MaskGPFrame 
     # --SelectDifEdgeInROI --SelectEndingInROI --SelectBeginInROI --HasPointsInROI --MaskROI --CrossROI --CrossROIMulti
-    # --JustEnterROI --JustExitROI --WithinROI  --ExitOrCrossROI")
+    # --JustEnterROI --JustExitROI --WithinROI  --ExitOrCrossROI\
+    # --classes_to_keep 2 3 5 7")
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
     #         print(f"tracking POSTPROC ---> src:{src} det:{det} tra:{tra}")
-    #         os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-    #                     --BackprojectSource=tracks --TopView=GoogleMap\
-    #                     --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
-    #                     --TrackPostProc --Interpolate --InterpolateTh=1000 --RemoveInvalidTracks --MaskGPFrame\
-    #                     --HasPointsInROI --ExitOrCrossROI")
+    #         # os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+    #         #             --BackprojectSource=tracks --TopView=GoogleMap\
+    #         #             --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
+    #         #             --TrackPostProc --Interpolate --InterpolateTh=1000 --RemoveInvalidTracks --MaskGPFrame\
+    #         #             --HasPointsInROI --ExitOrCrossROI")
 
-    # #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-    # #              --VisTrack --VisTrackTop --VisTrajectories --ForNFrames=600\
-    # #              --BackprojectSource=tracks --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
+    #         # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+    #         #      --VisTrack --VisTrackTop --VisTrajectories --ForNFrames=600\
+    #         #      --BackprojectSource=tracks --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
                  
     ########################################################
     # 5.5 Evaluate Tracking
