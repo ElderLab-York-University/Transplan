@@ -442,6 +442,7 @@ if __name__ == "__main__":
     parser.add_argument("--OSR", help="over sampling reatio after resampling", type=int, default=10)
     parser.add_argument("--KDEBW", help="BandWidth of KDE", type=float)
     parser.add_argument("--GP", help="operate on ground plane", action='store_true')
+    parser.add_argument("--ROIFromTop", help="get roi from topview need to select topview", action='store_true', default=False)
 
     args = parser.parse_args()
 
