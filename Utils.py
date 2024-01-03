@@ -445,6 +445,52 @@ def add_metadata_to_args(args):
         args.MetaData = json.load(f)
     return args
 
+def add_correct_roi_to_args(args):
+    import Homography
+    if not args.ROIFromTop: return args
+    M, GroundRaster, orthophoto_win_tif_obj = get_projection_objs(args)
+    if args.TopView == "GoogleMap":
+        ref_roi = args.MetaData["GoogleMapROI"]
+    elif args.TopView == "OrthoPhoto":
+        ref_roi = args.MetaData["OrthoPhotoROI"]
+    else: raise NotImplementedError
+
+    projected_roi = []
+    for x, y in ref_roi:
+        cor_img = Homography.project_point(args, x, y, args.BackprojectionMethod,
+                                M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
+        x_img, y_img = int(cor_img[0]), int(cor_img[1])
+        projected_roi.append([x_img, y_img])
+    
+    # overwrite roi
+    args.MetaData["roi"] = projected_roi
+    return args
+
+def get_projection_objs(args):
+    import DSM
+    method = args.BackprojectionMethod
+    M = None
+    GroundRaster = None
+    orthophoto_win_tif_obj = None
+
+    if method == "Homography":
+        homography_path = args.HomographyNPY
+        M = np.load(homography_path, allow_pickle=True)[0]
+
+    elif method == "DSM":
+        # load OrthophotoTiffile
+        orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
+        # creat/load raster
+        if not os.path.exists(args.ToGroundRaster):
+            coords = DSM.load_dsm_points(args)
+            intrinsic_dict = DSM.load_json_file(args.INTRINSICS_PATH)
+            projection_dict = DSM.load_json_file(args.EXTRINSICS_PATH)
+            DSM.create_raster(args, args.MetaData["camera"], coords, projection_dict, intrinsic_dict)
+        
+        with open(args.ToGroundRaster, 'rb') as f:
+            GroundRaster = DSM.pickle.load(f)
+    return M, GroundRaster, orthophoto_win_tif_obj
+
 def add_plot_all_traj_pth_to_args(args):
     path = get_plot_all_traj_path(args)
     args.PlotAllTrajPth = path
@@ -807,6 +853,7 @@ def complete_args(args):
     if args.FindOptimalKDEBW:
         args = add_opt_bw_path(args)
 
+    args = add_correct_roi_to_args(args)
     args = revert_args_with_params(args)
     return args
 
