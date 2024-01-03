@@ -222,6 +222,14 @@ def trackpostproc(args):
         df  = remove_short_tracks(args)
         update_tracking_changes(df, args)
 
+    # filter tracks based on classes
+    if args.classes_to_keep:
+        print("filter classes")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = filter_det_class(df, args)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)   
+
     # apply postprocessing on args.TrackingPkl
     if args.MaskROI:
         print("mask ROI")
