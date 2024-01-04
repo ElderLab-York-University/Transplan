@@ -179,9 +179,26 @@ def reproj_point(args, x, y, method, **kwargs):
     
     else: raise NotImplemented
 
+def project_point(args, x, y, method, **kwargs):
+    if method == "Homography":
+        return project_point_homography(x, y, kwargs["M"])
+        
+    elif method == "DSM":
+        raise NotImplementedError
+        return project_point_dsm(x, y, None, None)
+    
+    else: raise NotImplemented
+
 def reproj_point_homography(x, y, M):
     point = np.array([x, y, 1])
     new_point = M.dot(point)
+    new_point /= new_point[2]
+    return new_point
+
+def project_point_homography(x, y, M):
+    point = np.array([x, y, 1])
+    Minv = np.linalg.inv(M)
+    new_point  = Minv.dot(point)
     new_point /= new_point[2]
     return new_point
 
@@ -193,17 +210,22 @@ def reproj_point_dsm(x, y, img_ground_raster, orthophoto_win_tif_obj):
     # pass (orthophoto_proj_idx[1], orthophoto_proj_idx[0]) to csv.drawMarker
     return (orthophoto_proj_idx[1], orthophoto_proj_idx[0])
 
+def project_point_dsm(x, y, img_ground_raster, orthophoto_win_tif_obj):
+    raise NotImplementedError
+
 def reproject_df(args, df, out_path, method):
     # we will load M and Raster here and pass it on to speed up the projection
     M = None
     GroundRaster = None
-    orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
+    orthophoto_win_tif_obj = None
 
     if method == "Homography":
         homography_path = args.HomographyNPY
         M = np.load(homography_path, allow_pickle=True)[0]
 
     elif method == "DSM":
+        # load OrthophotoTiffile
+        orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
         # creat/load raster
         if not os.path.exists(args.ToGroundRaster):
             coords = DSM.load_dsm_points(args)

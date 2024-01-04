@@ -47,7 +47,7 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN", "YOLOv8"]
-detectors = ["DeformableDETR"]
+detectors = ["RTMDet"]
 
 # choose the tracker
 # options: [sort", "CenterTrack", "DeepSort", "ByteTrack", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
@@ -110,9 +110,9 @@ for src, cached_cnt_pth in zip(sources, sources):
     # 5. run the detection
     # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Detect --VisDetect")
     ########################################################
-    # for det in detectors:
-    #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Detect --VisDetect")
+    for det in detectors:
+        print(f"detecting ----> src:{src} det:{det}")
+        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Detect --VisDetect")
 
     ########################################################
     # 5.1 run the detection post processing
@@ -281,7 +281,7 @@ for ds in datasets:
     # ########################################################
     # # 1. fine tune detector
     # ########################################################
-    for det in detectors:
-        os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
-                   --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
-                   --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval}")
+    # for det in detectors:
+    #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
+    #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
+    #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval}")

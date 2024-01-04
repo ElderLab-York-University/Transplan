@@ -298,12 +298,12 @@ def get_dsm_points_path(args):
 def get_intrinsics_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "intrinsic_calibrations" + Puncuations.Dot + "json")
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "intrinsic_calibration" + Puncuations.Dot + "json")
 
 def get_extrinsics_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "extrinsic_calibrations" + Puncuations.Dot + "json")
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "extrinsic_calibration" + Puncuations.Dot + "json")
 
 def get_orthophoto_tif_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -410,10 +410,13 @@ def add_homography_related_path_to_args(args):
 
     return args
 
+def add_calibration_related_path_to_args(args):
+    args.INTRINSICS_PATH = get_intrinsics_path(args)
+    args.EXTRINSICS_PATH = get_extrinsics_path(args)
+    return args
+
 def add_dsm_related_path_to_args(args):
     args.DSM_POINTS_PATH        = get_dsm_points_path(args)
-    args.INTRINSICS_PATH        = get_intrinsics_path(args)
-    args.EXTRINSICS_PATH        = get_extrinsics_path(args)
     args.ToGroundCorrespondance = get_to_ground_correspondance_path(args)
     args.ToGroundRaster         = get_to_ground_raster_path(args)
     args.OrthoPhotoTif          = get_orthophoto_tif_path(args)
@@ -441,6 +444,52 @@ def add_metadata_to_args(args):
     with open(meta_path) as f:
         args.MetaData = json.load(f)
     return args
+
+def add_correct_roi_to_args(args):
+    import Homography
+    if not args.ROIFromTop: return args
+    M, GroundRaster, orthophoto_win_tif_obj = get_projection_objs(args)
+    if args.TopView == "GoogleMap":
+        ref_roi = args.MetaData["GoogleMapROI"]
+    elif args.TopView == "OrthoPhoto":
+        ref_roi = args.MetaData["OrthoPhotoROI"]
+    else: raise NotImplementedError
+
+    projected_roi = []
+    for x, y in ref_roi:
+        cor_img = Homography.project_point(args, x, y, args.BackprojectionMethod,
+                                M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
+        x_img, y_img = int(cor_img[0]), int(cor_img[1])
+        projected_roi.append([x_img, y_img])
+    
+    # overwrite roi
+    args.MetaData["roi"] = projected_roi
+    return args
+
+def get_projection_objs(args):
+    import DSM
+    method = args.BackprojectionMethod
+    M = None
+    GroundRaster = None
+    orthophoto_win_tif_obj = None
+
+    if method == "Homography":
+        homography_path = args.HomographyNPY
+        M = np.load(homography_path, allow_pickle=True)[0]
+
+    elif method == "DSM":
+        # load OrthophotoTiffile
+        orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
+        # creat/load raster
+        if not os.path.exists(args.ToGroundRaster):
+            coords = DSM.load_dsm_points(args)
+            intrinsic_dict = DSM.load_json_file(args.INTRINSICS_PATH)
+            projection_dict = DSM.load_json_file(args.EXTRINSICS_PATH)
+            DSM.create_raster(args, args.MetaData["camera"], coords, projection_dict, intrinsic_dict)
+        
+        with open(args.ToGroundRaster, 'rb') as f:
+            GroundRaster = DSM.pickle.load(f)
+    return M, GroundRaster, orthophoto_win_tif_obj
 
 def add_plot_all_traj_pth_to_args(args):
     path = get_plot_all_traj_path(args)
@@ -546,6 +595,21 @@ def add_segmentation_path_to_args(args):
 
 def add_vis_segment_path_to_args(args):
     args.VisSegmentPath = get_vis_segment_path(args)
+    return args
+
+def get_opt_bw_image(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "OptBW.Image" + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +f"{args.OSR}"+ Puncuations.Dot +f"{args.ResampleTH}" +Puncuations.Dot + "png")
+
+def get_opt_bw_ground(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "OptBW.GP" + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +f"{args.OSR}"+ Puncuations.Dot +f"{args.ResampleTH}"+ Puncuations.Dot+ args.BackprojectionMethod + Puncuations.Dot + args.TopView + Puncuations.Dot + args.ContactPoint+ Puncuations.Dot +"png")
+
+def add_opt_bw_path(args):
+    args.OptBWImage = get_opt_bw_image(args)
+    args.OptBWGround = get_opt_bw_ground(args)
     return args
 
 def get_GT_path(args):
@@ -753,6 +817,11 @@ def complete_args(args):
     except:
         pass
 
+    try:
+        args = add_calibration_related_path_to_args(args)
+    except:
+        pass
+
     args = add_GT_path_to_args(args)
     args= add_3DGT_path_to_args(args)
     args= add_GT_Json_path_to_args(args)
@@ -790,6 +859,10 @@ def complete_args(args):
         args = add_segmentation_path_to_args(args)
         args = add_vis_segment_path_to_args(args)
 
+    if args.FindOptimalKDEBW:
+        args = add_opt_bw_path(args)
+
+    args = add_correct_roi_to_args(args)
     args = revert_args_with_params(args)
     return args
 
@@ -986,15 +1059,15 @@ def ptcos_dist(traj_a, traj_b):
     return tc_dist(traj_a, traj_b) * minvc_dist(traj_a, traj_b)
 
 def hausdorff_directed(traj_a, traj_b, dist_func = lambda va, vb: np.linalg.norm(va-vb)):
-    max_dist = float('-inf')
-    for va in traj_a:
-        min_dist = float('inf')
-        for vb in traj_b:
-            dist_vavb = dist_func(va, vb)
-            if dist_vavb < min_dist:
-                min_dist = dist_vavb
-        if min_dist > max_dist:
-            max_dist = min_dist
+    diffs = traj_a[:, np.newaxis, :] - traj_b[np.newaxis, :, :]
+    # Compute the squared distances
+    squared_diffs = diffs ** 2
+    # Sum the squared differences across the columns to get squared distances
+    squared_distances = np.sum(squared_diffs, axis=2)
+    # Take the square root to get the Euclidean distances
+    D = np.sqrt(squared_distances)
+    mins = np.min(D, axis = 1)
+    max_dist = np.max(mins)
     return max_dist
             
 def hausdorff_dist(traj_a, traj_b):
