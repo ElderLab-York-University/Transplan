@@ -190,7 +190,6 @@ def detectionth(df, args):
     return df
 
 def filter_det_class(df, args):
-    print("performing class filtering")
     mask = df["fn"] < 0
     for clss in args.classes_to_keep:
         clss_mask = df["class"] == clss
