@@ -3,7 +3,8 @@ from Utils import *
 
 def track(args, detectors):
     input_file=args.GTJson
-    camera_name=args.Dataset.split("/")[-2][-3:]
+    camera_name=os.path.abspath(args.Dataset).split("/")[-1][-3:]
+    input()
     name_to_num={
       "lc1":0,
       "lc2":1,
@@ -45,8 +46,8 @@ def track(args, detectors):
     detections= np.asarray(detections)
     df=pd.DataFrame(detections,columns=['fn','id','x1','y1','x2','y2','class'])
     df=df.sort_values('fn').reset_index(drop=True)
-    print(df)
-    print(args.TrackingPth)
+    # print(df)
+    # print(args.TrackingPth)
     df.to_csv(args.TrackingPth, header=None, index=None, sep=',')
     
     # we are assuming that video_name.GTHW7.GTHW7.txt is already in the results/tracking/
