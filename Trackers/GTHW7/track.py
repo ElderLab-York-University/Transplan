@@ -47,7 +47,6 @@ def track(args, detectors):
     df=df.sort_values('fn').reset_index(drop=True)
     print(df)
     print(args.TrackingPth)
-    input()
     df.to_csv(args.TrackingPth, header=None, index=None, sep=',')
     
     # we are assuming that video_name.GTHW7.GTHW7.txt is already in the results/tracking/
