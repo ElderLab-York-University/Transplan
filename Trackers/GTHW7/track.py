@@ -32,7 +32,7 @@ def track(args, detectors):
                     if(gt['cuboid_uuid']) not in uuid_to_id:
                         uuid_to_id[gt['cuboid_uuid']]=id_counter
                         id_counter=id_counter+1
-                    c = 0 if "Pedestrian" in gt['label'] else 2 if 'Small' in gt['label'] else 5 if 'Buses' in gt['label'] else 7
+                    c = 0 if "Pedestrian" in gt['label'] else 7 if 'Truck' in gt['label'] else 5 if 'Buses' in gt['label'] else 2 if 'Small' in gt['label'] else 1 if 'Unpowered' in gt['label'] else 3
                     id=uuid_to_id[gt['cuboid_uuid']]
                     x1=gt['left']
                     x2=x1+gt['width']
