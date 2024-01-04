@@ -4,7 +4,6 @@ from Utils import *
 def track(args, detectors):
     input_file=args.GTJson
     camera_name=os.path.abspath(args.Dataset).split("/")[-1][-3:]
-    input()
     name_to_num={
       "lc1":0,
       "lc2":1,
