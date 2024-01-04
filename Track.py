@@ -222,12 +222,23 @@ def trackpostproc(args):
         df  = remove_short_tracks(args)
         update_tracking_changes(df, args)
 
+    print(f"starting with {len(np.unique(df['class']))} tracks")
+    print(np.unique(df['class']))
+
+    # unify classes in each track
+    if args.UnifyTrackClass:
+        print("unify classes")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = unify_classes_in_tracks(df, args)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)  
+
     # filter tracks based on classes
     if args.classes_to_keep:
         print("filter classes")
-        print(f"starting with {len(np.unique(df['id']))} tracks")
+        print(f"starting with {len(np.unique(df['class']))} classes")
         df = filter_det_class(df, args)
-        print(f"ending with {len(np.unique(df['id']))} tracks")
+        print(f"ending with {len(np.unique(df['class']))} classes")
         update_tracking_changes(df, args)   
 
     # apply postprocessing on args.TrackingPkl
@@ -331,15 +342,15 @@ def trackpostproc(args):
 
     return SucLog("track post processing executed with no error")
 
-# def roi_mask_tracks(args):
-#     df_meter_ungrouped = pd.read_pickle(args.ReprojectedPklMeter)
-#     df_reg_ungrouped   = pd.read_pickle(args.ReprojectedPkl)
-#     df_meter = group_tracks_by_id(df_meter_ungrouped)
-#     df_reg   = group_tracks_by_id(df_reg_ungrouped)
-#     main_df = pd.read_pickle(args.TrackingPkl)
-
-#     mask = []
-#     for i , row in main_df.iterrows():
+def unify_classes_in_tracks(df, args):
+    uids = np.unique(df.id)
+    for ui in uids:
+        ui_classes = df.loc[df.id == ui, "class"].to_numpy()
+        ui_classes = ui_classes[ui_classes >= 0]
+        class_major = scipy.stats.mode(ui_classes, keepdims=False)
+        class_major = int(class_major[0])
+        df.loc[df.id == ui, "class"] = class_major
+    return df
 
 def end_in_roi(pg, traj, th, poly_path):
     d_end, i_end = pg.distance(traj[-1])
