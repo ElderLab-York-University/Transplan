@@ -23,8 +23,8 @@ datasets     = [
                 # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
             ]
 split_part   = ["train"]
-segment_part = ["Seg01"]
-source_part  = ["Seg01sc1"]
+segment_part = None
+source_part  = None
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
 sources      = get_sub_dirs(segments, source_part, not_be_inside="lc")
@@ -39,8 +39,8 @@ cached_datasets     = [
                 # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
             ]
 cached_split_part   = ["train"]
-cached_segment_part = ["Seg01"]
-cached_source_part  = ["Seg01sc1"]
+cached_segment_part = None
+cached_source_part  = None
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
 cached_sources      = get_sub_dirs(cached_segments, cached_source_part, not_be_inside="lc")
@@ -205,9 +205,9 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra} --Homography --Meter\
     #              --BackprojectSource=tracks --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
 
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-    #              --VisTrack --VisTrackTop --VisTrajectories --ForNFrames=600\
-    #              --BackprojectSource=tracks --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
+    #         # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+    #         #      --VisTrack --VisTrackTop --VisTrajectories --ForNFrames=600\
+    #         #      --BackprojectSource=tracks --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
 
     ########################################################
     # 5. run the track post processing
@@ -217,7 +217,7 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     # --TrackPostProc --TrackTh=8 --Interpolate --InterpolateTh=10 --RemoveInvalidTracks --MaskGPFrame 
     # --SelectDifEdgeInROI --SelectEndingInROI --SelectBeginInROI --HasPointsInROI --MaskROI --CrossROI --CrossROIMulti
     # --JustEnterROI --JustExitROI --WithinROI  --ExitOrCrossROI\
-    # --classes_to_keep 2 3 5 7")
+    # --UnifyTrackClass --classes_to_keep 2 3 5 7")
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
@@ -227,6 +227,11 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #         #             --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
     #         #             --TrackPostProc --Interpolate --InterpolateTh=1000 --RemoveInvalidTracks --MaskGPFrame\
     #         #             --HasPointsInROI --ExitOrCrossROI")
+            
+    #         os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+    #                     --BackprojectSource=tracks --TopView=GoogleMap\
+    #                     --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
+    #                     --TrackPostProc --Interpolate --InterpolateTh=1000 --classes_to_keep 2 3 5 7")
 
     #         # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
     #         #      --VisTrack --VisTrackTop --VisTrajectories --ForNFrames=600\
@@ -367,6 +372,23 @@ for split in splits:
     #         print(f"evaluate tracking ---> src:{split} det:{det} tra:{tra} gt_det:{GT_det} gt_tra:{GT_tra}")
     #         os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --DetectorVersion={det_v} --Tracker={tra} --TrackEval\
     #                    --GTDetector={GT_det} --GTTracker={GT_tra}")
+
+    ########################################################
+    # 3. Run automated track extraction and labelling
+    # python3 main.py --Dataset={split}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra} --MultiSeg\
+    #                 --ExtractCommonTracks --VisLabelledTrajectories --ResampleTH=2.0\
+    #                 --BackprojectSource=tracks --TopView=GoogleMap\
+    #                 --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
+    #                 --GP --ROIFromTop
+    ########################################################
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"extract common tracks ----> det:{det}, tra:{tra}")
+    #         os.system(f"python3 main.py --Dataset={split}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra} --MultiSeg\
+    #                    --VisLabelledTrajectories --ResampleTH=2\
+    #                    --BackprojectSource=tracks --TopView=GoogleMap\
+    #                    --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
+    #                    --GP --ROIFromTop")
 
 #_______________________MULTIPART___________________________#
 for ds in datasets:

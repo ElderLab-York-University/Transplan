@@ -15,7 +15,7 @@ from Homography import homographygui
 from Homography import reproject
 from Homography import vishomographygui
 from Homography import vis_reprojected_tracks, vis_contact_point, vis_contact_point_top
-from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_tracks
+from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_tracks, extract_common_tracks_multi
 from Evaluate import evaluate_tracking, cvpr
 from Maps import pix2meter
 from counting import counting
@@ -122,6 +122,14 @@ def VisLabelledTrajectories(args):
         return log
     else: return WarningLog("skipped plotting labelled tracks")
 
+def VisLabelledTrajectoriesMulti(args, args_ms, args_mcs):
+    if args.VisLabelledTrajectories:
+        print(ProcLog("Vis Labeled trajectories in Process for MCMS"))
+        for args_temp in flatten_args(args_mcs):
+            vis_labelled_tracks(args_temp)
+        return SucLog("visualized all the labelled trajectories for all segments")
+    else: return WarningLog("skipped plotting labelled tracks")
+
 def Pix2Meter(args):
     if args.Meter:
         print(ProcLog("Converting to meter in Process"))
@@ -167,6 +175,15 @@ def ExtractCommonTracks(args):
         print(log_temp)
         return log
     else: return WarningLog("skipped extract common track subtask")
+
+def ExtractCommonTracksMulti(args, args_ms, args_mcs):
+    if args.ExtractCommonTracks:
+        print(ProcLog("Extract Common Trajectories from multi segments and multi cameras"))
+        log = extract_common_tracks_multi(args_mcs)
+        for args_temp in flatten_args(args_mcs):
+            log_temp = pix2meter(args_temp)
+        return log
+    else: return WarningLog("skipped extract common track MCMS subtask")
 
 def VisTrackTop(args):
     if args.VisTrackTop:
@@ -317,7 +334,7 @@ def main_mc(args, args_mc):
 
 def main_ms(args, args_ms, args_mcs):
     # main for multi segments
-    subtasks = [ConvertDetsToCOCO_MS, TrackEvaluateMS]
+    subtasks = [ConvertDetsToCOCO_MS, TrackEvaluateMS, ExtractCommonTracksMulti, VisLabelledTrajectoriesMulti]
 
     for sub in subtasks:
         log = sub(args, args_ms, args_mcs)

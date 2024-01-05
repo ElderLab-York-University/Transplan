@@ -634,12 +634,12 @@ def add_GT_path_to_args(args):
     args.GT = get_GT_path(args)
     return args
 
-
 def add_3DGT_path_to_args(args):
-    args.GT3D= get_3DGT_path(args)
+    args.GT3D = get_3DGT_path(args)
     # args.INTRINSICS_PATH        = get_intrinsics_path(args)
     # args.EXTRINSICS_PATH        = get_extrinsics_path(args)    
     return args
+
 def add_GT_Json_path_to_args(args):
     args.GTJson=get_GT_json_path(args)
     return args
@@ -745,6 +745,7 @@ def get_args_mc(args):
         args_mc[i] = arg_c
 
     args.Video = args.Dataset
+    args.ROIFromTop = False
     args = get_args(args)
     args = complete_args_mc(args)
 
@@ -759,6 +760,7 @@ def get_args_ms(args):
         args_mcs.append(arg_s_mc)
 
     args.Video = args.Dataset
+    args.ROIFromTop = False
     args = get_args(args)
     args = complete_args_ms(args)
 
@@ -775,6 +777,7 @@ def get_args_mp(args):
         args_mcs.append(arg_m_mcs)
 
     args.Video = args.Dataset
+    args.ROIFromTop = False
     args = get_args(args)
     args = complete_args_mp(args)
 

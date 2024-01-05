@@ -62,7 +62,10 @@ def vis_labelled_tracks(args):
         for j , p in enumerate(traj):
             x , y = int(p[0]), int(p[1])
             c = moi_color_dict[moi]
-            img2 = cv.circle(img1, (x,y), radius=3, color=c, thickness=3)
+            try:
+                img2 = cv.circle(img1, (x,y), radius=3, color=c, thickness=3)
+            except:
+                pass
 
     plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
     plt.axis('off')
@@ -82,7 +85,17 @@ def get_in_roi_points(traj, poly_path, return_mask=False):
     if return_mask: return mask
     else: return traj[mask]
 
-def get_proper_tracks(args, gp):
+def get_proper_tracks_multi(args_mcs, gp):
+    args_flat = flatten_args(args_mcs)
+    all_tracks = []
+    for args in args_flat:
+        tracks = get_proper_tracks(args, gp)
+        all_tracks.append(tracks)
+    tracks_mcs = pd.concat(all_tracks)
+    return tracks_mcs
+
+def get_proper_tracks(args, gp, verbose=True):
+    
     tracks_path = args.ReprojectedPkl
     tracks_meter_path = args.ReprojectedPklMeter
     top_image = args.HomographyTopView
@@ -94,8 +107,8 @@ def get_proper_tracks(args, gp):
     img1 = cv.imread(top_image if gp else street_image)
 
     # load data (for both gp and image)
-    tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=gp)
-    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=gp)
+    tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=gp, verbose=verbose)
+    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=gp, verbose=verbose)
     tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
 
     # create roi polygon
@@ -126,7 +139,7 @@ def get_proper_tracks(args, gp):
         for p in args.MetaData["roi"]:
             x , y = p[0], p[1]
             new_point = Homography.reproj_point(args, x, y, method,
-                         M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
+                        M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
             roi_rep.append([new_point[0], new_point[1]])
     else:
         roi_rep = [p for p in args.MetaData["roi"] ]
@@ -145,9 +158,9 @@ def get_proper_tracks(args, gp):
     p_strs = []
     p_ends = []
     moi = []
-
-    print("!-!: selecting tacks that have at least two interactions with ROI")
-    for i, row in tqdm(tracks.iterrows(), total=len(tracks)):
+    if verbose:
+        print("!-!: selecting tacks that have at least two interactions with ROI")
+    for i, row in tqdm(tracks.iterrows(), total=len(tracks), disable= not verbose):
         traj = row["trajectory"][row["index_mask"]]
         int_indexes, int_points = pg.doIntersect(traj, ret_points=True)
         if len(np.unique(int_indexes)) > 1 and is_monotonic(get_in_roi_points(traj, poly_path)): # more than one interactions with ROI
@@ -165,11 +178,11 @@ def get_proper_tracks(args, gp):
                 c+=1
         else:
             mask.append(False)
-
-    print(f"percentage of complete tracks: {counter/len(tracks)}")
-    plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
-    plt.savefig(f"multicross_gp={gp}.png")
-    plt.close("all")
+    if verbose:
+        print(f"percentage of complete tracks: {counter/len(tracks)}")
+        plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
+        plt.savefig(f"multicross_gp={gp}.png")
+        plt.close("all")
 
     # modify dfs with mask
     tracks = tracks[mask]
@@ -236,6 +249,132 @@ def make_uniform_clt_per_moi(tracks, args):
             indexes_to_keep += [i for i in idxs_mi_clt]
 
     return tracks.loc[indexes_to_keep]
+
+def extract_common_tracks_multi(arg_mcs):
+    # in our multi setup we will work on ground plane
+    # set gp = True
+    gp = True
+    args_flatten = flatten_args(arg_mcs)
+    # all sources should share the same top-view
+    top_image = args_flatten[0].HomographyTopView
+    # load street image for each source
+    street_images = [args.HomographyStreetView for args in args_flatten]
+    # we will export comon tracks on all sources
+    exportpaths      = [args.TrackLabellingExportPth for args in args_flatten]
+    exportpathimages = [args.TrackLabellingExportPthImage for args in args_flatten]
+    # tracks of each source
+    tracks_paths       = [args.ReprojectedPkl for args in args_flatten]
+    tracks_meter_paths = [args.ReprojectedPklMeter for args in args_flatten]
+    # load metadata for each source
+    meta_datas = [args.MetaData for args in args_flatten]
+    # load homographies
+    Ms = [np.load(args.HomographyNPY, allow_pickle=True)[0] for args in args_flatten]
+    # moi clusters are the same for all sources
+    moi_clusters = {}
+    for mi in  args_flatten[0].MetaData["moi_clusters"].keys():
+        moi_clusters[int(mi)] = args_flatten[0].MetaData["moi_clusters"][mi]
+    # load all the images to arrays
+    # top view image is the same
+    img = plt.imread(top_image)
+    img1 = cv.imread(top_image)
+    img_top    = plt.imread(top_image)
+    # street image is different for each source
+    img_streets = [plt.imread(street_image) for street_image in street_images]
+    trackss = [get_proper_tracks(args, gp=gp, verbose=False) for args in tqdm(args_flatten)]
+    # stack all the dfs on top of eachother
+    # resent indexes to avoid duplicate indices
+    tracks = pd.concat(trackss, ignore_index=True) 
+    #!!! extracted trackss are on ground plane
+    # indexes are from merged dfs
+    chosen_indexes = []
+    for mi in moi_clusters.keys():
+        tracks_mi = tracks[tracks['moi']==mi]
+        index_mi = tracks_mi.index
+        starts = []
+        ends=[]
+        for i, row in tracks_mi.iterrows():
+            starts.append(row['p_str'])
+            ends.append(row['p_end'])
+        starts = np.array(starts)
+        ends = np.array(ends)
+        num_cluster = moi_clusters[mi]
+        if len(starts) < 1:
+            print(f"moi {mi} was empty")
+            continue
+
+        clt = sklearn.cluster.KMeans(n_clusters = min(num_cluster, len(starts)), n_init=100)
+        clt.fit(starts)
+        c_start = clt.predict(starts)
+        p_start = np.array([clt.score(x.reshape(1, -1)) for x in starts])
+        cluster_labels = np.unique(c_start)
+        plt.imshow(img_top)
+        plt.scatter(starts[:, 0], starts[:, 1], c=c_start)
+        plt.savefig(f"multi_int_lane_clt_{mi}_gp={gp}.png")
+        plt.close("all")
+
+        metric = Metric_Dict["cmm"]
+        for c_label in cluster_labels:
+            mask_c = c_start == c_label
+            tracks_mi_cl = tracks_mi[mask_c]
+            indexes_mi_cl = np.array([i for i in range(len(tracks_mi_cl))]).reshape(-1, 1)
+            M = np.zeros(shape=(len(indexes_mi_cl), len(indexes_mi_cl)))
+            for i in indexes_mi_cl:
+                for j in range(int(i)+1, len(indexes_mi_cl)):
+                    traj_a = tracks_mi_cl['trajectory'].iloc[int(i)]
+                    traj_b = tracks_mi_cl['trajectory'].iloc[int(j)]
+                    # only look at the resampled points
+                    idx_mask  = tracks_mi_cl['index_mask'].iloc[int(i)]
+                    roi_mask  = tracks_mi_cl['ROI_mask'].iloc[int(i)]
+                    traj_a    = traj_a[idx_mask][roi_mask]
+
+                    idx_mask = tracks_mi_cl['index_mask'].iloc[int(j)]
+                    roi_mask = tracks_mi_cl['ROI_mask'].iloc[int(j)]
+                    traj_b  = traj_b[idx_mask][roi_mask]
+
+                    # compute pairwise distance
+                    c =  metric(traj_a, traj_b)
+                    M[int(i), int(j)] = c
+                    M[int(j), int(i)] = c
+            M_avg = np.mean(M, axis=0)
+            i_c = np.argmin(M_avg)
+            # i_c = np.argmax(p_start[mask_c])
+            chosen_index = index_mi[mask_c][i_c]
+            chosen_indexes.append(chosen_index)
+
+    # save common tracks as labelled tracks on ground plane
+    # read all the tracks
+    # will reselect proper tracks using df index
+    tracks_labelleds = [group_tracks_by_id(pd.read_pickle(tracks_path), gp=gp, verbose=False).loc[tracks_temp.index] for tracks_path, tracks_temp in zip(tracks_paths, trackss)]
+    # reset indexes to be consistant
+    tracks_labelled = pd.concat(tracks_labelleds, ignore_index=True)
+    tracks_labelled = tracks_labelled.loc[chosen_indexes]
+    tracks_labelled["moi"] = tracks.loc[chosen_indexes]["moi"].apply(lambda x: int(x))
+    for exportpath in exportpaths:
+        tracks_labelled.to_pickle(exportpath)
+
+    # tracks will be saved on image plane as well
+    # because some of the tracks might not exist in specific image
+    # we will projcet ground tracks to image and save them accordingly
+    for args in args_flatten:
+        M, GroundRaster, orthophoto_win_tif_obj = get_projection_objs(args)
+        projected_trajectories = []
+        tracks_labelled_this_arg = copy.deepcopy(tracks_labelled)
+        for traj in tracks_labelled_this_arg.trajectory:
+            projected_traj = []
+            for p in traj:
+                x, y = p[0], p[1]
+                cor = Homography.project_point(args, x, y, args.BackprojectionMethod,
+                                M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
+                cor_x , cor_y = int(cor[0]), int(cor[1])
+                projected_traj.append([cor_x, cor_y])
+            projected_trajectories.append(projected_traj)
+        
+        tracks_labelled_this_arg.trajectory = projected_trajectories
+        exportpathimage = args.TrackLabellingExportPthImage
+        tracks_labelled_this_arg.to_pickle(exportpathimage)
+
+    return SucLog("extracted common tracks based on MSMC")
+
 
 def extract_common_tracks(args, gp):
     tracks_path = args.ReprojectedPkl

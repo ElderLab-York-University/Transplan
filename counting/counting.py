@@ -110,7 +110,7 @@ def my_viz_CMM(current_track, img, alpha=0.3, matched_id=0, track_id=-1):
     plt.savefig(f"sample_track_moi{matched_id}_id{track_id}.png")
 
 
-def group_tracks_by_id(df, gp):
+def group_tracks_by_id(df, gp, verbose=True):
     # this function was writtern for grouping the tracks with the same id
     # usinig this one can load the data from a .txt file rather than .mat file
     # if gp choose backprojected points[x, y]
@@ -122,7 +122,7 @@ def group_tracks_by_id(df, gp):
 
     all_ids = np.unique(df['id'].to_numpy(dtype=np.int64))
     data = {"id":[], "trajectory":[], "frames":[]}
-    for idd in tqdm(all_ids):
+    for idd in tqdm(all_ids, disable=not verbose):
         frames = df[df['id']==idd]["fn"].to_numpy(np.float32)
         id = idd
         trajectory = df[df['id']==idd][traj_fields].to_numpy(np.float32)
