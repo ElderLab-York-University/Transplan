@@ -398,6 +398,9 @@ if __name__ == "__main__":
     parser.add_argument("--JustExitROI", help="select tracks that cross multiple edges of the roi", action="store_true")
     parser.add_argument("--WithinROI", help="select tracks that cross multiple edges of the roi", action="store_true")
     parser.add_argument("--ExitOrCrossROI", help="select tracks that either exit or cross multi roi", action="store_true")
+    parser.add_argument("--SelectToBeCounted", help="select tracks to be counted based on ROI", action="store_true")
+    parser.add_argument("--UnfinishedTrackFrameTh", help="select tracks to be counted based on ROI", type=int, default=10)
+
     parser.add_argument("--MaskGPFrame", help="remove dets on tracks that are outside gp frame", action="store_true")
     parser.add_argument("--TrackEval", help="Evaluate the tracking single camera", action="store_true")
     parser.add_argument("--VisROI", help="visualize the selected ROI", action='store_true')
