@@ -21,56 +21,59 @@ def tracklabelinggui(args):
 
 def vis_labelled_tracks(args):
     # plot labelled tracks on top view
-    alpha = 0.6
-    save_path = args.VisLabelledTracksPth
-    tracks = pd.read_pickle(args.TrackLabellingExportPth)
-    tracks = tracks.sort_values("moi")
-    img1 = cv.imread(args.HomographyStreetView)
-    img2 = cv.imread(args.HomographyTopView)
-    M = np.load(args.HomographyNPY, allow_pickle=True)[0]
-    rows2, cols2, dim2 = img2.shape
-    img12 = cv.warpPerspective(img1, M, (cols2, rows2))
-    img2 = cv.addWeighted(img2, alpha, img12, 1 - alpha, 0)
+    if os.path.isfile(args.TrackLabellingExportPth):
+        alpha = 0.6
+        save_path = args.VisLabelledTracksPth
+        tracks = pd.read_pickle(args.TrackLabellingExportPth)
+        tracks = tracks.sort_values("moi")
+        img2 = cv.imread(args.HomographyTopView)
+        if os.path.exists(args.HomographyNPY):
+            img1 = cv.imread(args.HomographyStreetView)
+            M = np.load(args.HomographyNPY, allow_pickle=True)[0]
+            rows2, cols2, dim2 = img2.shape
+            img12 = cv.warpPerspective(img1, M, (cols2, rows2))
+            img2 = cv.addWeighted(img2, alpha, img12, 1 - alpha, 0)
 
-    for i in range(len(tracks)):
-        track = tracks.iloc[i]
-        traj = track['trajectory']
-        moi = track["moi"]
-        for j , p in enumerate(traj):
-            x , y = int(p[0]), int(p[1])
-            c = moi_color_dict[moi]
-            img2 = cv.circle(img2, (x,y), radius=2, color=c, thickness=2)
+        for i in range(len(tracks)):
+            track = tracks.iloc[i]
+            traj = track['trajectory']
+            moi = track["moi"]
+            for j , p in enumerate(traj):
+                x , y = int(p[0]), int(p[1])
+                c = moi_color_dict[moi]
+                img2 = cv.circle(img2, (x,y), radius=2, color=c, thickness=2)
 
-    plt.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
-    plt.axis('off')
-    plt.savefig(save_path, bbox_inches='tight')
-    plt.close("all")
+        plt.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
+        plt.axis('off')
+        plt.savefig(save_path, bbox_inches='tight')
+        plt.close("all")
 
     # plot labelled tracks on image domain as well
-    alpha = 0.6
-    save_path_street = args.VisLabelledTracksPthImage
-    tracks = pd.read_pickle(args.TrackLabellingExportPthImage)
-    tracks = tracks.sort_values("moi")
-    img1 = cv.imread(args.HomographyStreetView)
-    M = np.load(args.HomographyNPY, allow_pickle=True)[0]
-    rows2, cols2, dim2 = img2.shape
+    if os.path.isfile(args.TrackLabellingExportPthImage):
+        alpha = 0.6
+        save_path_street = args.VisLabelledTracksPthImage
+        tracks = pd.read_pickle(args.TrackLabellingExportPthImage)
+        tracks = tracks.sort_values("moi")
+        img1 = cv.imread(args.HomographyStreetView)
+        M = np.load(args.HomographyNPY, allow_pickle=True)[0]
+        rows2, cols2, dim2 = img2.shape
 
-    for i in range(len(tracks)):
-        track = tracks.iloc[i]
-        traj = track['trajectory']
-        moi = track["moi"]
-        for j , p in enumerate(traj):
-            x , y = int(p[0]), int(p[1])
-            c = moi_color_dict[moi]
-            try:
-                img2 = cv.circle(img1, (x,y), radius=3, color=c, thickness=3)
-            except:
-                pass
+        for i in range(len(tracks)):
+            track = tracks.iloc[i]
+            traj = track['trajectory']
+            moi = track["moi"]
+            for j , p in enumerate(traj):
+                x , y = int(p[0]), int(p[1])
+                c = moi_color_dict[moi]
+                try:
+                    img2 = cv.circle(img1, (x,y), radius=3, color=c, thickness=3)
+                except:
+                    pass
 
-    plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
-    plt.axis('off')
-    plt.savefig(save_path_street, bbox_inches='tight')
-    plt.close("all")
+        plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
+        plt.axis('off')
+        plt.savefig(save_path_street, bbox_inches='tight')
+        plt.close("all")
 
     return SucLog("labeled trackes plotted successfully")
 
@@ -250,7 +253,7 @@ def make_uniform_clt_per_moi(tracks, args):
 
     return tracks.loc[indexes_to_keep]
 
-def extract_common_tracks_multi(arg_mcs):
+def extract_common_tracks_multi(args_top, arg_mcs):
     # in our multi setup we will work on ground plane
     # set gp = True
     gp = True
@@ -351,10 +354,15 @@ def extract_common_tracks_multi(arg_mcs):
     tracks_labelled["moi"] = tracks.loc[chosen_indexes]["moi"].apply(lambda x: int(x))
     for exportpath in exportpaths:
         tracks_labelled.to_pickle(exportpath)
+    # also save on MS level
+    exportpath_top = args_top.TrackLabellingExportPth
+    tracks_labelled.to_pickle(exportpath_top)
 
     # tracks will be saved on image plane as well
     # because some of the tracks might not exist in specific image
     # we will projcet ground tracks to image and save them accordingly
+    # image prototypes will not be saved on args_top level as they are
+    # specific to each pov
     for args in args_flatten:
         M, GroundRaster, orthophoto_win_tif_obj = get_projection_objs(args)
         projected_trajectories = []

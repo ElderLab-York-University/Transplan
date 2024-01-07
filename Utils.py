@@ -746,8 +746,10 @@ def get_args_mc(args):
 
     args.Video = args.Dataset
     args.ROIFromTop = False
+    args.MetaData = args_mc[0].MetaData
     args = get_args(args)
     args = complete_args_mc(args)
+    args.HomographyTopView = args_mc[0].HomographyTopView
 
     return args, args_mc
 
@@ -761,8 +763,10 @@ def get_args_ms(args):
 
     args.Video = args.Dataset
     args.ROIFromTop = False
+    args.MetaData  = args_ms[0].MetaData
     args = get_args(args)
     args = complete_args_ms(args)
+    args.HomographyTopView = args_ms[0].HomographyTopView
 
     return args, args_ms, args_mcs
 
@@ -778,8 +782,10 @@ def get_args_mp(args):
 
     args.Video = args.Dataset
     args.ROIFromTop = False
+    args.MetaData = args_mp[0].MetaData
     args = get_args(args)
     args = complete_args_mp(args)
+    args.HomographyTopView = args_mp[0].HomographyTopView
 
     return args, args_mp, args_mss, args_mcs
 
