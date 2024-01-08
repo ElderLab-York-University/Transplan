@@ -78,7 +78,7 @@ clusters = []
 # options on image:  ["kde", "roi", "knn", "cos", "tcos", "cmm", "hausdorff","ccmm", "tccmm", "ptcos"]
 clt_metrics = []
 # cnt_metrics = ["cos", "tcos", "cmm", "hausdorff", "kde", "roi", "knn"]
-cnt_metrics = ["gcos", "gtcos", "gcmm", "ghausdorff", "gkde", "groi", "gknn"]
+cnt_metrics = ["groi"]
 
 # setup training hyperparameters
 # train split (train_sp) and valid split(valid_sp) should be selsected
@@ -137,13 +137,13 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
 
     ########################################################
     # 3. run the detection
-    # the full commonad looks like : os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker=NULL
+    # the full commonad looks like : os.system(f"python3 main.py --Dataset={src}  --Detector={det}
     #  --Detect --VisDetect --ForNFrames=600 --DetectorVersion={det_v} --SAHI --SahiPatchSize=640 --SahiPatchOverlapRatio=0.25 
     #  --SahiPatchBatchSize=1 --SahiNMSTh=0.25")
     ########################################################
     # for det in detectors:
     #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker=NULL --Detect")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect")
 
     ########################################################
     # 3.5 run the detection post processing
@@ -216,26 +216,26 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     # --BackprojectionMethod=[Homography/DSM] --ContactPoint=[BottomPoint/Center/BottomSeg/LineSeg] 
     # --TrackPostProc --TrackTh=8 --Interpolate --InterpolateTh=10 --RemoveInvalidTracks --MaskGPFrame 
     # --SelectDifEdgeInROI --SelectEndingInROI --SelectBeginInROI --HasPointsInROI --MaskROI --CrossROI --CrossROIMulti
-    # --JustEnterROI --JustExitROI --WithinROI  --ExitOrCrossROI\
+    # --JustEnterROI --JustExitROI --WithinROI  --ExitOrCrossROI --SelectToBeCounted\
     # --UnifyTrackClass --classes_to_keep 2 3 5 7")
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
     #         print(f"tracking POSTPROC ---> src:{src} det:{det} tra:{tra}")
-    #         # os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-    #         #             --BackprojectSource=tracks --TopView=GoogleMap\
-    #         #             --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
-    #         #             --TrackPostProc --Interpolate --InterpolateTh=1000 --RemoveInvalidTracks --MaskGPFrame\
-    #         #             --HasPointsInROI --ExitOrCrossROI")
-            
     #         os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
     #                     --BackprojectSource=tracks --TopView=GoogleMap\
     #                     --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
-    #                     --TrackPostProc --Interpolate --InterpolateTh=1000 --classes_to_keep 2 3 5 7")
+    #                     --TrackPostProc --Interpolate --InterpolateTh=1000 --RemoveInvalidTracks --MaskGPFrame\
+    #                     --HasPointsInROI --classes_to_keep 2 3 5 7")
+            
+    #         # os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+    #         #             --BackprojectSource=tracks --TopView=GoogleMap\
+    #         #             --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
+    #         #             --TrackPostProc --Interpolate --InterpolateTh=1000 --classes_to_keep 2 3 5 7")
 
-    #         # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-    #         #      --VisTrack --VisTrackTop --VisTrajectories --ForNFrames=600\
-    #         #      --BackprojectSource=tracks --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
+            # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+            #      --VisTrack --VisTrackTop\
+            #      --BackprojectSource=tracks --TopView=GoogleMap --BackprojectionMethod=Homography --ContactPoint=BottomPoint")
                  
     ########################################################
     # 5.5 Evaluate Tracking
@@ -385,10 +385,32 @@ for split in splits:
     #     for tra in trackers:
     #         print(f"extract common tracks ----> det:{det}, tra:{tra}")
     #         os.system(f"python3 main.py --Dataset={split}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra} --MultiSeg\
-    #                    --VisLabelledTrajectories --ResampleTH=2\
+    #                    --ExtractCommonTracks --VisLabelledTrajectories --ResampleTH=2\
     #                    --BackprojectSource=tracks --TopView=GoogleMap\
     #                    --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
     #                    --GP --ROIFromTop")
+            
+    ########################################################
+    # 4. Run the counting Multi Segment
+    # os.system(f"python3 main.py --Dataset={split} --Detector={det} --DetectorVersion={det_v}
+    #  --Tracker={tra} --Count --EvalCount --CountMetric={metric} --ResampleTH=2\
+    #  --CacheCounter --UseCachedCounter --CachedCounterPth={cached_cnt_pth}\
+    #  --CountVisDensity --CountVisPrompt\
+    #  --BackprojectSource=tracks --TopView=GoogleMap\
+    #  --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
+    #  --KDEBW=3.5/10 --OSR=10 --ROIFromTop")
+    ########################################################
+    for det in detectors:
+        for tra in trackers:
+            for metric in cnt_metrics:
+                print(f"counting split:{split} metric:{metric} det:{det} tra:{tra}")
+                os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det}\
+                            --DetectorVersion={det_v} --Tracker={tra}\
+                            --EvalCount --CountMetric={metric} --ResampleTH=2\
+                            --CacheCounter\
+                            --BackprojectSource=tracks --TopView=GoogleMap\
+                            --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
+                            --KDEBW=3.5 --OSR=10 --ROIFromTop")
 
 #_______________________MULTIPART___________________________#
 for ds in datasets:
