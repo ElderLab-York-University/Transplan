@@ -374,8 +374,7 @@ def main_mp(args, args_mp, args_mss, args_mcs):
         if not isinstance(log, WarningLog):
             print(log)
 
-if __name__ == "__main__":
-    # ferch the arguments
+def get_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--Dataset", help="Path to a rep containing video files", type=str)
     parser.add_argument("--Video", help="a list of video pathes in one repo", type=list)
@@ -417,6 +416,7 @@ if __name__ == "__main__":
     parser.add_argument("--SelectBeginInROI", help="select only those tracks that begin in ROI", action="store_true")
     parser.add_argument("--SelectDifEdgeInROI", help="remove tracks that begin and end in the same ROI region", action="store_true")
     parser.add_argument("--HasPointsInROI", help="select the tracks that have at least on point in the ROI", action="store_true")
+    parser.add_argument("--MovesInROI", help="if the track has at least 2 points after sampling in ROI", action="store_true")
     parser.add_argument("--CrossROI", help="select tracks that cross the edges of roi at least once", action="store_true")
     parser.add_argument("--CrossROIMulti", help="select tracks that cross multiple edges of the roi", action="store_true")
     parser.add_argument("--JustEnterROI", help="select tracks that cross multiple edges of the roi", action="store_true")
@@ -490,6 +490,11 @@ if __name__ == "__main__":
     parser.add_argument("--ROIFromTop", help="get roi from topview need to select topview", action='store_true', default=False)
     parser.add_argument("--UnifyTrackClass", help="unify class labels for each track", action='store_true')
 
+    return parser
+    
+if __name__ == "__main__":
+    # ferch the arguments
+    parser = get_parser()
     args = parser.parse_args()
 
     # check if the opeerations should be performed cross camera
