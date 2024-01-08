@@ -734,7 +734,7 @@ def get_args_gt(args):
     args_gt.Detector = args.GTDetector
     args_gt.DetectorVersion = ""
     args_gt.Tracker = args.GTTracker
-    args_gt.Video=None
+    args_gt.Video=None #why is it set to None?
     args_gt=complete_args(args_gt)
     return get_args(args_gt)
 
@@ -746,9 +746,10 @@ def get_args_mc(args):
 
     args.Video = args.Dataset
     args.ROIFromTop = False
-    args.MetaData = args_mc[0].MetaData
     args = get_args(args)
     args = complete_args_mc(args)
+    args.MetaData = args_mc[0].MetaData
+    args.HomographyNPY = args_mc[0].HomographyNPY
     args.HomographyTopView = args_mc[0].HomographyTopView
 
     return args, args_mc
@@ -763,9 +764,10 @@ def get_args_ms(args):
 
     args.Video = args.Dataset
     args.ROIFromTop = False
-    args.MetaData  = args_ms[0].MetaData
     args = get_args(args)
     args = complete_args_ms(args)
+    args.MetaData  = args_ms[0].MetaData
+    args.HomographyNPY = args_ms[0].HomographyNPY
     args.HomographyTopView = args_ms[0].HomographyTopView
 
     return args, args_ms, args_mcs
@@ -782,9 +784,10 @@ def get_args_mp(args):
 
     args.Video = args.Dataset
     args.ROIFromTop = False
-    args.MetaData = args_mp[0].MetaData
     args = get_args(args)
     args = complete_args_mp(args)
+    args.MetaData = args_mp[0].MetaData
+    args.HomographyNPY = args_mp[0].HomographyNPY
     args.HomographyTopView = args_mp[0].HomographyTopView
 
     return args, args_mp, args_mss, args_mcs
@@ -832,38 +835,58 @@ def complete_args(args):
         pass
 
     args = add_GT_path_to_args(args)
-    args= add_3DGT_path_to_args(args)
-    args= add_GT_Json_path_to_args(args)
+    args = add_3DGT_path_to_args(args)
+    args = add_GT_Json_path_to_args(args)
     args = add_images_folder_to_args(args)
 
     args = add_check_points_path_to_args(args)
 
-    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop:
+    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or\
+        args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or\
+        args.TrackPostProc or args.Count or args.VisROI or args.Meter or\
+        args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or args.EvalCount:
         args = add_homographygui_related_path_to_args(args)
-    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop:
+
+    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or\
+        args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or\
+        args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop or\
+        args.EvalCount:
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
+
     if args.VisHomographyGUI or args.VisLabelledTrajectories or args.Meter or args.FindOptimalKDEBW:
         args = add_vishomography_path_to_args(args)
-    if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter or args.ExtractCommonTracks or args.Count:
+
+    if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter or\
+        args.ExtractCommonTracks or args.Count or args.EvalCount:
         args = add_tracklabelling_export_to_args(args)
+
     if args.VisTrajectories:
         args = add_plot_all_traj_pth_to_args(args)
+
     if args.VisLabelledTrajectories:
         args = add_vis_labelled_tracks_pth_to_args(args)
-    if args.Meter or args.Count or args.Cluster or args.TrackPostProc or args.FindOptimalKDEBW:
+
+    if args.Meter or args.Count or args.Cluster or args.TrackPostProc or args.FindOptimalKDEBW or\
+        args.EvalCount:
         args = add_meter_path_to_args(args)
-    if args.Count or args.VisTrackMoI or args.AverageCountsMC:
+
+    if args.Count or args.VisTrackMoI or args.AverageCountsMC or args.EvalCount:
         args = add_count_path_to_args(args)
+
     if args.Cluster or args.TrackLabelingGUI:
         args = add_clustering_related_pth_to_args(args)
+
     if args.VisROI:
         args = add_visroi_path_to_args(args)
+
     if args.VisTrackMoI:
         args = add_vis_tracking_moi_path_to_args(args)
-    if args.Count:
+
+    if args.Count or args.EvalCount:
         args = add_cached_counter_path_to_args(args)
         args = add_density_path_to_args(args)
+        
     if args.Segment or args.SegPostProc or args.Homography:
         args = add_segmentation_path_to_args(args)
         args = add_vis_segment_path_to_args(args)

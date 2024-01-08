@@ -384,7 +384,6 @@ class Counting:
         df['index_mask'] = df_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
         df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
         df["trajectory"] = df.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
-#TODO oversample tracks with args.OSR
 
         # create the intersection ROI and filter prototypes and tracks
         # to be within intersection
@@ -441,7 +440,7 @@ class Counting:
         df['index_mask'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
         df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
         df["trajectory"] = df.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
-#TODO oversample tracks with args.OSR
+
         roi_rep = [p for p in args.MetaData["roi"]]
         self.pg = MyPoly(roi_rep, args.MetaData["roi_group"])
         self.poly_path = mplPath.Path(np.array(roi_rep))
@@ -577,7 +576,6 @@ class Counting:
         df['index_mask'] = df_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
         df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
         df["trajectory"] = df.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
-#TODO oversample tracks with args.OSR
 
         data = {}
         data['id'], data['moi'] = [], []
@@ -639,7 +637,7 @@ class KNNCounting(Counting):
         df['index_mask'] = df_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
         df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
         df["trajectory"] = df.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
-#TODO oversample tracks with args.OSR
+
 
         # add prototype tracks as KNN data points
         x = []
@@ -674,7 +672,7 @@ class KNNCounting(Counting):
         df['index_mask'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
         df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
         df["trajectory"] = df.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
-#TODO oversample tracks with args.OSR
+
         # add prototype tracks as KNN data points
         x = []
         y = []
@@ -1213,7 +1211,7 @@ class ROICounting(KDECounting):
         self.poly_path = mplPath.Path(np.array(roi_rep))
         self.th = self.args.MetaData["roi_percent"] * np.sqrt(self.pg.area)
 
-    def main(self, args=None):
+    def main(self, args=None, verbose=True):
         if args is None:
             args = self.args
         pg = self.pg
@@ -1222,8 +1220,8 @@ class ROICounting(KDECounting):
         result_paht = args.CountingResPth
 
         if self.gp:
-            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
-            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True, verbose=verbose)
+            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True, verbose=verbose)
             tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
             tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
         else:
@@ -1235,7 +1233,7 @@ class ROICounting(KDECounting):
         i_strs = []
         i_ends = []
         moi = []
-        for i, row in tqdm(tracks.iterrows(), total=len(tracks)):
+        for i, row in tqdm(tracks.iterrows(), total=len(tracks), disable=not verbose):
             traj = row["trajectory"]
 
             if Track.within_roi(self.pg, traj, self.th, self.poly_path):
@@ -1273,8 +1271,7 @@ class ROICounting(KDECounting):
                     if not i_e == i_str:
                         d_end, i_end = d_e, i_e
 
-            # elif Track.just_exit_roi(self.pg, traj, self.th, self.poly_path):
-            else: # else is for just exit
+            elif Track.just_exit_roi(self.pg, traj, self.th, self.poly_path):
                 int_indxes = pg.doIntersect(traj, ret_points=False)
                 i_end = int_indxes[-1]
 
@@ -1289,18 +1286,18 @@ class ROICounting(KDECounting):
                     if not i_s == i_end:
                         d_str, i_str = d_s, i_s
 
-            # else:
-            #     d_end, i_end = pg.distance(traj[-1])
-            #     # need to find the closest edge to track start
-            #     # the edge should be different from ending edge
-            #     ds_str, is_str = pg.all_distances(traj[0])
-            #     paired_sorted = sorted(zip(ds_str, is_str))
-            #     ds_sorted, is_reorganized = zip(*paired_sorted)
-            #     ds_sorted = list(ds_sorted)
-            #     is_reorganized = list(is_reorganized)
-            #     for d_s, i_s in zip(ds_sorted, is_reorganized):
-            #         if not i_s == i_end:
-            #             d_str, i_str = d_s, i_s
+            else:
+                d_end, i_end = pg.distance(traj[-1])
+                # need to find the closest edge to track start
+                # the edge should be different from ending edge
+                ds_str, is_str = pg.all_distances(traj[0])
+                paired_sorted = sorted(zip(ds_str, is_str))
+                ds_sorted, is_reorganized = zip(*paired_sorted)
+                ds_sorted = list(ds_sorted)
+                is_reorganized = list(is_reorganized)
+                for d_s, i_s in zip(ds_sorted, is_reorganized):
+                    if not i_s == i_end:
+                        d_str, i_str = d_s, i_s
 
             i_strs.append(i_str)
             i_ends.append(i_end)
@@ -1319,7 +1316,8 @@ class ROICounting(KDECounting):
             counter[moi]  = 0
         for i, row in counted_tracks.iterrows():
                 counter[int(row["moi"])] += 1
-        print(counter)
+        if verbose:
+            print(counter)
         with open(result_paht, "w") as f:
             json.dump(counter, f, indent=2)
 
@@ -1349,9 +1347,30 @@ def eval_count(args):
     data2["diff"] = [df["diff"].sum()]
     data2["err"] = data2["diff"][0]/data2["gt"][0]
     df2 = pd.DataFrame.from_dict(data2)
-    df = df.append(df2, ignore_index=True)
+    df = pd.concat([df,df2], ignore_index=True)
     df.to_csv(args.CountingStatPth, index=False)
     return SucLog("counts evaluated")
+
+def eval_count_multi(args, args_mcs):
+    # evaluate each video first
+    # to get metrics
+    # then call another function for evaluate on multi args level
+    args_flat = flatten_args(args_mcs)
+    stats = []
+    if args.EvalCount:
+        for arg_i in tqdm(args_flat):
+            eval_count(arg_i)
+            stats.append(pd.read_csv(arg_i.CountingStatPth))
+    
+    df_multi = copy.deepcopy(stats[0])
+    cols_to_sum = ["gt", "estimated", "diff"]
+    for stat in stats[1:]:
+        for col in cols_to_sum:
+            df_multi[col] = df_multi[col] + stat[col]
+    df_multi["err"]  = df_multi["diff"]/df_multi["gt"]
+
+    df_multi.to_csv(args.CountingStatPth, index=False)
+    return SucLog("counts Multi evaluated")
 
 def main(args):
     # some relative path form the args
@@ -1390,7 +1409,52 @@ def main(args):
             print(f"counter being saved to {args.CachedCounterPth}")
             pkl.dump(counter, f)
 
-    if args.EvalCount:
-        eval_count(args)
-        return SucLog("counting part executed successfully with stats saved in counting/")
+    #TODO remove evaluation, add a seperate functing in main(Done)
+    # if args.EvalCount:
+    #     eval_count(args)
+    #     return SucLog("counting part executed successfully with stats saved in counting/")
     return SucLog("counting part executed successfully")
+
+def mainMulti(args, args_mcs):
+
+    # will save counters both on args level(eg MS)
+    # and for each subarg(eg videos)
+    # only applicable for ground based counting for now
+    args_flat = flatten_args(args_mcs)
+
+    # check if use cached counter
+    if args.UseCachedCounter:
+        with open(args.CachedCounterPth, "rb") as f:
+            counter = pkl.load(f)
+    else:
+        if args.CountMetric == "gkde":
+            raise NotImplementedError
+            counter = KDECountingMulti(args, args_ms, args_mcs, gp=True)
+        elif args.CountMetric == "groi":
+            counter = ROICounting(args, gp=True)
+        elif args.CountMetric == "gknn":
+            counter = KNNCounting(args, gp=True)
+        else:
+            if args.CountMetric[0] == "g":
+                counter = Counting(args, gp=True)
+            else:
+                # only supports gournd based counting
+                raise NotImplementedError
+
+    # perfom counting here
+    for arg_i in tqdm(args_flat):
+        counter.main(arg_i, verbose=False)
+
+    # save counter object for later use
+    # save counters both on args level
+    # and on Multi level for later use
+    if args.CacheCounter:
+        with open(args.CachedCounterPth, "wb") as f:
+            print(f"counter being saved to {args.CachedCounterPth}")
+            pkl.dump(counter, f)
+        for arg_i in args_flat:
+            with open(arg_i.CachedCounterPth, "wb") as f:
+                print(f"counter being saved to {arg_i.CachedCounterPth}")
+                pkl.dump(counter, f)
+
+    return SucLog("counting Multi executed successfully")

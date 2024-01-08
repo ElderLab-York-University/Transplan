@@ -19,7 +19,7 @@ from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_
 from Evaluate import evaluate_tracking, cvpr
 from Maps import pix2meter
 from counting import counting
-from counting.counting import find_opt_bw, eval_count
+from counting.counting import find_opt_bw, eval_count, eval_count_multi
 from Clustering import cluster
 from CountingMC import AverageCountsMC
 from Segment import segment, vis_segment, SegmentPostProc
@@ -127,6 +127,7 @@ def VisLabelledTrajectoriesMulti(args, args_ms, args_mcs):
         print(ProcLog("Vis Labeled trajectories in Process for MCMS"))
         for args_temp in flatten_args(args_mcs):
             vis_labelled_tracks(args_temp)
+        vis_labelled_tracks(args)
         return SucLog("visualized all the labelled trajectories for all segments")
     else: return WarningLog("skipped plotting labelled tracks")
 
@@ -153,6 +154,27 @@ def Count(args):
         return log
     else: return WarningLog("skipped counting subtask")
 
+def CountMS(args, args_ms, args_mcs):
+    if args.Count:
+        print(ProcLog("Counting Multi in Process"))
+        log = counting.mainMulti(args, args_mcs)
+        return log
+    else: return WarningLog("skipped counting subtask")
+
+def EvalCount(args):
+    if args.EvalCount:
+        print(ProcLog("evaluating counting"))
+        log = eval_count(args)
+        return log
+    else: return WarningLog("skipped eval counting subtask")
+
+def EvalCountMS(args, args_ms, args_mcs):
+    if args.EvalCount:
+        print(ProcLog("evaluating counting MS"))
+        log = eval_count_multi(args, args_mcs)
+        return log
+    else: return WarningLog("skipped eval counting subtask")
+    
 def Cluster(args):
     if args.Cluster:
         print(ProcLog("Clustering in Process"))
@@ -179,9 +201,10 @@ def ExtractCommonTracks(args):
 def ExtractCommonTracksMulti(args, args_ms, args_mcs):
     if args.ExtractCommonTracks:
         print(ProcLog("Extract Common Trajectories from multi segments and multi cameras"))
-        log = extract_common_tracks_multi(args_mcs)
+        log = extract_common_tracks_multi(args, args_mcs)
         for args_temp in flatten_args(args_mcs):
             log_temp = pix2meter(args_temp)
+        log_temp_top = pix2meter(args)
         return log
     else: return WarningLog("skipped extract common track MCMS subtask")
 
@@ -317,7 +340,7 @@ def main(args):
                 Track, Homography, Pix2Meter, TrackPostProc, TrackEvaluate,
                 VisTrack, VisContactPoint, VisCPTop, VisTrajectories, VisTrackTop,
                 FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories,
-                Count, VisTrackMoI]
+                Count, EvalCount, VisTrackMoI]
     for subtask in subtasks:
         log = subtask(args)
         if not isinstance(log, WarningLog):
@@ -334,7 +357,9 @@ def main_mc(args, args_mc):
 
 def main_ms(args, args_ms, args_mcs):
     # main for multi segments
-    subtasks = [ConvertDetsToCOCO_MS, TrackEvaluateMS, ExtractCommonTracksMulti, VisLabelledTrajectoriesMulti]
+    subtasks = [ConvertDetsToCOCO_MS, TrackEvaluateMS,
+                ExtractCommonTracksMulti, VisLabelledTrajectoriesMulti,
+                CountMS, EvalCountMS]
 
     for sub in subtasks:
         log = sub(args, args_ms, args_mcs)
