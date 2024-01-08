@@ -88,11 +88,11 @@ def get_in_roi_points(traj, poly_path, return_mask=False):
     if return_mask: return mask
     else: return traj[mask]
 
-def get_proper_tracks_multi(args_mcs, gp):
+def get_proper_tracks_multi(args_mcs, gp, verbose = True):
     args_flat = flatten_args(args_mcs)
     all_tracks = []
-    for args in args_flat:
-        tracks = get_proper_tracks(args, gp)
+    for args in tqdm(args_flat):
+        tracks = get_proper_tracks(args, gp, verbose = verbose)
         all_tracks.append(tracks)
     tracks_mcs = pd.concat(all_tracks)
     return tracks_mcs
