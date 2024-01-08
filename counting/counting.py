@@ -453,6 +453,9 @@ class Counting:
     def counting(self, current_trajectory, track_id=-1):
         # only get the points in intersectin ROI
         resampled_trajectory = get_in_roi_points(current_trajectory, self.poly_path, return_mask=False)
+        # this method of counting should only work for tracks that move in roi
+        if len(resampled_trajectory) <= 1:
+            return -1
         
         min_c = float('inf')
         matched_id = -1
@@ -550,7 +553,7 @@ class Counting:
         plt.show()
 
 
-    def main(self, args=None):
+    def main(self, args=None, verbose=True):
         if args is None:
             args = self.args
 
@@ -566,11 +569,11 @@ class Counting:
 
         # get deffrent trajectory reps depending on if gp or image reasoning
         if self.gp:
-            df_meter = group_tracks_by_id(df_meter, gp=True)
-            df       = group_tracks_by_id(df, gp=True)
+            df_meter = group_tracks_by_id(df_meter, gp=True, verbose=verbose)
+            df       = group_tracks_by_id(df, gp=True, verbose=verbose)
         else:
-            df_meter = group_tracks_by_id(df_meter, gp=False)
-            df       = group_tracks_by_id(df, gp=False)
+            df_meter = group_tracks_by_id(df_meter, gp=False, verbose=verbose)
+            df       = group_tracks_by_id(df, gp=False, verbose=verbose)
             
         # resample tracks
         df['index_mask'] = df_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
@@ -581,7 +584,7 @@ class Counting:
         data['id'], data['moi'] = [], []
         tids = np.unique(df['id'].tolist())
 
-        for idx in tqdm(tids):
+        for idx in tqdm(tids, disable= not verbose):
             current_track = df[df['id'] == idx]
             a = current_track['trajectory'].values.tolist()
             matched_moi = self.counting(a[0], track_id=idx)
@@ -590,11 +593,11 @@ class Counting:
 
             counter[matched_moi] += 1
             traject_couter += 1
+        if verbose:
+            for i in range(12):
+                print(f"{i+1}: {counter[i+1]}")
+            print(traject_couter)
 
-        for i in range(12):
-            print(f"{i+1}: {counter[i+1]}")
-        # print(self.counter)
-        print(traject_couter)
         with open(result_paht, "w") as f:
             json.dump(counter, f, indent=2)
 
@@ -721,7 +724,7 @@ class KNNCounting(Counting):
         plt.savefig(vis_path+f"{self.K}NN_TrainSamples.png")
         plt.close("all")
 
-    def main(self, args=None):
+    def main(self, args=None, verbose=True):
         if args is None:
             args = self.args
 
@@ -730,19 +733,19 @@ class KNNCounting(Counting):
         result_paht = args.CountingResPth
 
         if self.gp:
-            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
-            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True, verbose=verbose)
+            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True, verbose=verbose)
             tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
             tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
         else:
-            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=False)
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=False, verbose=verbose)
             tracks['index_mask'] = tracks['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
             tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
 
         tracks["trajectory"] = tracks.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
 #TODO oversample tracks with args.OSR
         moi = []
-        for i, row in tqdm(tracks.iterrows(), total=len(tracks), desc="knn classifier infer"):
+        for i, row in tqdm(tracks.iterrows(), total=len(tracks), desc="knn classifier infer", disable=not verbose):
             x = [p for p in row.trajectory]
             y = self.knn.predict(x)
             y_star = np.bincount(y).argmax()
@@ -759,7 +762,8 @@ class KNNCounting(Counting):
             counter[moi]  = 0
         for i, row in counted_tracks.iterrows():
                 counter[int(row["moi"])] += 1
-        print(counter)
+        if verbose:        
+            print(counter)
         with open(result_paht, "w") as f:
             json.dump(counter, f, indent=2)
         
@@ -1335,7 +1339,7 @@ def eval_count(args):
     data = {}
     data["moi"] = [i for i in args.MetaData["gt"].keys()]
     data["gt"] = [args.MetaData["gt"][i] for i in args.MetaData["gt"].keys()]
-    data["estimated"] = [estimated[i] for i in args.MetaData["gt"].keys()]
+    data["estimated"] = [estimated[i] if i in estimated else 0 for i in args.MetaData["gt"].keys()]
     df = pd.DataFrame.from_dict(data)
     df["diff"] = (df["gt"] - df["estimated"]).abs()
     df["err"] = df["diff"]/df["gt"]
