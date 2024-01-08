@@ -1,8 +1,6 @@
 # Author: Sajjad P. Savaoji April 27 2022
 # This py file contains some helper functions for the pipeline
-
 from Libs import *
-
 moi_color_dict = {
     0:(0, 0, 0),
     1:(128, 0, 0),
@@ -562,10 +560,23 @@ def add_cached_counter_path_to_args(args):
         cached_path = get_counter_cached_path(args)
         args.CachedCounterPth = cached_path
     elif args.UseCachedCounter:
-        chached_args = copy.deepcopy(args)
+        import main
+        parser = main.get_parser()
+        chached_args = parser.parse_args()
         chached_args.Dataset = args.CachedCounterPth
-        cached_path = get_counter_cached_path(chached_args)
-        args.CachedCounterPth = cached_path
+        chached_args.CachedCounterPth = None
+
+        if args.MultiCam:
+            chached_args, _       = get_args_mc(chached_args)
+        elif args.MultiSeg:
+            chached_args, _, _    = get_args_ms(chached_args)
+        elif args.MultiPart:
+            chached_args, _, _, _ = get_args_mp(chached_args)
+        else:
+            chached_args = get_args(chached_args)
+
+        args.CachedCounterPth = chached_args.CachedCounterPth
+
     return args
 
 def add_density_path_to_args(args):
