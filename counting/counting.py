@@ -901,9 +901,9 @@ class IKDE():
         max_moi = self.mois[np.argmax(moi_scores)]
         return max_moi
 
-    def predict_tracks(self, tracks):
+    def predict_tracks(self, tracks, verbose=True):
         max_mois = []
-        for i, row in tqdm(tracks.iterrows(), desc="pred moi", total=len(tracks)):
+        for i, row in tqdm(tracks.iterrows(), desc="pred moi", total=len(tracks), disable=not verbose):
             traj = row["trajectory"]
             max_mois.append(self.predict_traj(traj))
         return max_mois
@@ -976,6 +976,7 @@ class HMMG():
             max_mois.append(self.predict_traj(traj))
         return max_mois
 
+
 class KDECounting(Counting):
     def __init__(self, args, gp):
 
@@ -1025,7 +1026,7 @@ class KDECounting(Counting):
         # delete original kde for each moi to free up space when you are caching object
         self.ikde.del_kdes()
 
-    def main(self, args=None):
+    def main(self, args=None, verbose=True):
         # where the counting happens
         if args is not None:
             self.args = args
@@ -1040,8 +1041,8 @@ class KDECounting(Counting):
         # load data
         M = np.load(HomographyNPY, allow_pickle=True)[0]
         if self.gp:
-            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
-            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True,  verbose=verbose)
+            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True, verbose=verbose)
             tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
             img = plt.imread(top_image)
             img1 = cv.imread(top_image)
@@ -1054,8 +1055,7 @@ class KDECounting(Counting):
         # resample gp tracks
         tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
         tracks["trajectory"] = tracks.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
-#TODO oversample tracks with args.OSR
-        tracks["moi"] = self.ikde.predict_tracks(tracks)
+        tracks["moi"] = self.ikde.predict_tracks(tracks, verbose=verbose)
 
         counted_tracks  = tracks[["id", "moi"]]
         counted_tracks.to_csv(args.CountingIdMatchPth, index=False)
@@ -1065,11 +1065,10 @@ class KDECounting(Counting):
             counter[moi]  = 0
         for i, row in counted_tracks.iterrows():
                 counter[int(row["moi"])] += 1
-        print(counter)
+        if verbose:
+            print(counter)
         with open(result_paht, "w") as f:
             json.dump(counter, f, indent=2)
-
-        print("right before count vis prompt")
 
         # get roi on groundpalane
         if self.gp:
@@ -1148,6 +1147,42 @@ class KDECounting(Counting):
         plt.show()
         print(len(current_track))
         print(current_track)
+
+class KDECountingMulti(KDECounting):
+    def __init__(self, args, args_mcs, gp):
+        assert gp == True
+        self.gp = gp
+        if gp:
+            self.img_path = args.HomographyTopView
+        else:
+            raise NotImplementedError
+        self.init(args, args_mcs, verbose=False)
+
+    def init(self, args, args_mcs, verbose=True):
+        self.args = args
+        tracks = get_proper_tracks_multi(args_mcs, gp = self.gp, verbose=verbose)
+        # cluster prop_tracks based on their starting point
+        tracks = cluster_prop_tracks_based_on_str(tracks, self.args)
+
+        # resample on the ground plane but not in meter
+        tracks["trajectory"] = tracks.apply(lambda x: x['trajectory'][x["index_mask"]], axis=1)
+        tracks["frames"] = tracks.apply(lambda x: x['frames'][x["index_mask"]], axis=1)
+
+        if self.args.CountMetric == "kde":
+            raise NotImplementedError
+            # it only supports ground plane counting
+        elif self.args.CountMetric == "gkde":
+            self.ikde = IKDE(self.args.KDEBW, self.args.OSR)
+
+        else: raise "it should not happen. undefined counter metric"
+
+        img = cv.imread(self.img_path)
+        self.ikde.fit(tracks, img)
+        self.ikde.make_inference_maps(img, args.DensityVisPath)
+        if args.CountVisDensity:
+            self.ikde.plot_densities(img, args.DensityVisPath)
+        # delete original kde for each moi to free up space when you are caching object
+        self.ikde.del_kdes()
 
 class ROICounting(KDECounting):
     def __init__(self, args, gp):
@@ -1413,10 +1448,6 @@ def main(args):
             print(f"counter being saved to {args.CachedCounterPth}")
             pkl.dump(counter, f)
 
-    #TODO remove evaluation, add a seperate functing in main(Done)
-    # if args.EvalCount:
-    #     eval_count(args)
-    #     return SucLog("counting part executed successfully with stats saved in counting/")
     return SucLog("counting part executed successfully")
 
 def mainMulti(args, args_mcs):
@@ -1432,8 +1463,7 @@ def mainMulti(args, args_mcs):
             counter = pkl.load(f)
     else:
         if args.CountMetric == "gkde":
-            raise NotImplementedError
-            counter = KDECountingMulti(args, args_ms, args_mcs, gp=True)
+            counter = KDECountingMulti(args, args_mcs, gp=True)
         elif args.CountMetric == "groi":
             counter = ROICounting(args, gp=True)
         elif args.CountMetric == "gknn":
