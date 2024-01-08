@@ -40,9 +40,6 @@ def pix2meter(args):
         scale_function = lambda x: np.array([[r*xi[0],r*xi[1]] for xi in x])
         df['trajectory'] = df['trajectory'].apply(scale_function)
         df.to_pickle(args.TrackLabellingExportPthMeter)
-    else:
-        print(args.TrackLabellingExportPth)
-        raise "What the fuck"
 
     # # show the scale with roi
     # print(r)
