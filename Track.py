@@ -291,6 +291,13 @@ def trackpostproc(args):
         print(f"ending with {len(np.unique(df['id']))} tracks")
         update_tracking_changes(df, args)
 
+    if args.MovesInROI:
+        print("select tracks that move at least args.resampleTH in ROI")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = select_based_on_roi(args, moves_in_roi)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
+
     if args.CrossROI:
         print("select tracks that cross roi at least once")
         print(f"starting with {len(np.unique(df['id']))} tracks")
@@ -371,6 +378,12 @@ def unify_classes_in_tracks(df, args):
 # def begin_in_roi(pg, traj, th, poly_path, *args, **kwargs):
 #     d_str, i_str = pg.distance(traj[0])
 #     return d_str <= th
+
+def moves_in_roi(pg, traj, th, poly_path, *args, **kwargs):
+    in_roi_traj = TrackLabeling.get_in_roi_points(traj, poly_path, return_mask=False)
+    if len(in_roi_traj) > 1:
+        return True
+    return False
 
 def has_points_in_roi(pg, traj, th, poly_path, *args, **kwargs):
     for p in traj:
@@ -520,7 +533,7 @@ def select_based_on_roi(args, condition, resample_tracks=False):
     tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
     tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
 
-    # create roi polygon
+    # create roi polygon on ground plane
     roi_rep = []
     for p in args.MetaData["roi"]:
         point = np.array([p[0], p[1], 1])
