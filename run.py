@@ -22,9 +22,9 @@ datasets     = [
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie"
                 # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
             ]
-split_part   = ["train"]
-segment_part = None
-source_part  = None
+split_part   = ["valid"]
+segment_part = ["Seg00"]
+source_part  = ["Seg00sc1"]
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
 sources      = get_sub_dirs(segments, source_part, not_be_inside="lc")
@@ -39,8 +39,8 @@ cached_datasets     = [
                 # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
             ]
 cached_split_part   = ["train"]
-cached_segment_part = None
-cached_source_part  = None
+cached_segment_part = ["Seg01"]
+cached_source_part  = ["Seg01sc1"]
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
 cached_sources      = get_sub_dirs(cached_segments, cached_source_part, not_be_inside="lc")
@@ -78,7 +78,7 @@ clusters = []
 # options on image:  ["kde", "roi", "knn", "cos", "tcos", "cmm", "hausdorff","ccmm", "tccmm", "ptcos"]
 clt_metrics = []
 # cnt_metrics = ["cos", "tcos", "cmm", "hausdorff", "kde", "roi", "knn"]
-cnt_metrics = ["groi"]
+cnt_metrics = ["gcos"]
 
 # setup training hyperparameters
 # train split (train_sp) and valid split(valid_sp) should be selsected
@@ -217,7 +217,7 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     # --TrackPostProc --TrackTh=8 --Interpolate --InterpolateTh=10 --RemoveInvalidTracks --MaskGPFrame 
     # --SelectDifEdgeInROI --SelectEndingInROI --SelectBeginInROI --HasPointsInROI --MaskROI --CrossROI --CrossROIMulti
     # --JustEnterROI --JustExitROI --WithinROI  --ExitOrCrossROI --SelectToBeCounted\
-    # --UnifyTrackClass --classes_to_keep 2 3 5 7")
+    # --UnifyTrackClass --MovesInROI --classes_to_keep 2 3 5 7")
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
@@ -226,12 +226,12 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #                     --BackprojectSource=tracks --TopView=GoogleMap\
     #                     --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
     #                     --TrackPostProc --Interpolate --InterpolateTh=1000 --RemoveInvalidTracks --MaskGPFrame\
-    #                     --HasPointsInROI --classes_to_keep 2 3 5 7")
+    #                     --HasPointsInROI --MovesInROI --classes_to_keep 2 3 5 7")
             
-    #         # os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-    #         #             --BackprojectSource=tracks --TopView=GoogleMap\
-    #         #             --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
-    #         #             --TrackPostProc --Interpolate --InterpolateTh=1000 --classes_to_keep 2 3 5 7")
+            # os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+            #             --BackprojectSource=tracks --TopView=GoogleMap\
+            #             --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
+            #             --TrackPostProc --Interpolate --InterpolateTh=1000 --classes_to_keep 2 3 5 7")
 
             # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
             #      --VisTrack --VisTrackTop\
@@ -306,18 +306,18 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #  --CountVisDensity --CountVisPrompt\
     # --BackprojectSource=tracks --TopView=GoogleMap\
     # --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
-    # --KDEBW=3.5/10 --OSR=10")
+    # --KDEBW=3.5/10 --OSR=10 --ROIFromTop")
     ########################################################
-    # for det in detectors:
-    #     for tra in trackers:
-    #         for metric in cnt_metrics:
-    #             print(f"counting metric:{metric} det:{det} tra:{tra}")
-    #             os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-    #                         --Count --EvalCount --CountMetric={metric} --ResampleTH=2\
-    #                         --UseCachedCounter --CachedCounterPth={cached_cnt_pth}\
-    #                         --BackprojectSource=tracks --TopView=GoogleMap\
-    #                         --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
-    #                         --KDEBW=3.5 --OSR=10")
+    for det in detectors:
+        for tra in trackers:
+            for metric in cnt_metrics:
+                print(f"counting metric:{metric} det:{det} tra:{tra}")
+                os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+                            --Count --EvalCount --CountMetric={metric} --ResampleTH=2\
+                            --UseCachedCounter --CachedCounterPth={cached_cnt_pth}\
+                            --BackprojectSource=tracks --TopView=GoogleMap\
+                            --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
+                            --KDEBW=3.5 --OSR=10 --ROIFromTop")
 
     ########################################################
     # 11. Visualizing the results on a video including track label and track id
@@ -354,8 +354,8 @@ for src in segments:
     #             os.system(f"python3 main.py --MultiCam --Dataset={src}  --Detector={det} --Tracker={tra} --CountMetric={metric} --AverageCountsMC --EvalCountMC")
 
 #_______________________MULTISEGMENT _______________________#
-for split in splits:
-    print(f"running on split:{split}")
+for split, cached_cnt_pth in zip(splits, cached_splits):
+    print(f"running on split:{split} cached_cnt_path:{cached_cnt_pth}")
     ########################################################
     # 1. convert detections of all the data under split into COCO format
     # os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --ConvertDetsToCOCO --KeepCOCOClasses")
@@ -400,17 +400,17 @@ for split in splits:
     #  --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
     #  --KDEBW=3.5/10 --OSR=10 --ROIFromTop")
     ########################################################
-    for det in detectors:
-        for tra in trackers:
-            for metric in cnt_metrics:
-                print(f"counting split:{split} metric:{metric} det:{det} tra:{tra}")
-                os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det}\
-                            --DetectorVersion={det_v} --Tracker={tra}\
-                            --EvalCount --CountMetric={metric} --ResampleTH=2\
-                            --CacheCounter\
-                            --BackprojectSource=tracks --TopView=GoogleMap\
-                            --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
-                            --KDEBW=3.5 --OSR=10 --ROIFromTop")
+    # for det in detectors:
+    #     for tra in trackers:
+    #         for metric in cnt_metrics:
+    #             print(f"counting split:{split} metric:{metric} det:{det} tra:{tra}")
+    #             os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det}\
+    #                         --DetectorVersion={det_v} --Tracker={tra}\
+    #                         --Count --EvalCount --CountMetric={metric} --ResampleTH=2\
+    #                         --UseCachedCounter --CachedCounterPth={cached_cnt_pth}\
+    #                         --BackprojectSource=tracks --TopView=GoogleMap\
+    #                         --BackprojectionMethod=Homography --ContactPoint=BottomPoint\
+    #                         --KDEBW=3.5 --OSR=10 --ROIFromTop")
 
 #_______________________MULTIPART___________________________#
 for ds in datasets:
