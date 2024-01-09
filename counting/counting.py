@@ -468,10 +468,13 @@ class Counting:
                 tem.append(c)
                 key.append(keys)
 
-        tem = np.array(tem)
-        key = np.array(key)
-        idxs = np.argpartition(tem, 1)
-        votes = key[idxs[:1]]
+        tem = np.array(tem).reshape(-1,)
+        key = np.array(key).reshape(-1,)
+        if len(tem) > 1:
+            idxs = np.argpartition(tem, 1)
+            votes = key[idxs[:1]]
+        else:
+            votes = key
         matched_id = int(np.argmax(np.bincount(votes)))
 
         if self.args.CountVisPrompt:
@@ -743,7 +746,7 @@ class KNNCounting(Counting):
             tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
 
         tracks["trajectory"] = tracks.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
-#TODO oversample tracks with args.OSR
+        
         moi = []
         for i, row in tqdm(tracks.iterrows(), total=len(tracks), desc="knn classifier infer", disable=not verbose):
             x = [p for p in row.trajectory]
