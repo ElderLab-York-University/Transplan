@@ -212,6 +212,9 @@ def mask_detections(df, args):
     for arr in a:
         rois=a[arr]
         m=a[arr]
+    frame_copy=frame.copy()
+    rows1, cols1, dim1 = frame_copy.shape
+    alpha=0.8
     for roi in rois:
         # print(roi)
         # print("[")
@@ -220,7 +223,15 @@ def mask_detections(df, args):
         # print("]")
         roi=np.array(roi)
         roi=roi.astype(np.int32)
-        masked=    cv2.fillPoly(masked, pts=[roi], color=(0, 0, 0))
+        # masked=    cv2.fillPoly(masked, pts=[roi], color=(105, 105, 105))
+        poly_path1 = mplPath.Path(np.array(roi))
+        
+        for i in range(rows1):
+            for j in range(cols1):
+                if poly_path1.contains_point([j, i]):
+                    masked[i][j] = [0, 0, 0]    
+        masked = cv.addWeighted(masked, alpha, frame_copy, 1 - alpha, 0)
+            
         df=remove_inside_of_ROI(df, roi)        
     cv2.imwrite("detection_mask.png",masked)
     print(args.DetectionMaskVis)
@@ -320,12 +331,13 @@ def visroi(args):
 
     fig, ax1 = plt.subplots(1,figsize=(10, 5))
 
-    ax1.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
-    ax1.set_title("camera view ROI")
-    # ax2.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
-    # ax2.set_title("top view ROI")
-    plt.savefig(args.VisROIPth)
-
+    # ax1.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
+    # ax1.set_title("camera view ROI")
+    # # ax2.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
+    # # ax2.set_title("top view ROI")
+    
+    # plt.savefig(args.VisROIPth)
+    cv2.imwrite(args.VisROIPth, img1)
     return SucLog("Vis ROI executed successfully")
 
 def format_frame_number(frame_number, number_of_frames):
