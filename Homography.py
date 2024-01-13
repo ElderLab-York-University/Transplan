@@ -156,6 +156,12 @@ def get_contact_point(row, args):
         x, y = (row['x2']+row['x1'])/2, row['y2']
         return (x, y)
     
+    elif args.ContactPoint == "BottomPoint3D":
+        # row will have x1-8 and y1-8
+        x = (row.x1 + row.x2 + row.x3 + row.x4)/4
+        y = (row.y1 + row.y2 + row.y3 + row.y4)/4
+        return (x, y)
+    
     elif args.ContactPoint == "Center":
         x, y = (row['x2']+row['x1'])/2, (row['y2']+row['y1'])/2
         return (x, y)
@@ -292,13 +298,20 @@ def store_to_pickle_to_detection(args):
 def reprojected_df_for_detection(args):
     in_path = args.ReprojectedPointsForDetection
     df = pd.read_pickle(args.DetectionPkl)
-    # reprojected df will have all the columns of tracking df 
+    # reprojected df will have all the columns of detection df 
     # with addition of xcp, ycp, x, y
-    # which are contact point coordinates and  backprojected coordinates 
-    points = np.loadtxt(in_path, delimiter=',')
+    # which are contact point coordinates and  backprojected coordinates
+    points = []
+    with open(in_path, "r") as f_in:
+        lines = f_in.readlines()
+    for line in lines:
+        cells = list(map(float, line.split(",")[-4:]))
+        points.append(cells)
+    points = np.array(points)
+    
     data  = {}
     for i, col in enumerate(df.columns):
-        data[col] = points[:, i]
+        data[col] = df[col]
 
     data["y"]   = points[:, -1]
     data["x"]   = points[:, -2]
@@ -440,7 +453,11 @@ def vis_contact_point(args):
         ret, frame = cap.read()
         if not ret: continue
         for i, row in det_bp_df[det_bp_df["fn"]==frame_num].iterrows():
-            frame = Detect.draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
+            #TODO set up a general condition for all 3D detectors
+            if args.Detector == "GTHW73D":
+                frame = Detect.draw_3Dbox_on_image(frame , row)
+            else:
+                frame = Detect.draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
             frame = Detect.draw_point_on_image(frame, row.xcp, row.ycp)
         out_cap.write(frame)
 
