@@ -27,7 +27,7 @@ def vis_labelled_tracks(args):
         tracks = pd.read_pickle(args.TrackLabellingExportPth)
         tracks = tracks.sort_values("moi")
         img2 = cv.imread(args.HomographyTopView)
-        if os.path.exists(args.HomographyNPY):
+        if os.path.exists(args.HomographyNPY) and os.path.exists(args.HomographyStreetView):
             img1 = cv.imread(args.HomographyStreetView)
             M = np.load(args.HomographyNPY, allow_pickle=True)[0]
             rows2, cols2, dim2 = img2.shape
