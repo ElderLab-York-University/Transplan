@@ -855,13 +855,14 @@ def complete_args(args):
     if args.HomographyGUI or args.Homography or args.VisHomographyGUI or\
         args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or\
         args.TrackPostProc or args.Count or args.VisROI or args.Meter or\
-        args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or args.EvalCount:
+        args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or\
+        args.EvalCount or args.TrackEval:
         args = add_homographygui_related_path_to_args(args)
 
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or\
         args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop or\
-        args.EvalCount:
+        args.EvalCount or args.TrackEval:
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
 
