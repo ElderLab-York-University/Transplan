@@ -19,13 +19,13 @@ def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"], b
 #  set to None if want to include all
 datasets     = [
                 # "/home/sajjad/HW7Leslie",
-                "/mnt/dataB/CityFlowV2Local",
+                # "/mnt/dataB/CityFlowV2Local",
                 # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 split_part   = ["train"]
-segment_part = None
+segment_part = ["S06C044"]
 source_part  = None
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
@@ -37,13 +37,13 @@ sources      = get_sub_dirs(segments, source_part, not_be_inside="lc")
 # this pathes are used to load cached counters
 cached_datasets     = [
                 # "/home/sajjad/HW7Leslie",
-                "/mnt/dataB/CityFlowV2Local",
+                # "/mnt/dataB/CityFlowV2Local",
                 # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 cached_split_part   = ["train"]
-cached_segment_part = None
+cached_segment_part = ["S06C044"]
 cached_source_part  = None
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
@@ -118,8 +118,8 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     # os.system(f"python3 main.py --Dataset={src} --HomographyGUI --VisHomographyGUI --Frame=1
     #  --TopView={tp_view}")
     ########################################################
-    # print(f"src:{src}")
-    # os.system(f"python3 main.py --Dataset={src} --HomographyGUI --VisHomographyGUI --TopView={tp_view}")
+    print(f"src:{src}")
+    os.system(f"python3 main.py --Dataset={src} --HomographyGUI --VisHomographyGUI --TopView={tp_view}")
 
     ########################################################
     # 2. visualizing the region of interest 
@@ -155,9 +155,9 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #  --Detect --VisDetect --ForNFrames=600 --DetectorVersion={det_v} --SAHI --SahiPatchSize=640 --SahiPatchOverlapRatio=0.25 
     #  --SahiPatchBatchSize=1 --SahiNMSTh=0.25")
     ########################################################
-    for det in detectors:
-        print(f"detecting ----> src:{src} det:{det}")
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect")
+    # for det in detectors:
+    #     print(f"detecting ----> src:{src} det:{det}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect")
 
     ########################################################
     # 3.5 run the detection post processing
@@ -165,10 +165,10 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #  --classes_to_keep 2 3 5 7 --VisDetect --ForNFrames=600 --SAHI --SahiPatchSize=640 --SahiPatchOverlapRatio=0.25
     #  --SahiPatchBatchSize=1 --SahiNMSTh=0.25")
     #######################################################
-    for det in detectors:
-        print(f"detecting ----> src:{src} det:{det}")
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --DetPostProc\
-             --DetTh=0.5 --classes_to_keep 2 3 5 7")
+    # for det in detectors:
+    #     print(f"detecting ----> src:{src} det:{det}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --DetPostProc\
+    #          --DetTh=0.5 --classes_to_keep 2 3 5 7")
 
     ########################################################
     # 3.5.5 convert detections to coco format
