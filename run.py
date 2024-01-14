@@ -18,13 +18,15 @@ def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"], b
 # choose datasets/splits/segments/sources
 #  set to None if want to include all
 datasets     = [
-                "/home/sajjad/HW7Leslie",
-                # "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie"
+                # "/home/sajjad/HW7Leslie",
+                # "/mnt/dataB/CityFlowV2Local",
                 # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
+                # "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie",
+                # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 split_part   = ["train"]
-segment_part = ["Seg01"]
-source_part  = ["Seg01sc1"]
+segment_part = None
+source_part  = None
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
 sources      = get_sub_dirs(segments, source_part, not_be_inside="lc")
@@ -34,13 +36,15 @@ sources      = get_sub_dirs(segments, source_part, not_be_inside="lc")
 #  set to None if want to include all
 # this pathes are used to load cached counters
 cached_datasets     = [
-                "/home/sajjad/HW7Leslie",
-                # "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie"
+                # "/home/sajjad/HW7Leslie",
+                # "/mnt/dataB/CityFlowV2Local",
                 # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
+                # "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie",
+                # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 cached_split_part   = ["train"]
-cached_segment_part = ["Seg01"]
-cached_source_part  = ["Seg01sc1"]
+cached_segment_part = None
+cached_source_part  = None
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
 cached_sources      = get_sub_dirs(cached_segments, cached_source_part, not_be_inside="lc")
@@ -52,7 +56,7 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN"]
-detectors = ["GTHW73D"]
+detectors = ["InternImage"]
 
 # choose grandtruth detector
 # Options are the same as detector
@@ -65,7 +69,7 @@ det_v = ""
 
 # choose the tracker
 # options: ["GTHW7", "sort", "ByteTrack",  "CenterTrack", "DeepSort", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
-trackers = ["GTHW7"] 
+trackers = ["ByteTrack"] 
 
 # choose grandtruth tracker
 # options are the same as trackers
@@ -114,8 +118,8 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     # os.system(f"python3 main.py --Dataset={src} --HomographyGUI --VisHomographyGUI --Frame=1
     #  --TopView={tp_view}")
     ########################################################
-    # print(f"src:{src}")
-    # os.system(f"python3 main.py --Dataset={src} --VisHomographyGUI --TopView={tp_view}")
+    print(f"src:{src}")
+    os.system(f"python3 main.py --Dataset={src} --HomographyGUI --VisHomographyGUI --TopView={tp_view}")
 
     ########################################################
     # 2. visualizing the region of interest 
@@ -180,11 +184,11 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #  --BackprojectSource=detections --TopView=[GoogleMap/OrthoPhoto] --BackprojectionMethod=[Homography/DSM]
     #  --ContactPoint=[BottomPoint/Center/BottomSeg/LineSeg/BottomPoint3D]")
     ########################################################
-    for det in detectors:
-        for seg in segmenters:
-            print(f"detecting ----> src:{src} det:{det}")
-            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Segmenter={seg} --Homography\
-                 --BackprojectSource=detections --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={cp_method}")
+    # for det in detectors:
+    #     for seg in segmenters:
+    #         print(f"detecting ----> src:{src} det:{det}")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Segmenter={seg} --Homography\
+    #              --BackprojectSource=detections --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={cp_method}")
 
     ########################################################
     # 3.7 Vis Contact Points and BP Points
@@ -192,13 +196,13 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #  --BackprojectSource=detections --TopView=[GoogleMap/OrthoPhoto] --BackprojectionMethod=[Homography/DSM] 
     #  --ContactPoint=[BottomPoint/Center/BottomSeg/LineSeg] --ForNFrames=600")
     ########################################################
-    for det in detectors:
-        print(f"detecting ----> src:{src} det:{det}")
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --VisContactPoint\
-             --BackprojectSource=detections --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={cp_method}")
+    # for det in detectors:
+    #     print(f"detecting ----> src:{src} det:{det}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --VisContactPoint\
+    #          --BackprojectSource=detections --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={cp_method}")
 
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --VisCPTop \
-             --BackprojectSource=detections --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={cp_method}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --VisCPTop \
+    #          --BackprojectSource=detections --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={cp_method}")
 
     ########################################################
     # 4. run the tracking and backproject and convert to meter
