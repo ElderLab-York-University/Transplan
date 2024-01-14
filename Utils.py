@@ -745,9 +745,18 @@ def get_args_gt(args):
     args_gt.Detector = args.GTDetector
     args_gt.DetectorVersion = ""
     args_gt.Tracker = args.GTTracker
-    args_gt.Video=None #why is it set to None?
+    args_gt.Video=None
     args_gt=complete_args(args_gt)
     return get_args(args_gt)
+
+def get_args_gt3D(args):
+    args_gt3D = copy.deepcopy(args)
+    args_gt3D.Detector = args.GTDetector3D
+    args_gt3D.DetectorVersion = ""
+    args_gt3D.Tracker = args.GTTracker3D
+    args_gt3D.Video=None 
+    args_gt3D=complete_args(args_gt3D)
+    return get_args(args_gt3D)
 
 def get_args_mc(args):
     args_mc = get_sub_args(args)

@@ -92,6 +92,19 @@ def get_mask_with_max_iou(det_row, mask_df, th=0.5):
 
     return mask_df.iloc[max_idx]
 
+def get_det_with_max_iou(det_row, detections_df, th=0.5):
+    # we want to find a match to det_row from detections_df
+    ious = []
+    for i, mask_row in detections_df.iterrows():
+        ious.append(iou(det_row, mask_row))
+    if len(ious) ==0: # no segmentations in mask_df
+        return None
+
+    max_idx = np.array(ious).argmax()
+    if ious[max_idx] < th: # if the best match is not yet good enough
+        return None
+
+    return detections_df.iloc[max_idx]
 
 def find_cp_BottomSeg(det_row, args):
     fn = int(det_row["fn"])
@@ -500,3 +513,42 @@ def vis_contact_point_top(args):
         out_cap.write(img2_fn)
     out_cap.release()
     return SucLog("sucessfully viz-ed contact points on top view")
+
+def eval_contact_points(args):
+    # get 2D GT args
+    # get 3D GT args
+    args_gt_2d = get_args_gt(args)
+    args_gt_3d = get_args_gt3D(args)
+
+    # read backprojected detections + contact points
+    df       = pd.read_pickle(args.ReprojectedPklForDetection)
+    df_gt_2d = pd.read_pickle(args_gt_2d.ReprojectedPklForDetection)
+    df_gt_3d = pd.read_pickle(args_gt_3d.ReprojectedPklForDetection)
+
+    # get unique frames based on annotations
+    unique_frames = np.unique(df_gt_2d)
+
+    # gatther all distances
+    distances = []
+
+    # for each frame in annotations
+    for fn in unique_frames:
+        # get the detections for frame "fn"
+        df_fn       = df[df.fn == fn]
+        df_gt_2d_fn = df_gt_2d[df_gt_2d.fn == fn]
+        df_gt_3d_fn = df_gt_3d[df_gt_3d.fn == fn]
+        # use 2D args for matching 2D detections
+        for i, row in df_fn.iterrows():
+            gt_2d_match_row = get_det_with_max_iou(row, df_gt_2d_fn)
+            # match with uuid/id
+            gt_3d_match_row = df_gt_3d_fn[df_gt_3d_fn.id == gt_2d_match_row.id]
+
+            cp_est    = [row.xcp, row.ycp]
+            cp_gt     = [gt_3d_match_row.xcp, gt_3d_match_row.ycp]
+            dist_row  = np.linalg.norm(np.array(cp_est) - np.array(cp_gt))
+            distances.append(dist_row)
+            
+    cp_error_image = np.mean(distances)
+    # save this number somewhere
+
+    return SucLog("evaluated CP selection")
