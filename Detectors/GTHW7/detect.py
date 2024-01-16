@@ -32,18 +32,23 @@ def detect(args,*oargs):
                   if(gt['cuboid_uuid']) not in uuid_to_id:
                       uuid_to_id[gt['cuboid_uuid']]=id_counter
                       id_counter=id_counter+1
+                  uuid=gt['cuboid_uuid']
                   c = 0 if "Pedestrian" in gt['label'] else 7 if 'Truck' in gt['label'] else 5 if 'Buses' in gt['label'] else 2 if 'Small' in gt['label'] else 1 if 'Unpowered' in gt['label'] else 3
                   id=uuid_to_id[gt['cuboid_uuid']]
                   x1=gt['left']
                   x2=x1+gt['width']
                   y1=gt['top']
                   y2=y1+gt['height']
-                  detections.append([start+int(skip*i), c, 1.0,x1,y1,x2,y2])
+                  detections.append([start+int(skip*i), c, 1.0,x1,y1,x2,y2, uuid])
+                  # if(start+int(skip*i)-1 >0):
+                  #   detections.append([start+int(skip*i)-1, c, 1.0,x1,y1,x2,y2])
+                  # detections.append([start+int(skip*i)+1, c, 1.0,x1,y1,x2,y2])
+                    
                   # detections.append([start+int(skip*i), id, x1,y1,x2,y2,c])
                   # mot.append([start+int(skip*i), id, x1,y1, gt['width'], gt['height'], 1, c, 1])
               i=i+1
   detections= np.asarray(detections)
-  df=pd.DataFrame(detections,columns=['fn','class','score','x1','y1','x2','y2'])
+  df=pd.DataFrame(detections,columns=['fn','class','score','x1','y1','x2','y2','uuid'])
   df=df.sort_values('fn').reset_index(drop=True)
   print(df)
   print(np.unique(df['class']))

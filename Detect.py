@@ -98,7 +98,6 @@ def visdetect_2d(args):
         for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
             frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
         out_cap.write(frame)
-
     cap.release()
     out_cap.release()
     return SucLog("Detection visualized on the video")
