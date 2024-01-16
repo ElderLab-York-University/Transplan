@@ -745,9 +745,18 @@ def get_args_gt(args):
     args_gt.Detector = args.GTDetector
     args_gt.DetectorVersion = ""
     args_gt.Tracker = args.GTTracker
-    args_gt.Video=None #why is it set to None?
+    args_gt.Video=None
     args_gt=complete_args(args_gt)
     return get_args(args_gt)
+
+def get_args_gt3D(args):
+    args_gt3D = copy.deepcopy(args)
+    args_gt3D.Detector = args.GTDetector3D
+    args_gt3D.DetectorVersion = ""
+    args_gt3D.Tracker = args.GTTracker3D
+    args_gt3D.Video=None 
+    args_gt3D=complete_args(args_gt3D)
+    return get_args(args_gt3D)
 
 def get_args_mc(args):
     args_mc = get_sub_args(args)
@@ -855,13 +864,14 @@ def complete_args(args):
     if args.HomographyGUI or args.Homography or args.VisHomographyGUI or\
         args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or\
         args.TrackPostProc or args.Count or args.VisROI or args.Meter or\
-        args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or args.EvalCount:
+        args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or\
+        args.EvalCount or args.TrackEval:
         args = add_homographygui_related_path_to_args(args)
 
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or\
         args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop or\
-        args.EvalCount:
+        args.EvalCount or args.TrackEval:
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
 

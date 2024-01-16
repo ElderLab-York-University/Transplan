@@ -14,7 +14,7 @@ from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop, calc
 from Homography import homographygui
 from Homography import reproject
 from Homography import vishomographygui
-from Homography import vis_reprojected_tracks, vis_contact_point, vis_contact_point_top
+from Homography import vis_reprojected_tracks, vis_contact_point, vis_contact_point_top, eval_contact_points
 from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_tracks, extract_common_tracks_multi
 from Evaluate import evaluate_tracking, cvpr
 from Maps import pix2meter
@@ -279,6 +279,13 @@ def VisContactPoint(args):
         return log
     else: return WarningLog("skipped vis contact point")
 
+def EvalCPSelection(args):
+    if args.EvalContactPoitnSelection:
+        print(ProcLog("evaluating contact points"))
+        log = eval_contact_points(args)
+        return log
+    else: return WarningLog("skipped contact point evaluation") 
+
 def VisCPTop(args):
     if args.VisCPTop:
         print(ProcLog("vis cp top"))
@@ -343,7 +350,8 @@ def main(args):
                 Segment, SegPostProc, VisSegment,
                 Detect, DetPostProc, VisDetect, ConvertDetsToCOCO,
                 Track, Homography, Pix2Meter, TrackPostProc, TrackEvaluate,
-                VisTrack, VisContactPoint, VisCPTop, VisTrajectories, VisTrackTop,
+                VisTrack, VisTrajectories, VisTrackTop,
+                VisContactPoint, VisCPTop, EvalCPSelection,
                 FindOptBW, Cluster, ExtractCommonTracks, TrackLabelingGUI, VisLabelledTrajectories,
                 Count, EvalCount, VisTrackMoI]
     for subtask in subtasks:
@@ -430,6 +438,7 @@ def get_parser():
     parser.add_argument("--ExitOrCrossROI", help="select tracks that either exit or cross multi roi", action="store_true")
     parser.add_argument("--SelectToBeCounted", help="select tracks to be counted based on ROI", action="store_true")
     parser.add_argument("--UnfinishedTrackFrameTh", help="select tracks to be counted based on ROI", type=int, default=10)
+    parser.add_argument("--UnstartedTrackFrameTh", help="select tracks to be counted based on ROI", type=int, default=10)
 
     parser.add_argument("--MaskGPFrame", help="remove dets on tracks that are outside gp frame", action="store_true")
     parser.add_argument("--TrackEval", help="Evaluate the tracking single camera", action="store_true")
@@ -476,6 +485,8 @@ def get_parser():
     parser.add_argument("--TrainPart", help="training SubID", type=str)
     parser.add_argument("--ValidPart", help="validation SubID", type=str)
     parser.add_argument("--GTDetector", help="name of GT detector(typically used for fine turning or evaluation)", type=str)
+    parser.add_argument("--GTDetector3D", help="name of 3D GT detector", type=str)
+    parser.add_argument("--GTTracker3D",  help="name of 3D GT tracker", type=str)
     parser.add_argument("--GTTracker",  help="name of GT tracker(typically used for fine turning or evaluation)", type=str)
     parser.add_argument("--BatchSize", help="set batch size", type=int)
     parser.add_argument("--NumWorkers", help="number of workers for dataloader", type=int)
@@ -494,6 +505,8 @@ def get_parser():
     parser.add_argument("--GP", help="operate on ground plane", action='store_true')
     parser.add_argument("--ROIFromTop", help="get roi from topview need to select topview", action='store_true', default=False)
     parser.add_argument("--UnifyTrackClass", help="unify class labels for each track", action='store_true')
+
+    parser.add_argument("--EvalContactPoitnSelection", help="evaluate contact point selection method using 2D-3D GT", action='store_true')
 
     return parser
     

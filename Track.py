@@ -447,14 +447,17 @@ def unify_classes_in_tracks(df, args):
 # TODO seems like these functions were used for ROI with thresholding
 # not the new crossing method
 
-# def end_in_roi(pg, traj, th, poly_path, *args, **kwargs):
-    
-#     d_end, i_end = pg.distance(traj[-1])
-#     return d_end <= th
+def end_in_roi(pg, traj, th, poly_path, *args, **kwargs):
+    p = traj[-1]
+    if poly_path.contains_point(p):
+            return True
+    return False
 
-# def begin_in_roi(pg, traj, th, poly_path, *args, **kwargs):
-#     d_str, i_str = pg.distance(traj[0])
-#     return d_str <= th
+def begin_in_roi(pg, traj, th, poly_path, *args, **kwargs):
+    p = traj[0]
+    if poly_path.contains_point(p):
+            return True
+    return False
 
 def moves_in_roi(pg, traj, th, poly_path, *args, **kwargs):
     in_roi_traj = TrackLabeling.get_in_roi_points(traj, poly_path, return_mask=False)
@@ -531,9 +534,17 @@ def unfinished_track(pg, traj, th, poly_path, *args, **kwargs):
     else:
         return False
     
+def unstarted_track(pg, traj, th, poly_path, *args, **kwargs):
+    first_recorded_frame  = kwargs["frames"][0]
+    first_video_frame    = 0
+    if first_recorded_frame <= first_video_frame + kwargs["UnfinishedTrackFrameTh"]:
+        return True
+    else:
+        return False
+    
 def to_be_counted(pg, traj, th, poly_path, *args, **kwargs):
-    if just_exit_or_cross_multi(pg, traj, th, poly_path, *args, **kwargs) or\
-        unfinished_track(pg, traj, th, poly_path, *args, **kwargs):
+    if cross_roi_multiple(pg, traj, th, poly_path, *args, **kwargs) or\
+       just_enter_roi(pg, traj, th, poly_path, *args, **kwargs):
         return True
     else:
         return False
