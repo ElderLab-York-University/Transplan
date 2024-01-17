@@ -746,6 +746,7 @@ def get_args_gt(args):
     args_gt.DetectorVersion = ""
     args_gt.Tracker = args.GTTracker
     args_gt.Video=None
+    args_gt.ContactPoint = args_gt.GTContactPoint
     args_gt=complete_args(args_gt)
     return get_args(args_gt)
 
@@ -754,7 +755,8 @@ def get_args_gt3D(args):
     args_gt3D.Detector = args.GTDetector3D
     args_gt3D.DetectorVersion = ""
     args_gt3D.Tracker = args.GTTracker3D
-    args_gt3D.Video=None 
+    args_gt3D.Video=None
+    args_gt3D.ContactPoint = args_gt3D.GT3DContactPoint
     args_gt3D=complete_args(args_gt3D)
     return get_args(args_gt3D)
 
@@ -871,7 +873,7 @@ def complete_args(args):
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or\
         args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop or\
-        args.EvalCount or args.TrackEval:
+        args.EvalCount or args.TrackEval or args.EvalContactPoitnSelection:
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
 

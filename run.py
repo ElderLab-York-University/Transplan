@@ -56,12 +56,12 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "YoloX", "DeformableDETR", "CenterNet", "CascadeRCNN"]
-detectors = ["GTHW73D"]
+detectors = ["GTHW7"]
 
 # choose grandtruth detector
 # Options are the same as detector
-GT_det    = ""
-GT_det_3D = ""
+GT_det    = "GTHW7"
+GT_det_3D = "GTHW73D"
 
 # choose detector version (checkpoints, ...)
 # options: ["", "HW7FT"]
@@ -104,6 +104,10 @@ tp_view   = "GoogleMap"
 cp_method = "BottomPoint"
 bp_method = "Homography"
 resamp_th = 0.5
+
+# set contact point for GT and GT3D
+gt_cp_method = "BottomPoint"
+gt3D_cp_method = "BottomPoint3D"
 
 for src, cached_cnt_pth in zip(sources, cached_sources):
     print(f"running on src:{src}")
@@ -158,7 +162,7 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     ########################################################
     # for det in detectors:
     #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --VisDetect --ForNFrames=100")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect")
 
     ########################################################
     # 3.5 run the detection post processing
@@ -169,7 +173,7 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     # for det in detectors:
     #     print(f"detecting ----> src:{src} det:{det}")
     #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --DetPostProc\
-    #          --DetTh=0.5 --classes_to_keep 2 3 5 7")
+    #          --DetTh=0.5 --classes_to_keep 2 3 5 7 --VisDetect")
 
     ########################################################
     # 3.5.5 convert detections to coco format
@@ -204,6 +208,19 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
 
     #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --VisCPTop \
     #          --BackprojectSource=detections --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={cp_method}")
+
+    ########################################################
+    # 3.8 Evaluate contact point selection method
+    # os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} 
+    #  --BackprojectSource=detections --TopView=w={tp_view} --BackprojectionMethod={bp_method} 
+    #  --ContactPoint={cp_method} --ForNFrames=600")
+    ########################################################
+    for det in detectors:
+        print(f"detecting ----> src:{src} det:{det}")
+        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --EvalContactPoitnSelection\
+                    --GTDetector={GT_det} --GTDetector3D={GT_det_3D}\
+                    --BackprojectSource=detections --TopView={tp_view} --BackprojectionMethod={bp_method}\
+                    --ContactPoint={cp_method} --GTContactPoint={gt_cp_method} --GT3DContactPoint={gt3D_cp_method}")
 
     ########################################################
     # 4. run the tracking and backproject and convert to meter

@@ -465,7 +465,11 @@ def get_parser():
     parser.add_argument("--TopView", help="seeting which topview to use. Options are [GoogleMap, OrthoPhoto]", type=str)
     parser.add_argument("--BackprojectSource", help="selecting which source to backproject form Options are [tracks, detections]", type=str)
     parser.add_argument("--BackprojectionMethod", help="Select back projection method  options = [Homography/DSM]", type=str)
+    parser.add_argument("--GTBackprojectionMethod", help="Select back projection method  options = [Homography/DSM]", type=str)
+    parser.add_argument("--GT3DBackprojectionMethod", help="Select back projection method  options = [Homography/DSM]", type=str)
     parser.add_argument("--ContactPoint", help="Select how to set the contact point  options = [BottomPoint/Center/BottomSeg/SegBottomLine]", type=str)
+    parser.add_argument("--GTContactPoint", help="Select how to set the contact point  options = [BottomPoint/Center/BottomSeg/SegBottomLine]", type=str)
+    parser.add_argument("--GT3DContactPoint", help="Select how to set the contact point  options = [BottomPoint/Center/BottomSeg/SegBottomLine]", type=str)
     parser.add_argument("--VisContactPoint", help="to visualize the contact point", action="store_true")
     parser.add_argument("--VisCPTop", help="to visualize the contact points on the top view", action="store_true")
 
