@@ -259,6 +259,20 @@ def visroi(args):
     ax2.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
     ax2.set_title("top view ROI")
     plt.savefig(args.VisROIPth)
+    plt.close("all")
+
+    top_view_path = args.VisROIPth[:-3] + "top.png"
+    street_view_path = args.VisROIPth[:-3] + "street .png"
+
+    plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
+    plt.axis('off')
+    plt.savefig(street_view_path, bbox_inches='tight')
+    plt.close("all")
+
+    plt.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
+    plt.axis('off')
+    plt.savefig(top_view_path, bbox_inches='tight')
+    plt.close("all")
 
     return SucLog("Vis ROI executed successfully")
 
