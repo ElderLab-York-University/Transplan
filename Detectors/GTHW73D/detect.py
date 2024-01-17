@@ -12,7 +12,8 @@ def get_columns():
           'uuid', 'label', 'numberOfPoints',
           'distance_to_device','motion_state',
           'traversal_direction', 'camera_used',
-          'label_cg', 'label_fg']
+          'label_cg', 'label_fg',
+          'x2D1', 'y2D1', 'x2D2', 'y2D2']
   return columns
 
 def get_dtypes():
@@ -25,7 +26,8 @@ def get_dtypes():
           str, str, int,
           float,str,
           str, str,
-          str, str]
+          str, str,
+          float, float, float, float]
   return dtypes
 
 def remove_text_in_parentheses(input_string):
@@ -261,6 +263,19 @@ def detect(args,*oargs):
         # put all points in one array
         points_arr=[r2_point1,r2_point2,r2_point3,r2_point4,
                     r2_point5,r2_point6,r2_point7,r2_point8]
+
+        # get enclosing 2D box
+        x2D1 = np.min(r2_point1[0],r2_point2[0],r2_point3[0],r2_point4[0],
+                    r2_point5[0],r2_point6[0],r2_point7[0],r2_point8[0])
+
+        x2D2 = np.max(r2_point1[0],r2_point2[0],r2_point3[0],r2_point4[0],
+                    r2_point5[0],r2_point6[0],r2_point7[0],r2_point8[0])
+
+        y2D1 = np.min(r2_point1[1],r2_point2[1],r2_point3[1],r2_point4[1],
+                    r2_point5[1],r2_point6[1],r2_point7[1],r2_point8[1])
+
+        y2D2 = np.max(r2_point1[1],r2_point2[1],r2_point3[1],r2_point4[1],
+                    r2_point5[1],r2_point6[1],r2_point7[1],r2_point8[1])
         
         # check that bbox has atleast 1 corner in frame
         def has_1corner_in_frame(points_arr, dims):
@@ -285,7 +300,7 @@ def detect(args,*oargs):
             for point in points_arr:
                 p_arr.append(point[0][0])
                 p_arr.append(point[1][0])
-            reprojected_detections.append([*detection[:4], *p_arr, *detection[12:]])
+            reprojected_detections.append([*detection[:4], *p_arr, *detection[12:], x2D1, y2D1, x2D2, y2D2])
         
     df=pd.DataFrame(reprojected_detections,
         columns=get_columns())
@@ -294,7 +309,7 @@ def detect(args,*oargs):
     # df.to_csv(args.DetectionDetectorPath, header=None, index=None, sep=',')
     df_txt(df,args.DetectionDetectorPath)
 
-    return SucLog("3D GT files stored undeer Detections/GTHW73D.txt")
+    return SucLog("3D GT files stored under Detections/GTHW73D.txt")
 
 def df(args):
   file_path = args.DetectionDetectorPath
