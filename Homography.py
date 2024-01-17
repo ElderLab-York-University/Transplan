@@ -533,23 +533,39 @@ def eval_contact_points(args):
     df_gt_2d = pd.read_pickle(args_gt_2d.ReprojectedPklForDetection)
     df_gt_3d = pd.read_pickle(args_gt_3d.ReprojectedPklForDetection)
 
+    # if detector is a 3D detector, modify x1, y1, x2, y2
+    # to x2D1, y2D1, x2D2, y2D2 so that it is consistent with
+    # a 2D detector
+    if "x2D1" in df.columns:
+        df.x1 = df.x2D1
+        df.y1 = df.y2D1
+        df.x2 = df.x2D2
+        df.y2 = df.y2D2
+
     # get unique frames based on annotations
-    unique_frames = np.unique(df_gt_2d)
+    unique_frames = np.unique(df_gt_2d.fn)
+
 
     # gatther all distances
     distances = []
 
     # for each frame in annotations
-    for fn in unique_frames:
+    for fn in tqdm(unique_frames):
         # get the detections for frame "fn"
         df_fn       = df[df.fn == fn]
         df_gt_2d_fn = df_gt_2d[df_gt_2d.fn == fn]
         df_gt_3d_fn = df_gt_3d[df_gt_3d.fn == fn]
+
         # use 2D args for matching 2D detections
         for i, row in df_fn.iterrows():
             gt_2d_match_row = get_det_with_max_iou(row, df_gt_2d_fn)
             # match with uuid/id
             gt_3d_match_row = df_gt_3d_fn[df_gt_3d_fn.id == gt_2d_match_row.id]
+
+            # first check if both 2d and 3d gt are available
+            # if 3d and 2d are not available at the same time we will just skip the detection
+            if len(gt_3d_match_row) == 0:
+                continue
 
             cp_est    = [row.xcp, row.ycp]
             cp_gt     = [gt_3d_match_row.xcp, gt_3d_match_row.ycp]
@@ -557,6 +573,7 @@ def eval_contact_points(args):
             distances.append(dist_row)
             
     cp_error_image = np.mean(distances)
+    print(cp_error_image)
     # save this number somewhere
 
     return SucLog("evaluated CP selection")
