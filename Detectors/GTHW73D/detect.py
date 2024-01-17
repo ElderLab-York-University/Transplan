@@ -265,17 +265,17 @@ def detect(args,*oargs):
                     r2_point5,r2_point6,r2_point7,r2_point8]
 
         # get enclosing 2D box
-        x2D1 = np.min(r2_point1[0],r2_point2[0],r2_point3[0],r2_point4[0],
-                    r2_point5[0],r2_point6[0],r2_point7[0],r2_point8[0])
+        x2D1 = np.min([r2_point1[0],r2_point2[0],r2_point3[0],r2_point4[0],
+                      r2_point5[0],r2_point6[0],r2_point7[0],r2_point8[0]])
 
-        x2D2 = np.max(r2_point1[0],r2_point2[0],r2_point3[0],r2_point4[0],
-                    r2_point5[0],r2_point6[0],r2_point7[0],r2_point8[0])
+        x2D2 = np.max([r2_point1[0],r2_point2[0],r2_point3[0],r2_point4[0],
+                      r2_point5[0],r2_point6[0],r2_point7[0],r2_point8[0]])
 
-        y2D1 = np.min(r2_point1[1],r2_point2[1],r2_point3[1],r2_point4[1],
-                    r2_point5[1],r2_point6[1],r2_point7[1],r2_point8[1])
+        y2D1 = np.min([r2_point1[1],r2_point2[1],r2_point3[1],r2_point4[1],
+                      r2_point5[1],r2_point6[1],r2_point7[1],r2_point8[1]])
 
-        y2D2 = np.max(r2_point1[1],r2_point2[1],r2_point3[1],r2_point4[1],
-                    r2_point5[1],r2_point6[1],r2_point7[1],r2_point8[1])
+        y2D2 = np.max([r2_point1[1],r2_point2[1],r2_point3[1],r2_point4[1],
+                      r2_point5[1],r2_point6[1],r2_point7[1],r2_point8[1]])
         
         # check that bbox has atleast 1 corner in frame
         def has_1corner_in_frame(points_arr, dims):
