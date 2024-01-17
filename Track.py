@@ -67,7 +67,8 @@ def vistrack(args):
     video_path = args.Video
     annotated_video_path = args.VisTrackingPth
     # tracks_path = args.TrackingPth
-
+    if(args.CalcDistance):
+        df, p1s=calculate_distance(args)
     color = (0, 0, 102)
     cap = cv2.VideoCapture(video_path)
     # Check if camera opened successfully
@@ -100,8 +101,84 @@ def vistrack(args):
                 cv2.putText(frame, f'id:', (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
                 cv2.putText(frame, f'{int(bbid)}', (x1 + 60, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 5)
                 cv2.putText(frame, f'{int(bbid)}', (x1 + 60, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (144, 251, 144), 2)
-            out_cap.write(frame)
+                if(args.CalcDistance):
+                    distance=track.distance
+                    p1=p1s[i]
+                    cv2.putText(frame, f'distance:', (x1, y1-40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)   
+                    cv2.putText(frame, f'{int(distance)}', (x1 + 140, y1-40), cv2.FONT_HERSHEY_SIMPLEX, 1, (144, 251, 144), 2)
+                    roi = args.MetaData["roi"]
+                    for i in range(0, len(roi)):
+                        p1 = tuple(roi[i-1])
+                        p2 = tuple(roi[i])
+                        cv2.line(frame, p1, p2, (128, 128, 0), 25)
+                    
+                    # cv.circle(frame, (int(p1.x),int(p1.y)), radius=2, color=color, thickness=3)
+        # alpha = 0.6
+        # M = np.load(args.HomographyNPY, allow_pickle=True)[0]
+        # roi_rep = []
+        # roi = args.MetaData["roi"]
+        # roi_group = args.MetaData["roi_group"]
+        # for p in roi:
+        #     point = np.array([p[0], p[1], 1])
+        #     new_point = M.dot(point)
+        #     new_point /= new_point[2]
+        #     roi_rep.append([int(new_point[0]), int(new_point[1])])
+        # img1=frame.copy()
+        # rows1, cols1, dim1 = frame.shape
+        # poly_path = mplPath.Path(np.array(roi_rep))
+        # for i in range(rows1):
+        #     for j in range(cols1):
+        #         if not poly_path.contains_point([j, i]):
+        #             img1[i][j] = [0, 0, 0]    
+        # frame = cv.addWeighted(img1, alpha, frame, 1 - alpha, 0)
+        
+        out_cap.write(frame)
     return SucLog("track vis successful")
+def meter_per_pixel(center, zoom=19):
+    m_per_p = 156543.03392 * np.cos(center[0] * np.pi / 180) / np.power(2, zoom)
+    return m_per_p
+
+def calculate_distance(args):
+    df = pd.read_pickle(args.ReprojectedPklMeter)  
+    track_df=pd.read_pickle(args.TrackingPkl)
+    video_path = args.Video
+    cap = cv2.VideoCapture(video_path)
+    # Check if camera opened successfully
+    if (cap.isOpened()== False): return FailLog("could not open input video")
+
+    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+    M = np.load(args.HomographyNPY, allow_pickle=True)[0]
+    roi_rep = []
+    roi = args.MetaData["roi"]
+    r = meter_per_pixel(args.MetaData['center'])        
+    for p in roi:
+        point = np.array([p[0], p[1], 1])
+        new_point = M.dot(point)
+        new_point /= new_point[2]
+        roi_rep.append((int(r*new_point[0]), int(r*new_point[1])))
+    poly_path = mplPath.Path(np.array(roi_rep))
+    poly=Polygon(roi_rep)
+    distances=[]
+    p1s=[]
+    for frame_num in tqdm(range(frames)):
+        this_frame_tracks = df[df.fn==(frame_num)]
+        for i, track in this_frame_tracks.iterrows():
+            # plot the bbox + id with colors
+            # bbid, x , y = track.id, int(track.x), int(track.y)
+            pcp=[track.x, track.y]
+            if not poly_path.contains_point(pcp):
+                pcp=SPoint(track.x, track.y)            
+                p1, p2 = nearest_points(poly, pcp)
+                distances.append(pcp.distance(p1))
+                p1s.append(p1)
+            else:
+                distances.append(0)
+                p1s.append(SPoint(0,0))
+                
+    track_df['distance']=distances
+
+    return track_df, p1s
 
 def vistracktop(args):
     df = pd.read_pickle(args.ReprojectedPkl)
@@ -522,7 +599,6 @@ def interpolate_tracks(args):
 
     return interpol_df
     
-
 def select_based_on_roi(args, condition, resample_tracks=False):
     # get last frame number in the video
     cap = cv2.VideoCapture(args.Video)

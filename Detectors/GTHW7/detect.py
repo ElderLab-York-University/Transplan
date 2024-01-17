@@ -2,9 +2,59 @@ from Libs import *
 from Utils import *
 
 def detect(args,*oargs):
-    shutil.copy(args.GT, args.DetectionDetectorPath)
-    return SucLog("copied gt detections from gt.txt to results/detections/**.HW7GT.txt")
+  input_file=args.GTJson
+  camera_name=os.path.abspath(args.Dataset).split("/")[-1][-3:]
+  name_to_num={
+    "lc1":0,
+    "lc2":1,
+    "sc1":2,
+    "sc2":3,
+    "sc3":4,
+    "sc4":5
+  }    
+  camera_num= name_to_num[camera_name]    
+  f= open(input_file ,'r')
 
+  data= json.load(f)
+  id_counter=0
+  f.close()
+  skip=6
+  start=args.StartFrame if args.StartFrame is not None else 0
+  i=0
+  detections=[]
+  uuid_to_id={}
+  for responses in data:
+      for response in responses['camera_responses']:
+          # print(response['camera_used'])
+          if (response['camera_used']==camera_num):
+              # print(len(response['annotations']))
+              for gt in response['annotations']:
+                  if(gt['cuboid_uuid']) not in uuid_to_id:
+                      uuid_to_id[gt['cuboid_uuid']]=id_counter
+                      id_counter=id_counter+1
+                  uuid=gt['cuboid_uuid']
+                  c = 0 if "Pedestrian" in gt['label'] else 7 if 'Truck' in gt['label'] else 5 if 'Buses' in gt['label'] else 2 if 'Small' in gt['label'] else 1 if 'Unpowered' in gt['label'] else 3
+                  id=uuid_to_id[gt['cuboid_uuid']]
+                  x1=gt['left']
+                  x2=x1+gt['width']
+                  y1=gt['top']
+                  y2=y1+gt['height']
+                  detections.append([start+int(skip*i), c, 1.0,x1,y1,x2,y2, uuid])
+                  # if(start+int(skip*i)-1 >0):
+                  #   detections.append([start+int(skip*i)-1, c, 1.0,x1,y1,x2,y2])
+                  # detections.append([start+int(skip*i)+1, c, 1.0,x1,y1,x2,y2])
+                    
+                  # detections.append([start+int(skip*i), id, x1,y1,x2,y2,c])
+                  # mot.append([start+int(skip*i), id, x1,y1, gt['width'], gt['height'], 1, c, 1])
+              i=i+1
+  detections= np.asarray(detections)
+  df=pd.DataFrame(detections,columns=['fn','class','score','x1','y1','x2','y2','uuid'])
+  df=df.sort_values('fn').reset_index(drop=True)
+  print(df)
+  print(np.unique(df['class']))
+  print(args.DetectionDetectorPath)
+  df.to_csv(args.DetectionDetectorPath, header=None, index=None, sep=',')
+  return SucLog("copied gt detections from gt.txt to results/detections/**.HW7GT.txt")
 def df(args):
   file_path = args.DetectionDetectorPath
   data = {}

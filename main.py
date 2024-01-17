@@ -10,7 +10,7 @@
 from Libs import *
 from Utils import *
 from Detect import detect, visdetect,detectpostproc, visroi, extract_images, detections_to_coco, fine_tune_detector_mp
-from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop
+from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop, calculate_distance
 from Homography import homographygui
 from Homography import reproject
 from Homography import vishomographygui
@@ -259,7 +259,12 @@ def SegPostProc(args):
         log = SegmentPostProc(args)
         return log
     else: return WarningLog("skipped segPostProc task")
-
+# def CalculateDistances(args):
+#     if args.CalcDistance:
+#         print(ProcLog("calculing distance between vehicles and intersection"))
+#         log= calculate_distance(args)
+#         return log
+#     else: return  WarningLog("skipped calc distance subtask")
 def VisSegment(args):
     if args.VisSegment:
         print(ProcLog("visulaize segmentation masks"))
@@ -487,7 +492,7 @@ def get_parser():
     parser.add_argument("--NumWorkers", help="number of workers for dataloader", type=int)
     parser.add_argument("--Epochs", help="number of epochs", type=int)
     parser.add_argument("--ValInterval", help="frequency of validation step(every x epochs)", type=int)
-
+    parser.add_argument("--CalcDistance", help="Calculate distance from tracking result to intersection", action="store_true")
     parser.add_argument("--SAHI", help="run detection with SAHI", action='store_true')
     parser.add_argument("--SahiPatchSize", help="patch size of sahi", type=int, default=640)
     parser.add_argument("--SahiPatchOverlapRatio", help="overlap ration of sahi patches", type=float, default=0.25)
