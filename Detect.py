@@ -125,8 +125,10 @@ def visdetect_3d(args):
         ret, frame = cap.read()
         if not ret: continue
         for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
-            
+            # draw 3D box
             frame = draw_3Dbox_on_image(frame, row)
+            # draw 2D box
+            frame = draw_box_on_image(frame, row.x2D1, row.y2D1, row.x2D2, row.y2D2, c=(0, 0, 255))
             
         out_cap.write (frame)
     cap.release()
