@@ -1,8 +1,6 @@
 # Author: Sajjad P. Savaoji April 27 2022
 # This py file contains some helper functions for the pipeline
-
 from Libs import *
-
 moi_color_dict = {
     0:(0, 0, 0),
     1:(128, 0, 0),
@@ -310,12 +308,12 @@ def get_dsm_points_path(args):
 def get_intrinsics_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "intrinsic_calibrations" + Puncuations.Dot + "json")
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "intrinsic_calibration" + Puncuations.Dot + "json")
 
 def get_extrinsics_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "extrinsic_calibrations" + Puncuations.Dot + "json")
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "extrinsic_calibration" + Puncuations.Dot + "json")
 
 def get_orthophoto_tif_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -460,10 +458,13 @@ def add_homography_related_path_to_args(args):
 
     return args
 
+def add_calibration_related_path_to_args(args):
+    args.INTRINSICS_PATH = get_intrinsics_path(args)
+    args.EXTRINSICS_PATH = get_extrinsics_path(args)
+    return args
+
 def add_dsm_related_path_to_args(args):
     args.DSM_POINTS_PATH        = get_dsm_points_path(args)
-    args.INTRINSICS_PATH        = get_intrinsics_path(args)
-    args.EXTRINSICS_PATH        = get_extrinsics_path(args)
     args.ToGroundCorrespondance = get_to_ground_correspondance_path(args)
     args.ToGroundRaster         = get_to_ground_raster_path(args)
     args.OrthoPhotoTif          = get_orthophoto_tif_path(args)
@@ -491,6 +492,52 @@ def add_metadata_to_args(args):
     with open(meta_path) as f:
         args.MetaData = json.load(f)
     return args
+
+def add_correct_roi_to_args(args):
+    import Homography
+    if not args.ROIFromTop: return args
+    M, GroundRaster, orthophoto_win_tif_obj = get_projection_objs(args)
+    if args.TopView == "GoogleMap":
+        ref_roi = args.MetaData["GoogleMapROI"]
+    elif args.TopView == "OrthoPhoto":
+        ref_roi = args.MetaData["OrthoPhotoROI"]
+    else: raise NotImplementedError
+
+    projected_roi = []
+    for x, y in ref_roi:
+        cor_img = Homography.project_point(args, x, y, args.BackprojectionMethod,
+                                M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
+        x_img, y_img = int(cor_img[0]), int(cor_img[1])
+        projected_roi.append([x_img, y_img])
+    
+    # overwrite roi
+    args.MetaData["roi"] = projected_roi
+    return args
+
+def get_projection_objs(args):
+    import DSM
+    method = args.BackprojectionMethod
+    M = None
+    GroundRaster = None
+    orthophoto_win_tif_obj = None
+
+    if method == "Homography":
+        homography_path = args.HomographyNPY
+        M = np.load(homography_path, allow_pickle=True)[0]
+
+    elif method == "DSM":
+        # load OrthophotoTiffile
+        orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
+        # creat/load raster
+        if not os.path.exists(args.ToGroundRaster):
+            coords = DSM.load_dsm_points(args)
+            intrinsic_dict = DSM.load_json_file(args.INTRINSICS_PATH)
+            projection_dict = DSM.load_json_file(args.EXTRINSICS_PATH)
+            DSM.create_raster(args, args.MetaData["camera"], coords, projection_dict, intrinsic_dict)
+        
+        with open(args.ToGroundRaster, 'rb') as f:
+            GroundRaster = DSM.pickle.load(f)
+    return M, GroundRaster, orthophoto_win_tif_obj
 
 def add_plot_all_traj_pth_to_args(args):
     path = get_plot_all_traj_path(args)
@@ -572,10 +619,23 @@ def add_cached_counter_path_to_args(args):
         cached_path = get_counter_cached_path(args)
         args.CachedCounterPth = cached_path
     elif args.UseCachedCounter:
-        chached_args = copy.deepcopy(args)
+        import main
+        parser = main.get_parser()
+        chached_args = parser.parse_args()
         chached_args.Dataset = args.CachedCounterPth
-        cached_path = get_counter_cached_path(chached_args)
-        args.CachedCounterPth = cached_path
+        chached_args.CachedCounterPth = None
+
+        if args.MultiCam:
+            chached_args, _       = get_args_mc(chached_args)
+        elif args.MultiSeg:
+            chached_args, _, _    = get_args_ms(chached_args)
+        elif args.MultiPart:
+            chached_args, _, _, _ = get_args_mp(chached_args)
+        else:
+            chached_args = get_args(chached_args)
+
+        args.CachedCounterPth = chached_args.CachedCounterPth
+
     return args
 
 def add_density_path_to_args(args):
@@ -607,6 +667,21 @@ def add_vis_segment_path_to_args(args):
     args.VisSegmentPath = get_vis_segment_path(args)
     return args
 
+def get_opt_bw_image(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "OptBW.Image" + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +f"{args.OSR}"+ Puncuations.Dot +f"{args.ResampleTH}" +Puncuations.Dot + "png")
+
+def get_opt_bw_ground(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "OptBW.GP" + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +f"{args.OSR}"+ Puncuations.Dot +f"{args.ResampleTH}"+ Puncuations.Dot+ args.BackprojectionMethod + Puncuations.Dot + args.TopView + Puncuations.Dot + args.ContactPoint+ Puncuations.Dot +"png")
+
+def add_opt_bw_path(args):
+    args.OptBWImage = get_opt_bw_image(args)
+    args.OptBWGround = get_opt_bw_ground(args)
+    return args
+
 def get_GT_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -617,6 +692,13 @@ def get_3DGT_path(args):
     file_name = file_name.split("/")[-1]
     gt_path = os.path.join(args.Dataset, file_name+".gt3d.json")
     return gt_path
+
+def get_GT_json_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    gt_path = os.path.join(args.Dataset, file_name+".gt.json")
+    return gt_path
+    
 
 def get_detections_mask_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -635,13 +717,15 @@ def add_GT_path_to_args(args):
     args.GT = get_GT_path(args)
     return args
 
-
 def add_3DGT_path_to_args(args):
-    args.GT3D= get_3DGT_path(args)
+    args.GT3D = get_3DGT_path(args)
     # args.INTRINSICS_PATH        = get_intrinsics_path(args)
     # args.EXTRINSICS_PATH        = get_extrinsics_path(args)    
     return args
 
+def add_GT_Json_path_to_args(args):
+    args.GTJson=get_GT_json_path(args)
+    return args
 def get_extracted_image_dir(args):
      return os.path.join(args.Dataset, "Results/Images/")
 
@@ -754,8 +838,19 @@ def get_args_gt(args):
     # args.GTTracker="GTHW7"
     args_gt.Tracker = args.GTTracker
     args_gt.Video=None
+    args_gt.ContactPoint = args_gt.GTContactPoint
     args_gt=complete_args(args_gt)
     return get_args(args_gt)
+
+def get_args_gt3D(args):
+    args_gt3D = copy.deepcopy(args)
+    args_gt3D.Detector = args.GTDetector3D
+    args_gt3D.DetectorVersion = ""
+    args_gt3D.Tracker = args.GTTracker3D
+    args_gt3D.Video=None
+    args_gt3D.ContactPoint = args_gt3D.GT3DContactPoint
+    args_gt3D=complete_args(args_gt3D)
+    return get_args(args_gt3D)
 
 def get_args_mc(args):
     args_mc = get_sub_args(args)
@@ -764,8 +859,12 @@ def get_args_mc(args):
         args_mc[i] = arg_c
 
     args.Video = args.Dataset
+    args.ROIFromTop = False
     args = get_args(args)
     args = complete_args_mc(args)
+    args.MetaData = args_mc[0].MetaData
+    args.HomographyNPY = args_mc[0].HomographyNPY
+    args.HomographyTopView = args_mc[0].HomographyTopView
 
     return args, args_mc
 
@@ -778,8 +877,12 @@ def get_args_ms(args):
         args_mcs.append(arg_s_mc)
 
     args.Video = args.Dataset
+    args.ROIFromTop = False
     args = get_args(args)
     args = complete_args_ms(args)
+    args.MetaData  = args_ms[0].MetaData
+    args.HomographyNPY = args_ms[0].HomographyNPY
+    args.HomographyTopView = args_ms[0].HomographyTopView
 
     return args, args_ms, args_mcs
 
@@ -794,8 +897,12 @@ def get_args_mp(args):
         args_mcs.append(arg_m_mcs)
 
     args.Video = args.Dataset
+    args.ROIFromTop = False
     args = get_args(args)
     args = complete_args_mp(args)
+    args.MetaData = args_mp[0].MetaData
+    args.HomographyNPY = args_mp[0].HomographyNPY
+    args.HomographyTopView = args_mp[0].HomographyTopView
 
     return args, args_mp, args_mss, args_mcs
 
@@ -839,51 +946,83 @@ def complete_args(args):
     except:
         pass
 
-    args = add_GT_path_to_args(args)
-    args= add_3DGT_path_to_args(args)
+    try:
+        args = add_calibration_related_path_to_args(args)
+    except:
+        pass
 
+    args = add_GT_path_to_args(args)
+    args = add_3DGT_path_to_args(args)
+    args = add_GT_Json_path_to_args(args)
     args = add_images_folder_to_args(args)
 
     args = add_check_points_path_to_args(args)
 
-    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or args.TrackPostProc or args.Count or args.VisROI or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop:
+    if args.HomographyGUI or args.Homography or args.VisHomographyGUI or\
+        args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or\
+        args.TrackPostProc or args.Count or args.VisROI or args.Meter or\
+        args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or\
+        args.EvalCount or args.TrackEval or args.DetPostProc or args.IntegrateCountsMC or\
+        args.EvalCountMSfromMC:
         args = add_homographygui_related_path_to_args(args)
-    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop:
+
+    if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or\
+        args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or\
+        args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop or\
+        args.EvalCount or args.TrackEval or args.EvalContactPoitnSelection or args.DetPostProc or\
+        args.IntegrateCountsMC or args.EvalCountMSfromMC:
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
+
     if args.VisHomographyGUI or args.VisLabelledTrajectories or args.Meter or args.FindOptimalKDEBW:
         args = add_vishomography_path_to_args(args)
-    if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter or args.ExtractCommonTracks or args.Count:
+
+    if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter or\
+        args.ExtractCommonTracks or args.Count or args.EvalCount:
         args = add_tracklabelling_export_to_args(args)
+
     if args.VisTrajectories:
         args = add_plot_all_traj_pth_to_args(args)
+
     if args.VisLabelledTrajectories:
         args = add_vis_labelled_tracks_pth_to_args(args)
-    if args.Meter or args.Count or args.Cluster or args.TrackPostProc or args.FindOptimalKDEBW:
+
+    if args.Meter or args.Count or args.Cluster or args.TrackPostProc or args.FindOptimalKDEBW or\
+        args.EvalCount:
         args = add_meter_path_to_args(args)
-    if args.Count or args.VisTrackMoI or args.AverageCountsMC:
+
+    if args.Count or args.VisTrackMoI or args.AverageCountsMC or\
+         args.EvalCount or args.IntegrateCountsMC or args.EvalCountMSfromMC or args.EvalCountMC:
         args = add_count_path_to_args(args)
+
     if args.Cluster or args.TrackLabelingGUI:
         args = add_clustering_related_pth_to_args(args)
+
     if args.VisROI:
         args = add_visroi_path_to_args(args)
+
     if args.VisTrackMoI:
         args = add_vis_tracking_moi_path_to_args(args)
-    if args.Count:
+
+    if args.Count or args.EvalCount:
         args = add_cached_counter_path_to_args(args)
         args = add_density_path_to_args(args)
+        
     if args.Segment or args.SegPostProc or args.Homography:
         args = add_segmentation_path_to_args(args)
         args = add_vis_segment_path_to_args(args)
     if args.MaskDetections:
         args=add_detection_mask_path_to_args(args)
+    if args.FindOptimalKDEBW:
+        args = add_opt_bw_path(args)
+
+    args = add_correct_roi_to_args(args)
     args = revert_args_with_params(args)
     return args
 
 def complete_args_mc(args):
-    if args.AverageCountsMC or args.EvalCountMC:
-        args = add_count_path_to_args(args)
-
+    # if args.AverageCountsMC or args.EvalCountMC:
+    #     args = add_count_path_to_args(args)
     return args
 
 def complete_args_ms(args):
@@ -1073,15 +1212,15 @@ def ptcos_dist(traj_a, traj_b):
     return tc_dist(traj_a, traj_b) * minvc_dist(traj_a, traj_b)
 
 def hausdorff_directed(traj_a, traj_b, dist_func = lambda va, vb: np.linalg.norm(va-vb)):
-    max_dist = float('-inf')
-    for va in traj_a:
-        min_dist = float('inf')
-        for vb in traj_b:
-            dist_vavb = dist_func(va, vb)
-            if dist_vavb < min_dist:
-                min_dist = dist_vavb
-        if min_dist > max_dist:
-            max_dist = min_dist
+    diffs = traj_a[:, np.newaxis, :] - traj_b[np.newaxis, :, :]
+    # Compute the squared distances
+    squared_diffs = diffs ** 2
+    # Sum the squared differences across the columns to get squared distances
+    squared_distances = np.sum(squared_diffs, axis=2)
+    # Take the square root to get the Euclidean distances
+    D = np.sqrt(squared_distances)
+    mins = np.min(D, axis = 1)
+    max_dist = np.max(mins)
     return max_dist
             
 def hausdorff_dist(traj_a, traj_b):

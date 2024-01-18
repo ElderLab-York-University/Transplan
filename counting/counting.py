@@ -59,6 +59,25 @@ color_dict = moi_color_dict
 #     df = pd.DataFrame(data)
 #     return df
 
+def over_sample(traj, osr):
+    # oversample a downsampled trajectory to fill in gaps
+    osr_traj = []
+    tot_ps_to_add = len(traj) * osr
+    # compute arch length of traj
+    t1 = np.array(traj[1:])
+    t2 = np.array(traj[:-1])
+    distances = np.linalg.norm(t1 - t2, axis=1)
+    arc = np.sum(distances)
+    num_points = distances / arc * tot_ps_to_add
+
+    for i in range(1, len(traj)):
+        p1, p2 = traj[i-1], traj[i]
+        for r in np.linspace(0, 1, num=int(num_points[i-1]+1)):
+            p_temp = (1-r)*p1 + r*p2
+            x, y = p_temp
+            osr_traj.append([x, y])
+    osr_traj.append(traj[-1])
+    return np.array(osr_traj)
 
 def my_viz_CMM(current_track, img, alpha=0.3, matched_id=0, track_id=-1):
 
@@ -91,7 +110,7 @@ def my_viz_CMM(current_track, img, alpha=0.3, matched_id=0, track_id=-1):
     plt.savefig(f"sample_track_moi{matched_id}_id{track_id}.png")
 
 
-def group_tracks_by_id(df, gp):
+def group_tracks_by_id(df, gp, verbose=True):
     # this function was writtern for grouping the tracks with the same id
     # usinig this one can load the data from a .txt file rather than .mat file
     # if gp choose backprojected points[x, y]
@@ -103,7 +122,7 @@ def group_tracks_by_id(df, gp):
 
     all_ids = np.unique(df['id'].to_numpy(dtype=np.int64))
     data = {"id":[], "trajectory":[], "frames":[]}
-    for idd in tqdm(all_ids):
+    for idd in tqdm(all_ids, disable=not verbose):
         frames = df[df['id']==idd]["fn"].to_numpy(np.float32)
         id = idd
         trajectory = df[df['id']==idd][traj_fields].to_numpy(np.float32)
@@ -132,24 +151,25 @@ def interpolate_traj(traj, frames):
 
     return int_traj, int_frames
 
-
-# you should optimize the bw for image as well @TODO
-def find_opt_bw(args):
-    osr = 10
+def find_opt_bw_of_surf(args, gp):
+    osr = args.OSR
     tracks_path = args.ReprojectedPkl
     tracks_meter_path = args.ReprojectedPklMeter
-    top_image = args.HomographyTopView
+    if gp:
+        top_image = args.HomographyTopView
+    else:
+        top_image = args.HomographyStreetView
     meta_data = args.MetaData # dict is already loaded
-    HomographyNPY = args.HomographyNPY
+    # HomographyNPY = args.HomographyNPY @Del
 
     # load data
-    tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
-    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
+    tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=gp)
+    tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=gp)
     # resample gp tracks
     tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
     tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
     img = plt.imread(top_image)
-    img1 = cv.imread(top_image)
+    # img1 = cv.imread(top_image) @Del
 
     # make data ready for kde training
     kde_data = []
@@ -174,20 +194,16 @@ def find_opt_bw(args):
 
     kde_data = np.array(kde_data)
 
-    #shuffle data
-    np.random.seed(1234)
-    # np.random.shuffle(kde_data)
-
+    # our data is repatative in time, temporal split
     split_idx = int(len(kde_data) * 0.5)
     
-    # 80 percent train and 20 percent test
+    # 50 percent train and 50 percent test
     kde_data_train = kde_data[:split_idx]
     kde_data_test  = kde_data[split_idx:]
     
     # use optimized 2D KDE
-    h_range = np.linspace(1, 5, 100)
-
-
+    max_d = np.max(img.shape)
+    h_range = np.linspace(1, int(max_d * 0.01), 100)
     scores = []
     for h in tqdm(h_range):
         kde = KDE2D()
@@ -196,13 +212,25 @@ def find_opt_bw(args):
 
     scores = np.array(scores)
 
-    plt.plot(h_range, scores)
-    plt.xlabel('Bandwidth h (pixels)')
+    plt.plot(h_range, scores, color="black")
+    plt.xlabel('Bandwidth [pixels]')
     plt.ylabel('log likelihood')
-    plt.savefig("sweep_h.png")
-
     h_opt = h_range[np.argmax(scores)]
+    plt.plot(h_opt,np.max(scores),marker='*', color="red")
+
+    plt.plot([h_opt, h_opt], [np.min(scores), np.max(scores)], color="red", linestyle="dashed")
+    plt.plot([np.min(h_range), h_opt], [np.max(scores), np.max(scores)], color="red", linestyle="dashed")
+    if gp:
+        plt.savefig(args.OptBWGround)
+    else:
+        plt.savefig(args.OptBWImage)
+
     return h_opt
+
+def find_opt_bw(args):
+    h_opt_ground = find_opt_bw_of_surf(args, True)
+    h_opt_image  = find_opt_bw_of_surf(args, False)
+    return h_opt_ground, h_opt_image
 
 class KDE2D(object):
     def __init__(self):
@@ -210,7 +238,7 @@ class KDE2D(object):
         self.im = None
         self.eps = 1e-20
 
-    def fit(self, data, im, h=3.4):
+    def fit(self, data, im, h):
         # Fit KDE model to 2D data points and plots results, overlaid on image im.
         # Input:
         # data: Nx2 data matrix
@@ -224,19 +252,26 @@ class KDE2D(object):
         # note reversal of x and y
         #
         # datamap[data[:,1].astype(int), data[:,0].astype(int)] += 1 ?
+        missed_counts = 0
         for point in data.astype(int):
             try:
                 datamap[point[1],point[0]] += 1
-            except:
-                print(f"datamap shape:{datamap.shape} y:{point[1]} x:{point[0]}")
+            except: #TODO some points are on the edge of image with incorrect coordinates
+                missed_counts += 1
+                pass
+                # print(f"datamap shape:{datamap.shape} y:{point[1]} x:{point[0]}")
 
 
-        self.pmap = self.KDE2D(datamap, h, n)
+        self.pmap = self.KDE2D(datamap, h, n - missed_counts)
 
     def score_samples(self, test_data):
         scores = []
         for test_point in test_data.astype(int):
-            scores.append(np.log(self.pmap[test_point[1], test_point[0]]))
+            try:
+                scores.append(np.log(self.pmap[test_point[1], test_point[0]]))
+            except: #TODO some points are on the edge of image with incorrect coordinates
+                pass
+                # print(f"test_point coordinates: y:{test_point[1]} x:{test_point[0]}")   
         return np.array(scores)
     
     def find_opt_h(self, data, im, h_range = range(5, 55, 5), M=10):
@@ -324,7 +359,7 @@ class KDE2D(object):
 
 class Counting:
     def __init__(self, args, gp):
-        #ground truth labelled trajactories
+        # ground truth labelled trajactories
         # validated tracks with moi labels
         # args.ReprojectedPklMeter
         # args.TrackLabellingExportPthMeter
@@ -340,16 +375,56 @@ class Counting:
         self.args = args
         if self.args.LabelledTrajectories is None:
             print("loaded track labelling from previous path")
-            validated_trakcs_path = self.args.TrackLabellingExportPthMeter
+            validated_trakcs_path = self.args.TrackLabellingExportPth
+            validated_tracks_path_meter = self.args.TrackLabellingExportPthMeter
         else: validated_trakcs_path = self.args.LabelledTrajectories; print("loaded track labelling from external source")
 
         df = pd.read_pickle(validated_trakcs_path)
-        # print(len(df))
-        df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=False, threshold=args.ResampleTH))
+        df_meter = pd.read_pickle(validated_tracks_path_meter)
+        df['index_mask'] = df_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+        df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        df["trajectory"] = df.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
+
+        # create the intersection ROI and filter prototypes and tracks
+        # to be within intersection
+        # create roi polygon
+        method = args.BackprojectionMethod
+        M = None
+        GroundRaster = None
+        orthophoto_win_tif_obj = None
+
+        if method == "Homography":
+            homography_path = args.HomographyNPY
+            M = np.load(homography_path, allow_pickle=True)[0]
+
+        elif method == "DSM":
+            # load OrthophotoTiffile
+            orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
+            # creat/load raster
+            if not os.path.exists(args.ToGroundRaster):
+                coords = DSM.load_dsm_points(args)
+                intrinsic_dict = DSM.load_json_file(args.INTRINSICS_PATH)
+                projection_dict = DSM.load_json_file(args.EXTRINSICS_PATH)
+                DSM.create_raster(args, args.MetaData["camera"], coords, projection_dict, intrinsic_dict)
+            
+            with open(args.ToGroundRaster, 'rb') as f:
+                GroundRaster = DSM.pickle.load(f)
+
+        roi_rep = []
+        for p in args.MetaData["roi"]:
+            x , y = p[0], p[1]
+            new_point = Homography.reproj_point(args, x, y, method,
+                        M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
+            roi_rep.append([new_point[0], new_point[1]])
+
+        self.pg = MyPoly(roi_rep, args.MetaData["roi_group"])
+        self.poly_path = mplPath.Path(np.array(roi_rep))
+
+        # df['trajectory'] = df['trajectory'].apply(lambda x: get_in_roi_points(x, self.poly_path, return_mask=False))
 
         self.typical_mois = defaultdict(list)
         for index, row in df.iterrows():
-            self.typical_mois[row['moi']].append(row["trajectory"])
+            self.typical_mois[row['moi']].append(get_in_roi_points(row["trajectory"], self.poly_path, return_mask=False))
 
     def init_image(self, args):
         self.CountMetric = args.CountMetric
@@ -362,16 +437,25 @@ class Counting:
         else: validated_trakcs_path = self.args.LabelledTrajectories; print("loaded track labelling from external source")
 
         df = pd.read_pickle(validated_trakcs_path)
-        # print(len(df))
-        df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=False, threshold=args.ResampleTH))
+        df['index_mask'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+        df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        df["trajectory"] = df.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
+
+        roi_rep = [p for p in args.MetaData["roi"]]
+        self.pg = MyPoly(roi_rep, args.MetaData["roi_group"])
+        self.poly_path = mplPath.Path(np.array(roi_rep))
+        # df['trajectory'] = df['trajectory'].apply(lambda x: get_in_roi_points(x, self.poly_path, return_mask=False))
 
         self.typical_mois = defaultdict(list)
         for index, row in df.iterrows():
-            self.typical_mois[row['moi']].append(row["trajectory"])
+            self.typical_mois[row['moi']].append(get_in_roi_points(row["trajectory"], self.poly_path, return_mask=False))
     
     def counting(self, current_trajectory, track_id=-1):
-        # counting_start_time = time.time()
-        resampled_trajectory = current_trajectory
+        # only get the points in intersectin ROI
+        resampled_trajectory = get_in_roi_points(current_trajectory, self.poly_path, return_mask=False)
+        # this method of counting should only work for tracks that move in roi
+        if len(resampled_trajectory) <= 1:
+            return -1
         
         min_c = float('inf')
         matched_id = -1
@@ -384,10 +468,13 @@ class Counting:
                 tem.append(c)
                 key.append(keys)
 
-        tem = np.array(tem)
-        key = np.array(key)
-        idxs = np.argpartition(tem, 1)
-        votes = key[idxs[:1]]
+        tem = np.array(tem).reshape(-1,)
+        key = np.array(key).reshape(-1,)
+        if len(tem) > 1:
+            idxs = np.argpartition(tem, 1)
+            votes = key[idxs[:1]]
+        else:
+            votes = key
         matched_id = int(np.argmax(np.bincount(votes)))
 
         if self.args.CountVisPrompt:
@@ -469,7 +556,7 @@ class Counting:
         plt.show()
 
 
-    def main(self, args=None):
+    def main(self, args=None, verbose=True):
         if args is None:
             args = self.args
 
@@ -478,24 +565,29 @@ class Counting:
 
         # file_path to all trajectories .txt file(at the moment
         # ** do not confuse it with selected trajectories
-        file_name = args.ReprojectedPklMeter
+        df_meter = pd.read_pickle(args.ReprojectedPklMeter)
+        df       = pd.read_pickle(args.ReprojectedPkl)
+
         result_paht = args.CountingResPth
-        df_temp = pd.read_pickle(file_name)
 
         # get deffrent trajectory reps depending on if gp or image reasoning
         if self.gp:
-            df = group_tracks_by_id(df_temp, gp=True)
+            df_meter = group_tracks_by_id(df_meter, gp=True, verbose=verbose)
+            df       = group_tracks_by_id(df, gp=True, verbose=verbose)
         else:
-            df = group_tracks_by_id(df_temp, gp=False)
+            df_meter = group_tracks_by_id(df_meter, gp=False, verbose=verbose)
+            df       = group_tracks_by_id(df, gp=False, verbose=verbose)
             
         # resample tracks
-        df['trajectory'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=False, threshold=args.ResampleTH))
+        df['index_mask'] = df_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+        df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        df["trajectory"] = df.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
 
         data = {}
         data['id'], data['moi'] = [], []
         tids = np.unique(df['id'].tolist())
 
-        for idx in tqdm(tids):
+        for idx in tqdm(tids, disable= not verbose):
             current_track = df[df['id'] == idx]
             a = current_track['trajectory'].values.tolist()
             matched_moi = self.counting(a[0], track_id=idx)
@@ -504,11 +596,11 @@ class Counting:
 
             counter[matched_moi] += 1
             traject_couter += 1
+        if verbose:
+            for i in range(12):
+                print(f"{i+1}: {counter[i+1]}")
+            print(traject_couter)
 
-        for i in range(12):
-            print(f"{i+1}: {counter[i+1]}")
-        # print(self.counter)
-        print(traject_couter)
         with open(result_paht, "w") as f:
             json.dump(counter, f, indent=2)
 
@@ -550,6 +642,8 @@ class KNNCounting(Counting):
         # resample tracks on gp
         df['index_mask'] = df_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
         df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        df["trajectory"] = df.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
+
 
         # add prototype tracks as KNN data points
         x = []
@@ -583,6 +677,7 @@ class KNNCounting(Counting):
         # resample tracks on gp
         df['index_mask'] = df['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
         df["trajectory"] = df.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+        df["trajectory"] = df.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
 
         # add prototype tracks as KNN data points
         x = []
@@ -632,7 +727,7 @@ class KNNCounting(Counting):
         plt.savefig(vis_path+f"{self.K}NN_TrainSamples.png")
         plt.close("all")
 
-    def main(self, args=None):
+    def main(self, args=None, verbose=True):
         if args is None:
             args = self.args
 
@@ -641,17 +736,19 @@ class KNNCounting(Counting):
         result_paht = args.CountingResPth
 
         if self.gp:
-            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
-            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True, verbose=verbose)
+            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True, verbose=verbose)
             tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
             tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
         else:
-            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=False)
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=False, verbose=verbose)
             tracks['index_mask'] = tracks['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
             tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
 
+        tracks["trajectory"] = tracks.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
+        
         moi = []
-        for i, row in tqdm(tracks.iterrows(), total=len(tracks), desc="knn classifier infer"):
+        for i, row in tqdm(tracks.iterrows(), total=len(tracks), desc="knn classifier infer", disable=not verbose):
             x = [p for p in row.trajectory]
             y = self.knn.predict(x)
             y_star = np.bincount(y).argmax()
@@ -668,13 +765,14 @@ class KNNCounting(Counting):
             counter[moi]  = 0
         for i, row in counted_tracks.iterrows():
                 counter[int(row["moi"])] += 1
-        print(counter)
+        if verbose:        
+            print(counter)
         with open(result_paht, "w") as f:
             json.dump(counter, f, indent=2)
         
 # change IKDE code to propagate bw to 2D KDE instead of hardcoding. this is important for Image Counters @TODO
 class IKDE():
-    def __init__(self, kernel="gaussian", bandwidth=None, os_ratio = 1):
+    def __init__(self, bandwidth, os_ratio, kernel="gaussian"):
         self.kernel = kernel
         self.bw = bandwidth
         self.osr = os_ratio
@@ -729,13 +827,8 @@ class IKDE():
                         x, y = p_temp
                         kde_data.append([x, y])
 
-                #         sequence_data.append(p_temp)
-                # for i , p in enumerate(sequence_data):
-                #     x, y = p
-                #     kde_data.append([x, y])
-
             kde_data = np.array(kde_data)
-            self.kdes[moi].fit(kde_data, img)
+            self.kdes[moi].fit(kde_data, img, self.bw)
 
     def make_inference_maps(self, img, vis_path):
         for moi in tqdm(self.kdes.keys(), desc="estimating inference maps"):
@@ -801,17 +894,8 @@ class IKDE():
                 log_score += infer_map[(x, y)]
             except:
                 pass
-        # add prior to it
-        # log_score += np.log(self.priors[moi])
+
         return log_score
-            
-        ## use this code to compute exact score
-        # traj_data = []
-        # for i in range(len(traj)):
-        #     x, y = traj[i]
-        #     traj_data.append([x, y])
-        # traj_data = np.array(traj_data)
-        # return np.sum(self.kdes[moi].score_samples(traj_data))+ np.log(self.priors[moi])
     
     def predict_traj(self, traj):
         moi_scores = []
@@ -820,45 +904,45 @@ class IKDE():
         max_moi = self.mois[np.argmax(moi_scores)]
         return max_moi
 
-    def predict_tracks(self, tracks):
+    def predict_tracks(self, tracks, verbose=True):
         max_mois = []
-        for i, row in tqdm(tracks.iterrows(), desc="pred moi", total=len(tracks)):
+        for i, row in tqdm(tracks.iterrows(), desc="pred moi", total=len(tracks), disable=not verbose):
             traj = row["trajectory"]
             max_mois.append(self.predict_traj(traj))
         return max_mois
 
-class LOSIKDE(IKDE):
-    def __init__(self, kernel="gaussian", bandwidth=3.2, os_ratio = 2):
-        super().__init__(kernel, bandwidth, os_ratio)
+# class LOSIKDE(IKDE):
+#     def __init__(self, kernel="gaussian", bandwidth=3.2, os_ratio = 2):
+#         super().__init__(kernel, bandwidth, os_ratio)
 
-    def fit(self, tracks):
-        self.mois = np.unique(tracks["moi"])
-        self.kdes = {}
-        for moi in self.mois:
-            self.kdes[moi] = sklearn.neighbors.KernelDensity(kernel=self.kernel, bandwidth=self.bw)
-        for moi in self.mois:
-            kde_data = []
-            sequence_data = []
-            for i, row in tracks[tracks["moi"] == moi].iterrows():
-                traj = row["trajectory"]
-                for i in range(1, len(traj)):
-                    p1, p2 = traj[i-1], traj[i]
-                    for r in np.linspace(0, 1, num=self.osr):
-                        p_temp = (1-r)*p1 + r*p2
-                        sequence_data.append(p_temp)
-                for i , p in enumerate(sequence_data):
-                    x, y = p
-                    kde_data.append([x, y, i/len(sequence_data)])
-            kde_data = np.array(kde_data)
-            self.kdes[moi].fit(kde_data)
+#     def fit(self, tracks):
+#         self.mois = np.unique(tracks["moi"])
+#         self.kdes = {}
+#         for moi in self.mois:
+#             self.kdes[moi] = sklearn.neighbors.KernelDensity(kernel=self.kernel, bandwidth=self.bw)
+#         for moi in self.mois:
+#             kde_data = []
+#             sequence_data = []
+#             for i, row in tracks[tracks["moi"] == moi].iterrows():
+#                 traj = row["trajectory"]
+#                 for i in range(1, len(traj)):
+#                     p1, p2 = traj[i-1], traj[i]
+#                     for r in np.linspace(0, 1, num=self.osr):
+#                         p_temp = (1-r)*p1 + r*p2
+#                         sequence_data.append(p_temp)
+#                 for i , p in enumerate(sequence_data):
+#                     x, y = p
+#                     kde_data.append([x, y, i/len(sequence_data)])
+#             kde_data = np.array(kde_data)
+#             self.kdes[moi].fit(kde_data)
 
-    def get_traj_score(self, traj, moi):
-        traj_data = []
-        for i in range(len(traj)):
-            x, y = traj[i]
-            traj_data.append([x, y, i/len(traj)])
-        traj_data = np.array(traj_data)
-        return np.sum(self.kdes[moi].score_samples(traj_data))
+#     def get_traj_score(self, traj, moi):
+#         traj_data = []
+#         for i in range(len(traj)):
+#             x, y = traj[i]
+#             traj_data.append([x, y, i/len(traj)])
+#         traj_data = np.array(traj_data)
+#         return np.sum(self.kdes[moi].score_samples(traj_data))
 
 class HMMG():
     def __init__(self, n_components=5):
@@ -895,6 +979,7 @@ class HMMG():
             max_mois.append(self.predict_traj(traj))
         return max_mois
 
+
 class KDECounting(Counting):
     def __init__(self, args, gp):
 
@@ -929,11 +1014,9 @@ class KDECounting(Counting):
         # tracks["frames"] = os_frames
             
         if self.args.CountMetric == "kde":
-            self.ikde = IKDE()
+            self.ikde = IKDE(self.args.KDEBW, self.args.OSR)
         elif self.args.CountMetric == "gkde":
-            self.ikde = IKDE()
-        elif self.args.CountMetric == "loskde":
-            self.ikde = LOSIKDE()
+            self.ikde = IKDE(self.args.KDEBW, self.args.OSR)
         elif self.args.CountMetric == "hmmg":
             self.ikde = HMMG()
         else: raise "it should not happen"
@@ -946,7 +1029,7 @@ class KDECounting(Counting):
         # delete original kde for each moi to free up space when you are caching object
         self.ikde.del_kdes()
 
-    def main(self, args=None):
+    def main(self, args=None, verbose=True):
         # where the counting happens
         if args is not None:
             self.args = args
@@ -961,8 +1044,8 @@ class KDECounting(Counting):
         # load data
         M = np.load(HomographyNPY, allow_pickle=True)[0]
         if self.gp:
-            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
-            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True,  verbose=verbose)
+            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True, verbose=verbose)
             tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
             img = plt.imread(top_image)
             img1 = cv.imread(top_image)
@@ -974,7 +1057,8 @@ class KDECounting(Counting):
 
         # resample gp tracks
         tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
-        tracks["moi"] = self.ikde.predict_tracks(tracks)
+        tracks["trajectory"] = tracks.apply(lambda x: over_sample(x.trajectory, self.args.OSR), axis=1)
+        tracks["moi"] = self.ikde.predict_tracks(tracks, verbose=verbose)
 
         counted_tracks  = tracks[["id", "moi"]]
         counted_tracks.to_csv(args.CountingIdMatchPth, index=False)
@@ -984,11 +1068,10 @@ class KDECounting(Counting):
             counter[moi]  = 0
         for i, row in counted_tracks.iterrows():
                 counter[int(row["moi"])] += 1
-        print(counter)
+        if verbose:
+            print(counter)
         with open(result_paht, "w") as f:
             json.dump(counter, f, indent=2)
-
-        print("right before count vis prompt")
 
         # get roi on groundpalane
         if self.gp:
@@ -1068,6 +1151,42 @@ class KDECounting(Counting):
         print(len(current_track))
         print(current_track)
 
+class KDECountingMulti(KDECounting):
+    def __init__(self, args, args_mcs, gp):
+        assert gp == True
+        self.gp = gp
+        if gp:
+            self.img_path = args.HomographyTopView
+        else:
+            raise NotImplementedError
+        self.init(args, args_mcs, verbose=False)
+
+    def init(self, args, args_mcs, verbose=True):
+        self.args = args
+        tracks = get_proper_tracks_multi(args_mcs, gp = self.gp, verbose=verbose)
+        # cluster prop_tracks based on their starting point
+        tracks = cluster_prop_tracks_based_on_str(tracks, self.args)
+
+        # resample on the ground plane but not in meter
+        tracks["trajectory"] = tracks.apply(lambda x: x['trajectory'][x["index_mask"]], axis=1)
+        tracks["frames"] = tracks.apply(lambda x: x['frames'][x["index_mask"]], axis=1)
+
+        if self.args.CountMetric == "kde":
+            raise NotImplementedError
+            # it only supports ground plane counting
+        elif self.args.CountMetric == "gkde":
+            self.ikde = IKDE(self.args.KDEBW, self.args.OSR)
+
+        else: raise "it should not happen. undefined counter metric"
+
+        img = cv.imread(self.img_path)
+        self.ikde.fit(tracks, img)
+        self.ikde.make_inference_maps(img, args.DensityVisPath)
+        if args.CountVisDensity:
+            self.ikde.plot_densities(img, args.DensityVisPath)
+        # delete original kde for each moi to free up space when you are caching object
+        self.ikde.del_kdes()
+
 class ROICounting(KDECounting):
     def __init__(self, args, gp):
         self.gp = gp
@@ -1076,23 +1195,49 @@ class ROICounting(KDECounting):
         else:
             self.init_image(args)
 
+
     def init_gp(self, args):
         self.args = args
         # load ROI 
         meta_data = args.MetaData # dict is already loaded
-        HomographyNPY = args.HomographyNPY
-        self.M = np.load(HomographyNPY, allow_pickle=True)[0]
+        # HomographyNPY = args.HomographyNPY
+        # self.M = np.load(HomographyNPY, allow_pickle=True)[0]
         roi_rep = []
+        # create roi polygon according to backproj method
+        method = args.BackprojectionMethod
+        M = None
+        GroundRaster = None
+        orthophoto_win_tif_obj = None
+
+        if method == "Homography":
+            homography_path = args.HomographyNPY
+            M = np.load(homography_path, allow_pickle=True)[0]
+
+        elif method == "DSM":
+            # load OrthophotoTiffile
+            orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
+            # creat/load raster
+            if not os.path.exists(args.ToGroundRaster):
+                coords = DSM.load_dsm_points(args)
+                intrinsic_dict = DSM.load_json_file(args.INTRINSICS_PATH)
+                projection_dict = DSM.load_json_file(args.EXTRINSICS_PATH)
+                DSM.create_raster(args, args.MetaData["camera"], coords, projection_dict, intrinsic_dict)
+            
+            with open(args.ToGroundRaster, 'rb') as f:
+                GroundRaster = DSM.pickle.load(f)
 
         for p in args.MetaData["roi"]:
-            point = np.array([p[0], p[1], 1])
-            new_point = self.M.dot(point)
-            new_point /= new_point[2]
+            x , y = p[0], p[1]
+            new_point = Homography.reproj_point(args, x, y, method,
+                        M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
             roi_rep.append([new_point[0], new_point[1]])
 
         self.pg = MyPoly(roi_rep, args.MetaData["roi_group"])
         self.poly_path = mplPath.Path(np.array(roi_rep))
         self.th = self.args.MetaData["roi_percent"] * np.sqrt(self.pg.area)
+        self.M = M
+        self.GroundRaster = GroundRaster
+        self.orthophoto_win_tif_obj = orthophoto_win_tif_obj
 
     def init_image(self, args):
         self.args = args
@@ -1108,7 +1253,7 @@ class ROICounting(KDECounting):
         self.poly_path = mplPath.Path(np.array(roi_rep))
         self.th = self.args.MetaData["roi_percent"] * np.sqrt(self.pg.area)
 
-    def main(self, args=None):
+    def main(self, args=None, verbose=True):
         if args is None:
             args = self.args
         pg = self.pg
@@ -1117,8 +1262,8 @@ class ROICounting(KDECounting):
         result_paht = args.CountingResPth
 
         if self.gp:
-            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
-            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True, verbose=verbose)
+            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True, verbose=verbose)
             tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
             tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
         else:
@@ -1130,30 +1275,71 @@ class ROICounting(KDECounting):
         i_strs = []
         i_ends = []
         moi = []
-        for i, row in tqdm(tracks.iterrows(), total=len(tracks)):
+        for i, row in tqdm(tracks.iterrows(), total=len(tracks), disable=not verbose):
             traj = row["trajectory"]
 
-            if Track.just_enter_roi(self.pg, traj, self.th, self.poly_path):
-                int_indxes = pg.doIntersect(traj, ret_points=False)
-                i_str = int_indxes[0]
+            if Track.within_roi(self.pg, traj, self.th, self.poly_path):
                 d_end, i_end = pg.distance(traj[-1])
-
-            elif Track.just_exit_roi(self.pg, traj, self.th, self.poly_path):
-                int_indxes = pg.doIntersect(traj, ret_points=False)
-                i_end = int_indxes[-1]
-                d_str, i_str = pg.distance(traj[0])
-
-            elif Track.within_roi(self.pg, traj, self.th, self.poly_path):
-                d_str, i_str = pg.distance(traj[0])
-                d_end, i_end = pg.distance(traj[-1])
+                # need to find the closest edge to track start
+                # the edge should be different from ending edge
+                ds_str, is_str = pg.all_distances(traj[0])
+                paired_sorted = sorted(zip(ds_str, is_str))
+                ds_sorted, is_reorganized = zip(*paired_sorted)
+                ds_sorted = list(ds_sorted)
+                is_reorganized = list(is_reorganized)
+                for d_s, i_s in zip(ds_sorted, is_reorganized):
+                    if not i_s == i_end:
+                        d_str, i_str = d_s, i_s
 
             elif Track.cross_roi_multiple(self.pg, traj, self.th, self.poly_path):
                 int_indxes = pg.doIntersect(traj, ret_points=False)
                 i_str , i_end = int_indxes[0], int_indxes[-1]
 
+            elif Track.just_enter_roi(self.pg, traj, self.th, self.poly_path):
+                int_indxes = pg.doIntersect(traj, ret_points=False)
+                i_str = int_indxes[0]
+
+                # find the edge closest to end of track
+                # it can not be the edge we had for track beginning
+                # Pair the elements of a and b, and sort the pairs based on elements of a
+                # Unzip the pairs back into two lists
+                # Convert the tuples back to lists if needed
+                ds_end , is_end = pg.all_distances(traj[-1])
+                paired_sorted = sorted(zip(ds_end, is_end))
+                ds_sorted, is_reorganized = zip(*paired_sorted)
+                ds_sorted = list(ds_sorted)
+                is_reorganized = list(is_reorganized)
+                for d_e, i_e in zip(ds_sorted, is_reorganized):
+                    if not i_e == i_str:
+                        d_end, i_end = d_e, i_e
+
+            elif Track.just_exit_roi(self.pg, traj, self.th, self.poly_path):
+                int_indxes = pg.doIntersect(traj, ret_points=False)
+                i_end = int_indxes[-1]
+
+                # need to find the closest edge to track start
+                # the edge should be different from ending edge
+                ds_str, is_str = pg.all_distances(traj[0])
+                paired_sorted = sorted(zip(ds_str, is_str))
+                ds_sorted, is_reorganized = zip(*paired_sorted)
+                ds_sorted = list(ds_sorted)
+                is_reorganized = list(is_reorganized)
+                for d_s, i_s in zip(ds_sorted, is_reorganized):
+                    if not i_s == i_end:
+                        d_str, i_str = d_s, i_s
+
             else:
-                d_str, i_str = pg.distance(traj[0])
                 d_end, i_end = pg.distance(traj[-1])
+                # need to find the closest edge to track start
+                # the edge should be different from ending edge
+                ds_str, is_str = pg.all_distances(traj[0])
+                paired_sorted = sorted(zip(ds_str, is_str))
+                ds_sorted, is_reorganized = zip(*paired_sorted)
+                ds_sorted = list(ds_sorted)
+                is_reorganized = list(is_reorganized)
+                for d_s, i_s in zip(ds_sorted, is_reorganized):
+                    if not i_s == i_end:
+                        d_str, i_str = d_s, i_s
 
             i_strs.append(i_str)
             i_ends.append(i_end)
@@ -1172,7 +1358,8 @@ class ROICounting(KDECounting):
             counter[moi]  = 0
         for i, row in counted_tracks.iterrows():
                 counter[int(row["moi"])] += 1
-        print(counter)
+        if verbose:
+            print(counter)
         with open(result_paht, "w") as f:
             json.dump(counter, f, indent=2)
 
@@ -1190,7 +1377,7 @@ def eval_count(args):
     data = {}
     data["moi"] = [i for i in args.MetaData["gt"].keys()]
     data["gt"] = [args.MetaData["gt"][i] for i in args.MetaData["gt"].keys()]
-    data["estimated"] = [estimated[i] for i in args.MetaData["gt"].keys()]
+    data["estimated"] = [estimated[i] if i in estimated else 0 for i in args.MetaData["gt"].keys()]
     df = pd.DataFrame.from_dict(data)
     df["diff"] = (df["gt"] - df["estimated"]).abs()
     df["err"] = df["diff"]/df["gt"]
@@ -1202,9 +1389,30 @@ def eval_count(args):
     data2["diff"] = [df["diff"].sum()]
     data2["err"] = data2["diff"][0]/data2["gt"][0]
     df2 = pd.DataFrame.from_dict(data2)
-    df = df.append(df2, ignore_index=True)
+    df = pd.concat([df,df2], ignore_index=True)
     df.to_csv(args.CountingStatPth, index=False)
     return SucLog("counts evaluated")
+
+def eval_count_multi(args, args_mcs):
+    # evaluate each video first
+    # to get metrics
+    # then call another function for evaluate on multi args level
+    args_flat = flatten_args(args_mcs)
+    stats = []
+    if args.EvalCount or args.EvalCountMSfromMC:
+        for arg_i in tqdm(args_flat):
+            eval_count(arg_i)
+            stats.append(pd.read_csv(arg_i.CountingStatPth))
+    
+    df_multi = copy.deepcopy(stats[0])
+    cols_to_sum = ["gt", "estimated", "diff"]
+    for stat in stats[1:]:
+        for col in cols_to_sum:
+            df_multi[col] = df_multi[col] + stat[col]
+    df_multi["err"]  = df_multi["diff"]/df_multi["gt"]
+
+    df_multi.to_csv(args.CountingStatPth, index=False)
+    return SucLog("counts Multi evaluated")
 
 def main(args):
     # some relative path form the args
@@ -1243,7 +1451,47 @@ def main(args):
             print(f"counter being saved to {args.CachedCounterPth}")
             pkl.dump(counter, f)
 
-    if args.EvalCount:
-        eval_count(args)
-        return SucLog("counting part executed successfully with stats saved in counting/")
     return SucLog("counting part executed successfully")
+
+def mainMulti(args, args_mcs):
+
+    # will save counters both on args level(eg MS)
+    # and for each subarg(eg videos)
+    # only applicable for ground based counting for now
+    args_flat = flatten_args(args_mcs)
+
+    # check if use cached counter
+    if args.UseCachedCounter:
+        with open(args.CachedCounterPth, "rb") as f:
+            counter = pkl.load(f)
+    else:
+        if args.CountMetric == "gkde":
+            counter = KDECountingMulti(args, args_mcs, gp=True)
+        elif args.CountMetric == "groi":
+            counter = ROICounting(args, gp=True)
+        elif args.CountMetric == "gknn":
+            counter = KNNCounting(args, gp=True)
+        else:
+            if args.CountMetric[0] == "g":
+                counter = Counting(args, gp=True)
+            else:
+                # only supports gournd based counting
+                raise NotImplementedError
+
+    # perfom counting here
+    for arg_i in tqdm(args_flat):
+        counter.main(arg_i, verbose=False)
+
+    # save counter object for later use
+    # save counters both on args level
+    # and on Multi level for later use
+    if args.CacheCounter:
+        with open(args.CachedCounterPth, "wb") as f:
+            print(f"counter being saved to {args.CachedCounterPth}")
+            pkl.dump(counter, f)
+        for arg_i in args_flat:
+            with open(arg_i.CachedCounterPth, "wb") as f:
+                print(f"counter being saved to {arg_i.CachedCounterPth}")
+                pkl.dump(counter, f)
+
+    return SucLog("counting Multi executed successfully")

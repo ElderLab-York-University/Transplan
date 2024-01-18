@@ -67,7 +67,8 @@ def vistrack(args):
     video_path = args.Video
     annotated_video_path = args.VisTrackingPth
     # tracks_path = args.TrackingPth
-
+    if(args.CalcDistance):
+        df, p1s=calculate_distance(args)
     color = (0, 0, 102)
     cap = cv2.VideoCapture(video_path)
     # Check if camera opened successfully
@@ -100,8 +101,84 @@ def vistrack(args):
                 cv2.putText(frame, f'id:', (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
                 cv2.putText(frame, f'{int(bbid)}', (x1 + 60, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 5)
                 cv2.putText(frame, f'{int(bbid)}', (x1 + 60, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (144, 251, 144), 2)
-            out_cap.write(frame)
+                if(args.CalcDistance):
+                    distance=track.distance
+                    p1=p1s[i]
+                    cv2.putText(frame, f'distance:', (x1, y1-40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)   
+                    cv2.putText(frame, f'{int(distance)}', (x1 + 140, y1-40), cv2.FONT_HERSHEY_SIMPLEX, 1, (144, 251, 144), 2)
+                    roi = args.MetaData["roi"]
+                    for i in range(0, len(roi)):
+                        p1 = tuple(roi[i-1])
+                        p2 = tuple(roi[i])
+                        cv2.line(frame, p1, p2, (128, 128, 0), 25)
+                    
+                    # cv.circle(frame, (int(p1.x),int(p1.y)), radius=2, color=color, thickness=3)
+        # alpha = 0.6
+        # M = np.load(args.HomographyNPY, allow_pickle=True)[0]
+        # roi_rep = []
+        # roi = args.MetaData["roi"]
+        # roi_group = args.MetaData["roi_group"]
+        # for p in roi:
+        #     point = np.array([p[0], p[1], 1])
+        #     new_point = M.dot(point)
+        #     new_point /= new_point[2]
+        #     roi_rep.append([int(new_point[0]), int(new_point[1])])
+        # img1=frame.copy()
+        # rows1, cols1, dim1 = frame.shape
+        # poly_path = mplPath.Path(np.array(roi_rep))
+        # for i in range(rows1):
+        #     for j in range(cols1):
+        #         if not poly_path.contains_point([j, i]):
+        #             img1[i][j] = [0, 0, 0]    
+        # frame = cv.addWeighted(img1, alpha, frame, 1 - alpha, 0)
+        
+        out_cap.write(frame)
     return SucLog("track vis successful")
+def meter_per_pixel(center, zoom=19):
+    m_per_p = 156543.03392 * np.cos(center[0] * np.pi / 180) / np.power(2, zoom)
+    return m_per_p
+
+def calculate_distance(args):
+    df = pd.read_pickle(args.ReprojectedPklMeter)  
+    track_df=pd.read_pickle(args.TrackingPkl)
+    video_path = args.Video
+    cap = cv2.VideoCapture(video_path)
+    # Check if camera opened successfully
+    if (cap.isOpened()== False): return FailLog("could not open input video")
+
+    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+    M = np.load(args.HomographyNPY, allow_pickle=True)[0]
+    roi_rep = []
+    roi = args.MetaData["roi"]
+    r = meter_per_pixel(args.MetaData['center'])        
+    for p in roi:
+        point = np.array([p[0], p[1], 1])
+        new_point = M.dot(point)
+        new_point /= new_point[2]
+        roi_rep.append((int(r*new_point[0]), int(r*new_point[1])))
+    poly_path = mplPath.Path(np.array(roi_rep))
+    poly=Polygon(roi_rep)
+    distances=[]
+    p1s=[]
+    for frame_num in tqdm(range(frames)):
+        this_frame_tracks = df[df.fn==(frame_num)]
+        for i, track in this_frame_tracks.iterrows():
+            # plot the bbox + id with colors
+            # bbid, x , y = track.id, int(track.x), int(track.y)
+            pcp=[track.x, track.y]
+            if not poly_path.contains_point(pcp):
+                pcp=SPoint(track.x, track.y)            
+                p1, p2 = nearest_points(poly, pcp)
+                distances.append(pcp.distance(p1))
+                p1s.append(p1)
+            else:
+                distances.append(0)
+                p1s.append(SPoint(0,0))
+                
+    track_df['distance']=distances
+
+    return track_df, p1s
 
 def vistracktop(args):
     df = pd.read_pickle(args.ReprojectedPkl)
@@ -222,6 +299,25 @@ def trackpostproc(args):
         df  = remove_short_tracks(args)
         update_tracking_changes(df, args)
 
+    print(f"starting with {len(np.unique(df['class']))} tracks")
+    print(np.unique(df['class']))
+
+    # unify classes in each track
+    if args.UnifyTrackClass:
+        print("unify classes")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = unify_classes_in_tracks(df, args)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)  
+
+    # filter tracks based on classes
+    if args.classes_to_keep:
+        print("filter classes")
+        print(f"starting with {len(np.unique(df['class']))} classes")
+        df = filter_det_class(df, args)
+        print(f"ending with {len(np.unique(df['class']))} classes")
+        update_tracking_changes(df, args)   
+
     # apply postprocessing on args.TrackingPkl
     if args.MaskROI:
         print("mask ROI")
@@ -251,24 +347,31 @@ def trackpostproc(args):
         print(f"ending with {len(np.unique(df['id']))} tracks")
         update_tracking_changes(df, args)
 
-    if args.SelectEndingInROI:
-        print("select ending in ROI")
-        print(f"starting with {len(np.unique(df['id']))} tracks")
-        df = select_based_on_roi(args, end_in_roi)
-        print(f"ending with {len(np.unique(df['id']))} tracks")
-        update_tracking_changes(df, args)
+    # if args.SelectEndingInROI:
+    #     print("select ending in ROI")
+    #     print(f"starting with {len(np.unique(df['id']))} tracks")
+    #     df = select_based_on_roi(args, end_in_roi)
+    #     print(f"ending with {len(np.unique(df['id']))} tracks")
+    #     update_tracking_changes(df, args)
 
-    if args.SelectBeginInROI:
-        print("select begin in ROI")
-        print(f"starting with {len(np.unique(df['id']))} tracks")
-        df = select_based_on_roi(args, begin_in_roi)
-        print(f"ending with {len(np.unique(df['id']))} tracks")
-        update_tracking_changes(df, args)
+    # if args.SelectBeginInROI:
+    #     print("select begin in ROI")
+    #     print(f"starting with {len(np.unique(df['id']))} tracks")
+    #     df = select_based_on_roi(args, begin_in_roi)
+    #     print(f"ending with {len(np.unique(df['id']))} tracks")
+    #     update_tracking_changes(df, args)
 
     if args.HasPointsInROI:
         print("select tracks that have points inside ROI")
         print(f"starting with {len(np.unique(df['id']))} tracks")
         df = select_based_on_roi(args, has_points_in_roi)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
+
+    if args.MovesInROI:
+        print("select tracks that move at least args.resampleTH in ROI")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = select_based_on_roi(args, moves_in_roi)
         print(f"ending with {len(np.unique(df['id']))} tracks")
         update_tracking_changes(df, args)
 
@@ -313,6 +416,13 @@ def trackpostproc(args):
         df = select_based_on_roi(args, just_exit_or_cross_multi, resample_tracks=True)
         print(f"ending with {len(np.unique(df['id']))} tracks")
         update_tracking_changes(df, args)
+    
+    if args.SelectToBeCounted:
+        print("select tracks to be counted")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = select_based_on_roi(args, to_be_counted, resample_tracks=True)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
 
     if args.Interpolate:
         print("Interpolate Tracks")
@@ -323,31 +433,45 @@ def trackpostproc(args):
 
     return SucLog("track post processing executed with no error")
 
-# def roi_mask_tracks(args):
-#     df_meter_ungrouped = pd.read_pickle(args.ReprojectedPklMeter)
-#     df_reg_ungrouped   = pd.read_pickle(args.ReprojectedPkl)
-#     df_meter = group_tracks_by_id(df_meter_ungrouped)
-#     df_reg   = group_tracks_by_id(df_reg_ungrouped)
-#     main_df = pd.read_pickle(args.TrackingPkl)
 
-#     mask = []
-#     for i , row in main_df.iterrows():
+def unify_classes_in_tracks(df, args):
+    uids = np.unique(df.id)
+    for ui in uids:
+        ui_classes = df.loc[df.id == ui, "class"].to_numpy()
+        ui_classes = ui_classes[ui_classes >= 0]
+        class_major = scipy.stats.mode(ui_classes, keepdims=False)
+        class_major = int(class_major[0])
+        df.loc[df.id == ui, "class"] = class_major
+    return df
 
-def end_in_roi(pg, traj, th, poly_path):
-    d_end, i_end = pg.distance(traj[-1])
-    return d_end <= th
+# TODO seems like these functions were used for ROI with thresholding
+# not the new crossing method
 
-def begin_in_roi(pg, traj, th, poly_path):
-    d_str, i_str = pg.distance(traj[0])
-    return d_str <= th
+def end_in_roi(pg, traj, th, poly_path, *args, **kwargs):
+    p = traj[-1]
+    if poly_path.contains_point(p):
+            return True
+    return False
 
-def has_points_in_roi(pg, traj, th, poly_path):
+def begin_in_roi(pg, traj, th, poly_path, *args, **kwargs):
+    p = traj[0]
+    if poly_path.contains_point(p):
+            return True
+    return False
+
+def moves_in_roi(pg, traj, th, poly_path, *args, **kwargs):
+    in_roi_traj = TrackLabeling.get_in_roi_points(traj, poly_path, return_mask=False)
+    if len(in_roi_traj) > 1:
+        return True
+    return False
+
+def has_points_in_roi(pg, traj, th, poly_path, *args, **kwargs):
     for p in traj:
         if poly_path.contains_point(p):
             return True
     return False
 
-def different_roi_edge(pg, traj, th, poly_path):
+def different_roi_edge(pg, traj, th, poly_path, *args, **kwargs):
     d_end, i_end = pg.distance(traj[-1])
     d_str, i_str = pg.distance(traj[0])
     if d_end<=th and d_str<=th:
@@ -360,7 +484,7 @@ def cross_roi(pg, traj, *args, **kwargs):
         return True
     return False
 
-def just_enter_roi(pg, traj, th, poly_path):
+def just_enter_roi(pg, traj, th, poly_path, *args, **kwargs):
     int_indxes = pg.doIntersect(traj, ret_points=False)
     cross_once = len(int_indxes)==1
     start_in_roi = poly_path.contains_point(traj[0])
@@ -370,7 +494,7 @@ def just_enter_roi(pg, traj, th, poly_path):
     else:
         return False
     
-def just_exit_roi(pg, traj, th, poly_path):
+def just_exit_roi(pg, traj, th, poly_path, *args, **kwargs):
     int_indxes = pg.doIntersect(traj, ret_points=False)
     cross_once = len(int_indxes)==1
     end_in_roi = poly_path.contains_point(traj[-1])
@@ -380,7 +504,7 @@ def just_exit_roi(pg, traj, th, poly_path):
     else:
         return False
     
-def within_roi(pg, traj, th, poly_path):
+def within_roi(pg, traj, th, poly_path, *args, **kwargs):
     int_indxes = pg.doIntersect(traj, ret_points=False)
     dont_cross_roi = len(int_indxes)==0
     start_in_roi = poly_path.contains_point(traj[0])
@@ -396,8 +520,31 @@ def cross_roi_multiple(pg, traj, *args, **kwargs):
         return True
     return False
 
-def just_exit_or_cross_multi(pg, traj, th, poly_path):
+def just_exit_or_cross_multi(pg, traj, th, poly_path, *args, **kwargs):
     if cross_roi_multiple(pg, traj, th, poly_path) or just_exit_roi(pg, traj, th, poly_path):
+        return True
+    else:
+        return False
+    
+def unfinished_track(pg, traj, th, poly_path, *args, **kwargs):
+    last_recorded_frame = kwargs["frames"][-1]
+    last_video_frame    = kwargs["last_frame"]
+    if last_recorded_frame >= last_video_frame - kwargs["UnfinishedTrackFrameTh"]:
+        return True
+    else:
+        return False
+    
+def unstarted_track(pg, traj, th, poly_path, *args, **kwargs):
+    first_recorded_frame  = kwargs["frames"][0]
+    first_video_frame    = 0
+    if first_recorded_frame <= first_video_frame + kwargs["UnfinishedTrackFrameTh"]:
+        return True
+    else:
+        return False
+    
+def to_be_counted(pg, traj, th, poly_path, *args, **kwargs):
+    if cross_roi_multiple(pg, traj, th, poly_path, *args, **kwargs) or\
+       just_enter_roi(pg, traj, th, poly_path, *args, **kwargs):
         return True
     else:
         return False
@@ -452,8 +599,14 @@ def interpolate_tracks(args):
 
     return interpol_df
     
-
 def select_based_on_roi(args, condition, resample_tracks=False):
+    # get last frame number in the video
+    cap = cv2.VideoCapture(args.Video)
+    # Check if camera opened successfully
+    if (cap.isOpened()== False): return FailLog("could not open input video")
+    last_frame  = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) - 1
+    first_frame = int(0)
+
     df = pd.read_pickle(args.TrackingPkl)
 
     tracks_path = args.ReprojectedPkl
@@ -467,7 +620,7 @@ def select_based_on_roi(args, condition, resample_tracks=False):
     tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
     tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
 
-    # create roi polygon
+    # create roi polygon on ground plane
     roi_rep = []
     for p in args.MetaData["roi"]:
         point = np.array([p[0], p[1], 1])
@@ -483,10 +636,14 @@ def select_based_on_roi(args, condition, resample_tracks=False):
     for i, row in tqdm(tracks.iterrows(), total=len(tracks)):
         if resample_tracks:
             traj = row["trajectory"][row["index_mask"]]
+            frames = row.frames[row.index_mask]
         else:
             traj = row["trajectory"]
+            frames = row.frames
 
-        if condition(pg, traj, th, poly_path):
+        if condition(pg, traj, th, poly_path,
+                    frames=frames, first_frame=first_frame,
+                    last_frame=last_frame, UnfinishedTrackFrameTh=args.UnfinishedTrackFrameTh):
             ids_to_keep.append(row["id"])
 
     mask = []

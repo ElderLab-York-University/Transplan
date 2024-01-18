@@ -27,11 +27,12 @@ def pix2meter(args):
     # values should be stored accordingly
     # 1. reprojected tracks: args.ReprojectedPkl -> args.ReprojectedPklMeter
     r = meter_per_pixel(args.MetaData['center'])
-    df = pd.read_pickle(args.ReprojectedPkl)
-    scale_function = lambda x: r*x
-    df['x'] = df['x'].apply(scale_function)
-    df['y'] = df['y'].apply(scale_function)
-    df.to_pickle(args.ReprojectedPklMeter)
+    if os.path.exists(args.ReprojectedPkl):
+        df = pd.read_pickle(args.ReprojectedPkl)
+        scale_function = lambda x: r*x
+        df['x'] = df['x'].apply(scale_function)
+        df['y'] = df['y'].apply(scale_function)
+        df.to_pickle(args.ReprojectedPklMeter)
 
     # 2. labeled trackes: args.TrackLabellingExportPth -> args.TrackLabellingExportPthMeter
     if os.path.exists(args.TrackLabellingExportPth):

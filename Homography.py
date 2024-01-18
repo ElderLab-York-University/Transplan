@@ -92,6 +92,19 @@ def get_mask_with_max_iou(det_row, mask_df, th=0.5):
 
     return mask_df.iloc[max_idx]
 
+def get_det_with_max_iou(det_row, detections_df, th=0.5):
+    # we want to find a match to det_row from detections_df
+    ious = []
+    for i, mask_row in detections_df.iterrows():
+        ious.append(iou(det_row, mask_row))
+    if len(ious) ==0: # no segmentations in mask_df
+        return None
+
+    max_idx = np.array(ious).argmax()
+    if ious[max_idx] < th: # if the best match is not yet good enough
+        return None
+
+    return detections_df.iloc[max_idx]
 
 def find_cp_BottomSeg(det_row, args):
     fn = int(det_row["fn"])
@@ -156,6 +169,12 @@ def get_contact_point(row, args):
         x, y = (row['x2']+row['x1'])/2, row['y2']
         return (x, y)
     
+    elif args.ContactPoint == "BottomPoint3D":
+        # row will have x1-8 and y1-8
+        x = (row.x1 + row.x2 + row.x3 + row.x4)/4
+        y = (row.y1 + row.y2 + row.y3 + row.y4)/4
+        return (x, y)
+    
     elif args.ContactPoint == "Center":
         x, y = (row['x2']+row['x1'])/2, (row['y2']+row['y1'])/2
         return (x, y)
@@ -179,9 +198,26 @@ def reproj_point(args, x, y, method, **kwargs):
     
     else: raise NotImplemented
 
+def project_point(args, x, y, method, **kwargs):
+    if method == "Homography":
+        return project_point_homography(x, y, kwargs["M"])
+        
+    elif method == "DSM":
+        raise NotImplementedError
+        return project_point_dsm(x, y, None, None)
+    
+    else: raise NotImplemented
+
 def reproj_point_homography(x, y, M):
     point = np.array([x, y, 1])
     new_point = M.dot(point)
+    new_point /= new_point[2]
+    return new_point
+
+def project_point_homography(x, y, M):
+    point = np.array([x, y, 1])
+    Minv = np.linalg.inv(M)
+    new_point  = Minv.dot(point)
     new_point /= new_point[2]
     return new_point
 
@@ -193,17 +229,22 @@ def reproj_point_dsm(x, y, img_ground_raster, orthophoto_win_tif_obj):
     # pass (orthophoto_proj_idx[1], orthophoto_proj_idx[0]) to csv.drawMarker
     return (orthophoto_proj_idx[1], orthophoto_proj_idx[0])
 
+def project_point_dsm(x, y, img_ground_raster, orthophoto_win_tif_obj):
+    raise NotImplementedError
+
 def reproject_df(args, df, out_path, method):
     # we will load M and Raster here and pass it on to speed up the projection
     M = None
     GroundRaster = None
-    orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
+    orthophoto_win_tif_obj = None
 
     if method == "Homography":
         homography_path = args.HomographyNPY
         M = np.load(homography_path, allow_pickle=True)[0]
 
     elif method == "DSM":
+        # load OrthophotoTiffile
+        orthophoto_win_tif_obj, __ = DSM.load_orthophoto(args.OrthoPhotoTif)
         # creat/load raster
         if not os.path.exists(args.ToGroundRaster):
             coords = DSM.load_dsm_points(args)
@@ -270,13 +311,20 @@ def store_to_pickle_to_detection(args):
 def reprojected_df_for_detection(args):
     in_path = args.ReprojectedPointsForDetection
     df = pd.read_pickle(args.DetectionPkl)
-    # reprojected df will have all the columns of tracking df 
+    # reprojected df will have all the columns of detection df 
     # with addition of xcp, ycp, x, y
-    # which are contact point coordinates and  backprojected coordinates 
-    points = np.loadtxt(in_path, delimiter=',')
+    # which are contact point coordinates and  backprojected coordinates
+    points = []
+    with open(in_path, "r") as f_in:
+        lines = f_in.readlines()
+    for line in lines:
+        cells = list(map(float, line.split(",")[-4:]))
+        points.append(cells)
+    points = np.array(points)
+    
     data  = {}
     for i, col in enumerate(df.columns):
-        data[col] = points[:, i]
+        data[col] = df[col]
 
     data["y"]   = points[:, -1]
     data["x"]   = points[:, -2]
@@ -337,7 +385,15 @@ def vishomographygui(args):
     ax3.imshow(cv.cvtColor(img12, cv.COLOR_BGR2RGB))
     ax3.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB), alpha=0.3)
     ax3.set_title("camera view reprojected on top view")
-    plt.savefig(save_path)
+    plt.savefig(save_path, bbox_inches='tight')
+
+    plt.close("all")
+    # save projected pixels seperately. 
+    projection_save_path = save_path[:-3] + "allpix.png"
+    plt.imshow(cv.cvtColor(img12, cv.COLOR_BGR2RGB))
+    plt.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB), alpha=0.3)
+    plt.axis("off")
+    plt.savefig(projection_save_path, bbox_inches='tight')
 
     return SucLog("Vis Homography executed successfully") 
 
@@ -418,7 +474,11 @@ def vis_contact_point(args):
         ret, frame = cap.read()
         if not ret: continue
         for i, row in det_bp_df[det_bp_df["fn"]==frame_num].iterrows():
-            frame = Detect.draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
+            #TODO set up a general condition for all 3D detectors
+            if args.Detector == "GTHW73D":
+                frame = Detect.draw_3Dbox_on_image(frame , row)
+            else:
+                frame = Detect.draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
             frame = Detect.draw_point_on_image(frame, row.xcp, row.ycp)
         out_cap.write(frame)
 
@@ -461,3 +521,59 @@ def vis_contact_point_top(args):
         out_cap.write(img2_fn)
     out_cap.release()
     return SucLog("sucessfully viz-ed contact points on top view")
+
+def eval_contact_points(args):
+    # get 2D GT args
+    # get 3D GT args
+    args_gt_2d = get_args_gt(args)
+    args_gt_3d = get_args_gt3D(args)
+
+    # read backprojected detections + contact points
+    df       = pd.read_pickle(args.ReprojectedPklForDetection)
+    df_gt_2d = pd.read_pickle(args_gt_2d.ReprojectedPklForDetection)
+    df_gt_3d = pd.read_pickle(args_gt_3d.ReprojectedPklForDetection)
+
+    # if detector is a 3D detector, modify x1, y1, x2, y2
+    # to x2D1, y2D1, x2D2, y2D2 so that it is consistent with
+    # a 2D detector
+    if "x2D1" in df.columns:
+        df.x1 = df.x2D1
+        df.y1 = df.y2D1
+        df.x2 = df.x2D2
+        df.y2 = df.y2D2
+
+    # get unique frames based on annotations
+    unique_frames = np.unique(df_gt_2d.fn)
+
+
+    # gatther all distances
+    distances = []
+
+    # for each frame in annotations
+    for fn in tqdm(unique_frames):
+        # get the detections for frame "fn"
+        df_fn       = df[df.fn == fn]
+        df_gt_2d_fn = df_gt_2d[df_gt_2d.fn == fn]
+        df_gt_3d_fn = df_gt_3d[df_gt_3d.fn == fn]
+
+        # use 2D args for matching 2D detections
+        for i, row in df_fn.iterrows():
+            gt_2d_match_row = get_det_with_max_iou(row, df_gt_2d_fn)
+            # match with uuid/id
+            gt_3d_match_row = df_gt_3d_fn[df_gt_3d_fn.id == gt_2d_match_row.id]
+
+            # first check if both 2d and 3d gt are available
+            # if 3d and 2d are not available at the same time we will just skip the detection
+            if len(gt_3d_match_row) == 0:
+                continue
+
+            cp_est    = [row.xcp, row.ycp]
+            cp_gt     = [gt_3d_match_row.xcp, gt_3d_match_row.ycp]
+            dist_row  = np.linalg.norm(np.array(cp_est) - np.array(cp_gt))
+            distances.append(dist_row)
+            
+    cp_error_image = np.mean(distances)
+    print(cp_error_image)
+    # save this number somewhere
+
+    return SucLog("evaluated CP selection")

@@ -1,4 +1,4 @@
-name: booklet
+name: Elderlab Pages CI/CD
 run-name: ${{ github.actor }} initializing booklet 
 on: 
   workflow_dispatch:

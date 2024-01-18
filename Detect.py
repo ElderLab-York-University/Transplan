@@ -86,6 +86,7 @@ def visdetect(args):
         visdetect_3d(args)
     else:
         visdetect_2d(args)
+        
 def visdetect_2d(args):
     if args.Detector is None:
         return FailLog("To interpret detections you should specify detector")
@@ -113,7 +114,6 @@ def visdetect_2d(args):
         for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
             frame = draw_box_on_image(frame, row.x1, row.y1, row.x2, row.y2)
         out_cap.write(frame)
-
     cap.release()
     out_cap.release()
     return SucLog("Detection visualized on the video")
@@ -141,8 +141,10 @@ def visdetect_3d(args):
         ret, frame = cap.read()
         if not ret: continue
         for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
-            
+            # draw 3D box
             frame = draw_3Dbox_on_image(frame, row)
+            # draw 2D box
+            frame = draw_box_on_image(frame, row.x2D1, row.y2D1, row.x2D2, row.y2D2, c=(0, 0, 255))
             
         out_cap.write (frame)
     cap.release()
@@ -151,17 +153,19 @@ def visdetect_3d(args):
 
 # function to plot 3D bbox on image
 def draw_3Dbox_on_image(frame, row):
+    color = (255, 0, 0) #red
+    thickness = 2
     pts = np.array([[row.x1,row.y1],[row.x2,row.y2],[row.x3,row.y3],[row.x4,row.y4]], np.int32)
     pts = pts.reshape((-1,1,2))    
-    frame=cv2.polylines(frame,[pts],True,(0,255,255))
+    frame=cv2.polylines(frame,[pts],True, color, thickness)
     pts = np.array([[row.x5,row.y5],[row.x6,row.y6],[row.x7,row.y7],[row.x8,row.y8]], np.int32)
     pts = pts.reshape((-1,1,2))  
-    frame=cv2.polylines(frame,[pts],True,(0,255,255))        
+    frame=cv2.polylines(frame,[pts],True, color, thickness)        
     # frame = cv.circle(frame, (int(row.x3),int(row.y3)), 1, (255,0,0), 10)
-    frame=cv2.line(frame, (int(row.x1),int(row.y1)), (int(row.x5),int(row.y5)), (0,255,255))
-    frame=cv2.line(frame, (int(row.x2),int(row.y2)), (int(row.x6),int(row.y6)), (0,255,255))
-    frame=cv2.line(frame, (int(row.x3),int(row.y3)), (int(row.x7),int(row.y7)), (0,255,255))
-    frame=cv2.line(frame, (int(row.x4),int(row.y4)), (int(row.x8),int(row.y8)), (0,255,255)) 
+    frame=cv2.line(frame, (int(row.x1),int(row.y1)), (int(row.x5),int(row.y5)), color, thickness)
+    frame=cv2.line(frame, (int(row.x2),int(row.y2)), (int(row.x6),int(row.y6)), color, thickness)
+    frame=cv2.line(frame, (int(row.x3),int(row.y3)), (int(row.x7),int(row.y7)), color, thickness)
+    frame=cv2.line(frame, (int(row.x4),int(row.y4)), (int(row.x8),int(row.y8)), color, thickness) 
     return frame        
 
 def draw_box_on_image(img, x1, y1, x2, y2, c=(255, 0, 0), thickness=2):
@@ -265,7 +269,6 @@ def detectionth(df, args):
     return df
 
 def filter_det_class(df, args):
-    print("performing class filtering")
     mask = df["fn"] < 0
     for clss in args.classes_to_keep:
         clss_mask = df["class"] == clss
@@ -337,6 +340,20 @@ def visroi(args):
     # # ax2.set_title("top view ROI")
     
     # plt.savefig(args.VisROIPth)
+    plt.close("all")
+
+    top_view_path = args.VisROIPth[:-3] + "top.png"
+    street_view_path = args.VisROIPth[:-3] + "street .png"
+
+    plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
+    plt.axis('off')
+    plt.savefig(street_view_path, bbox_inches='tight')
+    plt.close("all")
+
+    plt.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
+    plt.axis('off')
+    plt.savefig(top_view_path, bbox_inches='tight')
+    plt.close("all")
     cv2.imwrite(args.VisROIPth, img1)
     return SucLog("Vis ROI executed successfully")
 
