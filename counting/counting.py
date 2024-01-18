@@ -1399,7 +1399,7 @@ def eval_count_multi(args, args_mcs):
     # then call another function for evaluate on multi args level
     args_flat = flatten_args(args_mcs)
     stats = []
-    if args.EvalCount:
+    if args.EvalCount or args.EvalCountMSfromMC:
         for arg_i in tqdm(args_flat):
             eval_count(arg_i)
             stats.append(pd.read_csv(arg_i.CountingStatPth))
