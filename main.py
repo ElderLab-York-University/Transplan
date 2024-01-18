@@ -21,7 +21,7 @@ from Maps import pix2meter
 from counting import counting
 from counting.counting import find_opt_bw, eval_count, eval_count_multi
 from Clustering import cluster
-from CountingMC import AverageCountsMC
+from CountingMC import AverageCountsMC, IntegrateCounts
 from Segment import segment, vis_segment, SegmentPostProc
 
 def Preprocess(args):
@@ -174,6 +174,13 @@ def EvalCountMS(args, args_ms, args_mcs):
         log = eval_count_multi(args, args_mcs)
         return log
     else: return WarningLog("skipped eval counting subtask")
+
+def EvalCountMSfromMC(args, args_ms, args_mcs):
+    if args.EvalCountMSfromMC:
+        print(ProcLog("evaluating counting MS from MCs"))
+        log = eval_count_multi(args, args_ms)
+        return log
+    else: return WarningLog("skipped eval counting subtask")
     
 def Cluster(args):
     if args.Cluster:
@@ -229,6 +236,14 @@ def AverageCounts(args, args_mc):
         return log
     else:
         return WarningLog("skipped averaging counts")
+
+def IntegratCountsMC(args, args_mc):
+    if args.IntegrateCountsMC:
+       print(ProcLog("Integrating Counting on multi cameras")) 
+       log = IntegrateCounts(args, args_mc)
+       return log
+    else:
+        return WarningLog("skipped integrating counts")
 
 def EvalCountMC(args, args_mc):
     if args.EvalCountMC:
@@ -362,7 +377,7 @@ def main(args):
 def main_mc(args, args_mc):
     # main for multi camera
 
-    subtasks = [TrackEvaluateMC, AverageCounts, EvalCountMC]
+    subtasks = [TrackEvaluateMC, AverageCounts, IntegratCountsMC, EvalCountMC]
     for subtask in subtasks:
         log = subtask(args,args_mc)
         if not isinstance(log, WarningLog):
@@ -372,7 +387,7 @@ def main_ms(args, args_ms, args_mcs):
     # main for multi segments
     subtasks = [ConvertDetsToCOCO_MS, TrackEvaluateMS,
                 ExtractCommonTracksMulti, VisLabelledTrajectoriesMulti,
-                CountMS, EvalCountMS]
+                CountMS, EvalCountMS, EvalCountMSfromMC]
 
     for sub in subtasks:
         log = sub(args, args_ms, args_mcs)
@@ -460,7 +475,9 @@ def get_parser():
 
     parser.add_argument("--MultiCam", help="operating in multi-camera", action='store_true')
     parser.add_argument("--AverageCountsMC", help="averaging counting on MC", action='store_true')
+    parser.add_argument("--IntegrateCountsMC", help="integrate counts for HW7 in MC mode", action='store_true')
     parser.add_argument("--EvalCountMC", help="Evaluate Counts MC", action="store_true")
+    parser.add_argument("--EvalCountMSfromMC", help="Evaluate Counts MS from MCs", action="store_true")
 
     parser.add_argument("--TopView", help="seeting which topview to use. Options are [GoogleMap, OrthoPhoto]", type=str)
     parser.add_argument("--BackprojectSource", help="selecting which source to backproject form Options are [tracks, detections]", type=str)
