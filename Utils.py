@@ -867,13 +867,15 @@ def complete_args(args):
         args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or\
         args.TrackPostProc or args.Count or args.VisROI or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or\
-        args.EvalCount or args.TrackEval:
+        args.EvalCount or args.TrackEval or args.DetPostProc or args.IntegrateCountsMC or\
+        args.EvalCountMSfromMC:
         args = add_homographygui_related_path_to_args(args)
 
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or\
         args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop or\
-        args.EvalCount or args.TrackEval or args.EvalContactPoitnSelection:
+        args.EvalCount or args.TrackEval or args.EvalContactPoitnSelection or args.DetPostProc or\
+        args.IntegrateCountsMC or args.EvalCountMSfromMC:
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
 
@@ -894,7 +896,8 @@ def complete_args(args):
         args.EvalCount:
         args = add_meter_path_to_args(args)
 
-    if args.Count or args.VisTrackMoI or args.AverageCountsMC or args.EvalCount:
+    if args.Count or args.VisTrackMoI or args.AverageCountsMC or\
+         args.EvalCount or args.IntegrateCountsMC or args.EvalCountMSfromMC or args.EvalCountMC:
         args = add_count_path_to_args(args)
 
     if args.Cluster or args.TrackLabelingGUI:
@@ -922,9 +925,8 @@ def complete_args(args):
     return args
 
 def complete_args_mc(args):
-    if args.AverageCountsMC or args.EvalCountMC:
-        args = add_count_path_to_args(args)
-
+    # if args.AverageCountsMC or args.EvalCountMC:
+    #     args = add_count_path_to_args(args)
     return args
 
 def complete_args_ms(args):
