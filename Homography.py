@@ -395,7 +395,61 @@ def vishomographygui(args):
     plt.axis("off")
     plt.savefig(projection_save_path, bbox_inches='tight')
 
+    # save a picture for selected points correspondance
+    point_pairs_plot(args)
+
     return SucLog("Vis Homography executed successfully") 
+
+def point_pairs_plot(args):
+    first_image_path = args.HomographyStreetView
+    second_image_path = args.HomographyTopView
+    homography_path = args.HomographyNPY
+    points_path = args.HomographyCSV
+
+    img1 = cv.imread(first_image_path)
+    img2 = cv.imread(second_image_path)
+
+    points = pd.read_csv(points_path)
+
+    rows1, cols1, dim1 = img1.shape
+    rows2, cols2, dim2 = img2.shape
+
+    M = np.load(homography_path, allow_pickle=True)[0]
+    Mp = np.linalg.inv(M)
+
+    # plot on top view
+    for i , row in tqdm(points.iterrows()):
+        x, y = row[2], row[3]
+        img2 = cv.circle(img2, (x,y), radius=4, color=(255, 0, 0), thickness=3)
+
+    for i, row in points.iterrows():
+        x, y = row[0], row[1]
+        point = np.array([x, y, 1])
+        new_point = M.dot(point)
+        new_point /= new_point[2]
+        xp, yp = int(new_point[0]), int(new_point[1]) 
+        img2 = cv.circle(img2, (xp,yp), radius=4, color=(0, 0, 255), thickness=3)
+
+    plt.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
+    save_path = args.VisHomographyPth[:-3] + "paripoints.top.png"
+    plt.savefig(save_path, bbox_inches='tight')
+
+    # plot on camera view
+    for i , row in tqdm(points.iterrows()):
+        x, y = row[0], row[1]
+        img1 = cv.circle(img1, (x,y), radius=20, color=(255, 0, 0), thickness=10)
+
+    for i, row in points.iterrows():
+        x, y = row[2], row[3]
+        point = np.array([x, y, 1])
+        new_point = Mp.dot(point)
+        new_point /= new_point[2]
+        xp, yp = int(new_point[0]), int(new_point[1]) 
+        img1 = cv.circle(img1, (xp,yp), radius=20, color=(0, 0, 255), thickness=10)
+
+    plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
+    save_path = args.VisHomographyPth[:-3] + "paripoints.street.png"
+    plt.savefig(save_path, bbox_inches='tight')
 
 def vis_reprojected_tracks(args):
     first_image_path = args.HomographyStreetView
