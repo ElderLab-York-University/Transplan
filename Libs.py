@@ -26,5 +26,9 @@ import copy
 import scipy
 from collections import defaultdict, OrderedDict
 import motmetrics as mm
+from shapely.geometry import Point as SPoint, Polygon
+from shapely.ops import nearest_points
 import shutil
 import socket
+import ast  
+import re

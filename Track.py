@@ -69,6 +69,8 @@ def vistrack(args):
     # tracks_path = args.TrackingPth
     if(args.CalcDistance):
         df, p1s=calculate_distance(args)
+    # if(args.CalcSpeed):
+    #     calculate_speeds(args)
     color = (0, 0, 102)
     cap = cv2.VideoCapture(video_path)
     # Check if camera opened successfully
@@ -80,7 +82,9 @@ def vistrack(args):
     frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 
     out_cap = cv2.VideoWriter(annotated_video_path,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
-
+    out_cap2 = cv2.VideoWriter("./video.mp4",cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
+    
+    print(args.VisTrackingPth)
     if not args.ForNFrames is None:
         frames = args.ForNFrames
     # Read until video is completed
@@ -133,10 +137,40 @@ def vistrack(args):
         # frame = cv.addWeighted(img1, alpha, frame, 1 - alpha, 0)
         
         out_cap.write(frame)
+        out_cap2.write(frame)
+    print(df)
+    cap.release()
+    out_cap.release()
+    out_cap2.release()
     return SucLog("track vis successful")
 def meter_per_pixel(center, zoom=19):
     m_per_p = 156543.03392 * np.cos(center[0] * np.pi / 180) / np.power(2, zoom)
     return m_per_p
+
+def calculate_speeds(args):
+    
+    print("Calculating Speeds!")
+    df = pd.read_pickle(args.ReprojectedPklMeter)  
+    track_df=pd.read_pickle(args.TrackingPkl)
+    ids= np.unique(df['id'])
+    speeds=np.zeros(len(df))
+    for track_id in ids:
+        bbox_idx=np.where(df['id']==track_id)[0]
+        bboxes=df.iloc[bbox_idx]
+        frames=sorted(bboxes['fn'])
+        for i in range(len(frames)):
+            if(i<len(frames)-1):
+                current_frame=bboxes[bboxes['fn']==frames[i]]
+                next_frame=bboxes[bboxes['fn']==frames[i+1]]
+                current_position=np.array([current_frame.x, current_frame.y])
+                next_position=np.array([next_frame.x, next_frame.y])
+                displacement= np.abs(next_position-current_position)
+                input()
+            else:
+                speeds[bbox_idx[i]]=-1
+    print(ids)
+    input()
+    
 
 def calculate_distance(args):
     df = pd.read_pickle(args.ReprojectedPklMeter)  
@@ -177,7 +211,6 @@ def calculate_distance(args):
                 p1s.append(SPoint(0,0))
                 
     track_df['distance']=distances
-
     return track_df, p1s
 
 def vistracktop(args):

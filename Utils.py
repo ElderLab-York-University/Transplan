@@ -102,6 +102,31 @@ class SucLog(Log):
     def __init__(self, message) -> None:
         super().__init__(message, bcolors.OKGREEN, Tags.SUCC)
 
+def replace_white_space(s):
+    return s.replace(" ",",")
+def convert_pandas_versions(args, df_to_convert):
+    args.df_to_convert=df_to_convert
+    args.temp_text_path="./temp_df.txt"
+    args.temp_cols_path='./temp_cols.txt'
+    conda_pyrun("pandasver", "convert_df_to_txt.py", args)
+    df=pd.read_csv(args.temp_text_path, index_col=0, sep=",")
+    df.set_index(df.iloc[:, 0])
+    for column in df.columns:
+        try:
+            df[column]=df[column].apply(ast.literal_eval)
+        except SyntaxError as e:
+            pattern = re.compile(r'(\d)\s+(\d)')
+            pattern2 = re.compile(r'(\d+)\.(?![0-9])')            
+            df[column]=df[column].apply(lambda x:re.sub(pattern,r'\1,\2',re.sub(pattern2,r'\1.0',x)).replace("\n", ','))
+            df[column]=df[column].apply(ast.literal_eval)
+            
+        except ValueError as e:
+            print(e)
+            pass
+    # for index, value in df["trajectory"].iteritems():
+    #     print(f"Row {index}: trajectory - {type(value)}")   
+    pd.to_pickle(df, getattr(args, df_to_convert))
+    
 def get_detection_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
