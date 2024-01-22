@@ -167,7 +167,7 @@ plt.style.use("ggplot")
 import matplotlib as mpl
 plt.close()
 mpl.rcParams.update(mpl.rcParamsDefault)
-import tikzplotlib
+# import tikzplotlib
 
 def tikzplotlib_fix_ncols(obj):
     """
@@ -481,7 +481,7 @@ def evaluate_detection(base_args, nested_args):
                 
             df_gt   = pd.read_pickle(args_gt.DetectionPkl)
             if(args.Rois is not None):
-                df_pred=pd.read_pickle(args.DetectionPklRoi)
+                df_pred=pd.read_pickle(args.DetectionPkl)
             else:
                 df_pred = pd.read_pickle(args.DetectionPklBackUp)
             df_id   = args.SubID

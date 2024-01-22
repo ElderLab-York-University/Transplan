@@ -42,14 +42,13 @@ def detect(args):
     # check if detector names is valid
     if args.Detector not in os.listdir("./Detectors/"):
         return FailLog("Detector not recognized in ./Detectors/")
-
     current_detector = detectors[args.Detector]
     current_detector.detect(args)
+    
     store_df_pickle(args)
     store_df_pickle_backup(args)
-
     return SucLog("Detection files stored")
-
+    
 def store_df_pickle_backup(args):
     df = detectors[args.Detector].df(args)
     df.to_pickle(args.DetectionPklBackUp, protocol=4)
@@ -86,13 +85,160 @@ def visdetect(args):
         visdetect_3d(args)
     else:
         visdetect_2d(args)
+def find_intersecting_regions(args):
+    if "Rois" in args and args.UseRois:
+        patches=[]
+        container=np.load(args.Rois)
+        data = [container[key] for key in container]
+        for roi in data:
+            patches.append(roi)
+        patches=np.array(patches)
+        intersecting_rectangles = list()
         
+        for i in range(patches.shape[0]):
+            x1, y1, x2, y2 = patches[i]
+            for j in range(i + 1, patches.shape[0]):
+                x3, y3, x4, y4 = patches[j]
+                x5, y5, x6, y6 = max(x1, x3), max(y1, y3), min(x2, x4), min(y2, y4)
+                if not (x5 > x6 or y5 > y6):
+                    intersecting_rectangles.append([x5, y5, x6, y6])
+
+        intersecting_rectangles = np.array(intersecting_rectangles)
+        # cap = cv2.VideoCapture(args.Video)
+
+        # if (cap.isOpened()== False): 
+        #     return FailLog("Error opening video stream or file")
+        # ret, frame= cap.read()
+        # for roi in patches:
+        #     q=roi        
+        #     frame=draw_box_on_image(frame, q[0], q[1] , q[2] ,q[3], c=[0,0,255], thickness=2)                    
+        # for i in intersecting_rectangles:
+        #     frame = draw_box_on_image(frame, i[0], i[1], i[2], i[3], c=[255,255,255])
+            
+        # cv2.imwrite("intersecting.png", frame)
+        # print(intersecting_rectangles)
+        # input()        
+        return intersecting_rectangles
+    else:
+        return []
+        
+def get_near_patch_boxes(args,boxes, intersecting_rectangles):
+    if len(intersecting_rectangles)>0:     
+        tlx, tly, brx, bry = boxes['x1'].to_numpy().astype(int), boxes['y1'].to_numpy().astype(int), boxes['x2'].to_numpy().astype(int), boxes['y2'].to_numpy().astype(int)    
+        rect_tlx, rect_tly = intersecting_rectangles[:, 0], intersecting_rectangles[:, 1]
+        rect_brx, rect_bry = intersecting_rectangles[:, 2], intersecting_rectangles[:, 3]
+
+        inside_tlx = np.logical_and(rect_tlx <= tlx[:, None], tlx[:, None] <= rect_brx)
+        inside_tly = np.logical_and(rect_tly <= tly[:, None], tly[:, None] <= rect_bry)
+        inside_brx = np.logical_and(rect_tlx <= brx[:, None], brx[:, None] <= rect_brx)
+        inside_bry = np.logical_and(rect_tly <= bry[:, None], bry[:, None] <= rect_bry)
+
+        boxes_inside = np.any(np.logical_and(np.logical_and(inside_tlx, inside_tly), np.logical_and(inside_brx, inside_bry)), axis=1)
+        # flag = np.any(np.logical_or(np.logical_and(inside_tlx, inside_tly), np.logical_and(inside_brx, inside_bry)), axis=1)
+        # flag[boxes_inside] = False
+
+        return boxes_inside
+        
+def get_overlapping_bboxes(df, args, intersecting_rectangles):
+
+        idxs_inside = get_near_patch_boxes(args,df , intersecting_rectangles)
+        dets_inside = df[idxs_inside]
+        
+ 
+
+        dets_nms = pd.DataFrame()
+        for fn in np.unique(dets_inside['fn']):
+
+            det = dets_inside[dets_inside['fn'] == fn]
+            det=det[0:4]
+
+            conf, bboxes = det['score'].to_numpy(), det[['x1', 'y1', 'x2', 'y2']].to_numpy()
+            boxes=bboxes[np.newaxis, :, :]            
+            x1 = np.maximum(boxes[:, :, 0][:, :, np.newaxis], boxes[:, :, 0])
+            y1 = np.maximum(boxes[:, :, 1][:, :, np.newaxis], boxes[:, :, 1])
+            x2 = np.minimum(boxes[:, :, 2][:, :, np.newaxis], boxes[:, :, 2])
+            y2 = np.minimum(boxes[:, :, 3][:, :, np.newaxis], boxes[:, :, 3])
+            
+            intersection_area = np.maximum(0, x2 - x1) * np.maximum(0, y2 - y1)
+            area_bbox1 = (boxes[:, :, 2] - boxes[:, :, 0]) * (boxes[:, :, 3] - boxes[:, :, 1])
+            area_bbox2 = (boxes[:, :, 2] - boxes[:, :, 0]) * (boxes[:, :, 3] - boxes[:, :, 1])
+            union_area = area_bbox1[:, :, np.newaxis] + area_bbox2 - intersection_area
+            
+            iou_scores = intersection_area / union_area
+
+            ious = np.triu(iou_scores[0])            
+
+            # Only keep those boxes who has certain IoU - Overlapping boxes in the intersecting regions.
+
+            overlapping_pairs = np.where((ious > 0.5) & (ious < 1.0))
+
+            overlapping_pairs = np.hstack((overlapping_pairs[0].reshape(-1, 1), overlapping_pairs[1].reshape(-1, 1)))
+            
+            non_overlapping_pairs = np.where((ious <= 0.5) & (ious > 0.0))
+
+            non_overlapping_pairs = np.hstack((non_overlapping_pairs[0].reshape(-1, 1), non_overlapping_pairs[1].reshape(-1, 1)))
+
+            conf_pairs = np.hstack((conf[overlapping_pairs[:, 0]].reshape(-1, 1), conf[overlapping_pairs[:, 1]].reshape(-1, 1)))
+
+            confs_sort_idxs = np.argsort(-conf_pairs, axis=1)
+
+            keep_indices = overlapping_pairs[np.arange(0, overlapping_pairs.shape[0]), confs_sort_idxs[:, 0]]
+            
+            remove_indices = overlapping_pairs[np.arange(0, overlapping_pairs.shape[0]), confs_sort_idxs[:, 1]]
+
+            keep_indices = np.unique(keep_indices)
+            
+            remove_indices=np.unique(remove_indices)
+           
+
+            low_confs_pairs = np.hstack((conf[non_overlapping_pairs[:, 0]].reshape(-1, 1), conf[non_overlapping_pairs[:, 1]].reshape(-1, 1)))
+
+            low_confs_sort_idxs = np.argsort(-low_confs_pairs, axis=1)
+
+            keep_indices_low_confs =  non_overlapping_pairs[np.arange(0, non_overlapping_pairs.shape[0]), low_confs_sort_idxs[:, 0]]
+
+            keep_indices_low_confs = np.unique(non_overlapping_pairs)
+
+           
+
+            keep_indices_low_confs = keep_indices_low_confs[np.where(conf[keep_indices_low_confs] > 0.5)]  
+
+            dets_nms = pd.concat([dets_nms,det.iloc[np.delete(np.arange(len(det)), remove_indices)]])
+
+            # dets_nms = pd.concat([dets_nms,det.iloc[keep_indices_low_confs]])
+            
+            
+
+            # overlapping_pairs = np.where((ious > 0.5) & (ious < 1.0))
+
+            # overlapping_pairs = np.hstack((overlapping_pairs[0].reshape(-1, 1), overlapping_pairs[1].reshape(-1, 1)))
+
+            # conf_pairs = np.hstack((conf[overlapping_pairs[:, 0]].reshape(-1, 1), conf[overlapping_pairs[:, 1]].reshape(-1, 1)))
+
+            # confs_sort_idxs = np.argsort(-conf_pairs, axis=1)
+
+            # keep_indices = overlapping_pairs[np.arange(0, overlapping_pairs.shape[0]), confs_sort_idxs[:, 0]]
+
+            # keep_indices = np.unique(keep_indices)
+
+            # dets_nms = pd.concat([dets_nms, det.iloc[keep_indices]])
+
+
+        # return dets_inside[~idxs_inside].append(dets_nms)
+
+
+
+        # return dets_inside[~idxs_inside].append(dets_nms, ignore_index=True)
+
+ 
+        print('yo')
+        return pd.concat([df[~idxs_inside],dets_nms])            
 def visdetect_2d(args):
     if args.Detector is None:
         return FailLog("To interpret detections you should specify detector")
     # parse detection df using detector module
     detection_df = pd.read_pickle(args.DetectionPkl)
-
+    
     # open the original video and process it
     cap = cv2.VideoCapture(args.Video)
 
@@ -203,6 +349,7 @@ def detectpostproc(args):
     detectors[args.Detector].df_txt(df, args.DetectionDetectorPath)
     # store the new txt as pkl
     store_df_pickle(args)
+
     return SucLog("detection post processing done")
 
 def mask_detections(df, args):
@@ -224,22 +371,22 @@ def mask_detections(df, args):
         # print("[")
         # for r in roi:
         #     print(f"[{r[0]},{r[1]}],")
-        # print("]")
-        roi=np.array(roi)
-        roi=roi.astype(np.int32)
-        # masked=    cv2.fillPoly(masked, pts=[roi], color=(105, 105, 105))
-        poly_path1 = mplPath.Path(np.array(roi))
+        # # print("]")
+        # roi=np.array(roi)
+        # roi=roi.astype(np.int32)
+        # # masked=    cv2.fillPoly(masked, pts=[roi], color=(105, 105, 105))
+        # poly_path1 = mplPath.Path(np.array(roi))
         
-        for i in range(rows1):
-            for j in range(cols1):
-                if poly_path1.contains_point([j, i]):
-                    masked[i][j] = [0, 0, 0]    
-        masked = cv.addWeighted(masked, alpha, frame_copy, 1 - alpha, 0)
+        # for i in range(rows1):
+        #     for j in range(cols1):
+        #         if poly_path1.contains_point([j, i]):
+        #             masked[i][j] = [0, 0, 0]    
+        # masked = cv.addWeighted(masked, alpha, frame_copy, 1 - alpha, 0)
             
         df=remove_inside_of_ROI(df, roi)        
-    cv2.imwrite("detection_mask.png",masked)
-    print(args.DetectionMaskVis)
-    cv2.imwrite(args.DetectionMaskVis,masked)
+    # cv2.imwrite("detection_mask.png",masked)
+    # print(args.DetectionMaskVis)
+    # cv2.imwrite(args.DetectionMaskVis,masked)
     # for arr in a:
     #     masked=a[arr]
         

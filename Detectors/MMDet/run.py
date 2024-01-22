@@ -7,6 +7,7 @@ from mmdet.apis import init_detector, inference_detector
 import json
 from tqdm import tqdm
 import sys
+import numpy as np
 import torch
 import mmcv
 from sahi.slicing import slice_image
@@ -188,7 +189,35 @@ def get_full_frame_result(frame, model, test_pipeline, args):
     result = inference_detector(model, frame, test_pipeline=test_pipeline)
     result = result.cpu()
     return result
+def get_roi_results(frame, model, test_pipeline, args):
+    rois=[]
+    container=np.load(args["RoiNpz"])
+    data = [container[key] for key in container]
+    for roi in data:
+        rois.append((roi.astype(int)))
+    sliced_frames=[]
+    sliced_results=[]
+    height, width = frame.shape[:2]    
+    for roi in rois:
+        # mask = np.zeros((np.shape(frame)[0], np.shape(frame)[1]), dtype=np.uint8)
+        points = roi
+        points[0]= max(0, points[0])
+        points[1]= max(0,points[1])
+        points[2]= min(width, points[2])
+        points[3]= min(height, points[3])
 
+        # cv2.fillPoly(mask, np.int32(points), (255))
+        # # print(roi[0][0])
+        # rect = cv2.boundingRect(points) # returns (x,y,w,h) of the rect
+        # res = cv2.bitwise_and(frame,frame,mask = mask)
+        sliced_frames.append(frame[points[1]: points[3], points[0]: points[2]])
+    with torch.no_grad():
+        result = inference_detector(model, sliced_frames,test_pipeline=test_pipeline)
+    offsets=np.array(rois)[:,0:2]
+    shifted=shift_predictions(result, offsets,(height,width))
+    shifted_result = result[0].clone()
+    shifted_result.pred_instances = shifted
+    return shifted_result.cpu()
 if __name__ == "__main__":
     args = json.loads(sys.argv[-1])
     # config and check point will come from args
@@ -214,6 +243,8 @@ if __name__ == "__main__":
         for frame in tqdm(video_reader):
             if args["SAHI"]:
                 result = get_sahi_result(frame, model, test_pipeline, args)
+            elif args['Rois']:
+                result=get_roi_results(frame, model, test_pipeline,args)
             else:
                 result = get_full_frame_result(frame, model, test_pipeline, args)
 

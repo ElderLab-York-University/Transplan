@@ -136,7 +136,16 @@ def get_detection_path_with_detector_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector + Puncuations.Dot +SubTaskExt.Detection)
+def get_detection_roi_path_with_detector_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector+ Puncuations.Dot+ args.roi_num + Puncuations.Dot +SubTaskExt.Detection)
 
+def get_roi_npz_path_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    npz_path = os.path.join(args.Dataset, file_name+Puncuations.Dot+"roi"+Puncuations.Dot+args.roi_num+Puncuations.Dot+"npz")
+    return npz_path
 def get_detection_pkl(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -164,23 +173,45 @@ def get_vis_detection_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisDetection + Puncuations.Dot + args.Detector + Puncuations.Dot +SubTaskExt.VisDetection)
-
+def get_vis_detection_roi_path_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisDetection + Puncuations.Dot + args.Detector+Puncuations.Dot+args.roi_num + Puncuations.Dot +SubTaskExt.VisDetection)
+    
 def get_tracking_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Tracking)
+
+def get_tracking_roi_path_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector+Puncuations.Dot+args.roi_num + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Tracking)
 
 def get_tracking_pkl_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector +Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Pkl)
 
+def get_tracking_roi_pkl_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector + args.Detector+Puncuations.Dot+args.roi_num +Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Pkl)
+
 def get_tracking_pkl_bu_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector +Puncuations.Dot + args.Tracker + Puncuations.Dot +"back" + Puncuations.Dot +SubTaskExt.Pkl)
+def get_tracking_roi_pkl_bu_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector + args.Detector+Puncuations.Dot+args.roi_num +Puncuations.Dot + args.Tracker + Puncuations.Dot +"back" + Puncuations.Dot +SubTaskExt.Pkl)
 
 def get_vis_tracking_path_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisTracking + Puncuations.Dot + args.Detector+Puncuations.Dot+args.roi_num  + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
+def get_vis_tracking_roi_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisTracking + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
@@ -846,8 +877,16 @@ def add_roi_paths_to_args(args):
         
     if(args.Dataset[-3:] in roi_dict):
         args.roi_num=roi_dict[args.Dataset[-3:]]
-        args.DetectionPklRoi=get_detection_roi_pkl(args)
-        args.DetectionPklRoiBackup=get_detection_roi_pkl_back_up(args)
+        args.RoiNpz= get_roi_npz_path_from_args(args)
+        args.DetectionRoiDetectorPath = get_detection_roi_path_with_detector_from_args(args)
+        args.DetectionDetectorPath = get_detection_roi_path_with_detector_from_args(args)
+        args.DetectionPkl=get_detection_roi_pkl(args)
+        args.DetectionBackUp=get_detection_roi_pkl_back_up(args)
+        args.VisDetectionPth=get_vis_detection_roi_path_from_args(args)
+        args.TrackingPth = get_tracking_roi_path_from_args(args)
+        args.TrackingPkl = get_tracking_roi_pkl_from_args(args)
+        args.TrackingPklBackUp = get_tracking_roi_pkl_bu_from_args(args)
+        args.VisTrackingPth = get_vis_tracking_roi_path_from_args(args)
         # args.DetectionRoiEvalPath= get_detect_eval_roi_save_path(args)
     return args
 def add_detection_mask_path_to_args(args):
