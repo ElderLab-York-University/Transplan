@@ -416,6 +416,13 @@ def trackpostproc(args):
         df = select_based_on_roi(args, just_exit_or_cross_multi, resample_tracks=True)
         print(f"ending with {len(np.unique(df['id']))} tracks")
         update_tracking_changes(df, args)
+
+    if args.EnterOrCrossROI:
+        print("select tracks that either enter roi or cross roi multi")
+        print(f"starting with {len(np.unique(df['id']))} tracks")
+        df = select_based_on_roi(args, just_enter_or_cross_multi, resample_tracks=True)
+        print(f"ending with {len(np.unique(df['id']))} tracks")
+        update_tracking_changes(df, args)
     
     if args.SelectToBeCounted:
         print("select tracks to be counted")
@@ -522,6 +529,12 @@ def cross_roi_multiple(pg, traj, *args, **kwargs):
 
 def just_exit_or_cross_multi(pg, traj, th, poly_path, *args, **kwargs):
     if cross_roi_multiple(pg, traj, th, poly_path) or just_exit_roi(pg, traj, th, poly_path):
+        return True
+    else:
+        return False
+
+def just_enter_or_cross_multi(pg, traj, th, poly_path, *args, **kwargs):
+    if cross_roi_multiple(pg, traj, th, poly_path) or just_enter_roi(pg, traj, th, poly_path):
         return True
     else:
         return False
