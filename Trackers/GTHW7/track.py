@@ -23,6 +23,15 @@ def track(args, detectors):
     i=0
     detections=[]
     uuid_to_id={}
+
+    # populate uuid_to_id. It ensures consistent id across four camearas
+    for responses in data:
+        for response in responses['camera_responses']:
+            for gt in response['annotations']:
+                if(gt['cuboid_uuid']) not in uuid_to_id:
+                    uuid_to_id[gt['cuboid_uuid']]=id_counter
+                    id_counter=id_counter+1
+
     for responses in data:
         for response in responses['camera_responses']:
             # print(response['camera_used'])
@@ -30,6 +39,7 @@ def track(args, detectors):
                 # print(len(response['annotations']))
                 for gt in response['annotations']:
                     if(gt['cuboid_uuid']) not in uuid_to_id:
+                        raise "this should not happen anymore"
                         uuid_to_id[gt['cuboid_uuid']]=id_counter
                         id_counter=id_counter+1
                     c = 0 if "Pedestrian" in gt['label'] else 7 if 'Truck' in gt['label'] else 5 if 'Buses' in gt['label'] else 2 if 'Small' in gt['label'] else 1 if 'Unpowered' in gt['label'] else 3
