@@ -225,6 +225,8 @@ def find_opt_bw_of_surf(args, gp):
     else:
         plt.savefig(args.OptBWImage)
 
+    plt.close("all")
+
     return h_opt
 
 def find_opt_bw(args):
@@ -869,18 +871,20 @@ class IKDE():
                 scores[j, i] = infer_map[(x, y)]
 
         plt.imshow(img)
+        plt.axis("off")
         plt.contourf(xs, ys, scores, alpha=0.5, levels=100, cmap='plasma')
-        plt.colorbar()
+        # plt.colorbar()
         plt.title(f"prototpyes used: {self.n_prototype[moi]}")
-        plt.savefig(vis_path+f"logdensity_{moi}.png")
+        plt.savefig(vis_path+f"logdensity_{moi}.png", bbox_inches='tight')
         plt.close("all")
 
         scores = np.exp(scores)
         plt.imshow(img)
+        plt.axis("off")
         plt.contourf(xs, ys, scores, alpha=0.5, levels=100, cmap="plasma")
-        plt.colorbar()
+        # plt.colorbar()
         plt.title(f"prototpyes used: {self.n_prototype[moi]}")
-        plt.savefig(vis_path+ f"density_{moi}.png")
+        plt.savefig(vis_path+ f"density_{moi}.png", bbox_inches='tight')
         plt.close("all")
 
     def get_traj_score(self, traj, moi):
