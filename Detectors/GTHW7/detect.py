@@ -23,6 +23,14 @@ def detect(args,*oargs):
   i=0
   detections=[]
   uuid_to_id={}
+  # first populate the uuid. it ensures consistent id across cameras
+  for responses in data:
+      for response in responses['camera_responses']:
+            for gt in response['annotations']:
+                if(gt['cuboid_uuid']) not in uuid_to_id:
+                    uuid_to_id[gt['cuboid_uuid']]=id_counter
+                    id_counter=id_counter+1
+
   for responses in data:
       for response in responses['camera_responses']:
           # print(response['camera_used'])
@@ -30,6 +38,7 @@ def detect(args,*oargs):
               # print(len(response['annotations']))
               for gt in response['annotations']:
                   if(gt['cuboid_uuid']) not in uuid_to_id:
+                      raise "this should not happen"
                       uuid_to_id[gt['cuboid_uuid']]=id_counter
                       id_counter=id_counter+1
                   uuid=gt['cuboid_uuid']
