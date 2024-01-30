@@ -576,6 +576,48 @@ def vis_contact_point_top(args):
     out_cap.release()
     return SucLog("sucessfully viz-ed contact points on top view")
 
+def vis_contact_point_top_mc(args, args_mc):
+    args_mc_flat = flatten_args(args_mc)
+    save_path = args.VisContactPointTopPth
+
+    # get number of frames and fps from one of the videos
+    cap = cv2.VideoCapture(args_mc_flat[0].Video)
+    if (cap.isOpened()== False): return FailLog("could not open input video")
+
+    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    cap.release()
+
+    # get top view from one of the videos
+    second_image_path = args_mc_flat[0].HomographyTopView
+    img2 = cv.imread(second_image_path)
+    rows2, cols2, dim2 = img2.shape
+    frame_width , frame_height  = cols2 , rows2
+
+    out_cap = cv2.VideoWriter(save_path,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
+    color = (0, 0, 102)
+
+    if not args.ForNFrames is None:
+        frames = int(min(frames, args.ForNFrames))
+
+    # load backprojected detections
+    dfs = []
+    for arg_i in args_mc_flat:
+        df = pd.read_pickle(arg_i.ReprojectedPklForDetection)
+        dfs.append(df)
+
+    # plot points on each frame
+    for frame_num in tqdm(range(frames)):
+        img2_fn = copy.deepcopy(img2)
+        for df in dfs:
+            df_fn = df[df.fn==(frame_num)]
+            for i, row in df_fn.iterrows():
+                img2_fn = Detect.draw_point_on_image(img2_fn, row.x, row.y)
+
+        out_cap.write(img2_fn)
+    out_cap.release()
+    return SucLog("sucessfully viz-ed MC contact points on top view")
+
 def eval_contact_points(args):
     # get 2D GT args
     # get 3D GT args
