@@ -868,18 +868,19 @@ def complete_args(args):
         args.TrackPostProc or args.Count or args.VisROI or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or\
         args.EvalCount or args.TrackEval or args.DetPostProc or args.IntegrateCountsMC or\
-        args.EvalCountMSfromMC:
+        args.EvalCountMSfromMC or args.EvalContactPoitnSelection:
         args = add_homographygui_related_path_to_args(args)
 
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or\
         args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop or\
         args.EvalCount or args.TrackEval or args.EvalContactPoitnSelection or args.DetPostProc or\
-        args.IntegrateCountsMC or args.EvalCountMSfromMC:
+        args.IntegrateCountsMC or args.EvalCountMSfromMC or args.EvalContactPoitnSelection:
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
 
-    if args.VisHomographyGUI or args.VisLabelledTrajectories or args.Meter or args.FindOptimalKDEBW:
+    if args.VisHomographyGUI or args.VisLabelledTrajectories or args.Meter or args.FindOptimalKDEBW or\
+        args.EvalContactPoitnSelection:
         args = add_vishomography_path_to_args(args)
 
     if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter or\
