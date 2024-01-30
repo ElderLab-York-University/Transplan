@@ -14,7 +14,7 @@ from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop, calc
 from Homography import homographygui
 from Homography import reproject
 from Homography import vishomographygui
-from Homography import vis_reprojected_tracks, vis_contact_point, vis_contact_point_top, eval_contact_points
+from Homography import vis_reprojected_tracks, vis_contact_point, vis_contact_point_top, eval_contact_points, vis_contact_point_top_mc
 from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_tracks, extract_common_tracks_multi
 from Evaluate import evaluate_tracking, cvpr
 from Maps import pix2meter
@@ -308,6 +308,13 @@ def VisCPTop(args):
         return log
     else: return WarningLog("skipped vis cp top")
 
+def VisCPTopMC(args, args_mc):
+    if args.VisCPTop:
+        print(ProcLog("vis cp top MC"))
+        log = vis_contact_point_top_mc(args, args_mc)
+        return log
+    else: return WarningLog("skipped vis cp top MC")
+
 def ExtractImages(args):
     if args.ExtractImages:
         print(ProcLog("extracting images"))
@@ -377,7 +384,9 @@ def main(args):
 def main_mc(args, args_mc):
     # main for multi camera
 
-    subtasks = [TrackEvaluateMC, AverageCounts, IntegratCountsMC, EvalCountMC]
+    subtasks = [VisCPTopMC,
+                TrackEvaluateMC,
+                AverageCounts, IntegratCountsMC, EvalCountMC]
     for subtask in subtasks:
         log = subtask(args,args_mc)
         if not isinstance(log, WarningLog):
@@ -451,6 +460,7 @@ def get_parser():
     parser.add_argument("--JustExitROI", help="select tracks that cross multiple edges of the roi", action="store_true")
     parser.add_argument("--WithinROI", help="select tracks that cross multiple edges of the roi", action="store_true")
     parser.add_argument("--ExitOrCrossROI", help="select tracks that either exit or cross multi roi", action="store_true")
+    parser.add_argument("--EnterOrCrossROI", help="select tracks that either exit or cross multi roi", action="store_true")
     parser.add_argument("--SelectToBeCounted", help="select tracks to be counted based on ROI", action="store_true")
     parser.add_argument("--UnfinishedTrackFrameTh", help="select tracks to be counted based on ROI", type=int, default=10)
     parser.add_argument("--UnstartedTrackFrameTh", help="select tracks to be counted based on ROI", type=int, default=10)
