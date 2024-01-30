@@ -639,7 +639,7 @@ def eval_contact_points(args):
         df.y2 = df.y2D2
 
     # get unique frames based on annotations
-    unique_frames = np.unique(df_gt_2d.fn)
+    unique_frames = np.unique(df_gt_3d.fn)
 
 
     # gatther all distances
@@ -655,17 +655,21 @@ def eval_contact_points(args):
         # use 2D args for matching 2D detections
         for i, row in df_fn.iterrows():
             gt_2d_match_row = get_det_with_max_iou(row, df_gt_2d_fn)
+            if gt_2d_match_row is None: #could not match
+                continue
             # match with uuid/id
-            gt_3d_match_row = df_gt_3d_fn[df_gt_3d_fn.id == gt_2d_match_row.id]
+            gt_3d_match_row = df_gt_3d_fn[df_gt_3d_fn.uuid == gt_2d_match_row.uuid]
 
             # first check if both 2d and 3d gt are available
             # if 3d and 2d are not available at the same time we will just skip the detection
             if len(gt_3d_match_row) == 0:
                 continue
 
-            cp_est    = [row.xcp, row.ycp]
-            cp_gt     = [gt_3d_match_row.xcp, gt_3d_match_row.ycp]
-            dist_row  = np.linalg.norm(np.array(cp_est) - np.array(cp_gt))
+            cp_est    = np.array([row.xcp, row.ycp])
+            cp_gt     = np.array([gt_3d_match_row.xcp.iloc[0], gt_3d_match_row.ycp.iloc[0]])
+            
+
+            dist_row  = np.linalg.norm(cp_est - cp_gt)
             distances.append(dist_row)
             
     cp_error_image = np.mean(distances)
