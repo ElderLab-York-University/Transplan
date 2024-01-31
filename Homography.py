@@ -618,6 +618,69 @@ def vis_contact_point_top_mc(args, args_mc):
     out_cap.release()
     return SucLog("sucessfully viz-ed MC contact points on top view")
 
+def eval_contact_points_ms(arg_top, args_mcss):
+    args_mcss_flat = flatten_args(args_mcss)
+    # gatther all distances
+    distances = []
+    for args in tqdm(args_mcss_flat):
+        # gett 2D GT args
+        # get 3D GT args
+        args_gt_2d = get_args_gt(args)
+        args_gt_3d = get_args_gt3D(args)
+
+        # read backprojected detections + contact points
+        df       = pd.read_pickle(args.ReprojectedPklForDetection)
+        df_gt_2d = pd.read_pickle(args_gt_2d.ReprojectedPklForDetection)
+        df_gt_3d = pd.read_pickle(args_gt_3d.ReprojectedPklForDetection)
+
+        # if detector is a 3D detector, modify x1, y1, x2, y2
+        # to x2D1, y2D1, x2D2, y2D2 so that it is consistent with
+        # a 2D detector
+        if "x2D1" in df.columns:
+            df.x1 = df.x2D1
+            df.y1 = df.y2D1
+            df.x2 = df.x2D2
+            df.y2 = df.y2D2
+
+        # get unique frames based on annotations
+        unique_frames = np.unique(df_gt_3d.fn)
+
+        # for each frame in annotations
+        for fn in unique_frames:
+            # get the detections for frame "fn"
+            df_fn       = df[df.fn == fn]
+            df_gt_2d_fn = df_gt_2d[df_gt_2d.fn == fn]
+            df_gt_3d_fn = df_gt_3d[df_gt_3d.fn == fn]
+
+            # use 2D args for matching 2D detections
+            for i, row in df_fn.iterrows():
+                gt_2d_match_row = get_det_with_max_iou(row, df_gt_2d_fn)
+                if gt_2d_match_row is None: #could not match
+                    continue
+                # match with uuid/id
+                gt_3d_match_row = df_gt_3d_fn[df_gt_3d_fn.uuid == gt_2d_match_row.uuid]
+
+                # first check if both 2d and 3d gt are available
+                # if 3d and 2d are not available at the same time we will just skip the detection
+                if len(gt_3d_match_row) == 0:
+                    continue
+
+                cp_est    = np.array([row.xcp, row.ycp])
+                cp_gt     = np.array([gt_3d_match_row.xcp.iloc[0], gt_3d_match_row.ycp.iloc[0]])
+                
+                dist_row  = np.linalg.norm(cp_est - cp_gt)
+                distances.append(dist_row)
+
+
+    cp_error_image = np.mean(distances)
+    print(cp_error_image)
+
+    df_data = {}
+    df_data["CPErrorImage"] = [cp_error_image]
+    df = pd.DataFrame.from_dict(df_data)
+    df.to_csv(arg_top.CPError, index=False)
+    return SucLog("evaluated CP selection MS")
+
 def eval_contact_points(args):
     # get 2D GT args
     # get 3D GT args
@@ -643,7 +706,8 @@ def eval_contact_points(args):
 
 
     # gatther all distances
-    distances = []
+    distances      = []
+    distances_top  = []
 
     # for each frame in annotations
     for fn in tqdm(unique_frames):
@@ -665,15 +729,106 @@ def eval_contact_points(args):
             if len(gt_3d_match_row) == 0:
                 continue
 
+            # image pixel error
             cp_est    = np.array([row.xcp, row.ycp])
             cp_gt     = np.array([gt_3d_match_row.xcp.iloc[0], gt_3d_match_row.ycp.iloc[0]])
-            
-
             dist_row  = np.linalg.norm(cp_est - cp_gt)
             distances.append(dist_row)
+
+            # top view pixel error(convertable to meter)
+            cp_est_top    = np.array([row.x, row.y])
+            cp_gt_top     = np.array([gt_3d_match_row.x.iloc[0], gt_3d_match_row.y.iloc[0]])
+            dist_row_top  = np.linalg.norm(cp_est_top - cp_gt_top)
+            distances_top.append(dist_row_top)
+            
             
     cp_error_image = np.mean(distances)
-    print(cp_error_image)
+    cp_error_top   = np.mean(distances_top)
+    print(cp_error_image, cp_error_top)
     # save this number somewhere
 
     return SucLog("evaluated CP selection")
+
+def eval_cp_MC(arg_top, args_mc):
+    args_mc_flat = flatten_args(args_mc)
+
+    # group 3D coordinates after matching with cuboids
+    uuid_to_xy = {}
+
+    for args in args_mc_flat:
+        # get 2D GT args
+        # get 3D GT args
+        args_gt_2d = get_args_gt(args)
+        args_gt_3d = get_args_gt3D(args)
+
+        # read backprojected detections + contact points
+        df       = pd.read_pickle(args.ReprojectedPklForDetection)
+        df_gt_2d = pd.read_pickle(args_gt_2d.ReprojectedPklForDetection)
+        df_gt_3d = pd.read_pickle(args_gt_3d.ReprojectedPklForDetection)
+
+        # if detector is a 3D detector, modify x1, y1, x2, y2
+        # to x2D1, y2D1, x2D2, y2D2 so that it is consistent with
+        # a 2D detector
+        if "x2D1" in df.columns:
+            df.x1 = df.x2D1
+            df.y1 = df.y2D1
+            df.x2 = df.x2D2
+            df.y2 = df.y2D2
+
+        # get unique frames based on annotations
+        unique_frames = np.unique(df_gt_3d.fn)
+
+        # for each frame in annotations
+        for fn in tqdm(unique_frames):
+            # get the detections for frame "fn"
+            df_fn       = df[df.fn == fn]
+            df_gt_2d_fn = df_gt_2d[df_gt_2d.fn == fn]
+            df_gt_3d_fn = df_gt_3d[df_gt_3d.fn == fn]
+
+            # use 2D args for matching 2D detections
+            for i, row in df_fn.iterrows():
+                gt_2d_match_row = get_det_with_max_iou(row, df_gt_2d_fn)
+                if gt_2d_match_row is None: #could not match
+                    continue
+                # match with uuid/id
+                gt_3d_match_row = df_gt_3d_fn[df_gt_3d_fn.uuid == gt_2d_match_row.uuid]
+
+                # first check if both 2d and 3d gt are available
+                # if 3d and 2d are not available at the same time we will just skip the detection
+                if len(gt_3d_match_row) == 0:
+                    continue
+
+                # top view pixel error(convertable to meter)
+                cp_est_top    = [row.x, row.y]
+                uuid = df_gt_3d_fn.uuid.iloc[0]
+
+                if not uuid in uuid_to_xy:
+                    uuid_to_xy[uuid] = []
+            
+                uuid_to_xy[uuid].append(cp_est_top)    
+            
+    # for each uuid, if there are more than one 3D coor compute average dist
+    def pairwise_distance_np(coordinates):
+        # Convert the list of coordinates to a NumPy array
+        points = np.array(coordinates)
+        # Calculate the difference matrix along each dimension
+        diff = points[:, np.newaxis, :] - points[np.newaxis, :, :]
+        # Compute the squared distances for each pair
+        squared_dist = np.sum(diff**2, axis=2)
+        # Take the square root to get the Euclidean distances
+        distances = np.sqrt(squared_dist)
+        # Since the distance matrix is symmetric, we take the upper triangle (excluding the diagonal) to avoid double counting
+        upper_triangle_indices = np.triu_indices_from(distances, k=1)
+        # Compute the average distance
+        average_distance = np.mean(distances[upper_triangle_indices])
+        return average_distance
+
+    distances_top = []
+    for uuid in uuid_to_xy:
+        if len(uuid_to_xy[uuid]) > 1: # if box is visible >=2 cams
+            distances_top.append(pairwise_distance_np(uuid_to_xy[uuid]))
+
+    cp_error_top   = np.mean(distances_top)
+    print(cp_error_top)
+
+    return SucLog("evaluated CP selection MC")
