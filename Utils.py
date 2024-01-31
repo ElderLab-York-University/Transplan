@@ -705,10 +705,16 @@ def add_check_points_path_to_args(args):
 def get_CPError_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results", "ContactPoints", "CPError.csv")
+    return os.path.join(args.Dataset, "Results", "ContactPoints", f"{file_name}.CPError.{args.Detector}.{args.BackprojectionMethod}.{args.TopView}.{args.ContactPoint}.csv")
+
+def get_CPErrorMC_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results", "ContactPoints", f"{file_name}.CPErrorMC.{args.Detector}.{args.BackprojectionMethod}.{args.TopView}.{args.ContactPoint}.csv")
 
 def add_contact_points_path_to_args(args):
-    args.CPError = get_CPError_path(args)
+    args.CPError   = get_CPError_path(args)
+    args.CPErrorMC = get_CPErrorMC_path(args)
     return args
 
 def flatten_args(args):
@@ -878,19 +884,20 @@ def complete_args(args):
         args.TrackPostProc or args.Count or args.VisROI or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or\
         args.EvalCount or args.TrackEval or args.DetPostProc or args.IntegrateCountsMC or\
-        args.EvalCountMSfromMC or args.EvalContactPoitnSelection:
+        args.EvalCountMSfromMC or args.EvalContactPoitnSelection or args.EvalContactPoitnSelectionMC:
         args = add_homographygui_related_path_to_args(args)
 
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or\
         args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop or\
         args.EvalCount or args.TrackEval or args.EvalContactPoitnSelection or args.DetPostProc or\
-        args.IntegrateCountsMC or args.EvalCountMSfromMC or args.EvalContactPoitnSelection:
+        args.IntegrateCountsMC or args.EvalCountMSfromMC or args.EvalContactPoitnSelection or\
+        args.EvalContactPoitnSelectionMC :
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
 
     if args.VisHomographyGUI or args.VisLabelledTrajectories or args.Meter or args.FindOptimalKDEBW or\
-        args.EvalContactPoitnSelection:
+        args.EvalContactPoitnSelection or args.EvalContactPoitnSelectionMC:
         args = add_vishomography_path_to_args(args)
 
     if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter or\
