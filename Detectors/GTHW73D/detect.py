@@ -278,6 +278,19 @@ def detect(args,*oargs):
                       r2_point5[1],r2_point6[1],r2_point7[1],r2_point8[1]])
         
         # check that bbox has atleast 1 corner in frame
+        def has_all_corners_in_frame(points_arr, dims):
+          def is_in_frame(point, dims):
+            if point[0] >= 0       and  point[1] >= 0 and\
+               point[0] < dims[0]  and  point[1] < dims[1]:
+              return 1
+            else:
+              return 0
+
+          for point in points_arr:
+            if not is_in_frame(point, dims):
+              return 0
+          return 1   
+
         def has_1corner_in_frame(points_arr, dims):
           def is_in_frame(point, dims):
             if point[0] >= 0       and  point[1] >= 0 and\
@@ -295,7 +308,7 @@ def detect(args,*oargs):
           else:
             return 0
 
-        if has_1corner_in_frame(points_arr, dims):
+        if has_all_corners_in_frame(points_arr, dims):
             p_arr = []
             for point in points_arr:
                 p_arr.append(point[0][0])
