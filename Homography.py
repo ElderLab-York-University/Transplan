@@ -622,6 +622,8 @@ def eval_contact_points_ms(arg_top, args_mcss):
     args_mcss_flat = flatten_args(args_mcss)
     # gatther all distances
     distances = []
+    distances_top  = []
+
     for args in tqdm(args_mcss_flat):
         # gett 2D GT args
         # get 3D GT args
@@ -664,21 +666,30 @@ def eval_contact_points_ms(arg_top, args_mcss):
                 # if 3d and 2d are not available at the same time we will just skip the detection
                 if len(gt_3d_match_row) == 0:
                     continue
-
+                
+                # compute distance on image
                 cp_est    = np.array([row.xcp, row.ycp])
                 cp_gt     = np.array([gt_3d_match_row.xcp.iloc[0], gt_3d_match_row.ycp.iloc[0]])
-                
                 dist_row  = np.linalg.norm(cp_est - cp_gt)
                 distances.append(dist_row)
 
+                # compute distance on ground
+                cp_est_top    = np.array([row.x, row.y])
+                cp_gt_top     = np.array([gt_3d_match_row.x.iloc[0], gt_3d_match_row.y.iloc[0]])
+                dist_row_top  = np.linalg.norm(cp_est_top - cp_gt_top)
+                distances_top.append(dist_row_top)
+
 
     cp_error_image = np.mean(distances)
-    print(cp_error_image)
+    cp_error_top   = np.mean(distances_top)
+    print(cp_error_image, cp_error_top)
 
     df_data = {}
     df_data["CPErrorImage"] = [cp_error_image]
+    df_data["CPErrorTop"]   = [cp_error_top]
     df = pd.DataFrame.from_dict(df_data)
     df.to_csv(arg_top.CPError, index=False)
+
     return SucLog("evaluated CP selection MS")
 
 def eval_contact_points(args):
@@ -747,6 +758,12 @@ def eval_contact_points(args):
     print(cp_error_image, cp_error_top)
     # save this number somewhere
 
+    df_data = {}
+    df_data["CPErrorImage"] = [cp_error_image]
+    df_data["CPErrorTop"]   = [cp_error_top]
+    df = pd.DataFrame.from_dict(df_data)
+    df.to_csv(args.CPError, index=False)
+
     return SucLog("evaluated CP selection")
 
 def eval_cp_MC(arg_top, args_mc):
@@ -779,7 +796,7 @@ def eval_cp_MC(arg_top, args_mc):
         unique_frames = np.unique(df_gt_3d.fn)
 
         # for each frame in annotations
-        for fn in tqdm(unique_frames):
+        for fn in unique_frames:
             # get the detections for frame "fn"
             df_fn       = df[df.fn == fn]
             df_gt_2d_fn = df_gt_2d[df_gt_2d.fn == fn]
@@ -829,6 +846,30 @@ def eval_cp_MC(arg_top, args_mc):
             distances_top.append(pairwise_distance_np(uuid_to_xy[uuid]))
 
     cp_error_top   = np.mean(distances_top)
-    print(cp_error_top)
 
-    return SucLog("evaluated CP selection MC")
+    df_data = {}
+    df_data["CPErrorMC"]   = [cp_error_top]
+    df = pd.DataFrame.from_dict(df_data)
+    df.to_csv(arg_top.CPErrorMC, index=False)
+
+    return cp_error_top, len(distances_top)
+
+def eval_cp_MC_MS(args, args_ms, args_mcs):
+    errors , supports = [], []
+    for arg_ms, arg_mc in tqdm(zip(args_ms, args_mcs), total=len(args_ms)):
+        error, support = eval_cp_MC(arg_ms, arg_mc)
+        errors.append(error)
+        supports.append(support)
+    
+    errors = np.array(errors)
+    supports = np.array(supports)
+
+    top_error = np.sum(errors * supports) / np.sum(supports)
+    print(top_error)
+
+    df_data = {}
+    df_data["CPErrorMC"]   = [top_error]
+    df = pd.DataFrame.from_dict(df_data)
+    df.to_csv(args.CPErrorMC, index=False)
+
+    return SucLog("evaluated CP selection MC MS")
