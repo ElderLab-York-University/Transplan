@@ -702,6 +702,15 @@ def add_check_points_path_to_args(args):
         args.DetectorCheckPointDir = get_detector_check_point_dir(args)
     return args
 
+def get_CPError_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results", "ContactPoints", "CPError.csv")
+
+def add_contact_points_path_to_args(args):
+    args.CPError = get_CPError_path(args)
+    return args
+
 def flatten_args(args):
     """
     recursive func to flatten a nexted list of args
@@ -862,6 +871,7 @@ def complete_args(args):
     args = add_images_folder_to_args(args)
 
     args = add_check_points_path_to_args(args)
+    args = add_contact_points_path_to_args(args)
 
     if args.HomographyGUI or args.Homography or args.VisHomographyGUI or\
         args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or\
@@ -952,6 +962,7 @@ def check_config(args):
     dsm_path    = os.path.join(results_path, "DSM")
     images_path = os.path.join(results_path, "Images")
     check_points_path = os.path.join(results_path, "CheckPoints")
+    contact_point_path = os.path.join(results_path, "ContactPoints")
 
     try: os.system(f"mkdir -p {results_path}")
     except: pass
@@ -976,6 +987,8 @@ def check_config(args):
     try: os.system(f"mkdir -p {images_path}")
     except: pass
     try: os.system(f"mkdir -p {check_points_path}")
+    except: pass
+    try: os.system(f"mkdir -p {contact_point_path}")
     except: pass
 
 def get_conda_envs():
