@@ -14,7 +14,7 @@ from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop, calc
 from Homography import homographygui
 from Homography import reproject
 from Homography import vishomographygui
-from Homography import vis_reprojected_tracks, vis_contact_point, vis_contact_point_top, eval_contact_points, vis_contact_point_top_mc
+from Homography import vis_reprojected_tracks, vis_contact_point, vis_contact_point_top, eval_contact_points, vis_contact_point_top_mc, eval_contact_points_ms, eval_cp_MC
 from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_tracks, extract_common_tracks_multi
 from Evaluate import evaluate_tracking, cvpr
 from Maps import pix2meter
@@ -301,6 +301,20 @@ def EvalCPSelection(args):
         return log
     else: return WarningLog("skipped contact point evaluation") 
 
+def EvalCPSelection_MS(args, args_ms, args_mcs):
+    if args.EvalContactPoitnSelection:
+        print(ProcLog("evaluating contact points MS"))
+        log = eval_contact_points_ms(args, args_mcs)
+        return log
+    else: return WarningLog("skipped contact point evaluation MS") 
+
+def EvalCPSelection_MC(args, args_mc):
+    if args.EvalContactPoitnSelection:
+        print(ProcLog("evaluating contact points MC"))
+        log = eval_cp_MC(args, args_mc)
+        return log
+    else: return WarningLog("skipped contact point evaluation MC")
+
 def VisCPTop(args):
     if args.VisCPTop:
         print(ProcLog("vis cp top"))
@@ -384,7 +398,7 @@ def main(args):
 def main_mc(args, args_mc):
     # main for multi camera
 
-    subtasks = [VisCPTopMC,
+    subtasks = [VisCPTopMC, EvalCPSelection_MC,
                 TrackEvaluateMC,
                 AverageCounts, IntegratCountsMC, EvalCountMC]
     for subtask in subtasks:
@@ -394,7 +408,8 @@ def main_mc(args, args_mc):
 
 def main_ms(args, args_ms, args_mcs):
     # main for multi segments
-    subtasks = [ConvertDetsToCOCO_MS, TrackEvaluateMS,
+    subtasks = [ConvertDetsToCOCO_MS, EvalCPSelection_MS,
+                TrackEvaluateMS,
                 ExtractCommonTracksMulti, VisLabelledTrajectoriesMulti,
                 CountMS, EvalCountMS, EvalCountMSfromMC]
 
