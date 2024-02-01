@@ -52,6 +52,7 @@ class SubTaskExt:
     Json = "json"
     Npy = "npy"
     Csv = "csv"
+    VisPose = "MP4"
 
 class SubTaskMarker:
     Detection     = "detection"
@@ -69,6 +70,8 @@ class SubTaskMarker:
     VisROI = "visROI"
     IdMatched = "IdMatched"
     MCTrackDis = "MCTrackDist"
+    Pose       = "Pose"
+    PoseVis    = "PoseVis"
     
 class Puncuations:
     Dot = "."
@@ -97,6 +100,40 @@ class ProcLog(Log):
 class SucLog(Log):
     def __init__(self, message) -> None:
         super().__init__(message, bcolors.OKGREEN, Tags.SUCC)
+
+def get_pose_path(args):
+    raise NotImplementedError
+    # add detector version to poser
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Pose",file_name + Puncuations.Dot + SubTaskMarker.Pose + Puncuations.Dot + args.Detector + Puncuations.Dot + "pkl")
+
+def get_pose_vis_path(args):
+    raise NotImplementedError
+    # add detector version to poser
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.PoseVis + Puncuations.Dot + args.Detector + Puncuations.Dot + SubTaskExt.VisPose)
+
+def get_epc_pose_dist_pth(args):
+    raise NotImplementedError
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "PoseDist" + Puncuations.Dot + args.Detector+ Puncuations.Dot+ args.Tracker+ Puncuations.Dot + "png")
+
+def get_epc_mean_pose_pth(args):
+    raise NotImplementedError
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "MeanPose" + Puncuations.Dot + args.Detector+ Puncuations.Dot+ args.Tracker+ Puncuations.Dot + "png")
+
+def add_pose_result_path_to_args(args):
+    args.PosePth = get_pose_path(args)
+    return args
+
+def add_pose_vis_path_to_args(args):
+    args.PoseVisPth = get_pose_vis_path(args)
+    return args
 
 def get_detection_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -947,6 +984,11 @@ def complete_args(args):
     if args.FindOptimalKDEBW:
         args = add_opt_bw_path(args)
 
+    # add pose path
+    if args.ExtractPose or args.VisPose:
+        args = add_pose_result_path_to_args(args)
+        args = add_pose_vis_path_to_args(args)
+
     args = add_correct_roi_to_args(args)
     args = revert_args_with_params(args)
     return args
@@ -979,6 +1021,7 @@ def check_config(args):
     images_path = os.path.join(results_path, "Images")
     check_points_path = os.path.join(results_path, "CheckPoints")
     contact_point_path = os.path.join(results_path, "ContactPoints")
+    pose_path       = os.path.join(results_path, "Pose")
 
     try: os.system(f"mkdir -p {results_path}")
     except: pass
@@ -1005,6 +1048,8 @@ def check_config(args):
     try: os.system(f"mkdir -p {check_points_path}")
     except: pass
     try: os.system(f"mkdir -p {contact_point_path}")
+    except: pass
+    try: os.system(f"mkdir -p {pose_path}")
     except: pass
 
 def get_conda_envs():

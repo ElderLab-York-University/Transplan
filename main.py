@@ -23,6 +23,21 @@ from counting.counting import find_opt_bw, eval_count, eval_count_multi, eval_co
 from Clustering import cluster
 from CountingMC import AverageCountsMC, IntegrateCounts
 from Segment import segment, vis_segment, SegmentPostProc
+from Pose import extract_pose, vis_pose, vis_detect_top_mc
+
+def ExtractPose(args):
+    if args.ExtractPose:
+        print(ProcLog("pose estimation"))
+        log = extract_pose(args)
+        return log
+    else: return WarningLog("skipped pose estimation step")
+
+def VisPose(args):
+    if args.VisPose:
+        print(ProcLog("visulising pose estimation"))
+        log = vis_pose(args)
+        return log
+    else: return WarningLog("skipped pose visualization")
 
 def Preprocess(args):
     if args.Preprocess:
@@ -399,6 +414,7 @@ def main(args):
                 HomographyGUI, VisHomographyGUI, VisROI,
                 Segment, SegPostProc, VisSegment,
                 Detect, DetPostProc, VisDetect, ConvertDetsToCOCO,
+                ExtractPose, VisPose,
                 Track, Homography, Pix2Meter, TrackPostProc, TrackEvaluate,
                 VisTrack, VisTrajectories, VisTrackTop,
                 VisContactPoint, VisCPTop, EvalCPSelection,
@@ -569,6 +585,11 @@ def get_parser():
 
     parser.add_argument("--EvalContactPoitnSelection", help="evaluate contact point selection method using 2D-3D GT", action='store_true')
     parser.add_argument("--EvalContactPoitnSelectionMC", help="evaluate contact point selection method using multi camera", action='store_true')
+
+    parser.add_argument("--ExtractPose", help="given detection model and detection results, provide pose information for each object", action='store_true')
+    parser.add_argument("--VisPose", help="visulaize pose estimation on video", action='store_true')
+    parser.add_argument("--Poser", help="Pose estimator to use", type=str)
+    parser.add_argument("--PoseTh", help="set the threshold for checkpoints in a pose to be used", type=float, default=0.3)
 
     return parser
     
