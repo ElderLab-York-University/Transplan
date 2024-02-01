@@ -278,6 +278,11 @@ def get_counting_stat_pth(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Counting",file_name + Puncuations.Dot + SubTaskMarker.Counting + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + args.CountMetric +Puncuations.Dot +SubTaskExt.Csv)
 
+def get_counting_stat_cam_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Counting",file_name + Puncuations.Dot + SubTaskMarker.Counting+".CamBased"+ Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + args.CountMetric +Puncuations.Dot +SubTaskExt.Csv)
+
 def get_counter_cached_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -516,9 +521,11 @@ def add_meter_path_to_args(args):
 def add_count_path_to_args(args):
     counting_result_path = get_counting_res_pth(args)
     counting_stat_path = get_counting_stat_pth(args)
+    counting_stat_cam_path = get_counting_stat_cam_path(args)
     counting_idmatching_path = get_counting_idmatching_pth(args)
     args.CountingResPth = counting_result_path
     args.CountingStatPth = counting_stat_path
+    args.CountingStatCameraBasedPth = counting_stat_cam_path
     args.CountingIdMatchPth = counting_idmatching_path
     return args
 
@@ -884,7 +891,8 @@ def complete_args(args):
         args.TrackPostProc or args.Count or args.VisROI or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or\
         args.EvalCount or args.TrackEval or args.DetPostProc or args.IntegrateCountsMC or\
-        args.EvalCountMSfromMC or args.EvalContactPoitnSelection or args.EvalContactPoitnSelectionMC:
+        args.EvalCountMSfromMC or args.EvalContactPoitnSelection or args.EvalContactPoitnSelectionMC or\
+        args.EvalCountCamera:
         args = add_homographygui_related_path_to_args(args)
 
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or\
@@ -892,12 +900,12 @@ def complete_args(args):
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop or\
         args.EvalCount or args.TrackEval or args.EvalContactPoitnSelection or args.DetPostProc or\
         args.IntegrateCountsMC or args.EvalCountMSfromMC or args.EvalContactPoitnSelection or\
-        args.EvalContactPoitnSelectionMC :
+        args.EvalContactPoitnSelectionMC or args.EvalCountCamera:
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
 
     if args.VisHomographyGUI or args.VisLabelledTrajectories or args.Meter or args.FindOptimalKDEBW or\
-        args.EvalContactPoitnSelection or args.EvalContactPoitnSelectionMC:
+        args.EvalContactPoitnSelection or args.EvalContactPoitnSelectionMC or args.EvalCountCamera:
         args = add_vishomography_path_to_args(args)
 
     if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter or\
@@ -915,7 +923,8 @@ def complete_args(args):
         args = add_meter_path_to_args(args)
 
     if args.Count or args.VisTrackMoI or args.AverageCountsMC or\
-         args.EvalCount or args.IntegrateCountsMC or args.EvalCountMSfromMC or args.EvalCountMC:
+        args.EvalCount or args.IntegrateCountsMC or args.EvalCountMSfromMC or\
+        args.EvalCountMC or args.EvalCountCamera:
         args = add_count_path_to_args(args)
 
     if args.Cluster or args.TrackLabelingGUI:
@@ -927,7 +936,7 @@ def complete_args(args):
     if args.VisTrackMoI:
         args = add_vis_tracking_moi_path_to_args(args)
 
-    if args.Count or args.EvalCount:
+    if args.Count or args.EvalCount or args.EvalCountCamera:
         args = add_cached_counter_path_to_args(args)
         args = add_density_path_to_args(args)
         

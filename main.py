@@ -19,7 +19,7 @@ from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_
 from Evaluate import evaluate_tracking, cvpr
 from Maps import pix2meter
 from counting import counting
-from counting.counting import find_opt_bw, eval_count, eval_count_multi
+from counting.counting import find_opt_bw, eval_count, eval_count_multi, eval_count_multi_per_camera
 from Clustering import cluster
 from CountingMC import AverageCountsMC, IntegrateCounts
 from Segment import segment, vis_segment, SegmentPostProc
@@ -174,6 +174,13 @@ def EvalCountMS(args, args_ms, args_mcs):
         log = eval_count_multi(args, args_mcs)
         return log
     else: return WarningLog("skipped eval counting subtask")
+
+def EvalCountCameraMS(args, args_ms, args_mcs):
+    if args.EvalCountCamera:
+        print(ProcLog("evaluating Counting Camera MS"))
+        log = eval_count_multi_per_camera(args, args_mcs)
+        return log
+    else: return WarningLog("skipped eval counting camera based subtask")
 
 def EvalCountMSfromMC(args, args_ms, args_mcs):
     if args.EvalCountMSfromMC:
@@ -418,7 +425,7 @@ def main_ms(args, args_ms, args_mcs):
     subtasks = [ConvertDetsToCOCO_MS, EvalCPSelection_MS, EvalCPSelection_MC_MS,
                 TrackEvaluateMS,
                 ExtractCommonTracksMulti, VisLabelledTrajectoriesMulti,
-                CountMS, EvalCountMS, EvalCountMSfromMC]
+                CountMS, EvalCountMS, EvalCountMSfromMC, EvalCountCameraMS]
 
     for sub in subtasks:
         log = sub(args, args_ms, args_mcs)
@@ -457,6 +464,7 @@ def get_parser():
     parser.add_argument("--CountVisDensity", help="if visualize densities of trained KDE", action="store_true")
     parser.add_argument("--CountMetric", help="name of the metric used in counting part",type=str)
     parser.add_argument("--EvalCount", help="Evaluate the Counting Result you got from Counting part", action="store_true")
+    parser.add_argument("--EvalCountCamera", help="Evaluate counting based on camera", action="store_true")
     parser.add_argument("--Meter", help="convert reprojected track coordinated into meter", action="store_true")
     parser.add_argument("--Cluster", help="if to perform clustering", action="store_true")
     parser.add_argument("--ClusterMetric", help="The name of the distance metric used to compute the similarity metrics",type=str)
