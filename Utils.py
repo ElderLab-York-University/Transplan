@@ -819,6 +819,13 @@ def get_args_gt3D(args):
     args_gt3D=complete_args(args_gt3D)
     return get_args(args_gt3D)
 
+def get_MetaData_GT_MC(args_mc):
+    gt = args_mc[0].MetaData["gt"]
+    for arg_mc in args_mc:
+        for key in arg_mc.MetaData["gt"]:
+            gt[key] = max(gt[key], arg_mc.MetaData["gt"][key])
+    return gt
+
 def get_args_mc(args):
     args_mc = get_sub_args(args)
     for i, arg_c in enumerate(args_mc):
@@ -830,6 +837,7 @@ def get_args_mc(args):
     args = get_args(args)
     args = complete_args_mc(args)
     args.MetaData = args_mc[0].MetaData
+    args.MetaData["gt"] = get_MetaData_GT_MC(args_mc)
     args.HomographyNPY = args_mc[0].HomographyNPY
     args.HomographyTopView = args_mc[0].HomographyTopView
 

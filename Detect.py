@@ -129,6 +129,10 @@ def visdetect_3d(args):
             frame = draw_3Dbox_on_image(frame, row)
             # draw 2D box
             frame = draw_box_on_image(frame, row.x2D1, row.y2D1, row.x2D2, row.y2D2, c=(0, 0, 255))
+            # draw object uuid on top
+            # cv2.putText(frame, f'id:', (int(row.x2D1), int(row.y2D1)-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+            # cv2.putText(frame, f'{row.id}', (int(row.x2D1) + 60, int(row.y2D1)-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 5)
+            # cv2.putText(frame, f'{row.id}', (int(row.x2D1) + 60, int(row.y2D1)-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (144, 251, 144), 2)
             
         out_cap.write (frame)
     cap.release()

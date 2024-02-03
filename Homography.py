@@ -771,6 +771,14 @@ def eval_cp_MC(arg_top, args_mc):
 
     # group 3D coordinates after matching with cuboids
     uuid_to_xy = {}
+    list_args_gt_2d = []
+    list_args_gt_3d = []
+    list_df         = []
+    list_df_gt_2d   = []
+    list_df_gt_3d   = []
+
+    list_frames = []
+    list_ids    = []
 
     for args in args_mc_flat:
         # get 2D GT args
@@ -791,38 +799,55 @@ def eval_cp_MC(arg_top, args_mc):
             df.y1 = df.y2D1
             df.x2 = df.x2D2
             df.y2 = df.y2D2
+        
 
         # get unique frames based on annotations
-        unique_frames = np.unique(df_gt_3d.fn)
+        unique_frames = np.unique(df_gt_3d.fn).tolist()
+        unique_ids    = np.unique(df_gt_3d.id).tolist()
 
-        # for each frame in annotations
-        for fn in unique_frames:
-            # get the detections for frame "fn"
-            df_fn       = df[df.fn == fn]
-            df_gt_2d_fn = df_gt_2d[df_gt_2d.fn == fn]
-            df_gt_3d_fn = df_gt_3d[df_gt_3d.fn == fn]
 
-            # use 2D args for matching 2D detections
-            for i, row in df_fn.iterrows():
-                gt_2d_match_row = get_det_with_max_iou(row, df_gt_2d_fn)
-                if gt_2d_match_row is None: #could not match
-                    continue
-                # match with uuid/id
-                gt_3d_match_row = df_gt_3d_fn[df_gt_3d_fn.uuid == gt_2d_match_row.uuid]
+        list_args_gt_2d.append(args_gt_2d)
+        list_args_gt_3d.append(args_gt_3d)
+        list_df.append(df)
+        list_df_gt_2d.append(df_gt_2d)
+        list_df_gt_3d.append(df_gt_3d)
+        list_frames.extend(unique_frames)
+        list_ids.extend(unique_ids)
 
-                # first check if both 2d and 3d gt are available
-                # if 3d and 2d are not available at the same time we will just skip the detection
-                if len(gt_3d_match_row) == 0:
-                    continue
+    unique_frames = np.unique(list_frames)  
+    unique_ids = np.unique(list_ids)
 
-                # top view pixel error(convertable to meter)
-                cp_est_top    = [row.x, row.y]
-                uuid = df_gt_3d_fn.uuid.iloc[0]
+    # for each frame in annotations
+    for fn in tqdm(unique_frames[:1]):
+        for id in tqdm(unique_ids):
+        raise NotImplementedError
+        # get the detections for frame "fn"
+        df_fn       = df[df.fn == fn]
+        df_gt_2d_fn = df_gt_2d[df_gt_2d.fn == fn]
+        df_gt_3d_fn = df_gt_3d[df_gt_3d.fn == fn]
 
-                if not uuid in uuid_to_xy:
-                    uuid_to_xy[uuid] = []
-            
-                uuid_to_xy[uuid].append(cp_est_top)    
+        # use 2D args for matching 2D detections
+        for i, row in df_fn.iterrows():
+            gt_2d_match_row = get_det_with_max_iou(row, df_gt_2d_fn)
+            if gt_2d_match_row is None: #could not match
+                continue
+            # match with uuid/id
+            gt_3d_match_row = df_gt_3d_fn[df_gt_3d_fn.id == gt_2d_match_row.id]
+
+            # first check if both 2d and 3d gt are available
+            # if 3d and 2d are not available at the same time we will just skip the detection
+            if len(gt_3d_match_row) == 0:
+                continue
+
+            # top view pixel error(convertable to meter)
+            cp_est_top    = [row.x, row.y]
+
+            id = df_gt_3d_fn.id.iloc[0]
+
+            if not (fn, id) in uuid_to_xy:
+                uuid_to_xy[(fn, id)] = []
+        
+            uuid_to_xy[(fn, id)].append(cp_est_top)    
             
     # for each uuid, if there are more than one 3D coor compute average dist
     def pairwise_distance_np(coordinates):
@@ -840,12 +865,15 @@ def eval_cp_MC(arg_top, args_mc):
         average_distance = np.mean(distances[upper_triangle_indices])
         return average_distance
 
-    distances_top = []
-    for uuid in uuid_to_xy:
-        if len(uuid_to_xy[uuid]) > 1: # if box is visible >=2 cams
-            distances_top.append(pairwise_distance_np(uuid_to_xy[uuid]))
+    print(uuid_to_xy)
+    return
 
-    cp_error_top   = np.mean(distances_top)
+    distances_top = []
+    for key in tqdm(uuid_to_xy):
+        if len(uuid_to_xy[key]) > 1: # if box is visible >=2 cams
+            distances_top.append(pairwise_distance_np(uuid_to_xy[key]))
+
+    cp_error_top = np.mean(distances_top)
 
     df_data = {}
     df_data["CPErrorMC"]   = [cp_error_top]
