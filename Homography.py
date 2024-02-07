@@ -820,34 +820,34 @@ def eval_cp_MC(arg_top, args_mc):
     # for each frame in annotations
     for fn in tqdm(unique_frames[:1]):
         for id in tqdm(unique_ids):
-        raise NotImplementedError
+        # raise NotImplementedError
         # get the detections for frame "fn"
-        df_fn       = df[df.fn == fn]
-        df_gt_2d_fn = df_gt_2d[df_gt_2d.fn == fn]
-        df_gt_3d_fn = df_gt_3d[df_gt_3d.fn == fn]
+            df_fn       = df[df.fn == fn]
+            df_gt_2d_fn = df_gt_2d[df_gt_2d.fn == fn]
+            df_gt_3d_fn = df_gt_3d[df_gt_3d.fn == fn]
 
-        # use 2D args for matching 2D detections
-        for i, row in df_fn.iterrows():
-            gt_2d_match_row = get_det_with_max_iou(row, df_gt_2d_fn)
-            if gt_2d_match_row is None: #could not match
-                continue
-            # match with uuid/id
-            gt_3d_match_row = df_gt_3d_fn[df_gt_3d_fn.id == gt_2d_match_row.id]
+            # use 2D args for matching 2D detections
+            for i, row in df_fn.iterrows():
+                gt_2d_match_row = get_det_with_max_iou(row, df_gt_2d_fn)
+                if gt_2d_match_row is None: #could not match
+                    continue
+                # match with uuid/id
+                gt_3d_match_row = df_gt_3d_fn[df_gt_3d_fn.id == gt_2d_match_row.id]
 
-            # first check if both 2d and 3d gt are available
-            # if 3d and 2d are not available at the same time we will just skip the detection
-            if len(gt_3d_match_row) == 0:
-                continue
+                # first check if both 2d and 3d gt are available
+                # if 3d and 2d are not available at the same time we will just skip the detection
+                if len(gt_3d_match_row) == 0:
+                    continue
 
-            # top view pixel error(convertable to meter)
-            cp_est_top    = [row.x, row.y]
+                # top view pixel error(convertable to meter)
+                cp_est_top    = [row.x, row.y]
 
-            id = df_gt_3d_fn.id.iloc[0]
+                id = df_gt_3d_fn.id.iloc[0]
 
-            if not (fn, id) in uuid_to_xy:
-                uuid_to_xy[(fn, id)] = []
-        
-            uuid_to_xy[(fn, id)].append(cp_est_top)    
+                if not (fn, id) in uuid_to_xy:
+                    uuid_to_xy[(fn, id)] = []
+            
+                uuid_to_xy[(fn, id)].append(cp_est_top)    
             
     # for each uuid, if there are more than one 3D coor compute average dist
     def pairwise_distance_np(coordinates):

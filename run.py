@@ -24,8 +24,8 @@ datasets     = [
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
-split_part   = ["train"]
-segment_part = ["Seg01"]
+split_part   = ["train", "valid"]
+segment_part = None
 source_part  = None
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
@@ -42,8 +42,8 @@ cached_datasets     = [
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
-cached_split_part   = ["train"]
-cached_segment_part = ["Seg01"]
+cached_split_part   = ["train", "valid"]
+cached_segment_part = None
 cached_source_part  = None
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
@@ -56,7 +56,7 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
-detectors = ["GTHW73D"]
+detectors = ["YoloX"]
 
 # choose detector version (checkpoints, ...)
 # options: ["", "HW7FT"]
@@ -94,18 +94,18 @@ cnt_metrics = ["gkde"]
 # setup training hyperparameters
 # train split (train_sp) and valid split(valid_sp) should be selsected
 # from "splits"
-train_sp     = None
-valid_sp     = None
-batch_size   = None
-num_workers  = None
-epochs       = None
-val_interval = None
+train_sp     = "train"
+valid_sp     = "valid"
+batch_size   = 2
+num_workers  = 2
+epochs       = 20
+val_interval = 1
 
 # projection hypterparameters
 # --TopView=[GoogleMap/OrthoPhoto] --BackprojectionMethod=[Homography/DSM]
 # cp_methods = ["BottomPoint", "Center", "BottomSeg", "LineSeg", "BottomPoint3D"]
 tp_view    =  "GoogleMap"
-cp_methods = ["BottomPoint3D"]
+cp_methods = ["BottomPoint"]
 bp_method  =  "Homography"
 resamp_th  =  2
 
@@ -118,9 +118,9 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     ########################################################
     # 0. extract images from video
     # os.system(f"python3 main.py --Dataset={src} --ExtractImages)
-    ########################################################
-    # print(f" extracting images from : {src}")
-    # os.system(f"python3 main.py --Dataset={src} --ExtractImages")
+    ######################################################
+    print(f" extracting images from : {src}")
+    os.system(f"python3 main.py --Dataset={src} --ExtractImages")
 
     ########################################################
     # 1. estimate the Homography Metrix using Homography GUI 
@@ -400,14 +400,14 @@ for src in segments:
     #  --BackprojectSource=detections --TopView=w={tp_view} --BackprojectionMethod={bp_method} 
     #  --ContactPoint={cp_method} --ForNFrames=600")
     ########################################################
-    for det in detectors:
-        for cp_method in cp_methods:
-            print(f"cp evaluation ----> src:{src} det:{det} cp:{cp_method}")
-            os.system(f"python3 main.py --MultiCam  --Dataset={src}  --Detector={det} --DetectorVersion={det_v} \
-                        --EvalContactPoitnSelectionMC\
-                        --GTDetector={GT_det} --GTDetector3D={GT_det_3D}\
-                        --BackprojectSource=detections --TopView={tp_view} --BackprojectionMethod={bp_method}\
-                        --ContactPoint={cp_method} --GTContactPoint={gt_cp_method} --GT3DContactPoint={gt3D_cp_method}")
+    # for det in detectors:
+    #     for cp_method in cp_methods:
+    #         print(f"cp evaluation ----> src:{src} det:{det} cp:{cp_method}")
+    #         os.system(f"python3 main.py --MultiCam  --Dataset={src}  --Detector={det} --DetectorVersion={det_v} \
+    #                     --EvalContactPoitnSelectionMC\
+    #                     --GTDetector={GT_det} --GTDetector3D={GT_det_3D}\
+    #                     --BackprojectSource=detections --TopView={tp_view} --BackprojectionMethod={bp_method}\
+    #                     --ContactPoint={cp_method} --GTContactPoint={gt_cp_method} --GT3DContactPoint={gt3D_cp_method}")
 
     ########################################################
     # 3.7 Vis Contact Points and BP Points
@@ -462,7 +462,7 @@ for split, cached_cnt_pth in zip(splits, cached_splits):
     # os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --ConvertDetsToCOCO --KeepCOCOClasses")
     ########################################################
     # for det in detectors:
-    #     os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --ConvertDetsToCOCO")
+    #     os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --ConvertDetsToCOCO --KeepCOCOClasses")
 
     ########################################################
     # 3.8 Evaluate contact point selection method
