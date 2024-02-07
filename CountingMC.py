@@ -33,18 +33,18 @@ def IntegrateCounts(args, args_mc):
     averaged = {}
     for arg, estimate in zip(args_mc, estimates):
         if arg.SubID[-3:] == "sc1":
-            for moi in ["1", "11", "12"]:
+            for moi in ["3", "4", "8"]:
                 averaged[moi] = estimate[moi] if moi in estimate else 0
         elif arg.SubID[-3:] == "sc2":
-            for moi in ["4", "9", "10"]:
+            for moi in ["5", "10"]:
                 averaged[moi] = estimate[moi] if moi in estimate else 0
 
         elif arg.SubID[-3:] == "sc3":
-            for moi in ["3", "6", "7", "8"]:
+            for moi in ["1", "2", "12"]:
                 averaged[moi] = estimate[moi] if moi in estimate else 0
 
         elif arg.SubID[-3:] == "sc4":
-            for moi in ["2", "5"]:
+            for moi in ["6", "7", "9", "11"]:
                 averaged[moi] = estimate[moi] if moi in estimate else 0
     
     with open(args.CountingResPth, "w") as f:

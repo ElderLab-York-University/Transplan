@@ -10,7 +10,7 @@
 from Libs import *
 from Utils import *
 from Detect import detect, visdetect,detectpostproc, visroi, extract_images, detections_to_coco, fine_tune_detector_mp
-from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop, calculate_distance
+from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop, calculate_distance, find_track_length_th_MS
 from Homography import homographygui
 from Homography import reproject
 from Homography import vishomographygui
@@ -386,6 +386,13 @@ def TrackEvaluateMS(args, args_ms, args_mcs):
         return log
     else: return WarningLog("skipped TrackEvaluate on MS")
 
+def SweepTrackLenForBias(args, args_ms, args_mcs):
+    if args.SweepTrackLenforBias:
+        print(ProcLog("Sweep TrackLen for Bias"))
+        log = find_track_length_th_MS(args, args_mcs)
+        return log
+    else: return WarningLog("skipped sweep trackLen for Bias")
+
 def FineTuneDetectorMP(args, args_mp, args_mss, args_mcs):
     if args.FineTune:
         print(ProcLog(f"Finetunning detectors"))
@@ -439,7 +446,7 @@ def main_mc(args, args_mc):
 def main_ms(args, args_ms, args_mcs):
     # main for multi segments
     subtasks = [ConvertDetsToCOCO_MS, EvalCPSelection_MS, EvalCPSelection_MC_MS,
-                TrackEvaluateMS,
+                TrackEvaluateMS, SweepTrackLenForBias,
                 ExtractCommonTracksMulti, VisLabelledTrajectoriesMulti,
                 CountMS, EvalCountMS, EvalCountMSfromMC, EvalCountCameraMS]
 
@@ -590,6 +597,9 @@ def get_parser():
     parser.add_argument("--VisPose", help="visulaize pose estimation on video", action='store_true')
     parser.add_argument("--Poser", help="Pose estimator to use", type=str)
     parser.add_argument("--PoseTh", help="set the threshold for checkpoints in a pose to be used", type=float, default=0.3)
+
+    parser.add_argument("--SweepTrackLenforBias", help="sweep track length in roi and compute bias", action='store_true')
+    parser.add_argument("--MoveInROITh", help="number of points to be in the ROI to be considered moving", type=int, default=1)
 
     return parser
     

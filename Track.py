@@ -225,7 +225,145 @@ def vistracktop(args):
         out_cap.write(frame)
     return SucLog("executed vistrack top")
 
+def find_track_length_th_MS(arg_top, args_mcs):
+    # load all the reprojected dfs in a list
+    all_tracks = []
+    all_gts    = []
+    args_mcs_flat = flatten_args(args_mcs)
+    for args in tqdm(args_mcs_flat):
+        tracks_path = args.ReprojectedPkl
+        tracks_meter_path = args.ReprojectedPklMeter
+        meta_data = args.MetaData
+        HomographyNPY = args.HomographyNPY
+        M = np.load(HomographyNPY, allow_pickle=True)[0]
+
+        # load data
+        tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True, verbose=False)
+        tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True, verbose=False)
+        tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+        tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+
+        # create roi polygon on ground plane
+        roi_rep = []
+        for p in args.MetaData["roi"]:
+            point = np.array([p[0], p[1], 1])
+            new_point = M.dot(point)
+            new_point /= new_point[2]
+            roi_rep.append([new_point[0], new_point[1]])
+
+        pg = TrackLabeling.MyPoly(roi_rep, args.MetaData["roi_group"])
+        th = args.MetaData["roi_percent"] * np.sqrt(pg.area)
+        poly_path = mplPath.Path(np.array(roi_rep))
+        # only get points inside the ROI
+        tracks["trajectory"] = tracks.apply(lambda x: TrackLabeling.get_in_roi_points(x["trajectory"], poly_path, return_mask=False), axis=1)
+        tracks["len_traj"] = tracks.apply(lambda x: len(x["trajectory"]), axis=1)
+
+        all_tracks.append(tracks)
+
+        all_gt = 0
+        for key in args.MetaData["gt"]:
+            all_gt += args.MetaData["gt"][key]
+        all_gts.append(all_gt)
+
+    min_len_traj = float('inf')
+    max_len_traj = 0
+
+    all_gts    = np.sum(all_gts)
+
+    for track in all_tracks:
+        max_len_traj_in_tracks = np.max(track.len_traj)
+        min_len_traj_in_tracks = np.min(track.len_traj)
+        max_len_traj = max(max_len_traj, max_len_traj_in_tracks)
+        min_len_traj = min(min_len_traj, min_len_traj_in_tracks)
+
+    all_bias = []
+    for l in range(min_len_traj, max_len_traj):
+        number_of_longer_tracks = 0
+        for track in all_tracks:
+            number_of_longer_tracks += np.sum(1.0 * (track.len_traj >= l))
+
+        bias = (number_of_longer_tracks - all_gts)/all_gts
+        all_bias.append(bias)
+
+    all_bias = np.array(all_bias)
+    distance_from_zero = np.abs(all_bias)
+    idx_opt = np.argmin(distance_from_zero)
+    len_opt = range(min_len_traj, max_len_traj)[idx_opt] * arg_top.ResampleTH
+    print(range(min_len_traj, max_len_traj)[idx_opt])
+
+    plt.plot(range(min_len_traj * int(arg_top.ResampleTH), max_len_traj* int(arg_top.ResampleTH), int(arg_top.ResampleTH)), all_bias, color="black")
+
+    plt.plot([len_opt, len_opt], [np.min(all_bias), 0], color="red", linestyle="dashed")
+    plt.plot([min_len_traj * int(arg_top.ResampleTH), len_opt], [0, 0], color="red", linestyle="dashed")
+
+    plt.xlabel('Track length inside ROI [m]')
+    plt.ylabel('Error due to bias')
+    plt.savefig("track_len_sweep.pdf")
+
+    
+
+    # only get the points inside roi
+    # define a threshold sweep spand
+    # get longest and shortest track first
+    # then sweep based on number of points
+    # for each sweep compute number of valid tracks and compute the bias of classification
+
 def vistrackmoi(args):
+    roi_rep = args.MetaData["roi"]
+    poly_path = mplPath.Path(np.array(roi_rep))
+
+    def draw_table(image, counts):
+        dict_directions = {}
+        dict_directions[1 ] = "S-W"
+        dict_directions[2 ] = "S-N"
+        dict_directions[3 ] = "S-E"
+        dict_directions[4 ] = "E-S"
+        dict_directions[5 ] = "E-W"
+        dict_directions[6 ] = "E-N"
+        dict_directions[7 ] = "N-E"
+        dict_directions[8 ] = "N-S"
+        dict_directions[9 ] = "N-W"
+        dict_directions[10] = "W-N"
+        dict_directions[11] = "W-E"
+        dict_directions[12] = "W-S"
+        H, W, C = image.shape
+        minD = min(H, W)
+        # Set the color of the table (white)
+        table_color = (255, 255, 255)
+
+        # Set the thickness of the lines
+        line_thickness = 3
+
+        # Calculate the size of each cell
+        cell_height = int(H/30)
+        cell_width = int(W/28)
+
+        left_most_corner = [int(W/2 - 6*cell_width), 70]  
+
+        # Draw the horizontal lines
+        for i in range(3):
+            start_point = (left_most_corner[0], left_most_corner[1] + i * cell_height)
+            end_point = (left_most_corner[0] + 12*cell_width, left_most_corner[1] + i * cell_height)
+            image = cv2.line(image, start_point, end_point, table_color, thickness=line_thickness)
+
+        # Draw the vertical lines
+        for i in range(13):
+            start_point = (left_most_corner[0] + i * cell_width, left_most_corner[1])
+            end_point = (left_most_corner[0] + i * cell_width, left_most_corner[1] + 2*cell_height)
+            image = cv2.line(image, start_point, end_point, table_color, thickness=line_thickness)
+            if i < 12:
+                color = moi_color_dict[i+1]
+                cv2.putText(frame, f'{dict_directions[i+1]}', (left_most_corner[0] + i * cell_width + int(cell_width/10), left_most_corner[1] + int(cell_height*3/4)), cv2.FONT_HERSHEY_SIMPLEX, 2, color, 8)
+                color = (255, 255, 255)
+                cv2.putText(frame, f'{int(counts[i])}', (left_most_corner[0] + i * cell_width + int(cell_width/10), left_most_corner[1] + int(cell_height*7/4)), cv2.FONT_HERSHEY_SIMPLEX, 1, color,5)
+
+
+
+        return image
+
+    counts = np.zeros(12) 
+    ids_so_far = []   
+
     current_tracker = trackers[args.Tracker]
     df = current_tracker.df(args)
     video_path = args.Video
@@ -235,6 +373,20 @@ def vistrackmoi(args):
     dict_matching = {}
     for i, row in df_matching.iterrows():
         dict_matching[int(row['id'])] = int(row['moi'])
+
+    dict_directions = {}
+    dict_directions[1 ] = "S-W"
+    dict_directions[2 ] = "S-N"
+    dict_directions[3 ] = "S-E"
+    dict_directions[4 ] = "E-S"
+    dict_directions[5 ] = "E-W"
+    dict_directions[6 ] = "E-N"
+    dict_directions[7 ] = "N-E"
+    dict_directions[8 ] = "N-S"
+    dict_directions[9 ] = "N-W"
+    dict_directions[10] = "W-N"
+    dict_directions[11] = "W-E"
+    dict_directions[12] = "W-S"
         
     cap = cv2.VideoCapture(video_path)
     # Check if camera opened successfully
@@ -251,23 +403,30 @@ def vistrackmoi(args):
     if args.ForNFrames is not None:
         frames = min(frames, args.ForNFrames)
     for frame_num in tqdm(range(frames)):
-        if (not cap.isOpened()):
+        if (not cap.isOpened()): 
             break
         # Capture frame-by-frame
         ret, frame = cap.read()
         if ret:
-            this_frame_tracks = df[df.fn==(frame_num+1)]
+            frame = draw_table(frame, counts)
+            this_frame_tracks = df[df.fn==(frame_num)]
             for i, track in this_frame_tracks.iterrows():
                 # plot the bbox + id with colors
                 bbid, x1 , y1, x2, y2 = int(track.id), int(track.x1), int(track.y1), int(track.x2), int(track.y2)
+
+                if not poly_path.contains_point([int((x1+x2)/2), y2]): continue
+                if bbid not in ids_so_far:
+                    counts[dict_matching[bbid]-1] += 1
+                    ids_so_far.append(bbid)
                 if bbid in dict_matching:
                     color = moi_color_dict[dict_matching[bbid]]
                 else: color = (0, 0, 125)
                 # print(x1, y1, x2, y2)
-                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-                cv2.putText(frame, f'id:{bbid}', (x1, y1-20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 3)
+                # cv2.putText(frame, f'id:{bbid}', (x1, y1-20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
                 if bbid in dict_matching:
-                    cv2.putText(frame, f'moi:{dict_matching[bbid]}', (x1, y2+20), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
+                    cv2.putText(frame, f'{dict_directions[dict_matching[bbid]]}', (x1, y1-21), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 4)
+                    cv2.putText(frame, f'{dict_directions[dict_matching[bbid]]}', (x1, y1-20), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
 
             out_cap.write(frame)
 
@@ -277,6 +436,52 @@ def vistrackmoi(args):
 
     # Closes all the frames
     cv2.destroyAllWindows()
+
+    # crete video from top view
+    df = pd.read_pickle(args.ReprojectedPkl)
+    annotated_video_path = args.VisTrackingTopPth + ".MOIadded.mp4"
+    video_path = args.Video
+    cap = cv2.VideoCapture(video_path)
+    # Check if camera opened successfully
+    if (cap.isOpened()== False): return FailLog("could not open input video")
+
+    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+
+    img1 = cv.imread(args.HomographyStreetView)
+    frame = cv.imread(args.HomographyTopView)
+    rows2, cols2, dim2 = frame.shape
+
+    alpha=0.6
+    M = np.load(args.HomographyNPY, allow_pickle=True)[0]
+    frame_width , frame_height  = cols2 , rows2
+    img12 = frame
+    # img12 = cv.warpPerspective(img1, M, (cols2, rows2))
+    img2 = cv.addWeighted(frame, alpha, img12, 1 - alpha, 0)
+
+
+    color = (0, 0, 102)
+
+    out_cap = cv2.VideoWriter(annotated_video_path,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
+
+    if not args.ForNFrames is None:
+        frames = min(args.ForNFrames, frames)
+    # Read until video is completed
+    for frame_num in tqdm(range(frames)):
+        frame = copy.deepcopy(img2)
+
+        this_frame_tracks = df[df.fn==(frame_num)]
+        for i, track in this_frame_tracks.iterrows():
+            # plot the bbox + id with colors
+            bbid, x , y = track.id, int(track.x), int(track.y)
+            # print(x1, y1, x2, y2)
+            # np.random.seed(int(bbid))
+            color = moi_color_dict[dict_matching[bbid]]
+            # color = (np.random.randint(0, 256), np.random.randint(0, 256), np.random.randint(0, 256))
+            cv.circle(frame, (x,y), radius=2, color=color, thickness=3)
+            # cv2.putText(frame, f'{int(bbid)}', (x + 10, y-2), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 3)
+            # cv2.putText(frame, f'{int(bbid)}', (x + 10, y-2), cv2.FONT_HERSHEY_SIMPLEX, 1, (144, 251, 144), 1)
+        out_cap.write(frame)
     return SucLog("Vis Tracking moi file stored")
 
 def trackpostproc(args):
@@ -468,7 +673,7 @@ def begin_in_roi(pg, traj, th, poly_path, *args, **kwargs):
 
 def moves_in_roi(pg, traj, th, poly_path, *args, **kwargs):
     in_roi_traj = TrackLabeling.get_in_roi_points(traj, poly_path, return_mask=False)
-    if len(in_roi_traj) > 1:
+    if len(in_roi_traj) >= kwargs["move_th"]:
         return True
     return False
 
@@ -632,6 +837,7 @@ def select_based_on_roi(args, condition, resample_tracks=False):
     tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=True)
     tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=True)
     tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+    
 
     # create roi polygon on ground plane
     roi_rep = []
@@ -656,7 +862,8 @@ def select_based_on_roi(args, condition, resample_tracks=False):
 
         if condition(pg, traj, th, poly_path,
                     frames=frames, first_frame=first_frame,
-                    last_frame=last_frame, UnfinishedTrackFrameTh=args.UnfinishedTrackFrameTh):
+                    last_frame=last_frame, UnfinishedTrackFrameTh=args.UnfinishedTrackFrameTh,
+                    move_th = args.MoveInROITh):
             ids_to_keep.append(row["id"])
 
     mask = []

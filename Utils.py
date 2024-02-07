@@ -3,18 +3,18 @@
 from Libs import *
 moi_color_dict = {
     0:(0, 0, 0),
-    1:(128, 0, 0),
+    1:(49, 130, 245),
     2:(230, 25, 75),
     3:(250, 190, 212),
-    4:(170, 110, 40),
+    4:(75, 25, 230),
     5:(245, 130, 48),
     6:(255, 215, 180),
-    7:(128, 128, 0),
-    8:(255, 255, 25),
+    7:(0, 255, 0),
+    8:(177, 216, 255),
     9:(210, 245, 60),
     10:(0, 0, 128),
     11:(70, 240, 240),
-    12:(0, 130, 200),
+    12:(195, 255, 170),
 }
 
 roi_color_dict = {
@@ -937,7 +937,7 @@ def complete_args(args):
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or\
         args.EvalCount or args.TrackEval or args.DetPostProc or args.IntegrateCountsMC or\
         args.EvalCountMSfromMC or args.EvalContactPoitnSelection or args.EvalContactPoitnSelectionMC or\
-        args.EvalCountCamera:
+        args.EvalCountCamera or args.SweepTrackLenforBias or args.VisTrackMoI:
         args = add_homographygui_related_path_to_args(args)
 
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or\
@@ -945,12 +945,13 @@ def complete_args(args):
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop or\
         args.EvalCount or args.TrackEval or args.EvalContactPoitnSelection or args.DetPostProc or\
         args.IntegrateCountsMC or args.EvalCountMSfromMC or args.EvalContactPoitnSelection or\
-        args.EvalContactPoitnSelectionMC or args.EvalCountCamera:
+        args.EvalContactPoitnSelectionMC or args.EvalCountCamera or args.SweepTrackLenforBias or args.VisTrackMoI:
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
 
     if args.VisHomographyGUI or args.VisLabelledTrajectories or args.Meter or args.FindOptimalKDEBW or\
-        args.EvalContactPoitnSelection or args.EvalContactPoitnSelectionMC or args.EvalCountCamera:
+        args.EvalContactPoitnSelection or args.EvalContactPoitnSelectionMC or args.EvalCountCamera or\
+        args.SweepTrackLenforBias or args.VisTrackMoI:
         args = add_vishomography_path_to_args(args)
 
     if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter or\
@@ -964,7 +965,7 @@ def complete_args(args):
         args = add_vis_labelled_tracks_pth_to_args(args)
 
     if args.Meter or args.Count or args.Cluster or args.TrackPostProc or args.FindOptimalKDEBW or\
-        args.EvalCount:
+        args.EvalCount or args.SweepTrackLenforBias or args.VisTrackTop:
         args = add_meter_path_to_args(args)
 
     if args.Count or args.VisTrackMoI or args.AverageCountsMC or\
