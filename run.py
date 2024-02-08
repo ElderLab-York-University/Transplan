@@ -29,7 +29,7 @@ segment_part = None
 source_part  = None
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
-sources      = get_sub_dirs(segments, source_part, not_be_inside="lc")
+sources      = get_sub_dirs(segments, source_part)
 
 
 # choose datasets/splits/segments/sources
@@ -47,7 +47,7 @@ cached_segment_part = None
 cached_source_part  = None
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
-cached_sources      = get_sub_dirs(cached_segments, cached_source_part, not_be_inside="lc")
+cached_sources      = get_sub_dirs(cached_segments, cached_source_part)
 
 
 # choose the segmenter
@@ -55,7 +55,7 @@ cached_sources      = get_sub_dirs(cached_segments, cached_source_part, not_be_i
 segmenters = ["InternImage"]
 
 # choose the detectors
-# options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
+# options: ["GTHW7", "YoloX", "CenterNet", "CascadeRCNN", "InternImage", "YOLOv5", "YOLOv8", "RTMDet", "DeformableDETR"]
 detectors = ["YoloX"]
 
 # choose detector version (checkpoints, ...)
@@ -110,8 +110,10 @@ bp_method  =  "Homography"
 resamp_th  =  2
 
 # set contact point for GT and GT3D
-gt_cp_method = "BottomPoint"
+gt_cp_method   = "BottomPoint"
 gt3D_cp_method = "BottomPoint3D"
+gt_tp_view     =  "GoogleMap"
+gt_bp_method   = "Homography"
 
 for src, cached_cnt_pth in zip(sources, cached_sources):
     print(f"running on src:{src}")
@@ -119,8 +121,8 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     # 0. extract images from video
     # os.system(f"python3 main.py --Dataset={src} --ExtractImages)
     ######################################################
-    print(f" extracting images from : {src}")
-    os.system(f"python3 main.py --Dataset={src} --ExtractImages")
+    # print(f" extracting images from : {src}")
+    # os.system(f"python3 main.py --Dataset={src} --ExtractImages")
 
     ########################################################
     # 1. estimate the Homography Metrix using Homography GUI 
@@ -462,7 +464,10 @@ for split, cached_cnt_pth in zip(splits, cached_splits):
     # os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --ConvertDetsToCOCO --KeepCOCOClasses")
     ########################################################
     # for det in detectors:
-    #     os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --ConvertDetsToCOCO --KeepCOCOClasses")
+    #     for cp_method in cp_methods:
+    #         os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det}\
+    #                 --ConvertDetsToCOCO --KeepCOCOClasses\
+    #                 --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={cp_method}")
 
     ########################################################
     # 3.8 Evaluate contact point selection method
@@ -584,7 +589,8 @@ for ds in datasets:
     # for det in detectors:
     #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
     #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
-    #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval} --Resume")
+    #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval}\
+    #                --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")
 
     ########################################################
     # 2. perform single camera tracking evaluation on all the sources under mp folder(dataset)

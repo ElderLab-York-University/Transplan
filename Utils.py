@@ -24,6 +24,7 @@ roi_color_dict = {
     3:(128, 128, 0),
     4:(0, 0, 128),
 }
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -900,7 +901,8 @@ def complete_args(args):
         # if Video path was not specified by the user grab a video from dataset
         args = add_videos_to_args(args)
 
-    if (not args.Detector is None) or args.DetPostProc or args.ConvertDetsToCOCO or args.FineTune:
+    if (not args.Detector is None) or args.DetPostProc or args.ConvertDetsToCOCO or\
+        args.FineTune:
         args = add_detection_pathes_to_args(args)
         args = add_vis_detection_path_to_args(args)
 
@@ -937,7 +939,7 @@ def complete_args(args):
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or\
         args.EvalCount or args.TrackEval or args.DetPostProc or args.IntegrateCountsMC or\
         args.EvalCountMSfromMC or args.EvalContactPoitnSelection or args.EvalContactPoitnSelectionMC or\
-        args.EvalCountCamera:
+        args.EvalCountCamera or args.ConvertDetsToCOCO or args.FineTune:
         args = add_homographygui_related_path_to_args(args)
 
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or\
@@ -945,7 +947,7 @@ def complete_args(args):
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop or\
         args.EvalCount or args.TrackEval or args.EvalContactPoitnSelection or args.DetPostProc or\
         args.IntegrateCountsMC or args.EvalCountMSfromMC or args.EvalContactPoitnSelection or\
-        args.EvalContactPoitnSelectionMC or args.EvalCountCamera:
+        args.EvalContactPoitnSelectionMC or args.EvalCountCamera or args.ConvertDetsToCOCO or args.FineTune:
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
 
