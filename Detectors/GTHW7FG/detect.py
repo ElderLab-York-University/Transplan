@@ -15,6 +15,7 @@ def remove_text_in_parentheses(input_string):
 
   # Use re.sub() to replace all matches with an empty string
   result_string = re.sub(pattern, '', input_string)
+  result_string = result_string[:-1] if result_string[-1] == "\n" else result_string[:]
 
   return result_string.strip()  # Remove leading and trailing whitespaces
 
