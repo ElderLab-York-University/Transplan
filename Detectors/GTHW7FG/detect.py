@@ -20,14 +20,14 @@ def remove_text_in_parentheses(input_string):
   return result_string.strip()  # Remove leading and trailing whitespaces
 
 def class_from_label(label):
-  match_map = { 'Pedestrian\n':0,
-                'Car\n':1, 'SUV\n':2, 'Minivan\n':3, 'Van\n':4,'Pickup Truck\n':5,
-                'Light Trucks\n':6, 'Medium Trucks\n':7, 'Heavy Trucks\n':8,
-                'Tractor Only\n':9, 'Tractor-Trailer\n':10,
-                'Coach Buses\n':11, 'School Buses\n':12,
-                'Articulated Municipal Transit Buses\n':13,
-                'Single-Unit Municipal Transit Buses\n':14,
-                'Unpowered\n':15
+  match_map = { 'Pedestrian':0,
+                'Car':1, 'SUV':2, 'Minivan':3, 'Van':4,'Pickup Truck':5,
+                'Light Trucks':6, 'Medium Trucks':7, 'Heavy Trucks':8,
+                'Tractor Only':9, 'Tractor-Trailer':10,
+                'Coach Buses':11, 'School Buses':12,
+                'Articulated Municipal Transit Buses':13,
+                'Single-Unit Municipal Transit Buses':14,
+                'Unpowered':15
                  }
   return match_map[label]
 
