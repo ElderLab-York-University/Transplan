@@ -25,7 +25,7 @@ datasets     = [
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 split_part   = ["train", "valid"]
-segment_part = None
+segment_part = ["Seg01"]
 source_part  = None
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
@@ -43,7 +43,7 @@ cached_datasets     = [
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 cached_split_part   = ["train", "valid"]
-cached_segment_part = None
+cached_segment_part = ["Seg01"]
 cached_source_part  = None
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
@@ -56,7 +56,7 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
-detectors = ["YoloX"]
+detectors = ["GTHW7FG"]
 
 # choose detector version (checkpoints, ...)
 # options: ["", "HW7FT"]
@@ -119,8 +119,8 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     # 0. extract images from video
     # os.system(f"python3 main.py --Dataset={src} --ExtractImages)
     ######################################################
-    print(f" extracting images from : {src}")
-    os.system(f"python3 main.py --Dataset={src} --ExtractImages")
+    # print(f" extracting images from : {src}")
+    # os.system(f"python3 main.py --Dataset={src} --ExtractImages")
 
     ########################################################
     # 1. estimate the Homography Metrix using Homography GUI 
@@ -164,9 +164,9 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #  --Detect --VisDetect --ForNFrames=600 --DetectorVersion={det_v} --SAHI --SahiPatchSize=640 --SahiPatchOverlapRatio=0.25 
     #  --SahiPatchBatchSize=1 --SahiNMSTh=0.25")
     ########################################################
-    # for det in detectors:
-    #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect")
+    for det in detectors:
+        print(f"detecting ----> src:{src} det:{det}")
+        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect")
 
     ########################################################
     # 3.5 run the detection post processing
