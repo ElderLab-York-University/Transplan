@@ -25,7 +25,7 @@ datasets     = [
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 split_part   = ["train", "valid"]
-segment_part = ["Seg01"]
+segment_part = None
 source_part  = None
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
@@ -43,7 +43,7 @@ cached_datasets     = [
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 cached_split_part   = ["train", "valid"]
-cached_segment_part = ["Seg01"]
+cached_segment_part = None
 cached_source_part  = None
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
