@@ -29,7 +29,7 @@ def class_from_label(label):
                 'Single-Unit Municipal Transit Buses\n':14,
                 'Unpowered\n':15
                  }
-  return class_from_label[label]
+  return match_map[label]
 
 def detect(args,*oargs):
   input_file=args.GTJson
