@@ -179,6 +179,7 @@ def cvpr(base_args, nested_args):
 
     if base_args.Detector == "GTHW7FG":
         print(df_train.label.unique())
+        print(df_train["class"].unique())
 
     if base_args.Detector == "GTHW73D":
 
