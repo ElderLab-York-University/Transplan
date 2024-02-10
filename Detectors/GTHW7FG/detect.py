@@ -20,8 +20,16 @@ def remove_text_in_parentheses(input_string):
   return result_string.strip()  # Remove leading and trailing whitespaces
 
 def class_from_label(label):
-  c = 0 if "Pedestrian" in label else 7 if 'Truck' in label else 5 if 'Buses' in label else 2 if 'Small' in label else 1 if 'Unpowered' in label else 3
-  return c
+  match_map = { 'Pedestrian\n':0,
+                'Car\n':1, 'SUV\n':2, 'Minivan\n':3, 'Van\n':4,'Pickup Truck\n':5,
+                'Light Trucks\n':6, 'Medium Trucks\n':7, 'Heavy Trucks\n':8,
+                'Tractor Only\n':9, 'Tractor-Trailer\n':10,
+                'Coach Buses\n':11, 'School Buses\n':12,
+                'Articulated Municipal Transit Buses\n':13,
+                'Single-Unit Municipal Transit Buses\n':14,
+                'Unpowered\n':15
+                 }
+  return class_from_label[label]
 
 def detect(args,*oargs):
   input_file=args.GTJson
