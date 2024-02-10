@@ -56,7 +56,7 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "YoloX", "CenterNet", "CascadeRCNN", "InternImage", "YOLOv5", "YOLOv8", "RTMDet", "DeformableDETR"]
-detectors = ["YoloX"]
+detectors = ["InternImage"]
 
 # choose detector version (checkpoints, ...)
 # options: ["", "HW7FT"]
@@ -96,8 +96,8 @@ cnt_metrics = ["gkde"]
 # from "splits"
 train_sp     = "train"
 valid_sp     = "valid"
-batch_size   = 2
-num_workers  = 2
+batch_size   = 1
+num_workers  = 1
 epochs       = 20
 val_interval = 1
 
@@ -586,11 +586,11 @@ for ds in datasets:
     # ########################################################
     # # 1. fine tune detector
     # # ########################################################
-    # for det in detectors:
-    #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
-    #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
-    #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval}\
-    #                --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")
+    for det in detectors:
+        os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
+                   --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
+                   --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval}\
+                   --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")
 
     ########################################################
     # 2. perform single camera tracking evaluation on all the sources under mp folder(dataset)
