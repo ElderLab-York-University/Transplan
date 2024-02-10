@@ -29,7 +29,7 @@ segment_part = None
 source_part  = None
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
-sources      = get_sub_dirs(segments, source_part, not_be_inside="lc")
+sources      = get_sub_dirs(segments, source_part, be_inside="lc")
 
 
 # choose datasets/splits/segments/sources
@@ -47,7 +47,7 @@ cached_segment_part = None
 cached_source_part  = None
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
-cached_sources      = get_sub_dirs(cached_segments, cached_source_part, not_be_inside="lc")
+cached_sources      = get_sub_dirs(cached_segments, cached_source_part, be_inside="lc")
 
 
 # choose the segmenter
@@ -164,9 +164,9 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #  --Detect --VisDetect --ForNFrames=600 --DetectorVersion={det_v} --SAHI --SahiPatchSize=640 --SahiPatchOverlapRatio=0.25 
     #  --SahiPatchBatchSize=1 --SahiNMSTh=0.25")
     ########################################################
-    for det in detectors:
-        print(f"detecting ----> src:{src} det:{det}")
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect")
+    # for det in detectors:
+    #     print(f"detecting ----> src:{src} det:{det}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect")
 
     ########################################################
     # 3.5 run the detection post processing
@@ -595,3 +595,15 @@ for ds in datasets:
     #         print(f"evaluate tracking ---> src:{ds} det:{det} tra:{tra} gt_det:{GT_det} gt_tra:{GT_tra}")
     #         os.system(f"python3 main.py --MultiPart --Dataset={ds}  --Detector={det} --Tracker={tra} --TrackEval\
     #                    --GTDetector={GT_det} --GTTracker={GT_tra}")
+
+
+    ########################################################
+    # 3. run CVPR GT visualizations
+    # os.system(f"python3 main.py --MultiPart --Dataset={src}  --Detector={det} --Tracker={tra} --TrackEval --GTDetector={GT_det} --GTTracker={GT_tra}")
+    ########################################################
+    for det in detectors:
+        for tra in trackers:
+            print(f"evaluate tracking ---> src:{ds} det:{det} tra:{tra} gt_det:{GT_det} gt_tra:{GT_tra}")
+            os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --Tracker={tra} --CVPR\
+                       --GTDetector={GT_det} --GTTracker={GT_tra}\
+                        --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")

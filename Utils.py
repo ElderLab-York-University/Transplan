@@ -937,7 +937,7 @@ def complete_args(args):
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or\
         args.EvalCount or args.TrackEval or args.DetPostProc or args.IntegrateCountsMC or\
         args.EvalCountMSfromMC or args.EvalContactPoitnSelection or args.EvalContactPoitnSelectionMC or\
-        args.EvalCountCamera:
+        args.EvalCountCamera or args.CVPR:
         args = add_homographygui_related_path_to_args(args)
 
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or\
@@ -945,7 +945,7 @@ def complete_args(args):
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop or\
         args.EvalCount or args.TrackEval or args.EvalContactPoitnSelection or args.DetPostProc or\
         args.IntegrateCountsMC or args.EvalCountMSfromMC or args.EvalContactPoitnSelection or\
-        args.EvalContactPoitnSelectionMC or args.EvalCountCamera:
+        args.EvalContactPoitnSelectionMC or args.EvalCountCamera or args.CVPR:
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
 
