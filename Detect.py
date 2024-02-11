@@ -10,6 +10,7 @@ import Detectors.detectron2.detect
 import Detectors.YOLOv8.detect
 import Detectors.DDETR.detect
 import Detectors.InternImage.detect
+import Detectors.GTHW7FG.detect
 import Detectors.GTHW7.detect
 import Detectors.GTHW73D.detect
 import Detectors.RTMDet.detect
@@ -24,12 +25,13 @@ detectors["YOLOv5"]         = Detectors.YOLOv5.detect
 detectors["YOLOv8"]         = Detectors.YOLOv8.detect
 detectors["DDETR"]          = Detectors.DDETR.detect
 detectors["InternImage"]    = Detectors.InternImage.detect
-detectors["GTHW7"]          = Detectors.GTHW7.detect
 detectors["RTMDet"]         = Detectors.RTMDet.detect
 detectors["YoloX"]          = Detectors.YoloX.detect
 detectors["CascadeRCNN"]    = Detectors.CascadeRCNN.detect
 detectors["DeformableDETR"] = Detectors.DeformableDETR.detect
 detectors["CenterNet"]      = Detectors.CenterNet.detect
+detectors["GTHW7"]          = Detectors.GTHW7.detect
+detectors["GTHW7FG"]        = Detectors.GTHW7FG.detect
 detectors["GTHW73D"]        = Detectors.GTHW73D.detect
 
 def detect(args):

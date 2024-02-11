@@ -55,8 +55,8 @@ cached_sources      = get_sub_dirs(cached_segments, cached_source_part)
 segmenters = ["InternImage"]
 
 # choose the detectors
-# options: ["GTHW7", "YoloX", "CenterNet", "CascadeRCNN", "InternImage", "YOLOv5", "YOLOv8", "RTMDet", "DeformableDETR"]
-detectors = ["InternImage"]
+# options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
+detectors = ["GTHW7FG"]
 
 # choose detector version (checkpoints, ...)
 # options: ["", "HW7FT"]
@@ -166,9 +166,9 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #  --Detect --VisDetect --ForNFrames=600 --DetectorVersion={det_v} --SAHI --SahiPatchSize=640 --SahiPatchOverlapRatio=0.25 
     #  --SahiPatchBatchSize=1 --SahiNMSTh=0.25")
     ########################################################
-    # for det in detectors:
-    #     print(f"detecting ----> src:{src} det:{det}")
-    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect")
+    for det in detectors:
+        print(f"detecting ----> src:{src} det:{det}")
+        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect")
 
     ########################################################
     # 3.5 run the detection post processing
