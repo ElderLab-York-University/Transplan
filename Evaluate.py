@@ -178,50 +178,144 @@ def cvpr(base_args, nested_args):
     df_valid = pd.concat(dfs_valid)
 
     if base_args.Detector == "GTHW7FG":
-        print(df_train.label.unique())
-        print(df_train["class"].unique())
+        # ['Van\n' 'Car\n' 'SUV\n' 'Articulated Municipal Transit Buses\n'
+        # 'Pickup Truck\n' 'Minivan\n' 'Medium Trucks\n' 'Pedestrian\n'
+        # 'Tractor-Trailer\n' 'Single-Unit Municipal Transit Buses\n'
+        # 'Heavy Trucks\n' 'Light Trucks\n' 'Tractor Only\n' 'Unpowered\n'
+        # 'Coach Buses\n' 'School Buses\n']
+
+        df_train.loc[df_train.label == 'Articulated Municipal Transit Buses\n', "label"] = "AM"
+        df_train.loc[df_train.label == 'Single-Unit Municipal Transit Buses\n', "label"] = "SM"
+        df_train.loc[df_train.label == 'Pickup Truck\n', "label"] = "PT"
+        df_train.loc[df_train.label == 'Light Trucks\n', "label"] = "LT"
+        df_train.loc[df_train.label == 'Medium Trucks\n', "label"] = "MT"
+        df_train.loc[df_train.label == 'Tractor-Trailer\n', "label"] = "TT"
+        df_train.loc[df_train.label == 'Heavy Trucks\n', "label"] = "HT"
+        df_train.loc[df_train.label == 'Tractor Only\n', "label"] = "TO"
+        df_train.loc[df_train.label == 'Minivan\n', "label"] = "MV"
+        df_train.loc[df_train.label == 'Pedestrian\n', "label"] = "P"
+        df_train.loc[df_train.label == 'Unpowered\n', "label"] = "UP"
+        df_train.loc[df_train.label == 'SUV\n', "label"] = "S"
+        df_train.loc[df_train.label == 'Car\n', "label"] = "C"
+        df_train.loc[df_train.label == 'Van\n', "label"] = "V"
+        df_train.loc[df_train.label == 'School Buses\n', "label"] = "SB"
+        df_train.loc[df_train.label == 'Coach Buses\n', "label"] = "CB"
+
+        df_valid.loc[df_valid.label == 'Articulated Municipal Transit Buses\n', "label"] = "AM"
+        df_valid.loc[df_valid.label == 'Single-Unit Municipal Transit Buses\n', "label"] = "SM"
+        df_valid.loc[df_valid.label == 'Pickup Truck\n', "label"] = "PT"
+        df_valid.loc[df_valid.label == 'Light Trucks\n', "label"] = "LT"
+        df_valid.loc[df_valid.label == 'Medium Trucks\n', "label"] = "MT"
+        df_valid.loc[df_valid.label == 'Tractor-Trailer\n', "label"] = "TT"
+        df_valid.loc[df_valid.label == 'Heavy Trucks\n', "label"] = "HT"
+        df_valid.loc[df_valid.label == 'Tractor Only\n', "label"] = "TO"
+        df_valid.loc[df_valid.label == 'Minivan\n', "label"] = "MV"
+        df_valid.loc[df_valid.label == 'Pedestrian\n', "label"] = "P"
+        df_valid.loc[df_valid.label == 'Unpowered\n', "label"] = "UP"
+        df_valid.loc[df_valid.label == 'SUV\n', "label"] = "S"
+        df_valid.loc[df_valid.label == 'Car\n', "label"] = "C"
+        df_valid.loc[df_valid.label == 'Van\n', "label"] = "V"
+        df_valid.loc[df_valid.label == 'School Buses\n', "label"] = "SB"
+        df_valid.loc[df_valid.label == 'Coach Buses\n', "label"] = "CB"
+
+        # plt.figure(figsize=(12, 9))
+        # sns.kdeplot(df_train["x2"] - df_train["x1"], shade=True, label="train", color="blue")
+        # sns.kdeplot(df_valid["x2"] - df_valid["x1"], shade=True, label="valid", color="green")
+        # plt.legend()
+        # plt.xlabel("Width [pixel]")
+        # plt.xlim(0, 1000)
+        # fig = plt.gcf()
+        # tikzplotlib_fix_ncols(fig)
+        # tikzplotlib.save("Sup_2D_Width.tex")
+        # plt.savefig("Sup_2D_Width.pdf")
+        # plt.close("all")
+
+        # plt.figure(figsize=(12, 9))
+        # sns.kdeplot(df_train["y2"] - df_train["y1"], shade=True, label="train", color="blue")
+        # sns.kdeplot(df_valid["y2"] - df_valid["y1"], shade=True, label="valid", color="green")
+        # plt.legend()
+        # plt.xlabel("Height [pixel]")
+        # plt.xlim(0, 1000)
+        # fig = plt.gcf()
+        # tikzplotlib_fix_ncols(fig)
+        # tikzplotlib.save("Sup_2D_Height.tex")
+        # plt.savefig("Sup_2D_Height.pdf")
+        # plt.close("all")
+
+        # plt.figure(figsize=(12, 9))
+        # sns.kdeplot((df_train["y2"] - df_train["y1"]) * (df_train["x2"] - df_train["x1"]) , shade=True, label="train", color="blue")
+        # sns.kdeplot((df_valid["y2"] - df_valid["y1"]) * (df_valid["x2"] - df_valid["x1"]) , shade=True, label="valid", color="green")
+        # plt.legend()
+        # plt.xlabel("Area [$pixel^2$]")
+        # plt.xlim(0, 200000)
+        # fig = plt.gcf()
+        # tikzplotlib_fix_ncols(fig)
+        # tikzplotlib.save("Sup_2D_Area.tex")
+        # plt.savefig("Sup_2D_Area.pdf")
+        # plt.close("all")
+
+        df_train["split"] = ["train" for _ in range(len(df_train))]
+        df_valid["split"] = ["valid" for _ in range(len(df_valid))]
+        df_merged = pd.concat((df_train, df_valid))
+        plt.figure(figsize=(24, 9))
+
+        # sns.countplot(df_train, x="label_fg", label="train", color="blue", alpha=0.5 , dodge=True, stat="probability")
+        # sns.countplot(df_valid, x="label_fg", label="valid", color="green", alpha=0.5, dodge=True, stat="probability")
+        b = sns.histplot(data=df_merged, x="label",  alpha=0.5 , multiple="dodge", stat="probability",
+            hue="split", palette={"train":"blue", "valid":"green"}, shrink=.8, legend=True, common_norm=False)
+
+        # b.tick_params(labelsize=20)
+        # plt.legend()
+        plt.xlabel("Fine-Grained Class Labels")
+        plt.xticks(fontsize=15)
+        fig = plt.gcf()
+        tikzplotlib_fix_ncols(fig)
+        tikzplotlib.save("Sup_2D_FGLabel.tex")
+        plt.savefig("Sup_2D_FGLabel.pdf")
+        plt.close("all")
+        print(df_train["label"].unique())
+        
 
     if base_args.Detector == "GTHW73D":
+        print("3D")
 
-        df_train.loc[df_train.label_fg == 'Articulated Municipal Transit Buses', "label_fg"] = "AM"
-        df_train.loc[df_train.label_fg == 'Single-Unit Municipal Transit Buses', "label_fg"] = "SM"
-        df_train.loc[df_train.label_fg == 'Pickup Truck', "label_fg"] = "PT"
-        df_train.loc[df_train.label_fg == 'Light Trucks', "label_fg"] = "LT"
-        df_train.loc[df_train.label_fg == 'Medium Trucks', "label_fg"] = "MT"
-        df_train.loc[df_train.label_fg == 'Tractor-Trailer', "label_fg"] = "TT"
-        df_train.loc[df_train.label_fg == 'Heavy Trucks', "label_fg"] = "HT"
-        df_train.loc[df_train.label_fg == 'Tractor Only', "label_fg"] = "TO"
-        df_train.loc[df_train.label_fg == 'Minivan', "label_fg"] = "MV"
-        df_train.loc[df_train.label_fg == 'Pedestrian', "label_fg"] = "P"
-        df_train.loc[df_train.label_fg == 'Unpowered', "label_fg"] = "UP"
+        # df_train.loc[df_train.label_fg == 'Articulated Municipal Transit Buses', "label_fg"] = "AM"
+        # df_train.loc[df_train.label_fg == 'Single-Unit Municipal Transit Buses', "label_fg"] = "SM"
+        # df_train.loc[df_train.label_fg == 'Pickup Truck', "label_fg"] = "PT"
+        # df_train.loc[df_train.label_fg == 'Light Trucks', "label_fg"] = "LT"
+        # df_train.loc[df_train.label_fg == 'Medium Trucks', "label_fg"] = "MT"
+        # df_train.loc[df_train.label_fg == 'Tractor-Trailer', "label_fg"] = "TT"
+        # df_train.loc[df_train.label_fg == 'Heavy Trucks', "label_fg"] = "HT"
+        # df_train.loc[df_train.label_fg == 'Tractor Only', "label_fg"] = "TO"
+        # df_train.loc[df_train.label_fg == 'Minivan', "label_fg"] = "MV"
+        # df_train.loc[df_train.label_fg == 'Pedestrian', "label_fg"] = "P"
+        # df_train.loc[df_train.label_fg == 'Unpowered', "label_fg"] = "UP"
 
-        df_valid.loc[df_valid.label_fg == 'Articulated Municipal Transit Buses', "label_fg"] = "AM"
-        df_valid.loc[df_valid.label_fg == 'Single-Unit Municipal Transit Buses', "label_fg"] = "SM"
-        df_valid.loc[df_valid.label_fg == 'Pickup Truck', "label_fg"] = "PT"
-        df_valid.loc[df_valid.label_fg == 'Light Trucks', "label_fg"] = "LT"
-        df_valid.loc[df_valid.label_fg == 'Medium Trucks', "label_fg"] = "MT"
-        df_valid.loc[df_valid.label_fg == 'Tractor-Trailer', "label_fg"] = "TT"
-        df_valid.loc[df_valid.label_fg == 'Heavy Trucks', "label_fg"] = "HT"
-        df_valid.loc[df_valid.label_fg == 'Tractor Only', "label_fg"] = "TO"
-        df_valid.loc[df_valid.label_fg == 'Minivan', "label_fg"] = "MV"
-        df_valid.loc[df_valid.label_fg == 'Pedestrian', "label_fg"] = "P"
-        df_valid.loc[df_valid.label_fg == 'Unpowered', "label_fg"] = "UP"
+        # df_valid.loc[df_valid.label_fg == 'Articulated Municipal Transit Buses', "label_fg"] = "AM"
+        # df_valid.loc[df_valid.label_fg == 'Single-Unit Municipal Transit Buses', "label_fg"] = "SM"
+        # df_valid.loc[df_valid.label_fg == 'Pickup Truck', "label_fg"] = "PT"
+        # df_valid.loc[df_valid.label_fg == 'Light Trucks', "label_fg"] = "LT"
+        # df_valid.loc[df_valid.label_fg == 'Medium Trucks', "label_fg"] = "MT"
+        # df_valid.loc[df_valid.label_fg == 'Tractor-Trailer', "label_fg"] = "TT"
+        # df_valid.loc[df_valid.label_fg == 'Heavy Trucks', "label_fg"] = "HT"
+        # df_valid.loc[df_valid.label_fg == 'Tractor Only', "label_fg"] = "TO"
+        # df_valid.loc[df_valid.label_fg == 'Minivan', "label_fg"] = "MV"
+        # df_valid.loc[df_valid.label_fg == 'Pedestrian', "label_fg"] = "P"
+        # df_valid.loc[df_valid.label_fg == 'Unpowered', "label_fg"] = "UP"
 
+        # df_train.loc[df_train.label_cg == 'Small Vehicles', "label_cg"] = "SV"
+        # df_train.loc[df_train.label_cg == 'Single-unit Trucks', "label_cg"] = "ST"
+        # df_train.loc[df_train.label_cg == 'Buses', "label_cg"] = "B"
+        # df_train.loc[df_train.label_cg == 'Articulated Trucks', "label_cg"] = "AT"
+        # df_train.loc[df_train.label_cg == 'Pedestrian' , "label_cg"] = "P"
+        # df_train.loc[df_train.label_cg == 'Two-Wheelers' , "label_cg"] = "TW"
 
-        df_train.loc[df_train.label_cg == 'Small Vehicles', "label_cg"] = "SV"
-        df_train.loc[df_train.label_cg == 'Single-unit Trucks', "label_cg"] = "ST"
-        df_train.loc[df_train.label_cg == 'Buses', "label_cg"] = "B"
-        df_train.loc[df_train.label_cg == 'Articulated Trucks', "label_cg"] = "AT"
-        df_train.loc[df_train.label_cg == 'Pedestrian' , "label_cg"] = "P"
-        df_train.loc[df_train.label_cg == 'Two-Wheelers' , "label_cg"] = "TW"
-
-
-        df_valid.loc[df_valid.label_cg == 'Small Vehicles', "label_cg"] = "SV"
-        df_valid.loc[df_valid.label_cg == 'Single-unit Trucks', "label_cg"] = "ST"
-        df_valid.loc[df_valid.label_cg == 'Buses', "label_cg"] = "B"
-        df_valid.loc[df_valid.label_cg == 'Articulated Trucks', "label_cg"] = "AT"
-        df_valid.loc[df_valid.label_cg == 'Pedestrian' , "label_cg"] = "P"
-        df_valid.loc[df_valid.label_cg == 'Two-Wheelers' , "label_cg"] = "TW"
+        # df_valid.loc[df_valid.label_cg == 'Small Vehicles', "label_cg"] = "SV"
+        # df_valid.loc[df_valid.label_cg == 'Single-unit Trucks', "label_cg"] = "ST"
+        # df_valid.loc[df_valid.label_cg == 'Buses', "label_cg"] = "B"
+        # df_valid.loc[df_valid.label_cg == 'Articulated Trucks', "label_cg"] = "AT"
+        # df_valid.loc[df_valid.label_cg == 'Pedestrian' , "label_cg"] = "P"
+        # df_valid.loc[df_valid.label_cg == 'Two-Wheelers' , "label_cg"] = "TW"
 
     
         # plt.figure(figsize=(12, 9))
