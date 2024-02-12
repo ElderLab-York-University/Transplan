@@ -2,7 +2,7 @@ from Libs import *
 from Utils import *
 
 def detect(args):
-    setup(args)
+    raise NotImplementedError
     # this detector is an abstract detector
     # it plays as a wraper for all detectors under mmdet
 
@@ -55,6 +55,7 @@ def df(args):
   return pd.DataFrame.from_dict(data)
 
 def df_txt(df,text_result_path):
+  raise NotImplementedError
   # store a modified version of detection df to the same txt file
   # used in the post processig part of the detection
   # df is in the same format specified in the df function
@@ -67,6 +68,7 @@ def df_txt(df,text_result_path):
       text_file.write(f"{frame_num} {clss} {score} {x1} {y1} {x2} {y2}\n")
 
 def fine_tune(train_config_path, work_dir, resume):
+  raise NotImplementedError
   env_name = "MMDet "
   ngpus = get_numgpus_torch(env_name)
   port  = get_available_port()
@@ -76,6 +78,7 @@ def fine_tune(train_config_path, work_dir, resume):
     os.system(f"conda run -n {env_name} --live-stream PORT={port} ./Detectors/MMDet/mmdetection/tools/dist_train.sh {train_config_path} {ngpus} --work-dir={work_dir}")
 
 def modify_train_config(train_config_path, args, args_mp, args_gt, args_mp_gt):
+  raise NotImplementedError
   file_name = train_config_path
   root_dataset = os.path.abspath(args_gt.Dataset)
   for arg_p in args_mp_gt:
