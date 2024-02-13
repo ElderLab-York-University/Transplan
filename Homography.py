@@ -395,7 +395,61 @@ def vishomographygui(args):
     plt.axis("off")
     plt.savefig(projection_save_path, bbox_inches='tight')
 
+    # save a picture for selected points correspondance
+    point_pairs_plot(args)
+
     return SucLog("Vis Homography executed successfully") 
+
+def point_pairs_plot(args):
+    first_image_path = args.HomographyStreetView
+    second_image_path = args.HomographyTopView
+    homography_path = args.HomographyNPY
+    points_path = args.HomographyCSV
+
+    img1 = cv.imread(first_image_path)
+    img2 = cv.imread(second_image_path)
+
+    points = pd.read_csv(points_path)
+
+    rows1, cols1, dim1 = img1.shape
+    rows2, cols2, dim2 = img2.shape
+
+    M = np.load(homography_path, allow_pickle=True)[0]
+    Mp = np.linalg.inv(M)
+
+    # plot on top view
+    for i , row in tqdm(points.iterrows()):
+        x, y = row[2], row[3]
+        img2 = cv.circle(img2, (x,y), radius=4, color=(255, 0, 0), thickness=3)
+
+    for i, row in points.iterrows():
+        x, y = row[0], row[1]
+        point = np.array([x, y, 1])
+        new_point = M.dot(point)
+        new_point /= new_point[2]
+        xp, yp = int(new_point[0]), int(new_point[1]) 
+        img2 = cv.circle(img2, (xp,yp), radius=4, color=(0, 0, 255), thickness=3)
+
+    plt.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
+    save_path = args.VisHomographyPth[:-3] + "paripoints.top.png"
+    plt.savefig(save_path, bbox_inches='tight')
+
+    # plot on camera view
+    for i , row in tqdm(points.iterrows()):
+        x, y = row[0], row[1]
+        img1 = cv.circle(img1, (x,y), radius=20, color=(255, 0, 0), thickness=10)
+
+    for i, row in points.iterrows():
+        x, y = row[2], row[3]
+        point = np.array([x, y, 1])
+        new_point = Mp.dot(point)
+        new_point /= new_point[2]
+        xp, yp = int(new_point[0]), int(new_point[1]) 
+        img1 = cv.circle(img1, (xp,yp), radius=20, color=(0, 0, 255), thickness=10)
+
+    plt.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
+    save_path = args.VisHomographyPth[:-3] + "paripoints.street.png"
+    plt.savefig(save_path, bbox_inches='tight')
 
 def vis_reprojected_tracks(args):
     first_image_path = args.HomographyStreetView
@@ -522,6 +576,122 @@ def vis_contact_point_top(args):
     out_cap.release()
     return SucLog("sucessfully viz-ed contact points on top view")
 
+def vis_contact_point_top_mc(args, args_mc):
+    args_mc_flat = flatten_args(args_mc)
+    save_path = args.VisContactPointTopPth
+
+    # get number of frames and fps from one of the videos
+    cap = cv2.VideoCapture(args_mc_flat[0].Video)
+    if (cap.isOpened()== False): return FailLog("could not open input video")
+
+    frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    cap.release()
+
+    # get top view from one of the videos
+    second_image_path = args_mc_flat[0].HomographyTopView
+    img2 = cv.imread(second_image_path)
+    rows2, cols2, dim2 = img2.shape
+    frame_width , frame_height  = cols2 , rows2
+
+    out_cap = cv2.VideoWriter(save_path,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
+    color = (0, 0, 102)
+
+    if not args.ForNFrames is None:
+        frames = int(min(frames, args.ForNFrames))
+
+    # load backprojected detections
+    dfs = []
+    for arg_i in args_mc_flat:
+        df = pd.read_pickle(arg_i.ReprojectedPklForDetection)
+        dfs.append(df)
+
+    # plot points on each frame
+    for frame_num in tqdm(range(frames)):
+        img2_fn = copy.deepcopy(img2)
+        for df in dfs:
+            df_fn = df[df.fn==(frame_num)]
+            for i, row in df_fn.iterrows():
+                img2_fn = Detect.draw_point_on_image(img2_fn, row.x, row.y)
+
+        out_cap.write(img2_fn)
+    out_cap.release()
+    return SucLog("sucessfully viz-ed MC contact points on top view")
+
+def eval_contact_points_ms(arg_top, args_mcss):
+    args_mcss_flat = flatten_args(args_mcss)
+    # gatther all distances
+    distances = []
+    distances_top  = []
+
+    for args in tqdm(args_mcss_flat):
+        # gett 2D GT args
+        # get 3D GT args
+        args_gt_2d = get_args_gt(args)
+        args_gt_3d = get_args_gt3D(args)
+
+        # read backprojected detections + contact points
+        df       = pd.read_pickle(args.ReprojectedPklForDetection)
+        df_gt_2d = pd.read_pickle(args_gt_2d.ReprojectedPklForDetection)
+        df_gt_3d = pd.read_pickle(args_gt_3d.ReprojectedPklForDetection)
+
+        # if detector is a 3D detector, modify x1, y1, x2, y2
+        # to x2D1, y2D1, x2D2, y2D2 so that it is consistent with
+        # a 2D detector
+        if "x2D1" in df.columns:
+            df.x1 = df.x2D1
+            df.y1 = df.y2D1
+            df.x2 = df.x2D2
+            df.y2 = df.y2D2
+
+        # get unique frames based on annotations
+        unique_frames = np.unique(df_gt_3d.fn)
+
+        # for each frame in annotations
+        for fn in unique_frames:
+            # get the detections for frame "fn"
+            df_fn       = df[df.fn == fn]
+            df_gt_2d_fn = df_gt_2d[df_gt_2d.fn == fn]
+            df_gt_3d_fn = df_gt_3d[df_gt_3d.fn == fn]
+
+            # use 2D args for matching 2D detections
+            for i, row in df_fn.iterrows():
+                gt_2d_match_row = get_det_with_max_iou(row, df_gt_2d_fn)
+                if gt_2d_match_row is None: #could not match
+                    continue
+                # match with uuid/id
+                gt_3d_match_row = df_gt_3d_fn[df_gt_3d_fn.uuid == gt_2d_match_row.uuid]
+
+                # first check if both 2d and 3d gt are available
+                # if 3d and 2d are not available at the same time we will just skip the detection
+                if len(gt_3d_match_row) == 0:
+                    continue
+                
+                # compute distance on image
+                cp_est    = np.array([row.xcp, row.ycp])
+                cp_gt     = np.array([gt_3d_match_row.xcp.iloc[0], gt_3d_match_row.ycp.iloc[0]])
+                dist_row  = np.linalg.norm(cp_est - cp_gt)
+                distances.append(dist_row)
+
+                # compute distance on ground
+                cp_est_top    = np.array([row.x, row.y])
+                cp_gt_top     = np.array([gt_3d_match_row.x.iloc[0], gt_3d_match_row.y.iloc[0]])
+                dist_row_top  = np.linalg.norm(cp_est_top - cp_gt_top)
+                distances_top.append(dist_row_top)
+
+
+    cp_error_image = np.mean(distances)
+    cp_error_top   = np.mean(distances_top)
+    print(cp_error_image, cp_error_top)
+
+    df_data = {}
+    df_data["CPErrorImage"] = [cp_error_image]
+    df_data["CPErrorTop"]   = [cp_error_top]
+    df = pd.DataFrame.from_dict(df_data)
+    df.to_csv(arg_top.CPError, index=False)
+
+    return SucLog("evaluated CP selection MS")
+
 def eval_contact_points(args):
     # get 2D GT args
     # get 3D GT args
@@ -543,11 +713,12 @@ def eval_contact_points(args):
         df.y2 = df.y2D2
 
     # get unique frames based on annotations
-    unique_frames = np.unique(df_gt_2d.fn)
+    unique_frames = np.unique(df_gt_3d.fn)
 
 
     # gatther all distances
-    distances = []
+    distances      = []
+    distances_top  = []
 
     # for each frame in annotations
     for fn in tqdm(unique_frames):
@@ -559,21 +730,174 @@ def eval_contact_points(args):
         # use 2D args for matching 2D detections
         for i, row in df_fn.iterrows():
             gt_2d_match_row = get_det_with_max_iou(row, df_gt_2d_fn)
+            if gt_2d_match_row is None: #could not match
+                continue
             # match with uuid/id
-            gt_3d_match_row = df_gt_3d_fn[df_gt_3d_fn.id == gt_2d_match_row.id]
+            gt_3d_match_row = df_gt_3d_fn[df_gt_3d_fn.uuid == gt_2d_match_row.uuid]
 
             # first check if both 2d and 3d gt are available
             # if 3d and 2d are not available at the same time we will just skip the detection
             if len(gt_3d_match_row) == 0:
                 continue
 
-            cp_est    = [row.xcp, row.ycp]
-            cp_gt     = [gt_3d_match_row.xcp, gt_3d_match_row.ycp]
-            dist_row  = np.linalg.norm(np.array(cp_est) - np.array(cp_gt))
+            # image pixel error
+            cp_est    = np.array([row.xcp, row.ycp])
+            cp_gt     = np.array([gt_3d_match_row.xcp.iloc[0], gt_3d_match_row.ycp.iloc[0]])
+            dist_row  = np.linalg.norm(cp_est - cp_gt)
             distances.append(dist_row)
+
+            # top view pixel error(convertable to meter)
+            cp_est_top    = np.array([row.x, row.y])
+            cp_gt_top     = np.array([gt_3d_match_row.x.iloc[0], gt_3d_match_row.y.iloc[0]])
+            dist_row_top  = np.linalg.norm(cp_est_top - cp_gt_top)
+            distances_top.append(dist_row_top)
+            
             
     cp_error_image = np.mean(distances)
-    print(cp_error_image)
+    cp_error_top   = np.mean(distances_top)
+    print(cp_error_image, cp_error_top)
     # save this number somewhere
 
+    df_data = {}
+    df_data["CPErrorImage"] = [cp_error_image]
+    df_data["CPErrorTop"]   = [cp_error_top]
+    df = pd.DataFrame.from_dict(df_data)
+    df.to_csv(args.CPError, index=False)
+
     return SucLog("evaluated CP selection")
+
+def eval_cp_MC(arg_top, args_mc):
+    args_mc_flat = flatten_args(args_mc)
+
+    # group 3D coordinates after matching with cuboids
+    uuid_to_xy = {}
+    list_args_gt_2d = []
+    list_args_gt_3d = []
+    list_df         = []
+    list_df_gt_2d   = []
+    list_df_gt_3d   = []
+
+    list_frames = []
+    list_ids    = []
+
+    for args in args_mc_flat:
+        # get 2D GT args
+        # get 3D GT args
+        args_gt_2d = get_args_gt(args)
+        args_gt_3d = get_args_gt3D(args)
+
+        # read backprojected detections + contact points
+        df       = pd.read_pickle(args.ReprojectedPklForDetection)
+        df_gt_2d = pd.read_pickle(args_gt_2d.ReprojectedPklForDetection)
+        df_gt_3d = pd.read_pickle(args_gt_3d.ReprojectedPklForDetection)
+
+        # if detector is a 3D detector, modify x1, y1, x2, y2
+        # to x2D1, y2D1, x2D2, y2D2 so that it is consistent with
+        # a 2D detector
+        if "x2D1" in df.columns:
+            df.x1 = df.x2D1
+            df.y1 = df.y2D1
+            df.x2 = df.x2D2
+            df.y2 = df.y2D2
+        
+
+        # get unique frames based on annotations
+        unique_frames = np.unique(df_gt_3d.fn).tolist()
+        unique_ids    = np.unique(df_gt_3d.id).tolist()
+
+
+        list_args_gt_2d.append(args_gt_2d)
+        list_args_gt_3d.append(args_gt_3d)
+        list_df.append(df)
+        list_df_gt_2d.append(df_gt_2d)
+        list_df_gt_3d.append(df_gt_3d)
+        list_frames.extend(unique_frames)
+        list_ids.extend(unique_ids)
+
+    unique_frames = np.unique(list_frames)  
+    unique_ids = np.unique(list_ids)
+
+    # for each frame in annotations
+    for fn in tqdm(unique_frames[:1]):
+        for id in tqdm(unique_ids):
+        # raise NotImplementedError
+        # get the detections for frame "fn"
+            df_fn       = df[df.fn == fn]
+            df_gt_2d_fn = df_gt_2d[df_gt_2d.fn == fn]
+            df_gt_3d_fn = df_gt_3d[df_gt_3d.fn == fn]
+
+            # use 2D args for matching 2D detections
+            for i, row in df_fn.iterrows():
+                gt_2d_match_row = get_det_with_max_iou(row, df_gt_2d_fn)
+                if gt_2d_match_row is None: #could not match
+                    continue
+                # match with uuid/id
+                gt_3d_match_row = df_gt_3d_fn[df_gt_3d_fn.id == gt_2d_match_row.id]
+
+                # first check if both 2d and 3d gt are available
+                # if 3d and 2d are not available at the same time we will just skip the detection
+                if len(gt_3d_match_row) == 0:
+                    continue
+
+                # top view pixel error(convertable to meter)
+                cp_est_top    = [row.x, row.y]
+
+                id = df_gt_3d_fn.id.iloc[0]
+
+                if not (fn, id) in uuid_to_xy:
+                    uuid_to_xy[(fn, id)] = []
+            
+                uuid_to_xy[(fn, id)].append(cp_est_top)    
+            
+    # for each uuid, if there are more than one 3D coor compute average dist
+    def pairwise_distance_np(coordinates):
+        # Convert the list of coordinates to a NumPy array
+        points = np.array(coordinates)
+        # Calculate the difference matrix along each dimension
+        diff = points[:, np.newaxis, :] - points[np.newaxis, :, :]
+        # Compute the squared distances for each pair
+        squared_dist = np.sum(diff**2, axis=2)
+        # Take the square root to get the Euclidean distances
+        distances = np.sqrt(squared_dist)
+        # Since the distance matrix is symmetric, we take the upper triangle (excluding the diagonal) to avoid double counting
+        upper_triangle_indices = np.triu_indices_from(distances, k=1)
+        # Compute the average distance
+        average_distance = np.mean(distances[upper_triangle_indices])
+        return average_distance
+
+    print(uuid_to_xy)
+    return
+
+    distances_top = []
+    for key in tqdm(uuid_to_xy):
+        if len(uuid_to_xy[key]) > 1: # if box is visible >=2 cams
+            distances_top.append(pairwise_distance_np(uuid_to_xy[key]))
+
+    cp_error_top = np.mean(distances_top)
+
+    df_data = {}
+    df_data["CPErrorMC"]   = [cp_error_top]
+    df = pd.DataFrame.from_dict(df_data)
+    df.to_csv(arg_top.CPErrorMC, index=False)
+
+    return cp_error_top, len(distances_top)
+
+def eval_cp_MC_MS(args, args_ms, args_mcs):
+    errors , supports = [], []
+    for arg_ms, arg_mc in tqdm(zip(args_ms, args_mcs), total=len(args_ms)):
+        error, support = eval_cp_MC(arg_ms, arg_mc)
+        errors.append(error)
+        supports.append(support)
+    
+    errors = np.array(errors)
+    supports = np.array(supports)
+
+    top_error = np.sum(errors * supports) / np.sum(supports)
+    print(top_error)
+
+    df_data = {}
+    df_data["CPErrorMC"]   = [top_error]
+    df = pd.DataFrame.from_dict(df_data)
+    df.to_csv(args.CPErrorMC, index=False)
+
+    return SucLog("evaluated CP selection MC MS")

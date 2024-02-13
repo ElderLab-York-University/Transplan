@@ -225,6 +225,8 @@ def find_opt_bw_of_surf(args, gp):
     else:
         plt.savefig(args.OptBWImage)
 
+    plt.close("all")
+
     return h_opt
 
 def find_opt_bw(args):
@@ -869,18 +871,20 @@ class IKDE():
                 scores[j, i] = infer_map[(x, y)]
 
         plt.imshow(img)
+        plt.axis("off")
         plt.contourf(xs, ys, scores, alpha=0.5, levels=100, cmap='plasma')
-        plt.colorbar()
+        # plt.colorbar()
         plt.title(f"prototpyes used: {self.n_prototype[moi]}")
-        plt.savefig(vis_path+f"logdensity_{moi}.png")
+        plt.savefig(vis_path+f"logdensity_{moi}.png", bbox_inches='tight')
         plt.close("all")
 
         scores = np.exp(scores)
         plt.imshow(img)
+        plt.axis("off")
         plt.contourf(xs, ys, scores, alpha=0.5, levels=100, cmap="plasma")
-        plt.colorbar()
+        # plt.colorbar()
         plt.title(f"prototpyes used: {self.n_prototype[moi]}")
-        plt.savefig(vis_path+ f"density_{moi}.png")
+        plt.savefig(vis_path+ f"density_{moi}.png", bbox_inches='tight')
         plt.close("all")
 
     def get_traj_score(self, traj, moi):
@@ -1413,6 +1417,45 @@ def eval_count_multi(args, args_mcs):
 
     df_multi.to_csv(args.CountingStatPth, index=False)
     return SucLog("counts Multi evaluated")
+
+def eval_count_multi_per_camera(args, args_mcs):
+    # evaluate each video first
+    # to get metrics
+    # then call another function for evaluate on multi args level
+    def accumulate(stats):
+        df_multi = copy.deepcopy(stats[0])
+        cols_to_sum = ["gt", "estimated", "diff"]
+        for stat in stats[1:]:
+            for col in cols_to_sum:
+                df_multi[col] = df_multi[col] + stat[col]
+        df_multi["err"]  = df_multi["diff"]/df_multi["gt"]
+        return df_multi
+
+    args_flat = flatten_args(args_mcs)
+    stats = []
+    cams = []
+
+    for arg_i in tqdm(args_flat):
+        stats.append(pd.read_csv(arg_i.CountingStatPth))
+
+    for arg_i in tqdm(args_flat):
+        cams.append(arg_i.SubID[-3:])
+
+    cam_based_df_data = {}
+    unique_cams = np.unique(cams)
+    for cam in unique_cams:
+        stats_cam = []
+        for cam_i, stat_i in zip(cams, stats):
+            if cam_i == cam:
+                stats_cam.append(stat_i)
+        df_multi_cam = accumulate(stats_cam)
+        if not "moi" in cam_based_df_data: cam_based_df_data["moi"] = df_multi_cam["moi"].tolist()
+        cam_based_df_data[cam] = df_multi_cam["err"].tolist()
+
+    df_final = pd.DataFrame.from_dict(cam_based_df_data)
+    df_final.to_csv(args.CountingStatCameraBasedPth, index=False)
+
+    return SucLog("counts Cameara Multi evaluated")
 
 def main(args):
     # some relative path form the args

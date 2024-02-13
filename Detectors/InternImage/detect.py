@@ -1,18 +1,12 @@
-# Some basic setup:
 from tabnanny import check
 import os
 from tqdm import tqdm
 import glob
 import cv2
-# Setup detectron2 logger
 import pandas as pd
-# from mmdet.apis import init_detector, inference_detector
-# import mmcv
 from Libs import *
 from Utils import *
-
-# choose to run on CPU to GPU
-
+from Detectors.MMDet.detect import modify_train_config as mm_modify_train_config
 
 # model_weight_url = ""
 # if "model_temp_280758.pkl" not in os.listdir("./Detectors/detectron2/"):
@@ -87,3 +81,40 @@ def setup(args):
         os.system(f"conda run --live-stream -n {env_name} pip install ./Detectors/InternImage/InternImage/DCNv3-1.0+cu113torch1.11.0-cp37-cp37m-linux_x86_64.whl")
         os.system(f"conda run --live-stream -n {args.Detector} python3 ./Detectors/InternImage/InternImage/detection/ops_dcnv3/test.py")
         os.system(f"conda run --live-stream -n {env_name} pip install pandas==1.1.5")
+
+def fine_tune(args, args_mp, args_gt, args_mp_gt):
+    # modify config file with args
+    train_config_path = "./Detectors/InternImage/train_config.py"
+    mm_modify_train_config(train_config_path, args, args_mp, args_gt, args_mp_gt)
+
+    work_dir = args.DetectorCheckPointDir
+    if not os.path.isdir(work_dir):
+        os.system(f"mkdir {work_dir}")
+
+    lunch_training(train_config_path, work_dir, args.Resume)
+
+def lunch_training(train_config_path, work_dir, resume):
+  env_name = "MMDet "
+  ngpus = get_numgpus_torch(env_name)
+  port  = get_available_port()
+  dist_train_sh_path = "./Detectors/InternImage/InternImage/detection/dist_train.sh"
+  if resume:
+    os.system(f"conda run -n {env_name} --live-stream PORT={port} {dist_train_sh_path} \
+              {train_config_path} {ngpus} --work-dir={work_dir} --resume")
+  else:
+    os.system(f"conda run -n {env_name} --live-stream PORT={port} {dist_train_sh_path} \
+              {train_config_path} {ngpus} --work-dir={work_dir}")
+
+# def checkpoint_from_version(version):
+#     c_2_v = {
+#         ""      : "./Detectors/MMDet/mmdetection/checkpoints/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth",
+#         "HW7FT" : "/home/sajjad/HW7Leslie/Results/CheckPoints/YoloX/20231111_144154_ft_5cls/best_coco_bbox_mAP_epoch_11.pth"
+#     }
+#     return c_2_v[version]
+
+# def config_from_version(version):
+#     c_2_v = {
+#         ""      : "./Detectors/MMDet/mmdetection/configs/yolox/yolox_x_8xb8-300e_coco.py",
+#         "HW7FT" : "/home/sajjad/HW7Leslie/Results/CheckPoints/YoloX/20231111_144154_ft_5cls/train_config.py"
+#     }
+#     return c_2_v[version]

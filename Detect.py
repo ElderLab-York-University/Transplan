@@ -10,6 +10,7 @@ import Detectors.detectron2.detect
 import Detectors.YOLOv8.detect
 import Detectors.DDETR.detect
 import Detectors.InternImage.detect
+import Detectors.GTHW7FG.detect
 import Detectors.GTHW7.detect
 import Detectors.GTHW73D.detect
 import Detectors.RTMDet.detect
@@ -24,7 +25,6 @@ detectors["YOLOv5"]         = Detectors.YOLOv5.detect
 detectors["YOLOv8"]         = Detectors.YOLOv8.detect
 detectors["DDETR"]          = Detectors.DDETR.detect
 detectors["InternImage"]    = Detectors.InternImage.detect
-detectors["GTHW7"]          = Detectors.GTHW7.detect
 detectors["RTMDet"]         = Detectors.RTMDet.detect
 detectors["YoloX"]          = Detectors.YoloX.detect
 detectors["YoloX.HW7FT"]          = Detectors.YoloX.detect
@@ -36,6 +36,8 @@ detectors["DeformableDETR"] = Detectors.DeformableDETR.detect
 detectors["CenterNet"]      = Detectors.CenterNet.detect
 detectors["CenterNet.HW7FT"]      = Detectors.CenterNet.detect
 
+detectors["GTHW7"]          = Detectors.GTHW7.detect
+detectors["GTHW7FG"]        = Detectors.GTHW7FG.detect
 detectors["GTHW73D"]        = Detectors.GTHW73D.detect
 
 def detect(args):
@@ -392,6 +394,10 @@ def visdetect_3d(args):
             frame = draw_3Dbox_on_image(frame, row)
             # draw 2D box
             frame = draw_box_on_image(frame, row.x2D1, row.y2D1, row.x2D2, row.y2D2, c=(0, 0, 255))
+            # draw object uuid on top
+            # cv2.putText(frame, f'id:', (int(row.x2D1), int(row.y2D1)-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+            # cv2.putText(frame, f'{row.id}', (int(row.x2D1) + 60, int(row.y2D1)-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 5)
+            # cv2.putText(frame, f'{row.id}', (int(row.x2D1) + 60, int(row.y2D1)-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (144, 251, 144), 2)
             
         out_cap.write (frame)
     cap.release()

@@ -14,15 +14,30 @@ from Track import track, vistrack, trackpostproc, vistrackmoi, vistracktop, calc
 from Homography import homographygui
 from Homography import reproject
 from Homography import vishomographygui
-from Homography import vis_reprojected_tracks, vis_contact_point, vis_contact_point_top, eval_contact_points
+from Homography import vis_reprojected_tracks, vis_contact_point, vis_contact_point_top, eval_contact_points, vis_contact_point_top_mc, eval_contact_points_ms, eval_cp_MC, eval_cp_MC_MS
 from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_tracks, extract_common_tracks_multi
 from Evaluate import evaluate_tracking, cvpr, evaluate_detection
 from Maps import pix2meter
 from counting import counting
-from counting.counting import find_opt_bw, eval_count, eval_count_multi
+from counting.counting import find_opt_bw, eval_count, eval_count_multi, eval_count_multi_per_camera
 from Clustering import cluster
 from CountingMC import AverageCountsMC, IntegrateCounts
 from Segment import segment, vis_segment, SegmentPostProc
+from Pose import extract_pose, vis_pose, vis_detect_top_mc
+
+def ExtractPose(args):
+    if args.ExtractPose:
+        print(ProcLog("pose estimation"))
+        log = extract_pose(args)
+        return log
+    else: return WarningLog("skipped pose estimation step")
+
+def VisPose(args):
+    if args.VisPose:
+        print(ProcLog("visulising pose estimation"))
+        log = vis_pose(args)
+        return log
+    else: return WarningLog("skipped pose visualization")
 
 def Preprocess(args):
     if args.Preprocess:
@@ -175,6 +190,13 @@ def EvalCountMS(args, args_ms, args_mcs):
         return log
     else: return WarningLog("skipped eval counting subtask")
 
+def EvalCountCameraMS(args, args_ms, args_mcs):
+    if args.EvalCountCamera:
+        print(ProcLog("evaluating Counting Camera MS"))
+        log = eval_count_multi_per_camera(args, args_mcs)
+        return log
+    else: return WarningLog("skipped eval counting camera based subtask")
+
 def EvalCountMSfromMC(args, args_ms, args_mcs):
     if args.EvalCountMSfromMC:
         print(ProcLog("evaluating counting MS from MCs"))
@@ -315,12 +337,40 @@ def EvalCPSelection(args):
         return log
     else: return WarningLog("skipped contact point evaluation") 
 
+def EvalCPSelection_MS(args, args_ms, args_mcs):
+    if args.EvalContactPoitnSelection:
+        print(ProcLog("evaluating contact points MS"))
+        log = eval_contact_points_ms(args, args_mcs)
+        return log
+    else: return WarningLog("skipped contact point evaluation MS") 
+
+def EvalCPSelection_MC_MS(args, args_ms, args_mcs):
+    if args.EvalContactPoitnSelectionMC:
+        print(ProcLog("evaluating contact points MC MS"))
+        log = eval_cp_MC_MS(args, args_ms, args_mcs)
+        return log
+    else: return WarningLog("skipped contact point evaluation MC MS") 
+
+def EvalCPSelection_MC(args, args_mc):
+    if args.EvalContactPoitnSelectionMC:
+        print(ProcLog("evaluating contact points MC"))
+        log = eval_cp_MC(args, args_mc)
+        return log
+    else: return WarningLog("skipped contact point evaluation MC")
+
 def VisCPTop(args):
     if args.VisCPTop:
         print(ProcLog("vis cp top"))
         log = vis_contact_point_top(args)
         return log
     else: return WarningLog("skipped vis cp top")
+
+def VisCPTopMC(args, args_mc):
+    if args.VisCPTop:
+        print(ProcLog("vis cp top MC"))
+        log = vis_contact_point_top_mc(args, args_mc)
+        return log
+    else: return WarningLog("skipped vis cp top MC")
 
 def ExtractImages(args):
     if args.ExtractImages:
@@ -390,6 +440,7 @@ def main(args):
                 HomographyGUI, VisHomographyGUI, VisROI,
                 Segment, SegPostProc, VisSegment,
                 Detect, DetPostProc, VisDetect, ConvertDetsToCOCO,
+                ExtractPose, VisPose,
                 Track, Homography, Pix2Meter, TrackPostProc, TrackEvaluate,
                 VisTrack, VisTrajectories, VisTrackTop,
                 VisContactPoint, VisCPTop, EvalCPSelection,
@@ -403,7 +454,9 @@ def main(args):
 def main_mc(args, args_mc):
     # main for multi camera
 
-    subtasks = [DetectEvaluateMC,TrackEvaluateMC, AverageCounts, IntegratCountsMC, EvalCountMC]
+    subtasks = [VisCPTopMC, EvalCPSelection_MC,
+                DetectEvaluateMC,TrackEvaluateMC,
+                AverageCounts, IntegratCountsMC, EvalCountMC]
     for subtask in subtasks:
         log = subtask(args,args_mc)
         if not isinstance(log, WarningLog):
@@ -411,9 +464,10 @@ def main_mc(args, args_mc):
 
 def main_ms(args, args_ms, args_mcs):
     # main for multi segments
-    subtasks = [ConvertDetsToCOCO_MS, TrackEvaluateMS,DetectEvaluateMS,
+    subtasks = [ConvertDetsToCOCO_MS, EvalCPSelection_MS, EvalCPSelection_MC_MS,
+                TrackEvaluateMS,DetectEvaluateMS,
                 ExtractCommonTracksMulti, VisLabelledTrajectoriesMulti,
-                CountMS, EvalCountMS, EvalCountMSfromMC]
+                CountMS, EvalCountMS, EvalCountMSfromMC, EvalCountCameraMS]
 
     for sub in subtasks:
         log = sub(args, args_ms, args_mcs)
@@ -452,6 +506,7 @@ def get_parser():
     parser.add_argument("--CountVisDensity", help="if visualize densities of trained KDE", action="store_true")
     parser.add_argument("--CountMetric", help="name of the metric used in counting part",type=str)
     parser.add_argument("--EvalCount", help="Evaluate the Counting Result you got from Counting part", action="store_true")
+    parser.add_argument("--EvalCountCamera", help="Evaluate counting based on camera", action="store_true")
     parser.add_argument("--Meter", help="convert reprojected track coordinated into meter", action="store_true")
     parser.add_argument("--Cluster", help="if to perform clustering", action="store_true")
     parser.add_argument("--ClusterMetric", help="The name of the distance metric used to compute the similarity metrics",type=str)
@@ -479,6 +534,7 @@ def get_parser():
     parser.add_argument("--JustExitROI", help="select tracks that cross multiple edges of the roi", action="store_true")
     parser.add_argument("--WithinROI", help="select tracks that cross multiple edges of the roi", action="store_true")
     parser.add_argument("--ExitOrCrossROI", help="select tracks that either exit or cross multi roi", action="store_true")
+    parser.add_argument("--EnterOrCrossROI", help="select tracks that either exit or cross multi roi", action="store_true")
     parser.add_argument("--SelectToBeCounted", help="select tracks to be counted based on ROI", action="store_true")
     parser.add_argument("--UnfinishedTrackFrameTh", help="select tracks to be counted based on ROI", type=int, default=10)
     parser.add_argument("--UnstartedTrackFrameTh", help="select tracks to be counted based on ROI", type=int, default=10)
@@ -564,6 +620,12 @@ def get_parser():
     parser.add_argument("--UnifyTrackClass", help="unify class labels for each track", action='store_true')
 
     parser.add_argument("--EvalContactPoitnSelection", help="evaluate contact point selection method using 2D-3D GT", action='store_true')
+    parser.add_argument("--EvalContactPoitnSelectionMC", help="evaluate contact point selection method using multi camera", action='store_true')
+
+    parser.add_argument("--ExtractPose", help="given detection model and detection results, provide pose information for each object", action='store_true')
+    parser.add_argument("--VisPose", help="visulaize pose estimation on video", action='store_true')
+    parser.add_argument("--Poser", help="Pose estimator to use", type=str)
+    parser.add_argument("--PoseTh", help="set the threshold for checkpoints in a pose to be used", type=float, default=0.3)
 
     return parser
     

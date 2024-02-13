@@ -44,6 +44,7 @@ roi_color_dict = {
     7:(0, 0, 0),
 
 }
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -72,6 +73,7 @@ class SubTaskExt:
     Json = "json"
     Npy = "npy"
     Csv = "csv"
+    VisPose = "MP4"
 
 class SubTaskMarker:
     Detection     = "detection"
@@ -89,6 +91,8 @@ class SubTaskMarker:
     VisROI = "visROI"
     IdMatched = "IdMatched"
     MCTrackDis = "MCTrackDist"
+    Pose       = "Pose"
+    PoseVis    = "PoseVis"
     
 class Puncuations:
     Dot = "."
@@ -158,6 +162,40 @@ def convert_pandas_versions(args, df_to_convert):
     print(df)  
     pd.to_pickle(df, getattr(args, df_to_convert))
     
+def get_pose_path(args):
+    raise NotImplementedError
+    # add detector version to poser
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Pose",file_name + Puncuations.Dot + SubTaskMarker.Pose + Puncuations.Dot + args.Detector + Puncuations.Dot + "pkl")
+
+def get_pose_vis_path(args):
+    raise NotImplementedError
+    # add detector version to poser
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.PoseVis + Puncuations.Dot + args.Detector + Puncuations.Dot + SubTaskExt.VisPose)
+
+def get_epc_pose_dist_pth(args):
+    raise NotImplementedError
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "PoseDist" + Puncuations.Dot + args.Detector+ Puncuations.Dot+ args.Tracker+ Puncuations.Dot + "png")
+
+def get_epc_mean_pose_pth(args):
+    raise NotImplementedError
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "MeanPose" + Puncuations.Dot + args.Detector+ Puncuations.Dot+ args.Tracker+ Puncuations.Dot + "png")
+
+def add_pose_result_path_to_args(args):
+    args.PosePth = get_pose_path(args)
+    return args
+
+def add_pose_vis_path_to_args(args):
+    args.PoseVisPth = get_pose_vis_path(args)
+    return args
+
 def get_detection_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -377,6 +415,11 @@ def get_counting_stat_pth(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Counting",file_name + Puncuations.Dot + SubTaskMarker.Counting + Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + args.CountMetric +Puncuations.Dot +SubTaskExt.Csv)
+
+def get_counting_stat_cam_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Counting",file_name + Puncuations.Dot + SubTaskMarker.Counting+".CamBased"+ Puncuations.Dot + args.Detector+ Puncuations.Dot + args.Tracker + Puncuations.Dot + args.CountMetric +Puncuations.Dot +SubTaskExt.Csv)
 
 def get_counter_cached_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -663,9 +706,11 @@ def add_meter_path_to_args(args):
 def add_count_path_to_args(args):
     counting_result_path = get_counting_res_pth(args)
     counting_stat_path = get_counting_stat_pth(args)
+    counting_stat_cam_path = get_counting_stat_cam_path(args)
     counting_idmatching_path = get_counting_idmatching_pth(args)
     args.CountingResPth = counting_result_path
     args.CountingStatPth = counting_stat_path
+    args.CountingStatCameraBasedPth = counting_stat_cam_path
     args.CountingIdMatchPth = counting_idmatching_path
     return args
 
@@ -910,6 +955,21 @@ def add_check_points_path_to_args(args):
         args.DetectorCheckPointDir = get_detector_check_point_dir(args)
     return args
 
+def get_CPError_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results", "ContactPoints", f"{file_name}.CPError.{args.Detector}.{args.BackprojectionMethod}.{args.TopView}.{args.ContactPoint}.csv")
+
+def get_CPErrorMC_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results", "ContactPoints", f"{file_name}.CPErrorMC.{args.Detector}.{args.BackprojectionMethod}.{args.TopView}.{args.ContactPoint}.csv")
+
+def add_contact_points_path_to_args(args):
+    args.CPError   = get_CPError_path(args)
+    args.CPErrorMC = get_CPErrorMC_path(args)
+    return args
+
 def flatten_args(args):
     """
     recursive func to flatten a nexted list of args
@@ -997,6 +1057,13 @@ def get_args_gt3D(args):
     args_gt3D=complete_args(args_gt3D)
     return get_args(args_gt3D)
 
+def get_MetaData_GT_MC(args_mc):
+    gt = args_mc[0].MetaData["gt"]
+    for arg_mc in args_mc:
+        for key in arg_mc.MetaData["gt"]:
+            gt[key] = max(gt[key], arg_mc.MetaData["gt"][key])
+    return gt
+
 def get_args_mc(args):
     args_mc = get_sub_args(args)
     for i, arg_c in enumerate(args_mc):
@@ -1008,6 +1075,7 @@ def get_args_mc(args):
     args = get_args(args)
     args = complete_args_mc(args)
     args.MetaData = args_mc[0].MetaData
+    args.MetaData["gt"] = get_MetaData_GT_MC(args_mc)
     args.HomographyNPY = args_mc[0].HomographyNPY
     args.HomographyTopView = args_mc[0].HomographyTopView
 
@@ -1070,7 +1138,8 @@ def complete_args(args):
         # if Video path was not specified by the user grab a video from dataset
         args = add_videos_to_args(args)
 
-    if (not args.Detector is None) or args.DetPostProc or args.ConvertDetsToCOCO or args.FineTune:
+    if (not args.Detector is None) or args.DetPostProc or args.ConvertDetsToCOCO or\
+        args.FineTune:
         args = add_detection_pathes_to_args(args)
         args = add_vis_detection_path_to_args(args)
         
@@ -1102,28 +1171,28 @@ def complete_args(args):
     args = add_images_folder_to_args(args)
 
     args = add_check_points_path_to_args(args)
+    args = add_contact_points_path_to_args(args)
 
     if args.HomographyGUI or args.Homography or args.VisHomographyGUI or\
         args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or\
         args.TrackPostProc or args.Count or args.VisROI or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or\
-        args.EvalCount    or args.IntegrateCountsMC or\
-        args.EvalCountMSfromMC:
-            # or args.DetPostProc or args.TrackEval
-            
+        args.EvalCount or args.TrackEval or args.DetPostProc or args.IntegrateCountsMC or\
+        args.EvalCountMSfromMC or args.EvalContactPoitnSelection or args.EvalContactPoitnSelectionMC or\
+        args.EvalCountCamera or args.ConvertDetsToCOCO or args.FineTune:
         args = add_homographygui_related_path_to_args(args)
 
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or\
         args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop or\
-        args.EvalCount  or args.EvalContactPoitnSelection or\
-        args.IntegrateCountsMC or args.EvalCountMSfromMC:
-        # or args.DetPostProc or args.TrackEval\
-            
+        args.EvalCount or args.TrackEval or args.EvalContactPoitnSelection or args.DetPostProc or\
+        args.IntegrateCountsMC or args.EvalCountMSfromMC or args.EvalContactPoitnSelection or\
+        args.EvalContactPoitnSelectionMC or args.EvalCountCamera or args.ConvertDetsToCOCO or args.FineTune:
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
 
-    if args.VisHomographyGUI or args.VisLabelledTrajectories or args.Meter or args.FindOptimalKDEBW:
+    if args.VisHomographyGUI or args.VisLabelledTrajectories or args.Meter or args.FindOptimalKDEBW or\
+        args.EvalContactPoitnSelection or args.EvalContactPoitnSelectionMC or args.EvalCountCamera:
         args = add_vishomography_path_to_args(args)
 
     if args.TrackLabelingGUI or args.VisLabelledTrajectories or args.Meter or\
@@ -1141,7 +1210,8 @@ def complete_args(args):
         args = add_meter_path_to_args(args)
 
     if args.Count or args.VisTrackMoI or args.AverageCountsMC or\
-         args.EvalCount or args.IntegrateCountsMC or args.EvalCountMSfromMC or args.EvalCountMC:
+        args.EvalCount or args.IntegrateCountsMC or args.EvalCountMSfromMC or\
+        args.EvalCountMC or args.EvalCountCamera:
         args = add_count_path_to_args(args)
 
     if args.Cluster or args.TrackLabelingGUI:
@@ -1153,7 +1223,7 @@ def complete_args(args):
     if args.VisTrackMoI:
         args = add_vis_tracking_moi_path_to_args(args)
 
-    if args.Count or args.EvalCount:
+    if args.Count or args.EvalCount or args.EvalCountCamera:
         args = add_cached_counter_path_to_args(args)
         args = add_density_path_to_args(args)
         
@@ -1176,6 +1246,11 @@ def complete_args(args):
         args=add_visclass_path(args)
     if args.FindLanes:
         args=add_vislanes_path(args)
+    # add pose path
+    if args.ExtractPose or args.VisPose:
+        args = add_pose_result_path_to_args(args)
+        args = add_pose_vis_path_to_args(args)
+
     args = add_correct_roi_to_args(args)
     args = revert_args_with_params(args)
     return args
@@ -1207,6 +1282,8 @@ def check_config(args):
     dsm_path    = os.path.join(results_path, "DSM")
     images_path = os.path.join(results_path, "Images")
     check_points_path = os.path.join(results_path, "CheckPoints")
+    contact_point_path = os.path.join(results_path, "ContactPoints")
+    pose_path       = os.path.join(results_path, "Pose")
 
     try: os.system(f"mkdir -p {results_path}")
     except: pass
@@ -1231,6 +1308,10 @@ def check_config(args):
     try: os.system(f"mkdir -p {images_path}")
     except: pass
     try: os.system(f"mkdir -p {check_points_path}")
+    except: pass
+    try: os.system(f"mkdir -p {contact_point_path}")
+    except: pass
+    try: os.system(f"mkdir -p {pose_path}")
     except: pass
 
 def get_conda_envs():
