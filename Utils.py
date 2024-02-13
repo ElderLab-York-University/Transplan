@@ -17,6 +17,22 @@ moi_color_dict = {
     12:(0, 130, 200),
 }
 
+
+class_color_dict={
+    0:(0, 255,255),
+    1:(0,255,0),
+    2:(230, 0, 0),
+    # 3:(250, 190, 212),
+    # 4:(170, 110, 40),
+    5:(255,255,255),
+    # 6:(255, 215, 180),
+    7:(0, 0, 255),
+    # 8:(255, 255, 25),
+    # 9:(210, 245, 60),
+    # 10:(0, 0, 128),
+    # 11:(70, 240, 240),
+    # 12:(0, 130, 200),    
+}
 roi_color_dict = {
     0:(0, 0, 0),
     1:(128, 0, 0),
@@ -101,7 +117,9 @@ class ProcLog(Log):
 class SucLog(Log):
     def __init__(self, message) -> None:
         super().__init__(message, bcolors.OKGREEN, Tags.SUCC)
-
+def add_gt_mask_path_to_args(args):
+    args.GTMask= get_gt_mask_path(args)
+    return args
 def replace_white_space(s):
     return s.replace(" ",",")
 def convert_pandas_versions(args, df_to_convert):
@@ -112,19 +130,32 @@ def convert_pandas_versions(args, df_to_convert):
     df=pd.read_csv(args.temp_text_path, index_col=0, sep=",")
     df.set_index(df.iloc[:, 0])
     for column in df.columns:
-        try:
+        if( "True"  in str(df[column]) or "False" in str(df[column])):
+            pattern1= re.compile(r'(?<=[a-zA-Z])\s+(?=[a-zA-Z])')
+            pattern2=re.compile(r'[\n\\n]')
+            print(column)
+            df[column]=df[column].apply(lambda x:re.sub(pattern2,',',re.sub(pattern1,',',x)))
             df[column]=df[column].apply(ast.literal_eval)
-        except SyntaxError as e:
-            pattern = re.compile(r'(\d)\s+(\d)')
-            pattern2 = re.compile(r'(\d+)\.(?![0-9])')            
-            df[column]=df[column].apply(lambda x:re.sub(pattern,r'\1,\2',re.sub(pattern2,r'\1.0',x)).replace("\n", ','))
-            df[column]=df[column].apply(ast.literal_eval)
-            
-        except ValueError as e:
-            print(e)
-            pass
+        else:
+            try:
+                df[column]=df[column].apply(ast.literal_eval)
+                
+            except SyntaxError as e:
+                pattern = re.compile(r'(\d)\s+(\d)')
+                pattern2 = re.compile(r'(\d+)\.(?![0-9])')       
+                print(df[column])
+                    
+                df[column]=df[column].apply(lambda x:re.sub(pattern,r'\1,\2',re.sub(pattern2,r'\1.0',x)).replace("\n", ','))
+                print(df[column])
+                
+                df[column]=df[column].apply(ast.literal_eval)
+            except ValueError as e:
+                print(e)
+                pass
     # for index, value in df["trajectory"].iteritems():
-    #     print(f"Row {index}: trajectory - {type(value)}")   
+    #     print(f"Row {index}: trajectory - {type(value)}") 
+    
+    print(df)  
     pd.to_pickle(df, getattr(args, df_to_convert))
     
 def get_detection_path_from_args(args):
@@ -210,11 +241,12 @@ def get_tracking_roi_pkl_bu_from_args(args):
 def get_vis_tracking_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisTracking + Puncuations.Dot + args.Detector+Puncuations.Dot+args.roi_num  + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisTracking + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
 def get_vis_tracking_roi_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisTracking + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisTracking + Puncuations.Dot + args.Detector+Puncuations.Dot+args.roi_num  + Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
+
 
 def get_vis_top_tracking_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -732,12 +764,57 @@ def get_opt_bw_ground(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "OptBW.GP" + Puncuations.Dot + args.Detector + Puncuations.Dot + args.Tracker + Puncuations.Dot +f"{args.OSR}"+ Puncuations.Dot +f"{args.ResampleTH}"+ Puncuations.Dot+ args.BackprojectionMethod + Puncuations.Dot + args.TopView + Puncuations.Dot + args.ContactPoint+ Puncuations.Dot +"png")
-
+def get_calculate_distance_vis_pth(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    roi_str="" if args.Rois is None else Puncuations.Dot+ str(args.roi_num)
+    
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "VisDistance" + Puncuations.Dot+args.BackprojectionMethod +Puncuations.Dot + args.Detector+roi_str+ Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
+def get_calculate_speed_vis_pth(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    roi_str="" if args.Rois is None else Puncuations.Dot+ str(args.roi_num)
+    
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "VisSpeed" + Puncuations.Dot+args.BackprojectionMethod +Puncuations.Dot + args.Detector+roi_str+ Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
+def get_vis_all_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    roi_str="" if args.Rois is None else Puncuations.Dot+ str(args.roi_num)
+    
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "VisAll" + Puncuations.Dot+args.BackprojectionMethod +Puncuations.Dot + args.Detector+roi_str+ Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
+def get_vis_class_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    roi_str="" if args.Rois is None else Puncuations.Dot+ str(args.roi_num)
+    
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "VisClass" + Puncuations.Dot+args.BackprojectionMethod +Puncuations.Dot + args.Detector+roi_str+ Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
+def get_vis_lanes_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    roi_str="" if args.Rois is None else Puncuations.Dot+ str(args.roi_num)
+    
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + "VisLanes" + Puncuations.Dot+args.BackprojectionMethod +Puncuations.Dot + args.Detector+roi_str+ Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.VisTracking)
+    
 def add_opt_bw_path(args):
     args.OptBWImage = get_opt_bw_image(args)
     args.OptBWGround = get_opt_bw_ground(args)
     return args
-
+def add_calculate_distance_path(args):
+    args.CalculateDistanceVisPth=get_calculate_distance_vis_pth(args)
+    return args
+def add_calculate_speed_path(args):
+    args.CalculateSpeedVisPth=get_calculate_speed_vis_pth(args)
+    return args
+def add_VisAll_path(args):
+    args.VisAllPth=get_vis_all_path(args)
+    return args
+def add_visclass_path(args):
+    args.VisClassPth=get_vis_class_path(args)
+    return args
+def add_vislanes_path(args):
+    args.VisLanesPth=get_vis_lanes_path(args)
+    return args
+    
 def get_GT_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -761,7 +838,10 @@ def get_detections_mask_path(args):
     file_name = file_name.split("/")[-1]
     mask_path = os.path.join(args.Dataset, file_name+".detections.mask.npz")
     return mask_path
-
+def get_gt_mask_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, file_name + Puncuations.Dot + "mask.npz")
 def get_detection_mask_vis_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -881,12 +961,13 @@ def add_roi_paths_to_args(args):
         args.DetectionRoiDetectorPath = get_detection_roi_path_with_detector_from_args(args)
         args.DetectionDetectorPath = get_detection_roi_path_with_detector_from_args(args)
         args.DetectionPkl=get_detection_roi_pkl(args)
-        args.DetectionBackUp=get_detection_roi_pkl_back_up(args)
+        args.DetectionPklBackUp=get_detection_roi_pkl_back_up(args)
         args.VisDetectionPth=get_vis_detection_roi_path_from_args(args)
-        args.TrackingPth = get_tracking_roi_path_from_args(args)
-        args.TrackingPkl = get_tracking_roi_pkl_from_args(args)
-        args.TrackingPklBackUp = get_tracking_roi_pkl_bu_from_args(args)
-        args.VisTrackingPth = get_vis_tracking_roi_path_from_args(args)
+        if args.Tracker is not None:
+            args.TrackingPth = get_tracking_roi_path_from_args(args)
+            args.TrackingPkl = get_tracking_roi_pkl_from_args(args)
+            args.TrackingPklBackUp = get_tracking_roi_pkl_bu_from_args(args)
+            args.VisTrackingPth = get_vis_tracking_roi_path_from_args(args)
         # args.DetectionRoiEvalPath= get_detect_eval_roi_save_path(args)
     return args
 def add_detection_mask_path_to_args(args):
@@ -992,14 +1073,14 @@ def complete_args(args):
     if (not args.Detector is None) or args.DetPostProc or args.ConvertDetsToCOCO or args.FineTune:
         args = add_detection_pathes_to_args(args)
         args = add_vis_detection_path_to_args(args)
-    if args.Rois is not None:
-        args=add_roi_paths_to_args(args)
         
     if not args.Tracker is None:
         args = add_tracking_path_to_args(args)
         args = add_vis_tracking_path_to_args(args)
         args = add_vis_top_tracking_path_to_args(args)
         args = add_tracking_pkl_to_args(args)
+    if args.Rois is not None:
+        args=add_roi_paths_to_args(args)
         
     if args.TrackEval:
         args = add_track_eval_save_path(args)
@@ -1026,15 +1107,19 @@ def complete_args(args):
         args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or\
         args.TrackPostProc or args.Count or args.VisROI or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or\
-        args.EvalCount or args.TrackEval or args.DetPostProc or args.IntegrateCountsMC or\
+        args.EvalCount    or args.IntegrateCountsMC or\
         args.EvalCountMSfromMC:
+            # or args.DetPostProc or args.TrackEval
+            
         args = add_homographygui_related_path_to_args(args)
 
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or\
         args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop or\
-        args.EvalCount or args.TrackEval or args.EvalContactPoitnSelection or args.DetPostProc or\
+        args.EvalCount  or args.EvalContactPoitnSelection or\
         args.IntegrateCountsMC or args.EvalCountMSfromMC:
+        # or args.DetPostProc or args.TrackEval\
+            
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
 
@@ -1079,7 +1164,18 @@ def complete_args(args):
         args=add_detection_mask_path_to_args(args)
     if args.FindOptimalKDEBW:
         args = add_opt_bw_path(args)
-
+    if args.MaskGT:
+        args= add_gt_mask_path_to_args(args)        
+    if args.CalcDistance:
+        args= add_calculate_distance_path(args)
+    if args.CalcSpeed:
+        args= add_calculate_speed_path(args)
+    if args.VisAll:
+        args= add_VisAll_path(args)
+    if args.VisClass:
+        args=add_visclass_path(args)
+    if args.FindLanes:
+        args=add_vislanes_path(args)
     args = add_correct_roi_to_args(args)
     args = revert_args_with_params(args)
     return args

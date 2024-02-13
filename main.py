@@ -457,7 +457,9 @@ def get_parser():
     parser.add_argument("--ClusterMetric", help="The name of the distance metric used to compute the similarity metrics",type=str)
     parser.add_argument("--ClusteringAlgo", help="name of the clustering algorithm to be performed",type=str)
     parser.add_argument("--DetPostProc", help="if to perform detection post processings", action="store_true")
+    parser.add_argument("--ClassesToCOCO", help="If using a ft detector to convert the classes to the COCO classes", action="store_true")
     parser.add_argument("--DetTh", help="the threshold for detection post processing", type=float)
+    parser.add_argument("--MaskGT", help="If to mask the ground truth", action="store_true")
     parser.add_argument('--classes_to_keep', nargs='+', type=float, default=[])
     parser.add_argument("--DetMask", help="if to remove bboxes out of ROI", action="store_true")
     parser.add_argument("--TrackPostProc", help="if to perform tracking post processings", action="store_true")
@@ -480,7 +482,9 @@ def get_parser():
     parser.add_argument("--SelectToBeCounted", help="select tracks to be counted based on ROI", action="store_true")
     parser.add_argument("--UnfinishedTrackFrameTh", help="select tracks to be counted based on ROI", type=int, default=10)
     parser.add_argument("--UnstartedTrackFrameTh", help="select tracks to be counted based on ROI", type=int, default=10)
-
+    parser.add_argument("--NMS", help="If to do NMS on ROI results (ideally only use for ROI results)", action="store_true")
+    parser.add_argument("--NMSTh", help="Nms th if to do NMS", type=float, default=0.5)
+    parser.add_argument("--VisClass", help="If to visualize the classes of tracks", action="store_true")
     parser.add_argument("--MaskGPFrame", help="remove dets on tracks that are outside gp frame", action="store_true")
     parser.add_argument("--TrackEval", help="Evaluate the tracking single camera", action="store_true")
     parser.add_argument("--DetectEval", help="Evaluate the detection single camera", action='store_true')
@@ -495,17 +499,17 @@ def get_parser():
     parser.add_argument("--StartFrame", help="For if the video hasnt been cropped to the start frame yet, to be removed soon", type=int)
     parser.add_argument("--ForNFrames", help="visualize the N first frame instead of all of them", type=int)
     parser.add_argument("--ResampleTH", help="the threshold to resample tracks with", type=float, default=2)
-
+    parser.add_argument("--VisLanes", help= "Visualize the cars based on which lane they are within in the approach")
     parser.add_argument("--FindOptimalKDEBW", help="find the optimal KDE band width", action='store_true')
 
     parser.add_argument("--K", help="K in KNN classifier", type=int, default=1)
-
+    parser.add_argument("--VisAll", help="Visualize distance to intersection, speed and lane in one video", action='store_true')
     parser.add_argument("--MultiCam", help="operating in multi-camera", action='store_true')
     parser.add_argument("--AverageCountsMC", help="averaging counting on MC", action='store_true')
     parser.add_argument("--IntegrateCountsMC", help="integrate counts for HW7 in MC mode", action='store_true')
     parser.add_argument("--EvalCountMC", help="Evaluate Counts MC", action="store_true")
     parser.add_argument("--EvalCountMSfromMC", help="Evaluate Counts MS from MCs", action="store_true")
-
+    parser.add_argument("--FindLanes", help="If to add lane label to applicable tracking boxes", action='store_true')
     parser.add_argument("--TopView", help="seeting which topview to use. Options are [GoogleMap, OrthoPhoto]", type=str)
     parser.add_argument("--BackprojectSource", help="selecting which source to backproject form Options are [tracks, detections]", type=str)
     parser.add_argument("--BackprojectionMethod", help="Select back projection method  options = [Homography/DSM]", type=str)
@@ -516,7 +520,7 @@ def get_parser():
     parser.add_argument("--GT3DContactPoint", help="Select how to set the contact point  options = [BottomPoint/Center/BottomSeg/SegBottomLine]", type=str)
     parser.add_argument("--VisContactPoint", help="to visualize the contact point", action="store_true")
     parser.add_argument("--VisCPTop", help="to visualize the contact points on the top view", action="store_true")
-
+    parser.add_argument("--OverwriteRaster", help="If to overwrite the stored raster", action="store_true")
     parser.add_argument("--Segment", help="perform segmentation and store results", action='store_true')
     parser.add_argument("--VisSegment", help="Vis Segmentation Masks", action='store_true')
     parser.add_argument("--Segmenter", help="model for segmentation", type=str, default="Null")

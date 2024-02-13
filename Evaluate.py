@@ -54,15 +54,16 @@ def evaluate_tracking(base_args, nested_args):
     flat_args = flatten_args(nested_args)
     for args in flat_args:
         args_gt = get_args_gt(args)
-
         df_gt   = pd.read_pickle(args_gt.TrackingPkl)
         df_pred = pd.read_pickle(args.TrackingPkl)
         df_id   = args.SubID
-
+        if(args.ForNFrames is not None):
+            df_gt=df_gt[df_gt['fn']< args.ForNFrames]
+            df_pred=df_pred[df_pred['fn']< args.ForNFrames]
+            
         dfs_gt.append(df_gt)
         dfs_pred.append(df_pred)
         dfs_ids.append(df_id)
-    
     # prepare dfs for mot metrics(transfer from local format to mot format)
     gt_dfs = prepare_df_for_motmetric(dfs_gt, dfs_ids)
     pred_dfs = prepare_df_for_motmetric(dfs_pred, dfs_ids)
@@ -487,7 +488,12 @@ def evaluate_detection(base_args, nested_args):
             df_id   = args.SubID
             gt_frames=np.unique(df_gt['fn'])
             df_pred=df_pred[df_pred['fn'].isin(gt_frames)]
-            
+            # print(np.unique(df_pred['class']))            
+            df_pred=df_pred.replace({"class":class_dict})
+            # print(np.unique(df_pred['class']))
+            # print(df_gt)
+            # print(args_gt.DetectionPkl)
+            # input()
             df_gt['df_id']=q
             df_pred['df_id']=q
             q=q+1
