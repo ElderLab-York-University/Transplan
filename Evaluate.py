@@ -254,28 +254,44 @@ def cvpr(base_args, nested_args):
         # plt.savefig("Sup_2D_Area.pdf")
         # plt.close("all")
 
-        df_train["split"] = ["train" for _ in range(len(df_train))]
-        df_valid["split"] = ["valid" for _ in range(len(df_valid))]
-        df_merged = pd.concat((df_train, df_valid))
-        plt.figure(figsize=(24, 9))
+        # df_train["split"] = ["train" for _ in range(len(df_train))]
+        # df_valid["split"] = ["valid" for _ in range(len(df_valid))]
+        # df_merged = pd.concat((df_train, df_valid))
+        # plt.figure(figsize=(24, 9))
 
-        # sns.countplot(df_train, x="label_fg", label="train", color="blue", alpha=0.5 , dodge=True, stat="probability")
-        # sns.countplot(df_valid, x="label_fg", label="valid", color="green", alpha=0.5, dodge=True, stat="probability")
-        b = sns.histplot(data=df_merged, x="label",  alpha=0.5 , multiple="dodge", stat="probability",
-            hue="split", palette={"train":"blue", "valid":"green"}, shrink=.8, legend=True, common_norm=False)
+        # # sns.countplot(df_train, x="label_fg", label="train", color="blue", alpha=0.5 , dodge=True, stat="probability")
+        # # sns.countplot(df_valid, x="label_fg", label="valid", color="green", alpha=0.5, dodge=True, stat="probability")
+        # b = sns.histplot(data=df_merged, x="label",  alpha=0.5 , multiple="dodge", stat="probability",
+        #     hue="split", palette={"train":"blue", "valid":"green"}, shrink=.8, legend=True, common_norm=False)
 
-        # b.tick_params(labelsize=20)
-        # plt.legend()
-        plt.xlabel("Fine-Grained Class Labels")
-        plt.xticks(fontsize=15)
-        fig = plt.gcf()
-        tikzplotlib_fix_ncols(fig)
-        tikzplotlib.save("Sup_2D_FGLabel.tex")
-        plt.savefig("Sup_2D_FGLabel.pdf")
-        plt.close("all")
-        print(df_train["label"].unique())
+        # # b.tick_params(labelsize=20)
+        # # plt.legend()
+        # plt.xlabel("Fine-Grained Class Labels")
+        # plt.xticks(fontsize=15)
+        # fig = plt.gcf()
+        # tikzplotlib_fix_ncols(fig)
+        # tikzplotlib.save("Sup_2D_FGLabel.tex")
+        # plt.savefig("Sup_2D_FGLabel.pdf")
+        # plt.close("all")
+        # print(df_train["label"].unique())
+
+
+        # df_train["split"] = ["train" for _ in range(len(df_train))]
+        # df_valid["split"] = ["valid" for _ in range(len(df_valid))]
+        # # df_merged = pd.concat((df_train, df_valid))
+        # df_merged = df_valid
+        # df_merged["area"] = (df_merged["y2"] - df_merged["y1"]) * (df_merged["x2"] - df_merged["x1"])
+
+        # small_mask = np.sum((df_merged["area"] <= 36*36)*1)
+        # med_mask   = np.sum(np.logical_and(df_merged["area"] > 36*36, df_merged["area"] <= 96*96) * 1)
+        # large_mask = np.sum((df_merged["area"] > 96*96)*1)
+        # print(int(small_mask))
+        # print(int(med_mask))
+        # print(large_mask)
+        # print(len(df_merged))
+        # print(small_mask + med_mask + large_mask) 
+
         
-
     if base_args.Detector == "GTHW73D":
         print("3D")
 
