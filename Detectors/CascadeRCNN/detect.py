@@ -50,14 +50,16 @@ def fine_tune(args, args_mp, args_gt, args_mp_gt):
 
 def checkpoint_from_version(version):
     c_2_v = {
-        ""      : "./Detectors/MMDet/mmdetection/checkpoints/cascade_rcnn_x101_64x4d_fpn_1x_coco_20200515_075702-43ce6a30.pth",
-        "HW7FT" : "/home/sajjad/HW7Leslie/Results/CheckPoints/CascadeRCNN/20231111_165241_ft5cls/best_coco_bbox_mAP_epoch_17.pth"
+        ""        : "./Detectors/MMDet/mmdetection/checkpoints/cascade_rcnn_x101_64x4d_fpn_1x_coco_20200515_075702-43ce6a30.pth",
+        "HW7FT"   : "/home/sajjad/HW7Leslie/Results/CheckPoints/CascadeRCNN/20231111_165241_ft5cls/best_coco_bbox_mAP_epoch_17.pth",
+        "HW7FT80" : "/home/sajjad/Transplan/CheckPoints/CRCNN_HW7_COCO80_best_coco_bbox_mAP_epoch_30.pth"
     }
     return c_2_v[version]
 
 def config_from_version(version):
     c_2_v = {
-        ""      : "./Detectors/MMDet/mmdetection/configs/cascade_rcnn/cascade-rcnn_x101-64x4d_fpn_1x_coco.py",
-        "HW7FT" : "/home/sajjad/HW7Leslie/Results/CheckPoints/CascadeRCNN/20231111_165241_ft5cls/train_config.py"
+        ""        : "./Detectors/MMDet/mmdetection/configs/cascade_rcnn/cascade-rcnn_x101-64x4d_fpn_1x_coco.py",
+        "HW7FT"   : "/home/sajjad/HW7Leslie/Results/CheckPoints/CascadeRCNN/20231111_165241_ft5cls/train_config.py",
+        "HW7FT80" : "/home/sajjad/Transplan/CheckPoints/CRCNN_HW7_COCO80_best_coco_bbox_mAP_epoch_30.py"
     }
     return c_2_v[version]
