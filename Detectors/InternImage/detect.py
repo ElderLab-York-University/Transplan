@@ -94,7 +94,7 @@ def fine_tune(args, args_mp, args_gt, args_mp_gt):
     lunch_training(train_config_path, work_dir, args.Resume)
 
 def lunch_training(train_config_path, work_dir, resume):
-  env_name = "MMDet "
+  env_name = "InternImage"
   ngpus = get_numgpus_torch(env_name)
   port  = get_available_port()
   dist_train_sh_path = "./Detectors/InternImage/InternImage/detection/dist_train.sh"
