@@ -351,8 +351,11 @@ def visdetect_2d(args):
     fps = int(cap.get(cv2.CAP_PROP_FPS))
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    if(os.path.exists(args.VisDetectionPth)):
+        os.system(f"rm -rf {args.VisDetectionPth}")
+    
     out_cap = cv2.VideoWriter(args.VisDetectionPth,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
-
+    print(args.VisDetectionPth)
     if not args.ForNFrames is None:
         frames = args.ForNFrames
     for frame_num in tqdm(range(frames)):

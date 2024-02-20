@@ -23,7 +23,7 @@ from counting.counting import find_opt_bw, eval_count, eval_count_multi, eval_co
 from Clustering import cluster
 from CountingMC import AverageCountsMC, IntegrateCounts
 from Segment import segment, vis_segment, SegmentPostProc
-from Pose import extract_pose, vis_pose, vis_detect_top_mc
+# from Pose import extract_pose, vis_pose, vis_detect_top_mc
 
 def ExtractPose(args):
     if args.ExtractPose:
@@ -544,6 +544,10 @@ def get_parser():
     parser.add_argument("--MaskGPFrame", help="remove dets on tracks that are outside gp frame", action="store_true")
     parser.add_argument("--TrackEval", help="Evaluate the tracking single camera", action="store_true")
     parser.add_argument("--DetectEval", help="Evaluate the detection single camera", action='store_true')
+    parser.add_argument("--Small", help="If to evaluate small bounding boxes (for detection at the moment)", action="store_true")
+    parser.add_argument("--Medium", help="If to evaluate medium bounding boxes (for detection at the moment)", action="store_true")
+    parser.add_argument("--Large", help="If to evaluate large bounding boxes (for detection at the moment)", action="store_true")
+    
     parser.add_argument("--VisROI", help="visualize the selected ROI", action='store_true')
     parser.add_argument("--VisTrackMoI", help="visualize tracking with moi labels", action='store_true')
     parser.add_argument("--LabelledTrajectories", help=" a pkl file containint the labelled trajectories on the ground plane",type=str)

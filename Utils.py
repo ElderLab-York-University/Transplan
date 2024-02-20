@@ -265,7 +265,7 @@ def get_tracking_pkl_from_args(args):
 def get_tracking_roi_pkl_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
-    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector + args.Detector+Puncuations.Dot+args.roi_num +Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Pkl)
+    return os.path.join(args.Dataset, "Results/Tracking",file_name + Puncuations.Dot + SubTaskMarker.Tracking + Puncuations.Dot + args.Detector +Puncuations.Dot+args.roi_num +Puncuations.Dot + args.Tracker + Puncuations.Dot +SubTaskExt.Pkl)
 
 def get_tracking_pkl_bu_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -534,6 +534,40 @@ def get_detect_eval_save_path(args):
         return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+ Puncuations.Dot+roistr+"txt")
     else:
         return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+Puncuations.Dot+ "".join((args.Camera)) + Puncuations.Dot+roistr+"txt")
+def get_detect_eval_save_path_small(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    if(args.Rois is not None):
+        roistr="".join([str(args.Rois[i]+args.Rois[i+1]) for i in range(0, len(args.Rois),2)])+ Puncuations.Dot
+    else:
+        roistr=""
+    if(args.Camera is None):
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection.Small" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+ Puncuations.Dot+roistr+"txt")
+    else:
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection.Small" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+Puncuations.Dot+ "".join((args.Camera)) + Puncuations.Dot+roistr+"txt")
+def get_detect_eval_save_path_medium(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    if(args.Rois is not None):
+        roistr="".join([str(args.Rois[i]+args.Rois[i+1]) for i in range(0, len(args.Rois),2)])+ Puncuations.Dot
+    else:
+        roistr=""
+    if(args.Camera is None):
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection.Medium" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+ Puncuations.Dot+roistr+"txt")
+    else:
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection.Medium" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+Puncuations.Dot+ "".join((args.Camera)) + Puncuations.Dot+roistr+"txt")
+def get_detect_eval_save_path_large(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    if(args.Rois is not None):
+        roistr="".join([str(args.Rois[i]+args.Rois[i+1]) for i in range(0, len(args.Rois),2)])+ Puncuations.Dot
+    else:
+        roistr=""
+    if(args.Camera is None):
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection.Large" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+ Puncuations.Dot+roistr+"txt")
+    else:
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection.Large" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+Puncuations.Dot+ "".join((args.Camera)) + Puncuations.Dot+roistr+"txt")
+        
 def get_detect_eval_Intersections_save_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -686,6 +720,13 @@ def add_detect_eval_save_path(args):
         args.DetectEvalPth=get_detect_eval_Intersections_save_path(args)
     else:
         args.DetectEvalPth=get_detect_eval_NonIntersections_save_path(args)
+    if(args.Small):
+        args.DetectEvalPthSmall= get_detect_eval_save_path_small(args)
+    if(args.Medium):
+        args.DetectEvalPthMedium= get_detect_eval_save_path_medium(args)
+    if(args.Large):
+        args.DetectEvalPthLarge= get_detect_eval_save_path_large(args)
+        
     return args 
 
 def add_vis_labelled_tracks_pth_to_args(args):
@@ -1042,6 +1083,7 @@ def get_args_gt(args):
     args_gt.DetectorVersion = ""
     # args.GTTracker="GTHW7"
     args_gt.Tracker = args.GTTracker
+    args_gt.Rois=None
     args_gt.Video=None
     args_gt.ContactPoint = args_gt.GTContactPoint
     args_gt=complete_args(args_gt)
@@ -1177,17 +1219,20 @@ def complete_args(args):
         args.VisTrajectories or args.VisLabelledTrajectories or args.Cluster or\
         args.TrackPostProc or args.Count or args.VisROI or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisCPTop or\
-        args.EvalCount or args.TrackEval or args.DetPostProc or args.IntegrateCountsMC or\
+        args.EvalCount or args.TrackEval  or args.IntegrateCountsMC or\
         args.EvalCountMSfromMC or args.EvalContactPoitnSelection or args.EvalContactPoitnSelectionMC or\
         args.EvalCountCamera or args.ConvertDetsToCOCO or args.FineTune:
+        # or args.DetPostProc            
         args = add_homographygui_related_path_to_args(args)
 
     if args.Homography or args.VisTrajectories or args.VisLabelledTrajectories or\
         args.Meter or args.Cluster or args.TrackPostProc or args.Count or args.Meter or\
         args.VisTrackTop or args.FindOptimalKDEBW or args.VisContactPoint or args.VisCPTop or\
-        args.EvalCount or args.TrackEval or args.EvalContactPoitnSelection or args.DetPostProc or\
+        args.EvalCount or args.TrackEval or args.EvalContactPoitnSelection  or\
         args.IntegrateCountsMC or args.EvalCountMSfromMC or args.EvalContactPoitnSelection or\
         args.EvalContactPoitnSelectionMC or args.EvalCountCamera or args.ConvertDetsToCOCO or args.FineTune:
+        # or args.DetPostProc            
+            
         args = add_homography_related_path_to_args(args)
         args = add_dsm_related_path_to_args(args)
 

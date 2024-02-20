@@ -475,6 +475,13 @@ def evaluate_detection(base_args, nested_args):
     q=0
     
     print('starting')
+    if(base_args.Small):
+        print(base_args.DetectEvalPthSmall)
+    if(base_args.Medium):
+        print(base_args.DetectEvalPthMedium)
+    if(base_args.Large):
+        print(base_args.DetectEvalPthLarge)
+        
     for args in flat_args:
         camera=args.Dataset[-3:]
         if(args.Camera is None or camera in args.Camera):
@@ -573,15 +580,120 @@ def evaluate_detection(base_args, nested_args):
     #     pkl.dump(det_results, f)
     # with open("annotations", 'wb') as f:
     #     pkl.dump(annotations, f)    
-    result, total_tp, total_fp, total_gt=compare_dfs(dfs_gt,dfs_pred)    
-    print(base_args.DetectEvalPth)
-    with open(base_args.DetectEvalPth, "w") as f:
-        f.write("Camera ID                AP \n")
-        f.write(str("Camera") + ": " +str(result)  +'\n')
-        f.write("Average AP: " + str(np.mean(result))+ '\n')
-        f.write("Total TP :" + str(total_tp)+'\n')
-        f.write("Total_FP :"+ str(total_fp) + '\n')
-        f.write("Total GT :" + str(total_gt  ))    
+    if(base_args.Small):
+        lower_area=0
+        upper_area=1296
+        gt_x1=dfs_gt['x1']
+        gt_x2=dfs_gt['x2']
+        gt_y1=dfs_gt['y1']
+        gt_y2=dfs_gt['y2']
+        gt_areas=(gt_x2-gt_x1) *(gt_y2-gt_y1)
+        print("Before removing medium and large bboxes: gt: "+ str(len(dfs_gt)))
+        mask=(gt_areas>lower_area) & (gt_areas<upper_area)
+        dfs_gt_small=dfs_gt[mask]
+        print("After removing medium and large bboxes: gt: "+ str(len(dfs_gt_small)))
+        
+        
+        pred_x1=dfs_pred['x1']
+        pred_x2=dfs_pred['x2']
+        pred_y1=dfs_pred['y1']
+        pred_y2=dfs_pred['y2']
+        print("Before removing medium and large bboxes: preds: "+  str(len(dfs_pred)))
+        pred_areas=(pred_x2-pred_x1) *(pred_y2-pred_y1)
+        mask=(pred_areas>lower_area) & (pred_areas<upper_area)
+        dfs_pred_small=dfs_pred[mask]
+        
+        
+        print("After removing medium and large bboxes: preds: "+ str(len(dfs_pred_small)))
+        
+        result, total_tp, total_fp, total_gt=compare_dfs(dfs_gt_small,dfs_pred_small) 
+        with open(base_args.DetectEvalPthSmall, "w") as f:
+            f.write("Camera ID                AP \n")
+            f.write(str("Camera") + ": " +str(result)  +'\n')
+            f.write("Average AP: " + str(np.mean(result))+ '\n')
+            f.write("Total TP :" + str(total_tp)+'\n')
+            f.write("Total_FP :"+ str(total_fp) + '\n')
+            f.write("Total GT :" + str(total_gt  ))    
+    if(base_args.Medium):
+        lower_area=25000
+        upper_area=50000
+        gt_x1=dfs_gt['x1']
+        gt_x2=dfs_gt['x2']
+        gt_y1=dfs_gt['y1']
+        gt_y2=dfs_gt['y2']
+        gt_areas=(gt_x2-gt_x1) *(gt_y2-gt_y1)
+        print("Before removing small and large bboxes: gt: "+ str(len(dfs_gt)))
+        mask=(gt_areas>lower_area) & (gt_areas<upper_area)
+        dfs_gt_small=dfs_gt[mask]
+        print("After removing small and large bboxes: gt: "+ str(len(dfs_gt_small)))
+        
+        
+        pred_x1=dfs_pred['x1']
+        pred_x2=dfs_pred['x2']
+        pred_y1=dfs_pred['y1']
+        pred_y2=dfs_pred['y2']
+        print("Before removing small and large bboxes: preds: "+  str(len(dfs_pred)))
+        pred_areas=(pred_x2-pred_x1) *(pred_y2-pred_y1)
+        mask=(pred_areas>lower_area) & (pred_areas<upper_area)
+        dfs_pred_small=dfs_pred[mask]
+        
+        
+        print("After removing small and large bboxes: preds: "+ str(len(dfs_pred_small)))
+        
+        result, total_tp, total_fp, total_gt=compare_dfs(dfs_gt_small,dfs_pred_small) 
+        with open(base_args.DetectEvalPthMedium, "w") as f:
+            f.write("Camera ID                AP \n")
+            f.write(str("Camera") + ": " +str(result)  +'\n')
+            f.write("Average AP: " + str(np.mean(result))+ '\n')
+            f.write("Total TP :" + str(total_tp)+'\n')
+            f.write("Total_FP :"+ str(total_fp) + '\n')
+            f.write("Total GT :" + str(total_gt  ))    
+
+    if(base_args.Large):
+        lower_area=50000
+        upper_area=np.inf
+        gt_x1=dfs_gt['x1']
+        gt_x2=dfs_gt['x2']
+        gt_y1=dfs_gt['y1']
+        gt_y2=dfs_gt['y2']
+        gt_areas=(gt_x2-gt_x1) *(gt_y2-gt_y1)
+        print("Before removing small and medium bboxes: gt: "+ str(len(dfs_gt)))
+        mask=(gt_areas>lower_area) & (gt_areas<upper_area)
+        dfs_gt_small=dfs_gt[mask]
+        print("After removing small and medium bboxes: gt: "+ str(len(dfs_gt_small)))
+        
+        
+        pred_x1=dfs_pred['x1']
+        pred_x2=dfs_pred['x2']
+        pred_y1=dfs_pred['y1']
+        pred_y2=dfs_pred['y2']
+        print("Before removing small and medium bboxes: preds: "+  str(len(dfs_pred)))
+        pred_areas=(pred_x2-pred_x1) *(pred_y2-pred_y1)
+        mask=(pred_areas>lower_area) & (pred_areas<upper_area)
+        dfs_pred_small=dfs_pred[mask]
+        
+        
+        print("After removing small and medium bboxes: preds: "+ str(len(dfs_pred_small)))
+        
+        result, total_tp, total_fp, total_gt=compare_dfs(dfs_gt_small,dfs_pred_small) 
+        with open(base_args.DetectEvalPthLarge, "w") as f:
+            f.write("Camera ID                AP \n")
+            f.write(str("Camera") + ": " +str(result)  +'\n')
+            f.write("Average AP: " + str(np.mean(result))+ '\n')
+            f.write("Total TP :" + str(total_tp)+'\n')
+            f.write("Total_FP :"+ str(total_fp) + '\n')
+            f.write("Total GT :" + str(total_gt  ))    
+    if(not base_args.Large and not base_args.Medium and not base_args.Small):
+        result, total_tp, total_fp, total_gt=compare_dfs(dfs_gt,dfs_pred)    
+        print(base_args.DetectEvalPth)
+        with open(base_args.DetectEvalPth, "w") as f:
+            f.write("Camera ID                AP \n")
+            f.write(str("Camera") + ": " +str(result)  +'\n')
+            f.write("Average AP: " + str(np.mean(result))+ '\n')
+            f.write("Total TP :" + str(total_tp)+'\n')
+            f.write("Total_FP :"+ str(total_fp) + '\n')
+            f.write("Total GT :" + str(total_gt  ))    
+        
     # if(args.EvalRois):
     #     print(args.EvalRoiPth)
     #     with open(args.EvalRoiPth, "w") as f:
