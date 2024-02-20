@@ -25,7 +25,7 @@ datasets     = [
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 split_part   = ["train", "valid"]
-segment_part = ["Seg33", "Seg34", "Seg35", "Seg36", "Seg37", "Seg38", "Seg39"]
+segment_part = None
 source_part  = None
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
@@ -43,7 +43,7 @@ cached_datasets     = [
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 cached_split_part   = ["train", "valid"]
-cached_segment_part = ["Seg33", "Seg34", "Seg35", "Seg36", "Seg37", "Seg38", "Seg39"]
+cached_segment_part = None
 cached_source_part  = None
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
@@ -56,7 +56,7 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
-detectors = ["GTHW7"]
+detectors = ["InternImage"]
 
 # choose detector version (checkpoints, ...)
 # options: ["", "HW7FT"]
@@ -97,8 +97,8 @@ cnt_metrics = ["gkde"]
 train_sp     = "train"
 valid_sp     = "valid"
 batch_size   = 1
-num_workers  = 1
-epochs       = 20
+num_workers  = 2
+epochs       = 50
 val_interval = 1
 
 # projection hypterparameters
@@ -166,9 +166,9 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #  --Detect --VisDetect --ForNFrames=600 --DetectorVersion={det_v} --SAHI --SahiPatchSize=640 --SahiPatchOverlapRatio=0.25 
     #  --SahiPatchBatchSize=1 --SahiNMSTh=0.25")
     ########################################################
-    for det in detectors:
-        print(f"detecting ----> src:{src} det:{det}")
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --VisDetect --ForNFrames=100")
+    # for det in detectors:
+    #     print(f"detecting ----> src:{src} det:{det}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect")
 
     ########################################################
     # 3.5 run the detection post processing
@@ -321,7 +321,7 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
     #                    --FindOptimalKDEBW --ResampleTH={resamp_th} --OSR=10\
     #                    --BackprojectSource=tracks --TopView={tp_view}\
-    #                    --BackprojectionMethod={bp_method} --ContactPoint={cp_method}")
+    #                    --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")
 
     ########################################################
     # 7. run clustering algorithm
@@ -464,10 +464,9 @@ for split, cached_cnt_pth in zip(splits, cached_splits):
     # os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det} --ConvertDetsToCOCO --KeepCOCOClasses")
     ########################################################
     # for det in detectors:
-    #     for cp_method in cp_methods:
     #         os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det}\
     #                 --ConvertDetsToCOCO --KeepCOCOClasses\
-    #                 --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={cp_method}")
+    #                 --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")
 
     ########################################################
     # 3.8 Evaluate contact point selection method
@@ -586,11 +585,11 @@ for ds in datasets:
     # ########################################################
     # # 1. fine tune detector
     # # ########################################################
-    # for det in detectors:
-    #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
-    #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
-    #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval}\
-    #                --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")
+    for det in detectors:
+        os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
+                   --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
+                   --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval}\
+                   --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")
 
     ########################################################
     # 2. perform single camera tracking evaluation on all the sources under mp folder(dataset)
