@@ -55,11 +55,11 @@ cached_sources      = get_sub_dirs(cached_segments, cached_source_part)
 segmenters = ["InternImage"]
 
 # choose the detectors
-# options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
-detectors = ["InternImage"]
+# options: ["GTHW7", "GTHW7FG", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
+detectors = ["CenterNet"]
 
 # choose detector version (checkpoints, ...)
-# options: ["", "HW7FT"]
+# options: ["", "HW7FT", "HW7FT80"]
 det_v = ""
 
 # choose the tracker
@@ -68,12 +68,12 @@ trackers = ["ByteTrack"]
 
 # choose grandtruth detector
 # Options are the same as detector
-GT_det    = "GTHW7"
+GT_det    = "GTHW7FG"
 GT_det_3D = "GTHW73D"
 
 # choose grandtruth tracker
 # options are the same as trackers
-GT_tra    = "GTHW7"
+GT_tra    = "GTHW7FG"
 GT_tra_3D = "GTHW73D"
 
 # choose pose estimation model
@@ -96,7 +96,7 @@ cnt_metrics = ["gkde"]
 # from "splits"
 train_sp     = "train"
 valid_sp     = "valid"
-batch_size   = 1
+batch_size   = 2
 num_workers  = 2
 epochs       = 50
 val_interval = 1
@@ -465,7 +465,7 @@ for split, cached_cnt_pth in zip(splits, cached_splits):
     ########################################################
     # for det in detectors:
     #         os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det}\
-    #                 --ConvertDetsToCOCO --KeepCOCOClasses\
+    #                 --ConvertDetsToCOCO \
     #                 --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")
 
     ########################################################

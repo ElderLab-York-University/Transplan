@@ -1,16 +1,16 @@
 _base_ = './../MMDet/mmdetection/configs/centernet/centernet-update_r50-caffe_fpn_ms-1x_coco.py'
 #CHANGE#BELOW#
 data_root = '/home/sajjad/HW7Leslie/'
-train_ann_file = 'train/Results/Detection/train.detection.GTHW7.COCO.json'
+train_ann_file = 'train/Results/Detection/train.detection.GTHW7FG.COCO.json'
 train_data_prefix = 'train/'
-valid_ann_file = 'valid/Results/Detection/valid.detection.GTHW7.COCO.json'
+valid_ann_file = 'valid/Results/Detection/valid.detection.GTHW7FG.COCO.json'
 valid_data_prefix = 'valid/'
 BatchSize = 2
 NumWorkers = 2
 Epochs = 50
 ValInterval = 1
-num_classes = 80
-classes = ('person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket', 'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed', 'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush')
+num_classes = 16
+classes = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15')
 #CHANGE#ABOVE#
 load_from = "https://download.openmmlab.com/mmdetection/v3.0/centernet/centernet-update_r50-caffe_fpn_ms-1x_coco/centernet-update_r50-caffe_fpn_ms-1x_coco_20230512_203845-8306baf2.pth"
 find_unused_parameters=True # to support backbone freezing
