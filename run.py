@@ -56,7 +56,7 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "GTHW7FG", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
-detectors = ["CenterNet"]
+detectors = ["YoloX"]
 
 # choose detector version (checkpoints, ...)
 # options: ["", "HW7FT", "HW7FT80"]
