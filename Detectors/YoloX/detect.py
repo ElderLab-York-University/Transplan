@@ -50,16 +50,18 @@ def fine_tune(args, args_mp, args_gt, args_mp_gt):
 
 def checkpoint_from_version(version):
     c_2_v = {
-        ""       : "./Detectors/MMDet/mmdetection/checkpoints/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth",
-        "HW7FT"  : "/home/sajjad/HW7Leslie/Results/CheckPoints/YoloX/20231111_144154_ft_5cls/best_coco_bbox_mAP_epoch_11.pth",
-        "HW7FT80": "/home/sajjad/Transplan/CheckPoints/YoloX_HW7_COCO80_best_coco_bbox_mAP_epoch_20.pth"
+        ""         : "./Detectors/MMDet/mmdetection/checkpoints/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth",
+        "HW7FT"    : "/home/sajjad/HW7Leslie/Results/CheckPoints/YoloX/20231111_144154_ft_5cls/best_coco_bbox_mAP_epoch_11.pth",
+        "HW7FT80"  : "/home/sajjad/Transplan/CheckPoints/YoloX_HW7_COCO80_best_coco_bbox_mAP_epoch_20.pth",
+        "HW7FTFG16": "/home/sajjad/Transplan/CheckPoints/YoloX_HW7FG_best_coco_bbox_mAP_epoch_38.pth"
     }
     return c_2_v[version]
 
 def config_from_version(version):
     c_2_v = {
-        ""       : "./Detectors/MMDet/mmdetection/configs/yolox/yolox_x_8xb8-300e_coco.py",
-        "HW7FT"  : "/home/sajjad/HW7Leslie/Results/CheckPoints/YoloX/20231111_144154_ft_5cls/train_config.py",
-        "HW7FT80": "/home/sajjad/Transplan/CheckPoints/YoloX_HW7_COCO80_best_coco_bbox_mAP_epoch_20.py"
+        ""         : "./Detectors/MMDet/mmdetection/configs/yolox/yolox_x_8xb8-300e_coco.py",
+        "HW7FT"    : "/home/sajjad/HW7Leslie/Results/CheckPoints/YoloX/20231111_144154_ft_5cls/train_config.py",
+        "HW7FT80"  : "/home/sajjad/Transplan/CheckPoints/YoloX_HW7_COCO80_best_coco_bbox_mAP_epoch_20.py",
+        "HW7FTFG16": "/home/sajjad/Transplan/CheckPoints/YoloX_HW7FG_best_coco_bbox_mAP_epoch_38.py"
     }
     return c_2_v[version]
