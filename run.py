@@ -19,6 +19,7 @@ def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"], b
 #  set to None if want to include all
 datasets     = [
                 "/home/sajjad/HW7Leslie",
+                # "/home/sajjad/HW7LeslieShortCamera",
                 # "/mnt/dataB/CityFlowV2Local",
                 # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie",
@@ -37,6 +38,7 @@ sources      = get_sub_dirs(segments, source_part)
 # this pathes are used to load cached counters
 cached_datasets     = [
                 "/home/sajjad/HW7Leslie",
+                # "/home/sajjad/HW7LeslieShortCamera",
                 # "/mnt/dataB/CityFlowV2Local",
                 # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie",
@@ -56,10 +58,10 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "GTHW7FG", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
-detectors = ["YoloX"]
+detectors = ["InternImage"]
 
 # choose detector version (checkpoints, ...)
-# options: ["", "HW7FT", "HW7FT80"]
+# options: ["", "HW7FT", "HW7FT80", "HW7FTFG16"]
 det_v = ""
 
 # choose the tracker
@@ -73,7 +75,7 @@ GT_det_3D = "GTHW73D"
 
 # choose grandtruth tracker
 # options are the same as trackers
-GT_tra    = "GTHW7FG"
+GT_tra    = "GTHW7"
 GT_tra_3D = "GTHW73D"
 
 # choose pose estimation model
@@ -96,8 +98,8 @@ cnt_metrics = ["gkde"]
 # from "splits"
 train_sp     = "train"
 valid_sp     = "valid"
-batch_size   = 2
-num_workers  = 2
+batch_size   = 1
+num_workers  = 4
 epochs       = 50
 val_interval = 1
 
@@ -374,10 +376,11 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #             print(f"counting metric:{metric} det:{det} tra:{tra}")
     #             os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
     #                         --Count --EvalCount --CountMetric={metric} --ResampleTH={resamp_th}\
-    #                         --UseCachedCounter --CachedCounterPth={cached_cnt_pth}\
+    #                         --CacheCounter \
+    #                         --CountVisDensity \
     #                         --BackprojectSource=tracks --TopView={tp_view}\
-    #                         --BackprojectionMethod={bp_method} --ContactPoint={cp_method}\
-    #                         --KDEBW=3.5 --OSR=10 --ROIFromTop --GP")
+    #                         --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}\
+    #                         --KDEBW=3.5 --OSR=10 --GP")
 
     ########################################################
     # 11. Visualizing the results on a video including track label and track id
@@ -386,12 +389,11 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     # for det in detectors:
     #     for tra in trackers:
     #         for met in cnt_metrics:
-    #             for cp_method in cp_methods:
-    #                 print(f"visualizing MOI -----> det:{det} tra:{tra} met:{met}")
-    #                 os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-    #                         --CountMetric={met} --VisTrackMoI \
-    #                         --BackprojectSource=tracks --TopView={tp_view} \
-    #                         --BackprojectionMethod={bp_method} --ContactPoint={cp_method}")
+    #             print(f"visualizing MOI -----> det:{det} tra:{tra} met:{met}")
+    #             os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+    #                     --CountMetric={met} --VisTrackMoI \
+    #                     --BackprojectSource=tracks --TopView={tp_view} \
+    #                     --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")
 
 #_______________________MULTICAMERA_______________________#
 for src in segments:
@@ -560,7 +562,7 @@ for split, cached_cnt_pth in zip(splits, cached_splits):
     #                             --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={cp_method}")
 
     ########################################################
-    # 6. Run the eval counting Multi Segment based on multi camera
+    # 6. Run the eval counting isolate each camera
     # os.system(f"python3 main.py --Dataset={split} --Detector={det} --DetectorVersion={det_v}
     #  --Tracker={tra} --Count --EvalCount --CountMetric={metric} --ResampleTH={resamp_th}\
     #  --CacheCounter --UseCachedCounter --CachedCounterPth={cached_cnt_pth}\
@@ -572,12 +574,11 @@ for split, cached_cnt_pth in zip(splits, cached_splits):
     # for det in detectors:
     #     for tra in trackers:
     #         for metric in cnt_metrics:
-    #             for cp_method in cp_methods:
-    #                 print(f"counting split:{split} metric:{metric} det:{det} tra:{tra}")
-    #                 os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det}\
-    #                             --DetectorVersion={det_v} --Tracker={tra}\
-    #                             --EvalCountCamera --CountMetric={metric} --ResampleTH={resamp_th}\
-    #                             --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={cp_method}")
+    #             print(f"counting split:{split} metric:{metric} det:{det} tra:{tra}")
+    #             os.system(f"python3 main.py --MultiSeg --Dataset={split} --Detector={det}\
+    #                         --DetectorVersion={det_v} --Tracker={tra}\
+    #                         --EvalCountCamera --CountMetric={metric} --ResampleTH={resamp_th}\
+    #                         --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")
 
 #_______________________MULTIPART___________________________#
 for ds in datasets:
