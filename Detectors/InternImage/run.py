@@ -32,17 +32,19 @@ def getbboxes(result):
 
 
 if __name__ == "__main__":
-  config_file = './Detectors/InternImage/InternImage/detection/configs/coco/cascade_internimage_xl_fpn_3x_coco.py'
-  checkpoint_file =   "./Detectors/InternImage/InternImage/checkpoint_dir/cascade_internimage_xl_fpn_3x_coco.pth"
+  args = json.loads(sys.argv[-1]) # args in a dictionary here where it was a argparse.NameSpace in the main code
+
+  config_file = args["MMDetConfig"]
+  checkpoint_file =  args["MMDetCheckPoint"]
+ 
   device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
   device_name = "cuda:0" if torch.cuda.is_available() else "cpu"
   print(f'device: {device_name}')
 
-  args = json.loads(sys.argv[-1]) # args in a dictionary here where it was a argparse.NameSpace in the main code
   video_path = args["Video"]
-  print(video_path)
+#   print(video_path)
   text_result_path = args["DetectionDetectorPath"] 
-  print(text_result_path)
+#   print(text_result_path)
   model = init_detector(config_file, checkpoint_file, device=device_name)
   video = mmcv.VideoReader(video_path)
   i=0
