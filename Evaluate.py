@@ -581,7 +581,7 @@ def evaluate_detection(base_args, nested_args):
     #     pkl.dump(annotations, f)    
     if(base_args.Small):
         lower_area=0
-        upper_area=1296
+        upper_area=32*32
         gt_x1=dfs_gt['x1']
         gt_x2=dfs_gt['x2']
         gt_y1=dfs_gt['y1']
@@ -614,8 +614,8 @@ def evaluate_detection(base_args, nested_args):
             f.write("Total_FP :"+ str(total_fp) + '\n')
             f.write("Total GT :" + str(total_gt  ))    
     if(base_args.Medium):
-        lower_area=25000
-        upper_area=50000
+        lower_area=32*32
+        upper_area=96*96
         gt_x1=dfs_gt['x1']
         gt_x2=dfs_gt['x2']
         gt_y1=dfs_gt['y1']
@@ -649,7 +649,7 @@ def evaluate_detection(base_args, nested_args):
             f.write("Total GT :" + str(total_gt  ))    
 
     if(base_args.Large):
-        lower_area=50000
+        lower_area=96*96
         upper_area=np.inf
         gt_x1=dfs_gt['x1']
         gt_x2=dfs_gt['x2']
