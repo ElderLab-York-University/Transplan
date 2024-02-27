@@ -69,14 +69,17 @@ def match_classes(args):
     track_df = pd.DataFrame.from_dict(data)
     det_df = df = pd.read_pickle(args.DetectionPkl)
     class_labels = []
-
+    # track_df=track_df[track_df['fn']==211]
+    # det_df=det_df[det_df['fn']==211]
     frames = np.unique(track_df["fn"])
-
     for fn in tqdm(frames):
         scores = compute_pairwise_iou(track_df[track_df["fn"] == fn], det_df[det_df["fn"] == fn])
         costs = 1 - scores
+        frame_det_df=det_df[det_df['fn']==fn]        
+        
         row_indices, col_indices = scipy.optimize.linear_sum_assignment(costs)
-        class_labels += list(det_df.iloc[col_indices]["class"])
+        class_labels += list(frame_det_df.iloc[col_indices]["class"])
+            
     
     # add class as a column to df
     track_df["class"] = class_labels
