@@ -1455,6 +1455,31 @@ def eval_count_multi_per_camera(args, args_mcs):
     df_final = pd.DataFrame.from_dict(cam_based_df_data)
     df_final.to_csv(args.CountingStatCameraBasedPth, index=False)
 
+    # add another csvfile for total tracks per camera
+    args_flat = flatten_args(args_mcs)
+    stats = []
+    cams = []
+
+    for arg_i in tqdm(args_flat):
+        stats.append(pd.read_csv(arg_i.CountingStatPth))
+
+    for arg_i in tqdm(args_flat):
+        cams.append(arg_i.SubID[-3:])
+
+    cam_based_df_data = {}
+    unique_cams = np.unique(cams)
+    for cam in unique_cams:
+        stats_cam = []
+        for cam_i, stat_i in zip(cams, stats):
+            if cam_i == cam:
+                stats_cam.append(stat_i)
+        df_multi_cam = accumulate(stats_cam)
+        if not "moi" in cam_based_df_data: cam_based_df_data["moi"] = df_multi_cam["moi"].tolist()
+        cam_based_df_data[cam] = df_multi_cam["estimated"].tolist()
+
+    df_final = pd.DataFrame.from_dict(cam_based_df_data)
+    df_final.to_csv(args.CountingStatCameraBasedPth+".TotalCounts.csv", index=False)
+
     return SucLog("counts Cameara Multi evaluated")
 
 def main(args):

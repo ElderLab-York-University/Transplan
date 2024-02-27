@@ -50,14 +50,18 @@ def fine_tune(args, args_mp, args_gt, args_mp_gt):
 
 def checkpoint_from_version(version):
     c_2_v = {
-        ""      : "./Detectors/MMDet/mmdetection/checkpoints/centernet-update_r50-caffe_fpn_ms-1x_coco_20230512_203845-8306baf2.pth",
-        "HW7FT" : "/home/sajjad/HW7Leslie/Results/CheckPoints/CenterNet/20231113_001311_ft_5cls/best_coco_bbox_mAP_epoch_10.pth"
+        ""         : "./Detectors/MMDet/mmdetection/checkpoints/centernet-update_r50-caffe_fpn_ms-1x_coco_20230512_203845-8306baf2.pth",
+        "HW7FT"    : "/home/sajjad/HW7Leslie/Results/CheckPoints/CenterNet/20231113_001311_ft_5cls/best_coco_bbox_mAP_epoch_10.pth",
+        "HW7FT80"  : "/home/sajjad/Transplan/CheckPoints/CenterNet_HW7_COCO80_best_coco_bbox_mAP_epoch_23.pth",
+        "HW7FTFG16": "/home/sajjad/Transplan/CheckPoints/CenterNet_HW7FG_best_coco_bbox_mAP_epoch_47.pth"
     }
     return c_2_v[version]
 
 def config_from_version(version):
     c_2_v = {
-        ""      : "./Detectors/MMDet/mmdetection/configs/centernet/centernet-update_r50-caffe_fpn_ms-1x_coco.py",
-        "HW7FT" : "/home/sajjad/HW7Leslie/Results/CheckPoints/CenterNet/20231113_001311_ft_5cls/train_config.py"
+        ""         : "./Detectors/MMDet/mmdetection/configs/centernet/centernet-update_r50-caffe_fpn_ms-1x_coco.py",
+        "HW7FT"    : "/home/sajjad/HW7Leslie/Results/CheckPoints/CenterNet/20231113_001311_ft_5cls/train_config.py",
+        "HW7FT80"  : "/home/sajjad/Transplan/CheckPoints/CenterNet_HW7_COCO80_best_coco_bbox_mAP_epoch_23.py",
+        "HW7FTFG16": "/home/sajjad/Transplan/CheckPoints/CenterNet_HW7FG_best_coco_bbox_mAP_epoch_47.py"
     }
     return c_2_v[version]

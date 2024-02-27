@@ -15,8 +15,14 @@ from Detectors.MMDet.detect import modify_train_config as mm_modify_train_config
 
 def detect(args,*oargs):
   setup(args)
-  env_name = args.Detector
-  exec_path = "./Detectors/InternImage/run.py"
+  env_name        = args.Detector
+  exec_path       = "./Detectors/InternImage/run.py"
+  config_file     = config_from_version(args.DetectorVersion)
+  checkpoint_file = checkpoint_from_version(args.DetectorVersion)
+
+  args.MMDetConfig     = config_file 
+  args.MMDetCheckPoint = checkpoint_file
+
   conda_pyrun(env_name, exec_path, args)
 
 def df(args):
@@ -74,6 +80,7 @@ def setup(args):
         os.system(f"conda run --live-stream -n {env_name} pip install easydict llvmlite numba pyyaml tqdm")
         os.system(f"conda run --live-stream -n {env_name} pip install openmim")
         os.system(f"conda run --live-stream -n {env_name} mim install mmcv-full==1.5.0")
+        os.system(f"conda run --live-stream -n {env_name} mim install mmengine==0.10.3")
         os.system(f"conda run --live-stream -n {env_name} pip install timm==0.6.11 mmdet==2.28.1")
         os.system(f"conda run --live-stream -n {env_name} pip install opencv-python termcolor yacs pyyaml scipy tqdm")
         os.system(f"conda run --live-stream -n {env_name} wget -c https://github.com/OpenGVLab/InternImage/releases/download/whl_files/DCNv3-1.0+cu113torch1.11.0-cp37-cp37m-linux_x86_64.whl\
@@ -94,27 +101,27 @@ def fine_tune(args, args_mp, args_gt, args_mp_gt):
     lunch_training(train_config_path, work_dir, args.Resume)
 
 def lunch_training(train_config_path, work_dir, resume):
-  env_name = "MMDet "
+  env_name = "InternImage"
   ngpus = get_numgpus_torch(env_name)
   port  = get_available_port()
   dist_train_sh_path = "./Detectors/InternImage/InternImage/detection/dist_train.sh"
   if resume:
     os.system(f"conda run -n {env_name} --live-stream PORT={port} {dist_train_sh_path} \
-              {train_config_path} {ngpus} --work-dir={work_dir} --resume")
+              {train_config_path} {ngpus} --work-dir={work_dir} --auto-resume")
   else:
     os.system(f"conda run -n {env_name} --live-stream PORT={port} {dist_train_sh_path} \
               {train_config_path} {ngpus} --work-dir={work_dir}")
 
-# def checkpoint_from_version(version):
-#     c_2_v = {
-#         ""      : "./Detectors/MMDet/mmdetection/checkpoints/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth",
-#         "HW7FT" : "/home/sajjad/HW7Leslie/Results/CheckPoints/YoloX/20231111_144154_ft_5cls/best_coco_bbox_mAP_epoch_11.pth"
-#     }
-#     return c_2_v[version]
+def checkpoint_from_version(version):
+    c_2_v = {
+        ""        : "./Detectors/InternImage/InternImage/checkpoint_dir/cascade_internimage_xl_fpn_3x_coco.pth",
+        "HW7FT80" : "/home/sajjad/Transplan/CheckPoints/InternImage_HW7_COCO80_best_bbox_mAP_epoch_45.pth"
+    }
+    return c_2_v[version]
 
-# def config_from_version(version):
-#     c_2_v = {
-#         ""      : "./Detectors/MMDet/mmdetection/configs/yolox/yolox_x_8xb8-300e_coco.py",
-#         "HW7FT" : "/home/sajjad/HW7Leslie/Results/CheckPoints/YoloX/20231111_144154_ft_5cls/train_config.py"
-#     }
-#     return c_2_v[version]
+def config_from_version(version):
+    c_2_v = {
+        ""        : "./Detectors/InternImage/InternImage/detection/configs/coco/cascade_internimage_xl_fpn_3x_coco.py",
+        "HW7FT80" : "/home/sajjad/Transplan/CheckPoints/InternImage_HW7_COCO80_best_bbox_mAP_epoch_45.py"
+    }
+    return c_2_v[version]
