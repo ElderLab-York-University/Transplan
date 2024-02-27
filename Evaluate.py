@@ -496,7 +496,7 @@ def evaluate_detection(base_args, nested_args):
             gt_frames=np.unique(df_gt['fn'])
             df_pred=df_pred[df_pred['fn'].isin(gt_frames)]
             # print(np.unique(df_pred['class']))            
-            df_pred=df_pred.replace({"class":class_dict})
+            # df_pred=df_pred.replace({"class":class_dict})
             # print(np.unique(df_pred['class']))
             # print(df_gt)
             # print(args_gt.DetectionPkl)
@@ -574,8 +574,7 @@ def evaluate_detection(base_args, nested_args):
     
     classes=np.unique(dfs_pred['class'])
     print(classes)
-    
-    print('done')
+    print('Starting')
     # with open("det_results", 'wb') as f:
     #     pkl.dump(det_results, f)
     # with open("annotations", 'wb') as f:
@@ -680,16 +679,18 @@ def evaluate_detection(base_args, nested_args):
             f.write("Camera ID                AP \n")
             f.write(str("Camera") + ": " +str(result)  +'\n')
             f.write("Average AP: " + str(np.mean(result))+ '\n')
+            f.write("APs(50:95):" + str(result)+"\n")            
             f.write("Total TP :" + str(total_tp)+'\n')
             f.write("Total_FP :"+ str(total_fp) + '\n')
             f.write("Total GT :" + str(total_gt  ))    
     if(not base_args.Large and not base_args.Medium and not base_args.Small):
-        result, total_tp, total_fp, total_gt=compare_dfs(dfs_gt,dfs_pred)    
+        result, total_tp, total_fp, total_gt, aps=compare_dfs(dfs_gt,dfs_pred)    
         print(base_args.DetectEvalPth)
         with open(base_args.DetectEvalPth, "w") as f:
             f.write("Camera ID                AP \n")
             f.write(str("Camera") + ": " +str(result)  +'\n')
             f.write("Average AP: " + str(np.mean(result))+ '\n')
+            f.write("APs(50:95):" + str(aps)+"\n")
             f.write("Total TP :" + str(total_tp)+'\n')
             f.write("Total_FP :"+ str(total_fp) + '\n')
             f.write("Total GT :" + str(total_gt  ))    
@@ -797,6 +798,7 @@ def compare_dfs(dfs_gts, pred_dfs):
     total_gt=0
     class_aps=[]
     class_counts=[]
+    aps_threshold=[]
     print(thresholds)
     for c in classes:
         print(c)
@@ -869,12 +871,15 @@ def compare_dfs(dfs_gts, pred_dfs):
             aps.append(np.mean(i_pr))
         if n_gt>0:
             class_aps.append(np.mean(aps))
+            aps_threshold.append(aps)
             print("class ", c, " n_gt ", n_gt, "n_pred ", n_pred, ' ap ', np.mean(aps))
         class_counts.append(n_pred)
     mAP=np.average(class_aps)
+    aps_threshold=np.average(np.array(aps_threshold),axis=0)
     print(total_tp, total_fp, total_gt)
     print(class_aps)
-    return mAP, total_tp, total_fp, total_gt
+    print(aps_threshold)
+    return mAP, total_tp, total_fp, total_gt, aps_threshold
             # if(pred_bbox[0] in fp_frames):
             #     FP[i]=np.ones(len(thresholds))
             # else:
