@@ -56,7 +56,7 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
-detectors = ["pgd2D"]
+detectors = ["Petr2D"]
 
 # choose detector version (checkpoints, ...)
 # options: ["", "HW7FT"]
@@ -169,7 +169,7 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     ########################################################
     for det in detectors:
         print(f"detecting ----> src:{src} det:{det}")
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --VisDetect")
+        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect --VisDetect")
 
     ########################################################
     # 3.5 run the detection post processing

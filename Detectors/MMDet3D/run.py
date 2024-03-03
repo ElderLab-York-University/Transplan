@@ -36,7 +36,8 @@ def get_full_frame_result(frame, model, test_pipeline):
                [0.0, 721.5377, 172.854, 0.2163791],
                [0.0, 0.0, 1.0, 0.002745884],
                [0.0, 0.0, 0.0, 1.0]]
-    data_ = {"img":frame, "cam2img":cam2img}
+    lidar2cam = cam2img
+    data_ = {"img":frame, "cam2img":cam2img, "lidar2cam":lidar2cam}
     data_ = test_pipeline(data_)
     data.append(data_)
     collate_data = pseudo_collate(data)
