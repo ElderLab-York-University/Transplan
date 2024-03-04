@@ -89,7 +89,10 @@ def getbboxes(result):
 def shift_predictions(results,offsets, img_shape):
   shifted_predictions=[]
   labels=[]
+  
   for result,offset in zip(results,offsets):
+    if isinstance(result, tuple):
+        result, _ = result    
     for i,res in enumerate(result):
       if(len(res)>0):
         offset_res=res.copy()
