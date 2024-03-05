@@ -18,6 +18,7 @@ import Detectors.YoloX.detect
 import Detectors.CascadeRCNN.detect
 import Detectors.DeformableDETR.detect
 import Detectors.CenterNet.detect
+import Detectors.pgd2D.detect
 # --------------------------
 detectors = {}
 detectors["detectron2"]     = Detectors.detectron2.detect
@@ -39,6 +40,7 @@ detectors["CenterNet.HW7FT"]      = Detectors.CenterNet.detect
 detectors["GTHW7"]          = Detectors.GTHW7.detect
 detectors["GTHW7FG"]        = Detectors.GTHW7FG.detect
 detectors["GTHW73D"]        = Detectors.GTHW73D.detect
+detectors["pgd2D"]          = Detectors.pgd2D.detect
 
 def detect(args):
     # check if detector names is valid

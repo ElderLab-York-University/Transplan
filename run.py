@@ -28,6 +28,8 @@ datasets     = [
 split_part   = ["train", "valid"]
 segment_part = ["Seg01"]
 source_part  = ["Seg01sc1"]
+segment_part = ["Seg01"]
+source_part  = ["Seg01sc1"]
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
 sources      = get_sub_dirs(segments, source_part)
@@ -47,6 +49,8 @@ cached_datasets     = [
 cached_split_part   = ["train", "valid"]
 cached_segment_part = ["Seg01"]
 cached_source_part  = ["Seg01sc1"]
+cached_segment_part = ["Seg01"]
+cached_source_part  = ["Seg01sc1"]
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
 cached_sources      = get_sub_dirs(cached_segments, cached_source_part)
@@ -57,12 +61,13 @@ cached_sources      = get_sub_dirs(cached_segments, cached_source_part)
 segmenters = ["InternImage"]
 
 # choose the detectors
-# options: ["GTHW7", "GTHW7FG", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
-detectors = ["CascadeRCNN"]
+# options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
+detectors = ["pgd2D"]
 
 # choose detector version (checkpoints, ...)
 # options: ["", "HW7FT", "HW7FT80", "HW7FTFG16"]
-det_v = "HW7FTFG16"
+# options: ["", "kitti"]
+det_v = "HW7FTFG16kitti"
 
 # choose the tracker
 # options: ["GTHW7", "sort", "ByteTrack",  "CenterTrack", "DeepSort", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
@@ -170,7 +175,7 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     ########################################################
     for det in detectors:
         print(f"detecting ----> src:{src} det:{det}")
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect --VisDetect")
+        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --VisDetect --VisDetect")
 
     ########################################################
     # 3.5 run the detection post processing
