@@ -593,7 +593,7 @@ def mask_gt(df,args):
         # masked_img= frame[b[1] : b[3] , b[0]:b[2]]
         non_zero[i] = np.count_nonzero(masked)
     print(len(gt_df))
-    gt_df= gt_df[(non_zero/areas)> 0.7] 
+    gt_df= gt_df[(non_zero/areas)>= 0.99] 
     print(len(gt_df))
     return gt_df
             

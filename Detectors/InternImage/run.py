@@ -164,4 +164,3 @@ if __name__ == "__main__":
                 r=box
                 f.write(str(i) + " " + str(label) + " " + str(r[4]) + " " + str(r[0])+ " " + str(r[1]) + " " + str(r[2])+ " " + str(r[3]) +'\n')
         i=i+1
-
