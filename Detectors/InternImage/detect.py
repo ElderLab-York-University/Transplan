@@ -115,13 +115,15 @@ def lunch_training(train_config_path, work_dir, resume):
 def checkpoint_from_version(version):
     c_2_v = {
         ""        : "./Detectors/InternImage/InternImage/checkpoint_dir/cascade_internimage_xl_fpn_3x_coco.pth",
-        "HW7FT80" : "/home/sajjad/Transplan/CheckPoints/InternImage_HW7_COCO80_best_bbox_mAP_epoch_45.pth"
+        "HW7FT80" : "./CheckPoints/InternImage_HW7_COCO80_best_bbox_mAP_epoch_45.pth",
+        "HW7FTFG16": "./CheckPoints/InternImage_HW7FG_best_bbox_mAP_epoch_38.pth"
     }
     return c_2_v[version]
 
 def config_from_version(version):
     c_2_v = {
         ""        : "./Detectors/InternImage/InternImage/detection/configs/coco/cascade_internimage_xl_fpn_3x_coco.py",
-        "HW7FT80" : "/home/sajjad/Transplan/CheckPoints/InternImage_HW7_COCO80_best_bbox_mAP_epoch_45.py"
+        "HW7FT80" : "./CheckPoints/InternImage_HW7_COCO80_best_bbox_mAP_epoch_45.py",
+        "HW7FTFG16": "./CheckPoints/InternImage_HW7FG_best_bbox_mAP_epoch_38.py"
     }
     return c_2_v[version]
