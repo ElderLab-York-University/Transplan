@@ -19,6 +19,7 @@ import Detectors.CascadeRCNN.detect
 import Detectors.DeformableDETR.detect
 import Detectors.CenterNet.detect
 import Detectors.pgd2D.detect
+import Detectors.Petr2D.detect
 # --------------------------
 detectors = {}
 detectors["detectron2"]     = Detectors.detectron2.detect
@@ -41,6 +42,7 @@ detectors["GTHW7"]          = Detectors.GTHW7.detect
 detectors["GTHW7FG"]        = Detectors.GTHW7FG.detect
 detectors["GTHW73D"]        = Detectors.GTHW73D.detect
 detectors["pgd2D"]          = Detectors.pgd2D.detect
+detectors["Petr2D"]         = Detectors.Petr2D.detect
 
 def detect(args):
     # check if detector names is valid

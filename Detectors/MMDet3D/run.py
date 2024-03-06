@@ -80,9 +80,10 @@ if __name__ == "__main__":
     fn=0
     with open (text_result_path,"w") as f: 
         for frame in tqdm(video_reader):
-            result = get_full_frame_result(frame, model, test_pipeline)
-            bboxes, labels, scores = preds_2D_from_result(result)
-            for box, label, score in zip(bboxes,labels, scores):
-                    r=box
-                    f.write(f"{fn} {label} {score} {box[0]} {box[1]} {box[2]} {box[3]}\n")
+            if(fn%args['FrameRate']==0):
+                result = get_full_frame_result(frame, model, test_pipeline)
+                bboxes, labels, scores = preds_2D_from_result(result)
+                for box, label, score in zip(bboxes,labels, scores):
+                        r=box
+                        f.write(f"{fn} {label} {score} {box[0]} {box[1]} {box[2]} {box[3]}\n")
             fn+=1

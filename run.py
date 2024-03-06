@@ -62,12 +62,11 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
-detectors = ["pgd2D"]
+detectors = ["Petr2D"]
 
 # choose detector version (checkpoints, ...)
 # options: ["", "HW7FT", "HW7FT80", "HW7FTFG16"]
-# options: ["", "kitti"]
-det_v = "HW7FTFG16kitti"
+det_v = "HW7FTFG16"
 
 # choose the tracker
 # options: ["GTHW7", "sort", "ByteTrack",  "CenterTrack", "DeepSort", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
@@ -175,7 +174,7 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     ########################################################
     for det in detectors:
         print(f"detecting ----> src:{src} det:{det}")
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --VisDetect --VisDetect")
+        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect --VisDetect")
 
     ########################################################
     # 3.5 run the detection post processing
@@ -591,6 +590,11 @@ for ds in datasets:
     # ########################################################
     # # 1. fine tune detector
     # # ########################################################
+    # for det in detectors:
+    #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
+    #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
+    #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval}\
+    #                --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")
     # for det in detectors:
     #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
     #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \

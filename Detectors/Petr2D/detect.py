@@ -40,14 +40,12 @@ def setup(args):
 
 def checkpoint_from_version(version):
     c_2_v = {
-        "kitti"      : "/home/kumar/Transplan/Detectors/MMDet3D/mmdetection3d/models/pgd_r101_caffe_fpn_gn-head_3x4_4x_kitti-mono3d_20211022_102608-8a97533b.pth",
-        "nuscenes"   : "/home/kumar/Transplan/Detectors/MMDet3D/mmdetection3d/models/pgd_r101_caffe_fpn_gn-head_2x16_2x_nus-mono3d_finetune_20211114_162135-5ec7c1cd.pth"
+        "kitti"      : "./CheckPoints/petr_vovnet_gridmask_p4_800x320-e2191752.pth",
     }
     return c_2_v[version]
 
 def config_from_version(version):
     c_2_v = {
-        "kitti"      : "/home/sajjad/Transplan/Detectors/MMDet3D/mmdetection3d/configs/pgd/pgd_r101-caffe_fpn_head-gn_4xb3-4x_kitti-mono3d.py",
-        "nuscenes":"/home/kumar/Transplan/Detectors/MMDet3D/mmdetection3d/configs/pgd/pgd_r101-caffe_fpn_head-gn_16xb2-2x_nus-mono3d_finetune.py"
+        "kitti"      : "./CheckPoints/petr_vovnet_gridmask_p4_800x320.py",
     }
     return c_2_v[version]

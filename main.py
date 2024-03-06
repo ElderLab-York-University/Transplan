@@ -541,7 +541,7 @@ def get_parser():
     parser.add_argument("--NMS", help="If to do NMS on ROI results (ideally only use for ROI results)", action="store_true")
     parser.add_argument("--NMSTh", help="Nms th if to do NMS", type=float, default=0.5)
     parser.add_argument("--RegularNMS", help="If to do Regular NMS on non-ROI results (ideally only use for non-ROI results)", action="store_true")
-    
+    parser.add_argument("--FrameRate", help="For detection, how often to compute results", type=int, default=1)
     parser.add_argument("--VisClass", help="If to visualize the classes of tracks", action="store_true")
     parser.add_argument("--MaskGPFrame", help="remove dets on tracks that are outside gp frame", action="store_true")
     parser.add_argument("--TrackEval", help="Evaluate the tracking single camera", action="store_true")
