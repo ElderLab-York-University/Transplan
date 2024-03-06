@@ -14,6 +14,7 @@ import mmdet_custom  # noqa: F401,F403
 import mmcv_custom  # noqa: F401,F403
 from mmdet.apis import init_detector, inference_detector
 from tqdm import tqdm
+import cv2
 
 def getbboxes(result):
     if isinstance(result, tuple):
@@ -107,6 +108,7 @@ def get_roi_results(frame, model, args):
     rois=[]
     container=np.load(args["RoiNpz"])
     data = [container[key] for key in container]
+  
     for roi in data:
         rois.append((roi.astype(int)))
     sliced_frames=[]
@@ -151,7 +153,7 @@ if __name__ == "__main__":
   i=0
   with open (text_result_path,"w") as f: 
       for frame in tqdm(video):
-        if(i%6==0):
+        if(i%args['FrameRate']==0):
           if(args["Rois"]):
             res=get_roi_results(frame,model,args)
           else:

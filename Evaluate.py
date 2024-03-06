@@ -443,7 +443,12 @@ def cvpr(base_args, nested_args):
     # tikzplotlib.save("Sup_traversal_direction.tex")
     # plt.close("all")
 
-
+def convert_classes(args, df_gt, df_pred):
+    if(args.DetectorVersion=="kitti"):
+        classes_map={0:1, 1:2, 2:0, 5:0,7:0}
+        df_gt['class']=df_gt['class'].map(classes_map)        
+    return df_gt, df_pred
+    
 def evaluate_detection(base_args, nested_args):
     dfs_pred = []
     dfs_gt   = []
@@ -493,7 +498,7 @@ def evaluate_detection(base_args, nested_args):
             if(args.Rois is not None):
                 df_pred=pd.read_pickle(args.DetectionPkl)
             else:
-                df_pred = pd.read_pickle(args.DetectionPklBackUp)
+                df_pred = pd.read_pickle(args.DetectionPkl)
             df_id   = args.SubID
             gt_frames=np.unique(df_gt['fn'])
             df_pred=df_pred[df_pred['fn'].isin(gt_frames)]
@@ -566,7 +571,9 @@ def evaluate_detection(base_args, nested_args):
     preds=np.array(preds)
     dfs_gt=pd.concat(dfs_gt)
     dfs_pred=pd.concat(dfs_pred)
+    dfs_gt, dfs_pred= convert_classes(args, dfs_gt,dfs_pred)
     classes=np.unique(dfs_pred['class'])
+    
     print(classes)
     print(np.unique(dfs_gt['class']))
     # dfs_pred=dfs_pred[dfs_pred['class']==1]
@@ -575,6 +582,7 @@ def evaluate_detection(base_args, nested_args):
     
     
     classes=np.unique(dfs_pred['class'])
+    
     print(classes)
     print('Starting')
     # with open("det_results", 'wb') as f:
