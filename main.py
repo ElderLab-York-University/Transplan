@@ -632,7 +632,6 @@ def get_parser():
     parser.add_argument("--VisPose", help="visulaize pose estimation on video", action='store_true')
     parser.add_argument("--Poser", help="Pose estimator to use", type=str)
     parser.add_argument("--PoseTh", help="set the threshold for checkpoints in a pose to be used", type=float, default=0.3)
-    parser.add_argument("--FrameRate", help="Frame rate to compute detections for",type=int, default=1)
     return parser
     
 if __name__ == "__main__":
