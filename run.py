@@ -28,6 +28,8 @@ datasets     = [
 split_part   = ["train", "valid"]
 segment_part = ["Seg01"]
 source_part  = ["Seg01sc1"]
+segment_part = ["Seg01"]
+source_part  = ["Seg01sc1"]
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
 sources      = get_sub_dirs(segments, source_part)
@@ -47,6 +49,8 @@ cached_datasets     = [
 cached_split_part   = ["train", "valid"]
 cached_segment_part = ["Seg01"]
 cached_source_part  = ["Seg01sc1"]
+cached_segment_part = ["Seg01"]
+cached_source_part  = ["Seg01sc1"]
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
 cached_sources      = get_sub_dirs(cached_segments, cached_source_part)
@@ -57,8 +61,8 @@ cached_sources      = get_sub_dirs(cached_segments, cached_source_part)
 segmenters = ["InternImage"]
 
 # choose the detectors
-# options: ["GTHW7", "GTHW7FG", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
-detectors = ["CascadeRCNN"]
+# options: ["GTHW7", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
+detectors = ["Petr2D"]
 
 # choose detector version (checkpoints, ...)
 # options: ["", "HW7FT", "HW7FT80", "HW7FTFG16"]
@@ -586,6 +590,11 @@ for ds in datasets:
     # ########################################################
     # # 1. fine tune detector
     # # ########################################################
+    # for det in detectors:
+    #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
+    #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
+    #                --NumWorkers={num_workers} --Epochs={epochs} --ValInterval={val_interval}\
+    #                --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")
     # for det in detectors:
     #     os.system(f"python3 main.py --MultiPart --Dataset={ds} --Detector={det} --GTDetector={GT_det}\
     #                --FineTune --TrainPart={train_sp} --ValidPart={valid_sp} --BatchSize={batch_size} \
