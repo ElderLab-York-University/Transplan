@@ -510,7 +510,7 @@ def get_parser():
     parser.add_argument("--SelectToBeCounted", help="select tracks to be counted based on ROI", action="store_true")
     parser.add_argument("--UnfinishedTrackFrameTh", help="select tracks to be counted based on ROI", type=int, default=10)
     parser.add_argument("--UnstartedTrackFrameTh", help="select tracks to be counted based on ROI", type=int, default=10)
-
+    parser.add_argument("--FrameRate", help="For detection, how often to compute results", type=int, default=1)
     parser.add_argument("--MaskGPFrame", help="remove dets on tracks that are outside gp frame", action="store_true")
     parser.add_argument("--TrackEval", help="Evaluate the tracking single camera", action="store_true")
     parser.add_argument("--VisROI", help="visualize the selected ROI", action='store_true')
