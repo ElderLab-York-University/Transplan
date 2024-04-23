@@ -97,3 +97,21 @@ def track_resample(track, threshold=4, return_mask=False):
     if return_mask:
         return index_keep
     return track[index_keep, :]
+def track_resample_spatial(track, threshold=4):
+    """
+    :param track: input track numpy array (M, 2)
+    :param threshold: default 4 meters interval for neighbouring points
+    :return: resampled track with exactly uniform samples in space rather than time
+    """
+    assert track.shape[1] == 2
+    assert threshold > 0
+    new_track = [track[0]]
+    prev_point = track[0]
+    for i in range(1, track.shape[0]):
+        dist_ = np.sqrt(np.sum((track[i] - prev_point) ** 2))
+        if dist_ >= threshold:
+            new_point = ((dist_ - threshold)/dist_)*prev_point + (threshold/dist_)*track[i]
+            new_track.append([new_point[0], new_point[1]])
+            prev_point = new_point
+
+    return np.array(new_track)
