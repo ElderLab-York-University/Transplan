@@ -18,16 +18,16 @@ def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"], b
 # choose datasets/splits/segments/sources
 #  set to None if want to include all
 datasets     = [
-                "/home/sajjad/HW7Leslie",
+                # "/home/sajjad/HW7Leslie",
                 # "/home/sajjad/HW7LeslieShortCamera",
                 # "/mnt/dataB/CityFlowV2Local",
-                # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
+                "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
-split_part   = ["train", "valid"]
-segment_part = ["Seg01"]
-source_part  = ["Seg01sc1"]
+split_part   = ["train"]
+segment_part = None
+source_part  = None
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
 sources      = get_sub_dirs(segments, source_part)
@@ -37,16 +37,16 @@ sources      = get_sub_dirs(segments, source_part)
 #  set to None if want to include all
 # this pathes are used to load cached counters
 cached_datasets     = [
-                "/home/sajjad/HW7Leslie",
+                # "/home/sajjad/HW7Leslie",
                 # "/home/sajjad/HW7LeslieShortCamera",
                 # "/mnt/dataB/CityFlowV2Local",
-                # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
+                "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
-cached_split_part   = ["train", "valid"]
-cached_segment_part = ["Seg01"]
-cached_source_part  = ["Seg01sc1"]
+cached_split_part   = ["train"]
+cached_segment_part = None 
+cached_source_part  = None
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
 cached_sources      = get_sub_dirs(cached_segments, cached_source_part)
@@ -58,11 +58,11 @@ segmenters = ["InternImage"]
 
 # choose the detectors
 # options: ["GTHW7", "GTHW7FG", "detectron2", "OpenMM", "YOLOv5", "YOLOv8", "InternImage", "RTMDet", "DeformableDETR", "YoloX", "CenterNet", "CascadeRCNN"]
-detectors = ["CascadeRCNN"]
+detectors = ["InternImage"]
 
 # choose detector version (checkpoints, ...)
 # options: ["", "HW7FT", "HW7FT80", "HW7FTFG16"]
-det_v = "HW7FTFG16"
+det_v = ""
 
 # choose the tracker
 # options: ["GTHW7", "sort", "ByteTrack",  "CenterTrack", "DeepSort", "gsort", "OCSort", "GByteTrack", "GDeepSort", "BOTSort", "StrongSort"]
@@ -70,13 +70,13 @@ trackers = ["ByteTrack"]
 
 # choose grandtruth detector
 # Options are the same as detector
-GT_det    = "GTHW7FG"
-GT_det_3D = "GTHW73D"
+GT_det    = ""
+GT_det_3D = ""
 
 # choose grandtruth tracker
 # options are the same as trackers
-GT_tra    = "GTHW7"
-GT_tra_3D = "GTHW73D"
+GT_tra    = ""
+GT_tra_3D = ""
 
 # choose pose estimation model
 # options: ["MMPose"]
@@ -91,17 +91,17 @@ clusters = []
 # options on ground:  ["gkde", "groi", "gknn", "gcos", "gtcos", "gcmm", "ghausdorff","gccmm", "gtccmm", "gptcos"]
 clt_metrics = []
 # cnt_metrics = ["cos", "tcos", "cmm", "hausdorff", "kde", "roi", "knn"]
-cnt_metrics = ["gkde"]
+cnt_metrics = ["kde", "roi", "knn", "cos", "tcos", "cmm", "hausdorff"]
 
 # setup training hyperparameters
 # train split (train_sp) and valid split(valid_sp) should be selsected
 # from "splits"
-train_sp     = "train"
-valid_sp     = "valid"
-batch_size   = 1
-num_workers  = 4
-epochs       = 50
-val_interval = 1
+train_sp     = None
+valid_sp     = None
+batch_size   = None
+num_workers  = None
+epochs       = None
+val_interval = None
 
 # projection hypterparameters
 # --TopView=[GoogleMap/OrthoPhoto] --BackprojectionMethod=[Homography/DSM]
@@ -109,7 +109,7 @@ val_interval = 1
 tp_view    =  "GoogleMap"
 cp_methods = ["BottomPoint"]
 bp_method  =  "Homography"
-resamp_th  =  2
+resamp_th  =  50
 
 # set contact point for GT and GT3D
 gt_cp_method   = "BottomPoint"
@@ -168,9 +168,9 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #  --Detect --VisDetect --ForNFrames=600 --DetectorVersion={det_v} --SAHI --SahiPatchSize=640 --SahiPatchOverlapRatio=0.25 
     #  --SahiPatchBatchSize=1 --SahiNMSTh=0.25")
     ########################################################
-    for det in detectors:
-        print(f"detecting ----> src:{src} det:{det}")
-        os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect --VisDetect")
+    # for det in detectors:
+    #     print(f"detecting ----> src:{src} det:{det}")
+    #     os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Detect --VisDetect")
 
     ########################################################
     # 3.5 run the detection post processing
@@ -286,18 +286,17 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     ########################################################
     # for det in detectors:
     #     for tra in trackers:
-    #         for cp_method in cp_methods:
-    #             print(f"tracking POSTPROC ---> src:{src} det:{det} tra:{tra}")
-    #             os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-    #                         --BackprojectSource=tracks --TopView={tp_view}\
-    #                         --BackprojectionMethod={bp_method} --ContactPoint={cp_method}\
-    #                         --TrackPostProc --Interpolate --InterpolateTh=1000 --RemoveInvalidTracks --MaskGPFrame\
-    #                         --HasPointsInROI --UnifyTrackClass --classes_to_keep 2 3 5 7 --ResampleTH={resamp_th}\
-    #                         --MovesInROI --ROIFromTop")
+    #         print(f"tracking POSTPROC ---> src:{src} det:{det} tra:{tra}")
+    #         os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+    #                     --BackprojectSource=tracks --TopView={tp_view}\
+    #                     --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}\
+    #                     --TrackPostProc --RemoveInvalidTracks\
+    #                     --HasPointsInROI --ResampleTH=2\
+    #                     --ExitOrCrossROI")
             
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-    #              --VisTrack\
-    #              --BackprojectSource=tracks --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={cp_method}")
+            # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+            #      --VisTrack\
+            #      --BackprojectSource=tracks --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={cp_method}")
                  
     ########################################################
     # 5.5 Evaluate Tracking
@@ -349,16 +348,16 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #                 --ExtractCommonTracks --VisLabelledTrajectories --ResampleTH={resamp_th}\
     #                 --BackprojectSource=tracks --TopView={tp_view}\
     #                 --BackprojectionMethod={bp_method} --ContactPoint={cp_method}\
-    #                 --GP
+    #                 --GP --ROIFromTop
     #######################################################
-    # for det in detectors:
-    #     for tra in trackers:
-    #         print(f"extract common tracks ----> det:{det}, tra:{tra}")
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-    #                    --ExtractCommonTracks --ResampleTH={resamp_th}\
-    #                    --BackprojectSource=tracks --TopView={tp_view}\
-    #                    --BackprojectionMethod={bp_method} --ContactPoint={cp_method}\
-    #                    --GP --ROIFromTop")
+    for det in detectors:
+        for tra in trackers:
+            print(f"extract common tracks ----> det:{det}, tra:{tra}")
+            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+                       --ExtractCommonTracks --ResampleTH={resamp_th}\
+                       --BackprojectSource=tracks --TopView={tp_view}\
+                       --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}\
+                       ")
 
     ########################################################
     # 10. Run the classification(counting) part
@@ -368,19 +367,18 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #  --CountVisDensity --CountVisPrompt\
     # --BackprojectSource=tracks --TopView={tp_view}\
     # --BackprojectionMethod={bp_method} --ContactPoint={cp_method}\
-    # --KDEBW=3.5/10 --OSR=10 --ROIFromTop")
+    # --KDEBW=3.5/10 --OSR=10 --ROIFromTop --GP")
     ########################################################
-    # for det in detectors:
-    #     for tra in trackers:
-    #         for metric in cnt_metrics:
-    #             print(f"counting metric:{metric} det:{det} tra:{tra}")
-    #             os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-    #                         --Count --EvalCount --CountMetric={metric} --ResampleTH={resamp_th}\
-    #                         --CacheCounter \
-    #                         --CountVisDensity \
-    #                         --BackprojectSource=tracks --TopView={tp_view}\
-    #                         --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}\
-    #                         --KDEBW=3.5 --OSR=10 --GP")
+    for det in detectors:
+        for tra in trackers:
+            for metric in cnt_metrics:
+                print(f"counting metric:{metric} det:{det} tra:{tra}")
+                os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+                            --Count --EvalCount --CountMetric={metric} --ResampleTH={resamp_th}\
+                            --CacheCounter\
+                            --BackprojectSource=tracks --TopView={tp_view}\
+                            --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}\
+                            --KDEBW=10 --OSR=10")
 
     ########################################################
     # 11. Visualizing the results on a video including track label and track id
