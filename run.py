@@ -26,7 +26,7 @@ datasets     = [
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 split_part   = ["train"]
-segment_part = None
+segment_part = ["D9L"]
 source_part  = None
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
@@ -45,7 +45,7 @@ cached_datasets     = [
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 cached_split_part   = ["train"]
-cached_segment_part = None 
+cached_segment_part = ["D9L"]
 cached_source_part  = None
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
@@ -91,7 +91,7 @@ clusters = []
 # options on ground:  ["gkde", "groi", "gknn", "gcos", "gtcos", "gcmm", "ghausdorff","gccmm", "gtccmm", "gptcos"]
 clt_metrics = []
 # cnt_metrics = ["cos", "tcos", "cmm", "hausdorff", "kde", "roi", "knn"]
-cnt_metrics = ["kde", "roi", "knn", "cos", "tcos", "cmm", "hausdorff"]
+cnt_metrics = ["gkde"]
 
 # setup training hyperparameters
 # train split (train_sp) and valid split(valid_sp) should be selsected
@@ -109,7 +109,7 @@ val_interval = None
 tp_view    =  "GoogleMap"
 cp_methods = ["BottomPoint"]
 bp_method  =  "Homography"
-resamp_th  =  50
+resamp_th  =  2
 
 # set contact point for GT and GT3D
 gt_cp_method   = "BottomPoint"
@@ -350,14 +350,14 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #                 --BackprojectionMethod={bp_method} --ContactPoint={cp_method}\
     #                 --GP --ROIFromTop
     #######################################################
-    for det in detectors:
-        for tra in trackers:
-            print(f"extract common tracks ----> det:{det}, tra:{tra}")
-            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-                       --ExtractCommonTracks --ResampleTH={resamp_th}\
-                       --BackprojectSource=tracks --TopView={tp_view}\
-                       --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}\
-                       ")
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"extract common tracks ----> det:{det}, tra:{tra}")
+    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+    #                    --ExtractCommonTracks --ResampleTH={resamp_th}\
+    #                    --BackprojectSource=tracks --TopView={tp_view}\
+    #                    --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}\
+    #                    ")
 
     ########################################################
     # 10. Run the classification(counting) part
@@ -375,10 +375,10 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
                 print(f"counting metric:{metric} det:{det} tra:{tra}")
                 os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
                             --Count --EvalCount --CountMetric={metric} --ResampleTH={resamp_th}\
-                            --CacheCounter\
+                            --CacheCounter --CountVisDensity\
                             --BackprojectSource=tracks --TopView={tp_view}\
                             --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}\
-                            --KDEBW=10 --OSR=10")
+                            --KDEBW=3.5 --OSR=10")
 
     ########################################################
     # 11. Visualizing the results on a video including track label and track id

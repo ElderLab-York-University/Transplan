@@ -97,7 +97,7 @@ def track_resample(track, threshold=4, return_mask=False):
     if return_mask:
         return index_keep
     return track[index_keep, :]
-def track_resample_spatial(track, threshold=4):
+def track_resample_2(track, threshold=4, return_mask = False):
     """
     :param track: input track numpy array (M, 2)
     :param threshold: default 4 meters interval for neighbouring points
@@ -105,6 +105,7 @@ def track_resample_spatial(track, threshold=4):
     """
     assert track.shape[1] == 2
     assert threshold > 0
+    assert not return_mask
     new_track = [track[0]]
     prev_point = track[0]
     for i in range(1, track.shape[0]):

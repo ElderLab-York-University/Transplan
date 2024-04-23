@@ -14,7 +14,7 @@ import numpy as np
 # from pymatreader import read_mat
 import pandas as pd
 from matplotlib import cm
-from .resample_gt_MOI.resample_typical_tracks import track_resample
+from .resample_gt_MOI.resample_typical_tracks import track_resample, track_resample_2
 from tqdm import tqdm
 import cv2 as cv
 
@@ -1005,8 +1005,11 @@ class KDECounting(Counting):
 
 
         # resample on the ground plane but not in meter
-        tracks["trajectory"] = tracks.apply(lambda x: x['trajectory'][x["index_mask"]], axis=1)
-        tracks["frames"] = tracks.apply(lambda x: x['frames'][x["index_mask"]], axis=1)
+        tracks['trajectory'] = tracks['trajectory'].apply(lambda x: track_resample_2(x, return_mask=False, threshold=args.ResampleTH))
+        # tracks["trajectory"] = tracks.apply(lambda x: x['trajectory'][x["index_mask"]], axis=1)
+        # tracks["frames"] = tracks.apply(lambda x: x['frames'][x["index_mask"]], axis=1)
+
+        
         # interpolate tracks to fill in gaps
         # os_trajectories  = []
         # os_frames        = []
