@@ -375,7 +375,7 @@ def extract_common_tracks_multi(args_top, arg_mcs):
                                 M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
                 cor_x , cor_y = int(cor[0]), int(cor[1])
                 projected_traj.append([cor_x, cor_y])
-            projected_trajectories.append(projected_traj)
+            projected_trajectories.append(np.array(projected_traj))
         
         tracks_labelled_this_arg.trajectory = projected_trajectories
         exportpathimage = args.TrackLabellingExportPthImage
