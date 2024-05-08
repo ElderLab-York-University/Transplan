@@ -1233,9 +1233,10 @@ def hausdorff_directed(traj_a, traj_b, dist_func = lambda va, vb: np.linalg.norm
     return max_dist
             
 def hausdorff_dist(traj_a, traj_b):
-    d_ab = hausdorff_directed(traj_a, traj_b)
+    # d_ab = hausdorff_directed(traj_a, traj_b)
     d_ba = hausdorff_directed(traj_b, traj_a)
-    return max(d_ab, d_ba)
+    return d_ba
+    # return max(d_ab, d_ba)
 
 Metric_Dict = {
     "cmm":       cmm_dist,
