@@ -151,6 +151,111 @@ def interpolate_traj(traj, frames):
 
     return int_traj, int_frames
 
+def find_opt_bw_of_surf_ms(args_top, args_ms, args_mcs, gp):
+    args_flatten = flatten_args(args_mcs)
+    args_sc1_flatten, args_sc2_flatten, args_sc3_flatten, args_sc4_flatten = [],[],[],[]
+    for arg in tqdm(args_flatten):
+        if "sc1" in arg.SubID:
+            args_sc1_flatten.append(arg)
+        elif "sc2" in arg.SubID:
+            args_sc2_flatten.append(arg)
+        elif "sc3" in arg.SubID:
+            args_sc3_flatten.append(arg)
+        elif "sc4" in arg.SubID:
+            args_sc4_flatten.append(arg)
+        else:
+            raise NotImplementedError
+
+    args_flatten_grouped = [args_sc1_flatten, args_sc2_flatten,
+                            args_sc3_flatten, args_sc4_flatten]
+    h_opts = []
+    for sci, args_sci_flatten in enumerate(args_flatten_grouped):
+        kde_data_sci = []
+        for args in args_sci_flatten:
+            osr = args.OSR
+            tracks_path = args.ReprojectedPkl
+            tracks_meter_path = args.ReprojectedPklMeter
+            if gp:
+                top_image = args.HomographyTopView
+                args.ResampleTH = 2
+            else:
+                top_image = args.HomographyStreetView
+                args.ResampleTH = 50
+
+            meta_data = args.MetaData
+            # load data
+            tracks = group_tracks_by_id(pd.read_pickle(tracks_path), gp=gp, verbose=False)
+            tracks_meter = group_tracks_by_id(pd.read_pickle(tracks_meter_path), gp=gp, verbose=False)
+            # resample gp tracks
+            tracks['index_mask'] = tracks_meter['trajectory'].apply(lambda x: track_resample(x, return_mask=True, threshold=args.ResampleTH))
+            tracks["trajectory"] = tracks.apply(lambda x: x["trajectory"][x["index_mask"]], axis=1)
+            img = plt.imread(top_image)
+            for i, row in tracks.iterrows():
+                traj = row["trajectory"]
+                # total points to add
+                tot_ps_to_add = len(traj) * osr
+                # compute arch length of traj
+                t1 = np.array(traj[1:])
+                t2 = np.array(traj[:-1])
+                distances = np.linalg.norm(t1 - t2, axis=1)
+                arc = np.sum(distances)
+                num_points = distances / arc * tot_ps_to_add
+
+                for i in range(1, len(traj)):
+                    p1, p2 = traj[i-1], traj[i]
+                    for r in np.linspace(0, 1, num=int(num_points[i-1]+0.5)):
+                        p_temp = (1-r)*p1 + r*p2
+                        x, y = p_temp
+                        kde_data_sci.append([x, y])
+
+        kde_data_sci = np.array(kde_data_sci)
+        # our data is repatative in time, temporal split
+        split_idx = int(len(kde_data_sci) * 0.5)
+        
+        # 50 percent train and 50 percent test
+        kde_data_train = kde_data_sci[:split_idx]
+        kde_data_test  = kde_data_sci[split_idx:]
+
+        # use optimized 2D KDE
+        max_d = np.max(img.shape)
+        h_range = np.linspace(1, int(max_d * 0.02), 100)
+        scores = []
+        for h in tqdm(h_range):
+            kde = KDE2D()
+            kde.fit(kde_data_train, img, h)
+            scores.append(np.sum(kde.score_samples(kde_data_test)))
+
+        scores = np.array(scores)
+        import tikzplotlib
+        plt.style.use("ggplot")
+        plt.figure(figsize=(10,10))
+        # plt.rcParams.update({'font.size': 22})
+
+        plt.plot(h_range, scores, color="black")
+        if gp:
+            plt.xlabel('Bandwidth [m]')
+        else:
+            plt.xlabel('Bandwidth [pixels]')
+        plt.ylabel('log likelihood')
+        h_opt = h_range[np.argmax(scores)]
+        plt.plot(h_opt,np.max(scores),marker='*', color="red")
+
+        plt.plot([h_opt, h_opt], [np.min(scores), np.max(scores)], color="red")
+        plt.plot([np.min(h_range), h_opt], [np.max(scores), np.max(scores)], color="red")
+        if gp:
+            tikzplotlib.save(args_top.OptBWGround + f"sc{sci}.tex")
+            plt.savefig(args_top.OptBWGround + f"sc{sci}.png")
+        else:
+            tikzplotlib.save(args_top.OptBWImage + f"sc{sci}.tex")
+            plt.savefig(args_top.OptBWImage + f"sc{sci}.png")
+
+        plt.close("all")
+        import matplotlib as mpl
+        mpl.rcParams.update(mpl.rcParamsDefault)
+        h_opts.append(h_opt)
+    
+    return h_opts
+
 def find_opt_bw_of_surf(args, gp):
     osr = args.OSR
     tracks_path = args.ReprojectedPkl
@@ -203,7 +308,7 @@ def find_opt_bw_of_surf(args, gp):
     
     # use optimized 2D KDE
     max_d = np.max(img.shape)
-    h_range = np.linspace(1, int(max_d * 0.01), 100)
+    h_range = np.linspace(1, int(max_d * 0.10), 25)
     scores = []
     for h in tqdm(h_range):
         kde = KDE2D()
@@ -211,21 +316,32 @@ def find_opt_bw_of_surf(args, gp):
         scores.append(np.sum(kde.score_samples(kde_data_test)))
 
     scores = np.array(scores)
+    import tikzplotlib
+    plt.style.use("ggplot")
+    plt.figure(figsize=(10,10))
+    # plt.rcParams.update({'font.size': 22})
 
     plt.plot(h_range, scores, color="black")
-    plt.xlabel('Bandwidth [pixels]')
+    if gp:
+        plt.xlabel('Bandwidth [m]')
+    else:
+        plt.xlabel('Bandwidth [pixels]')
     plt.ylabel('log likelihood')
     h_opt = h_range[np.argmax(scores)]
     plt.plot(h_opt,np.max(scores),marker='*', color="red")
 
-    plt.plot([h_opt, h_opt], [np.min(scores), np.max(scores)], color="red", linestyle="dashed")
-    plt.plot([np.min(h_range), h_opt], [np.max(scores), np.max(scores)], color="red", linestyle="dashed")
+    plt.plot([h_opt, h_opt], [np.min(scores), np.max(scores)], color="red")
+    plt.plot([np.min(h_range), h_opt], [np.max(scores), np.max(scores)], color="red")
     if gp:
+        tikzplotlib.save(args.OptBWGround + ".tex")
         plt.savefig(args.OptBWGround)
     else:
+        tikzplotlib.save(args.OptBWImage + ".tex")
         plt.savefig(args.OptBWImage)
 
     plt.close("all")
+    import matplotlib as mpl
+    mpl.rcParams.update(mpl.rcParamsDefault)
 
     return h_opt
 
@@ -233,6 +349,12 @@ def find_opt_bw(args):
     h_opt_ground = find_opt_bw_of_surf(args, True)
     h_opt_image  = find_opt_bw_of_surf(args, False)
     return h_opt_ground, h_opt_image
+
+def find_opt_bw_ms(args, args_ms, args_mcs):
+    h_opt_ground = find_opt_bw_of_surf_ms(args, args_ms, args_mcs, True)
+    h_opt_image  = find_opt_bw_of_surf_ms(args, args_ms, args_mcs, False)
+    return h_opt_ground, h_opt_image
+    
 
 class KDE2D(object):
     def __init__(self):
@@ -985,14 +1107,20 @@ class HMMG():
 
 
 class KDECounting(Counting):
-    def __init__(self, args, gp):
-
+    def __init__(self, args, gp, ikde = None):
         self.gp = gp
+        if ikde is not None:
+            self.init_with_ikde(args, ikde)
+            return
         if gp:
             self.img_path = args.HomographyTopView
         else:
             self.img_path = args.HomographyStreetView
         self.init(args)
+
+    def init_with_ikde(self, args,  ikde):
+        self.args = args
+        self.ikde = ikde
 
     def init(self, args):
         self.args = args
@@ -1156,17 +1284,20 @@ class KDECounting(Counting):
         print(current_track)
 
 class KDECountingMulti(KDECounting):
+    '''
+    for image kde multi resample th should be for ground plane
+    because resampling is done on the ground
+    '''
     def __init__(self, args, args_mcs, gp):
-        assert gp == True
         self.gp = gp
         if gp:
-            self.img_path = args.HomographyTopView
+            self.init(args, args_mcs, verbose=False)
         else:
-            raise NotImplementedError
-        self.init(args, args_mcs, verbose=False)
+            self.init_image(args, args_mcs, verbose=False)
 
     def init(self, args, args_mcs, verbose=True):
         self.args = args
+        self.img_path = args.HomographyTopView
         tracks = get_proper_tracks_multi(args_mcs, gp = self.gp, verbose=verbose)
         # cluster prop_tracks based on their starting point
         tracks = cluster_prop_tracks_based_on_str(tracks, self.args)
@@ -1190,6 +1321,84 @@ class KDECountingMulti(KDECounting):
             self.ikde.plot_densities(img, args.DensityVisPath)
         # delete original kde for each moi to free up space when you are caching object
         self.ikde.del_kdes()
+
+    def init_image(self, args_top, args_mcs, verbose=True):
+        # group and flatten args
+        self.args = args_top
+        args_flatten = flatten_args(args_mcs)
+        args_sc1_flatten, args_sc2_flatten, args_sc3_flatten, args_sc4_flatten = [],[],[],[]
+        for arg in tqdm(args_flatten):
+            if "sc1" in arg.SubID:
+                continue
+                args_sc1_flatten.append(arg)
+            elif "sc2" in arg.SubID:
+                continue
+                args_sc2_flatten.append(arg)
+            elif "sc3" in arg.SubID:
+                args_sc3_flatten.append(arg)
+            elif "sc4" in arg.SubID:
+                continue
+                args_sc4_flatten.append(arg)
+            else:
+                raise NotImplementedError
+
+        args_flatten_grouped = [args_sc1_flatten, args_sc2_flatten,
+                                args_sc3_flatten, args_sc4_flatten]
+        
+        if args_top.UseCachedCounter:
+            args_mcs_source = args_top.chached_args_mcs
+        else:
+            args_mcs_source = args_mcs
+        # manually set gp to True for track aggregation
+        tracks = get_proper_tracks_multi(args_mcs_source, gp = True, verbose=verbose)
+
+        # resample on the ground plane but not in meter
+        tracks["trajectory"] = tracks.apply(lambda x: x['trajectory'][x["index_mask"]], axis=1)
+        tracks["frames"] = tracks.apply(lambda x: x['frames'][x["index_mask"]], axis=1)
+
+
+        # tracks will be saved on image plane as well
+        # because some of the tracks might not exist in specific image
+        # we will projcet ground tracks to image and save them accordingly
+        # image prototypes will not be saved on args_top level as they are
+        # specific to each pov
+        for arg_flatten_sci in args_flatten_grouped:
+            if len(arg_flatten_sci) == 0 : continue
+            arg = arg_flatten_sci[0]
+            M, GroundRaster, orthophoto_win_tif_obj = get_projection_objs(arg)
+            projected_trajectories = []
+            tracks_this_arg = copy.deepcopy(tracks)
+            for traj in tracks_this_arg.trajectory:
+                projected_traj = []
+                for p in traj:
+                    x, y = p[0], p[1]
+                    cor = Homography.project_point(arg, x, y, arg.BackprojectionMethod,
+                                    M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
+                    cor_x , cor_y = int(cor[0]), int(cor[1])
+                    projected_traj.append([cor_x, cor_y])
+                projected_trajectories.append(np.array(projected_traj))
+            
+            tracks_this_arg.trajectory = projected_trajectories
+            img_this_arg  = cv.imread(arg.HomographyStreetView)
+            ikde_this_arg = IKDE(arg.KDEBW, arg.OSR)
+            ikde_this_arg.fit(tracks_this_arg, img_this_arg)
+            ikde_this_arg.make_inference_maps(img_this_arg, arg.DensityVisPath)
+            if args_top.CountVisDensity:
+                ikde_this_arg.plot_densities(img_this_arg, arg.DensityVisPath)
+            ikde_this_arg.del_kdes()
+
+            # instantiate a new KDECounter
+            # overwrite the its ikde object
+            counter_this_sci = KDECounting(arg, gp=self.gp, ikde=ikde_this_arg)
+
+            # loop over videos and perform the counting
+            for arg_i in tqdm(arg_flatten_sci):
+                arg_i.ResampleTH = 50
+                counter_this_sci.main(arg_i)
+                if args_top.CacheCounter:
+                    with open(arg_i.CachedCounterPth, "wb") as f:
+                        pkl.dump(counter_this_sci, f)
+                        print(f"counter saved to {arg_i.CachedCounterPth}")
 
 class ROICounting(KDECounting):
     def __init__(self, args, gp):
@@ -1529,7 +1738,7 @@ def mainMulti(args, args_mcs):
     args_flat = flatten_args(args_mcs)
 
     # check if use cached counter
-    if args.UseCachedCounter:
+    if args.UseCachedCounter and (not args.CountMetric == "kde"):
         with open(args.CachedCounterPth, "rb") as f:
             counter = pkl.load(f)
     else:
@@ -1542,6 +1751,11 @@ def mainMulti(args, args_mcs):
         else:
             if args.CountMetric[0] == "g":
                 counter = Counting(args, gp=True)
+            elif args.CountMetric == "kde":
+                assert args.GP == False
+                counter = KDECountingMulti(args, args_mcs, gp=args.GP)
+                return SucLog("the 2D KDES are stored under each part.\
+                 You need to call the regular counting for each to get the final results")
             else:
                 # only supports gournd based counting
                 raise NotImplementedError
