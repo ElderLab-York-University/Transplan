@@ -19,7 +19,7 @@ from TrackLabeling import tracklabelinggui, vis_labelled_tracks, extract_common_
 from Evaluate import evaluate_tracking, cvpr
 from Maps import pix2meter
 from counting import counting
-from counting.counting import find_opt_bw, eval_count, eval_count_multi, eval_count_multi_per_camera
+from counting.counting import find_opt_bw, eval_count, eval_count_multi, eval_count_multi_per_camera, find_opt_bw_ms
 from Clustering import cluster
 from CountingMC import AverageCountsMC, IntegrateCounts
 from Segment import segment, vis_segment, SegmentPostProc
@@ -113,6 +113,13 @@ def FindOptBW(args):
         log = find_opt_bw(args)
         return log
     else: return WarningLog("skipped find opt bw")
+
+def FindOptBWMS(args, args_ms, args_mcs):
+    if args.FindOptimalKDEBW:
+        print(ProcLog("finding optimal KDE BW in MS mode"))
+        log = find_opt_bw_ms(args, args_ms, args_mcs)
+        return log
+    else: return WarningLog("skipped find opt bw in MS mode")
 
 def TrackLabelingGUI(args):
     if args.TrackLabelingGUI:
@@ -441,6 +448,7 @@ def main_ms(args, args_ms, args_mcs):
     subtasks = [ConvertDetsToCOCO_MS, EvalCPSelection_MS, EvalCPSelection_MC_MS,
                 TrackEvaluateMS,
                 ExtractCommonTracksMulti, VisLabelledTrajectoriesMulti,
+                FindOptBWMS,
                 CountMS, EvalCountMS, EvalCountMSfromMC, EvalCountCameraMS]
 
     for sub in subtasks:
