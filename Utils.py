@@ -11,7 +11,7 @@ moi_color_dict = {
     6:(255, 215, 180),
     7:(128, 128, 0),
     8:(255, 255, 25),
-    9:(210, 245, 60),
+    9:(102, 0, 204),
     10:(0, 0, 128),
     11:(70, 240, 240),
     12:(0, 130, 200),
@@ -612,15 +612,35 @@ def add_cached_counter_path_to_args(args):
         chached_args.CachedCounterPth = None
 
         if args.MultiCam:
-            chached_args, _       = get_args_mc(chached_args)
+            chached_args, chached_args_mc\
+            = get_args_mc(chached_args)
         elif args.MultiSeg:
-            chached_args, _, _    = get_args_ms(chached_args)
+            chached_args, chached_args_mc,\
+            chached_args_mcs = get_args_ms(chached_args)
         elif args.MultiPart:
-            chached_args, _, _, _ = get_args_mp(chached_args)
+            chached_args, chached_args_mp,\
+            chached_args_mss, chached_args_mcs\
+            = get_args_mp(chached_args)
         else:
             chached_args = get_args(chached_args)
 
         args.CachedCounterPth = chached_args.CachedCounterPth
+        # also keep the chached_args
+        try:
+            args.chached_args     = chached_args
+        except: pass
+        try:
+            args.chached_args_mc  = chached_args_mc
+        except: pass
+        try:
+            args.chached_args_mcs = chached_args_mcs
+        except: pass
+        try:
+            args.chached_args_mp  = chached_args_mp
+        except: pass
+        try:
+            args.chached_args_mss = chached_args_mss
+        except: pass
 
     return args
 
