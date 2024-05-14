@@ -335,12 +335,14 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     # 7. run clustering algorithm
     # apperently the clustering visulaizaiton is harcodded at the moment
     ########################################################
-    # for det in detectors:
-    #     for tra in trackers:
-    #         for met in clt_metrics:
-    #             for clt in clusters:
-    #                 print(f"clustering ----> det:{det} tra:{tra} met:{met} clt:{clt}")
-    #                 os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --ClusteringAlgo={clt} --ClusterMetric={met} --Cluster")
+    for det in detectors:
+        for tra in trackers:
+            print(f"clustering ----> det:{det} tra:{tra} met:{gt_clt_met} clt:{gt_clt_method}")
+            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra}\
+                    --Cluster\
+                    --BackprojectSource=tracks --TopView={tp_view}\
+                    --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}\
+                    --ClusteringAlgo={gt_clt_method} --ClusterMetric={gt_clt_met}")
     
     ########################################################
     # 8. Run the track labelling GUI / go to 9.
