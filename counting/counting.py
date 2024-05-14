@@ -576,7 +576,8 @@ class Counting:
     
     def counting(self, current_trajectory, track_id=-1):
         # only get the points in intersectin ROI
-        resampled_trajectory = get_in_roi_points(current_trajectory, self.poly_path, return_mask=False)
+        # resampled_trajectory = get_in_roi_points(current_trajectory, self.poly_path, return_mask=False)
+        resampled_trajectory = current_trajectory
         # this method of counting should only work for tracks that move in roi
         if len(resampled_trajectory) <= 1:
             return -1
