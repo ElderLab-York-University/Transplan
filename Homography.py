@@ -397,8 +397,56 @@ def vishomographygui(args):
 
     # save a picture for selected points correspondance
     point_pairs_plot(args)
+    compute_point_pairs_error(args)
 
-    return SucLog("Vis Homography executed successfully") 
+    return SucLog("Vis Homography, VisPairpoints, and compute homography error executed successfully")
+
+def compute_point_pairs_error(args):
+    first_image_path = args.HomographyStreetView
+    second_image_path = args.HomographyTopView
+    homography_path = args.HomographyNPY
+    points_path = args.HomographyCSV
+    error_path = args.HomographyCSV + ".homographyError.txt"
+
+    img1 = cv.imread(first_image_path)
+    img2 = cv.imread(second_image_path)
+
+    points = pd.read_csv(points_path)
+
+    rows1, cols1, dim1 = img1.shape
+    rows2, cols2, dim2 = img2.shape
+
+    M = np.load(homography_path, allow_pickle=True)[0]
+    Mp = np.linalg.inv(M)
+
+    # top view error
+    top_view_error = 0
+    for i , row in tqdm(points.iterrows()):
+        x, y = row[0], row[1]
+        point = np.array([x, y, 1])
+        new_point = M.dot(point)
+        new_point /= new_point[2]
+        xp, yp = int(new_point[0]), int(new_point[1])
+        xr, yr = row[2], row[3]
+        err  = np.sqrt((xr-xp)**2 + (yr-yp)**2)
+        top_view_error += err
+    avg_top_view_error = top_view_error / len(points)
+        
+    # camera view error
+    img_view_error = 0
+    for i , row in tqdm(points.iterrows()):
+        x, y = row[2], row[3]
+        point = np.array([x, y, 1])
+        new_point = Mp.dot(point)
+        new_point /= new_point[2]
+        xp, yp = int(new_point[0]), int(new_point[1])
+        xr, yr = row[0], row[1]
+        err  = np.sqrt((xr-xp)**2 + (yr-yp)**2)
+        img_view_error += err
+    avg_img_view_error = img_view_error / len(points)
+
+    with open(error_path, 'w') as file:
+        file.write(f"{avg_img_view_error},{avg_top_view_error},{len(points)}")
 
 def point_pairs_plot(args):
     first_image_path = args.HomographyStreetView
