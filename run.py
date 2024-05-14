@@ -19,10 +19,11 @@ def get_sub_dirs(roots, subs_to_include = None, subs_to_exclude = ["Results"], b
 #  set to None if want to include all
 datasets     = [
                 # "/home/sajjad/HW7Leslie",
-                "/home/sajjad/HW7LeslieShortCamera",
+                # "/home/sajjad/HW7LeslieShortCamera",
                 # "/mnt/dataB/CityFlowV2Local",
                 # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie",
+                "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7LeslieShortCamera",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 split_part   = ["train"]
@@ -38,10 +39,11 @@ sources      = get_sub_dirs(segments, source_part)
 # this pathes are used to load cached counters
 cached_datasets     = [
                 # "/home/sajjad/HW7Leslie",
-                "/home/sajjad/HW7LeslieShortCamera",
+                # "/home/sajjad/HW7LeslieShortCamera",
                 # "/mnt/dataB/CityFlowV2Local",
                 # "/mnt/dataB/TransPlanData/Dataset/PreProcessedMain",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7Leslie",
+                "/run/user/1000/gvfs/sftp:host=130.63.188.39/home/sajjad/HW7LeslieShortCamera",
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 cached_split_part   = ["train"]
