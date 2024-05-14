@@ -26,8 +26,8 @@ datasets     = [
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 split_part   = ["train"]
-segment_part = None
-source_part  = None
+segment_part = ["Seg01"]
+source_part  = ["Seg01sc1"]
 splits       = get_sub_dirs(datasets, split_part)
 segments     = get_sub_dirs(splits, segment_part)
 sources      = get_sub_dirs(segments, source_part)
@@ -45,8 +45,8 @@ cached_datasets     = [
                 # "/run/user/1000/gvfs/sftp:host=130.63.188.39/mnt/dataB/CityFlowV2Local",
             ]
 cached_split_part   = ["train"]
-cached_segment_part = None
-cached_source_part  = None
+cached_segment_part = ["Seg01"]
+cached_source_part  = ["Seg01sc1"]
 cached_splits       = get_sub_dirs(cached_datasets, cached_split_part)
 cached_segments     = get_sub_dirs(cached_splits, cached_segment_part)
 cached_sources      = get_sub_dirs(cached_segments, cached_source_part)
@@ -84,14 +84,16 @@ posers = ["MMPose"]
 
 # choose the clustering algorithm
 # options: ["SpectralFull", "DBSCAN", "SpectralKNN"]
-clusters = []
+clusters = ["SpectralFull"]
+gt_clt_method = "SpectralFull"
 
 # choose the metric for clustering and classification pqrt
 # options on image :  ["kde", "roi", "knn", "cos", "tcos", "cmm", "hausdorff","ccmm", "tccmm", "ptcos"]
 # options on ground:  ["gkde", "groi", "gknn", "gcos", "gtcos", "gcmm", "ghausdorff","gccmm", "gtccmm", "gptcos"]
-clt_metrics = []
+clt_metrics = ["cos"]
+gt_clt_met = "cos"
 # cnt_metrics = ["cos", "tcos", "cmm", "hausdorff", "kde", "roi", "knn"]
-cnt_metrics = ["gkde"]
+cnt_metrics = ["hausdorff"]
 
 # setup training hyperparamete[qrs
 # train split (train_sp) and valid split(valid_sp) should be selsected
@@ -109,7 +111,7 @@ val_interval = None
 tp_view    =  "GoogleMap"
 cp_methods = ["BottomPoint"]
 bp_method  =  "Homography"
-resamp_th  = 2
+resamp_th  = 50
 
 # set contact point for GT and GT3D
 gt_cp_method   = "BottomPoint"
@@ -118,7 +120,9 @@ gt_tp_view     =  "GoogleMap"
 gt_bp_method   = "Homography"
 
 for src, cached_cnt_pth in zip(sources, cached_sources):
-    pass
+    print(src)
+    print(cached_cnt_pth)
+    print("------------------------------------------------")
     ########################################################
     # 0. extract images from video
     # os.system(f"python3 main.py --Dataset={src} --ExtractImages)
@@ -339,9 +343,13 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     ########################################################
     # 8. Run the track labelling GUI / go to 9.
     ########################################################
-    # for det in detectors:
-    #     for tra in trackers:
-    #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --Tracker={tra} --TrackLabelingGUI --VisLabelledTrajectories")
+    for det in detectors:
+        for tra in trackers:
+            os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+                --TrackLabelingGUI\
+                --BackprojectSource=tracks --TopView={tp_view}\
+                --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}\
+                --ClusteringAlgo={gt_clt_method} --ClusterMetric={gt_clt_met}")
 
     ########################################################
     # @ TODO
@@ -377,11 +385,11 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #         for metric in cnt_metrics:
     #             print(f"counting metric:{metric} det:{det} tra:{tra}")
     #             os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-    #                         --Count --CountMetric={metric} --ResampleTH={resamp_th}\
-    #                         --CountVisDensity\
+    #                         --Count --EvalCount --CountMetric={metric} --ResampleTH={resamp_th}\
+    #                         --UseCachedCounter --CachedCounterPth={cached_cnt_pth}\
     #                         --BackprojectSource=tracks --TopView={tp_view}\
     #                         --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}\
-    #                         --KDEBW=10 --OSR=10")
+    #                         --OSR=10")
 
     ########################################################
     # 11. Visualizing the results on a video including track label and track id
@@ -527,13 +535,13 @@ for split, cached_cnt_pth in zip(splits, cached_splits):
     # --BackprojectSource=tracks --TopView=[GoogleMap/OrthoPhoto] 
     # --BackprojectionMethod=[Homography/DSM] --ContactPoint=[BottomPoint/Center/BottomSeg/LineSeg]")
     ########################################################
-    for det in detectors:
-        for tra in trackers:
-            print(f"finding optimal bw for kde ---> src:{split} det:{det} tra:{tra}")
-            os.system(f"python3 main.py --MultiSeg --Dataset={split}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-                       --FindOptimalKDEBW --ResampleTH={resamp_th} --OSR=10\
-                       --BackprojectSource=tracks --TopView={tp_view}\
-                       --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")
+    # for det in detectors:
+    #     for tra in trackers:
+    #         print(f"finding optimal bw for kde ---> src:{split} det:{det} tra:{tra}")
+    #         os.system(f"python3 main.py --MultiSeg --Dataset={split}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+    #                    --FindOptimalKDEBW --ResampleTH={resamp_th} --OSR=10\
+    #                    --BackprojectSource=tracks --TopView={tp_view}\
+    #                    --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")
 
 
     ########################################################
@@ -559,7 +567,7 @@ for split, cached_cnt_pth in zip(splits, cached_splits):
     #                             \
     #                             --BackprojectSource=tracks --TopView={tp_view}\
     #                             --BackprojectionMethod={bp_method} --ContactPoint={cp_method}\
-    #                             --KDEBW=10 --OSR=10 --ROIFromTop")
+    #                             --KDEBW=10 --OSR=10")
 
     ########################################################
     # 5. Run the eval counting Multi Segment from Multi Cam
