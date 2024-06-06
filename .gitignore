@@ -23,6 +23,10 @@ Thumbs.db
 ################
 *.pyc
 *__pychace__/*
+__pycache__/
+*.pyo
+*.pyd
+
 
 # Environments#
 ################
