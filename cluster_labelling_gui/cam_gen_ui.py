@@ -78,18 +78,7 @@ class ui_func(QMainWindow):
 
         self.scaleFactor = 1
 
-        self.count_1 = 0
-        self.count_2 = 0
-        self.count_3 = 0
-        self.count_4 = 0
-        self.count_5 = 0
-        self.count_6 = 0
-        self.count_7 = 0
-        self.count_8 = 0
-        self.count_9 = 0
-        self.count_10 = 0
-        self.count_11 = 0
-        self.count_12 = 0
+        self.counts = [0] * 13
 
         self.typical_gt = defaultdict(list)
         self.tracks_gt = {"1": [], "2": [], "3": [], "4": []}
@@ -143,17 +132,23 @@ class ui_func(QMainWindow):
         self.pushButton_12.clicked.connect(self.c_pushButton_12)
         self.pushButtons.append(self.pushButton_12)
 
+        self.pushButton_skip = self.findChild(QPushButton, name="pushButton_skip")
+        self.pushButton_skip.clicked.connect(self.c_pushButton_skip)
+        self.pushButtons.append(self.pushButton_skip)
+
         self.pushButton_opentrk = self.findChild(QPushButton, name="pushButton_opentrk")
         self.pushButton_opentrk.clicked.connect(self.c_pushButton_opentrk)
 
         self.pushButton_export = self.findChild(QPushButton, name="pushButton_export")
         self.pushButton_export.clicked.connect(self.c_pushButton_export)
 
-        self.pushButton_skip = self.findChild(QPushButton, name="pushButton_skip")
-        self.pushButton_skip.clicked.connect(self.c_pushButton_skip)
+        # self.pushButton_skip = self.findChild(QPushButton, name="pushButton_skip")
+        # self.pushButton_skip.clicked.connect(self.c_pushButton_skip)
 
-        self.pushButton_undo = self.findChild(QPushButton, name="pushButton_undo")
-        self.pushButton_undo.clicked.connect(self.delete_last_trajectory)
+        # self.pushButton_undo = self.findChild(QPushButton, name="pushButton_undo")
+        # self.pushButton_undo.clicked.connect(self.delete_last_trajectory)
+        self.pushButton_prev = self.findChild(QPushButton, name="pushButton_prev")
+        self.pushButton_prev.clicked.connect(self.c_pushButton_prev)
         # self.pushButton_undo.clicked.connect(self.plot_typical)
 
         self.pushButton_next = self.findChild(QPushButton, name="pushButton_next")
@@ -184,6 +179,8 @@ class ui_func(QMainWindow):
         self.all_labels.append(self.label_11)
         self.label_12 = self.findChild(QLabel, name="count_12")
         self.all_labels.append(self.label_12)
+        self.label_skip = self.findChild(QLabel, name="count_skip")
+        self.all_labels.append(self.label_skip)
 
         self.tracks = {
             "1": [],
@@ -199,8 +196,10 @@ class ui_func(QMainWindow):
             "11": [],
             "12": [],
         }
-        self.tracks_df = []
-        for i in range(12):
+        self.tracks_df = pd.DataFrame(
+            columns=["fn", "id", "x1", "y1", "x2", "y2", "class", "moi"]
+        )
+        for i in range(13):
             self.pushButtons[i].setEnabled(False)
             self.pushButtons[i].setHidden(True)
             self.all_labels[i].setHidden(True)
@@ -277,7 +276,7 @@ class ui_func(QMainWindow):
     #         self.current_track = self.df[self.df['id'] == self.current_id]
 
     def c_pushButton_openimg(self):
-        for i in range(12):
+        for i in range(13):
             self.pushButtons[i].setEnabled(False)
             self.pushButtons[i].setHidden(True)
             self.all_labels[i].setHidden(True)
@@ -290,7 +289,7 @@ class ui_func(QMainWindow):
 
         self.nummoi = 12
 
-        for i in range(12):
+        for i in range(13):
             self.pushButtons[i].setEnabled(True)
             self.pushButtons[i].setHidden(False)
             self.all_labels[i].setHidden(False)
@@ -340,67 +339,81 @@ class ui_func(QMainWindow):
         # self.df.columns = ['id', 'trajectory']
         # # self.df = pd.read_csv(self.tracks_file,names=['f','id','x','y','w','h','e1','e2','e3'])
         self.df = df_from_pickle(self.tracks_file)
-        self.df.rename(columns={"class": "cid"}, inplace=True)
 
         print(self.df)
-        # self.tids = np.unique(self.df['id'].tolist())
-        self.tids = None
-        self.cids = np.unique(self.df["cid"].tolist())
+        self.tids = np.unique(self.df["id"].tolist())
+        # self.tids = None
+        # self.cids = np.unique(self.df["cid"].tolist())
 
         self.id_index = 0
-        self.cid_index = 0
-        self.cluster_mode = True
+        # self.cid_index = 0
+        # self.track_mode = True
 
         self.current_track = None  # use this for geting a specific track
-        self.df_c = None  # user this df for geting a specific cluster
-        self.plot_next_cluster()
+        # self.df_c = None  # user this df for geting a specific cluster
+        # self.plot_next_cluster()
 
-        # self.plot_next_track()
+        self.plot_next_track()
 
-    def plot_next_cluster(self):
-        if not self.cluster_mode:
-            raise "something went wrong! plot_next_cluster() should be only called with self.cluster_mode=True"
-        if self.cid_index >= len(self.cids):
-            # prompt user that al clusters were shown to them
-            QMessageBox.information(
-                self, "No more data", "you have already labelled all the clusters!"
-            )
-        self.id_index = 0
-        self.df_c = self.df[self.df["cid"] == self.cids[self.cid_index]]
-        self.tids = np.unique(self.df_c["id"].to_list())
+    # def plot_next_cluster(self):
+    #     if not self.track_mode:
+    #         raise "something went wrong! plot_next_cluster() should be only called with self.track_mode=True"
+    #     if self.cid_index >= len(self.cids):
+    #         # prompt user that al clusters were shown to them
+    #         QMessageBox.information(
+    #             self, "No more data", "you have already labelled all the clusters!"
+    #         )
+    #     self.id_index = 0
+    #     self.df_c = self.df[self.df["cid"] == self.cids[self.cid_index]]
+    #     self.tids = np.unique(self.df_c["id"].to_list())
 
-        temp_image = self.img.copy()
-        for temp_tid in self.tids:
-            current_track = self.df_c[self.df_c["id"] == temp_tid]
-            temp_image = self.draw_track_on_image(temp_image, current_track)
-        # for i, current_track in self.df_c.iterrows():
-        #     print(type(current_track))
-        #     print(current_track)
+    #     temp_image = self.img.copy()
+    #     for temp_tid in self.tids:
+    #         current_track = self.df_c[self.df_c["id"] == temp_tid]
+    #         temp_image = self.draw_track_on_image(temp_image, current_track)
+    #     # for i, current_track in self.df_c.iterrows():
+    #     #     print(type(current_track))
+    #     #     print(current_track)
 
-        self.show_image_on_GUI(temp_image)
-        self.cid_index += 1
+    #     self.show_image_on_GUI(temp_image)
+    #     self.cid_index += 1
+
+    def update_moi_button(self, current_id):
+        for i in range(13):
+            self.pushButtons[i].setStyleSheet("color: black;")
+
+        if (self.tracks_df["id"] == current_id).any():
+            current_moi = self.tracks_df.loc[
+                self.tracks_df["id"] == current_id, "moi"
+            ].unique()[0]
+
+            if current_moi == -1:
+                self.pushButtons[-1].setStyleSheet("color: green;")
+            else:
+                self.pushButtons[current_moi - 1].setStyleSheet("color: green;")
 
     def draw_track_on_image(self, image, current_track):
         # gets and image and draws
 
         temp_img = image.copy()
         colormap = cm.get_cmap("rainbow", len(current_track))
-        newcolors = colormap(
-            np.linspace(0, 1, len(list(current_track["trajectory"])[0]))
-        )
+        newcolors = colormap(np.linspace(0, 1, current_track.shape[0]))
         index = 0
         lastpt = []
         firstpt = []
         prevpt = []
         # if len(self.current_track['trajectory'])>15:
         # print(list(current_track['trajectory'])[0])
-        for x, y in list(current_track["trajectory"])[0]:
+        # for x, y in list(current_track["trajectory"])[0]:
+        for _, track in current_track.iterrows():
             # pt1 = int(row['x']+row['w']/2)
             # pt2 = int(row['y']+row['h']/2)
             # pt = [int(pt1/self.scaleFactor), int(pt2/self.scaleFactor)]
-            pt1 = int(x)
-            pt2 = int(y)
-            pt = [pt1, pt2]
+            # pt1 = int(x)
+            # pt2 = int(y)
+            x_track = int((track["x1"] + track["x2"]) / 2)
+            y_track = int(track["y2"])
+            pt = [x_track, y_track]
             lastpt = pt
             rgba_color = newcolors[index]  # cm.rainbow(norm(i),bytes=True)[0:3]
             cv2.circle(
@@ -449,35 +462,34 @@ class ui_func(QMainWindow):
         )
 
     def plot_next_track(self):
-        if self.cluster_mode:
-            raise "Something is wrong. plot_next_track should only be called when cluster_mode is False"
+        # if self.track_mode:
+        #     raise "Something is wrong. plot_next_track should only be called when track_mode is False"
         if self.id_index >= len(self.tids):
-            print(
-                "already ploted all the trajectories in the current cluster! moved to the next cluster"
-            )
-            self.cluster_mode = True
-            self.plot_next_cluster()
+            print("already ploted all the trajectories")
+            # self.track_mode = True
+            # self.plot_next_cluster()
             return
 
         self.current_id = self.tids[self.id_index]
-        self.current_track = self.df_c[self.df_c["id"] == self.current_id]
+        self.current_track = self.df[self.df["id"] == self.current_id]
         # print(self.current_track['trajectory'])
 
         while (
             self.id_index < len(self.tids) - 1
-            and len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK
+            and self.current_track.shape[0] < MIN_PTS_IN_TRACK
         ):
             # print(self.current_id)
             # print(len(list(self.current_track['trajectory'])[0]))
             self.id_index = self.id_index + 1
             self.current_id = self.tids[self.id_index]
-            self.current_track = self.df_c[self.df_c["id"] == self.current_id]
+            self.current_track = self.df[self.df["id"] == self.current_id]
         # print(self.current_id)
         # print(len(list(self.current_track['trajectory'])[0]))
 
         if self.id_index < len(self.tids):
-            # print(self.current_id)
+            print(self.current_id)
             self.temp_img = self.draw_track_on_image(self.img, self.current_track)
+            self.update_moi_button(self.current_id)
 
             ######################################
             # self.temp_img = self.img.copy()
@@ -568,6 +580,30 @@ class ui_func(QMainWindow):
     #         self.current_id = self.tids[self.id_index]
     #         self.current_track = self.df[self.df['id'] == self.current_id]
 
+    def plot_previous_track(self):
+        print(self.id_index)
+        if self.id_index == 1:
+            print("There is no previous track")
+            return
+
+        self.id_index -= 1
+
+        self.current_id = self.tids[self.id_index - 1]
+        self.current_track = self.df[self.df["id"] == self.current_id]
+
+        while self.id_index > 0 and self.current_track.shape[0] < MIN_PTS_IN_TRACK:
+            # print(self.current_id)
+            # print(len(list(self.current_track['trajectory'])[0]))
+            self.id_index -= 1
+            self.current_id = self.tids[self.id_index]
+            self.current_track = self.df[self.df["id"] == self.current_id]
+
+        if self.id_index < len(self.tids) and self.id_index > 0:
+            # print(self.current_id)
+            self.temp_img = self.draw_track_on_image(self.img, self.current_track)
+            self.update_moi_button(self.current_id)
+            self.show_image_on_GUI(self.temp_img)
+
     def track_resample(self, track, threshold=5):
         """
         :param track: input track numpy array (M, 2)
@@ -593,345 +629,354 @@ class ui_func(QMainWindow):
             threshold += 3
             return self.track_resample(track, threshold)
 
-    def c_pushButton_1(self):
-        if not self.cluster_mode:
-            self.count_1 = self.count_1 + 1
-            self.current_track["moi"] = 1
-            self.tracks_df.append(self.current_track)
-            self.label_1.setText(str(self.count_1))
-            self.plot_next_track()
-
+    def update_moi(self, moi):
+        if moi == -1:
+            self.counts[-1] += 1
         else:
-            for temp_id in self.tids:
-                self.current_track = self.df_c[self.df_c["id"] == temp_id]
-                if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
-                    continue
-                self.count_1 = self.count_1 + 1
-                self.current_track["moi"] = 1
-                self.tracks_df.append(self.current_track)
-            self.label_1.setText(str(self.count_1))
-            self.plot_next_cluster()
-        # self.count_1 = self.count_1 + 1
-        # self.label_1.setText(str(self.count_1))
-        # # self.current_track.loc[0, ['moi']] = 1
-        # self.current_track['moi'] = 1
+            self.counts[moi - 1] += 1
+
+        if (self.tracks_df["id"] == self.current_id).any():
+            prev_moi = self.tracks_df.loc[
+                self.tracks_df["id"] == self.current_id, "moi"
+            ].unique()[0]
+
+            if prev_moi == -1:
+                self.counts[-1] = max(0, self.counts[-1] - 1)
+            else:
+                self.counts[prev_moi - 1] = max(0, self.counts[prev_moi - 1] - 1)
+
+            self.tracks_df.loc[self.tracks_df["id"] == self.current_id, "moi"] = moi
+        else:
+            self.current_track["moi"] = moi
+            self.tracks_df = pd.concat(
+                [self.tracks_df, self.current_track], ignore_index=True
+            )
+
+    def update_moi_labels(self):
+        for i in range(13):
+            self.all_labels[i].setText(str(self.counts[i]))
+
+    def c_pushButton_1(self):
+        # if not self.track_mode:
+        #     self.count_1 = self.count_1 + 1
+        #     self.current_track["moi"] = 1
+        #     self.tracks_df.append(self.current_track)
+        #     self.label_1.setText(str(self.count_1))
+        #     self.plot_next_track():
+
+        # else:
+        #     for temp_id in self.tids:
+        #         self.current_track = self.df[self.df["id"] == temp_id]
+        #         if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
+        #             continue
+        #         self.count_1 = self.count_1 + 1
+        #         self.current_track["moi"] = 1
+        #         self.tracks_df.append(self.current_track)
+        #     self.label_1.setText(str(self.count_1))
+        #     self.plot_next_cluster()
+
+        # self.current_track.loc[0, ['moi']] = 1
         # a = self.current_track['trajectory'].values
         # a = self.track_resample(a[0])
         # self.current_track['trajectory'] = [a]
-        # self.tracks_df.append(self.current_track)
+        self.update_moi(1)
+        self.update_moi_labels()
         # self.tracks['1'].append(self.current_track)
         # self.typical_gt['1'].append(list(self.current_track['trajectory'])[0])
-        # self.plot_next_track()
+        self.plot_next_track()
 
     def c_pushButton_2(self):
-        if not self.cluster_mode:
-            self.count_2 = self.count_2 + 1
-            self.current_track["moi"] = 2
-            self.tracks_df.append(self.current_track)
-            self.label_2.setText(str(self.count_2))
-            self.plot_next_track()
+        # if not self.track_mode:
+        #     self.count_2 = self.count_2 + 1
+        #     self.current_track["moi"] = 2
+        #     self.tracks_df.append(self.current_track)
+        #     self.label_2.setText(str(self.count_2))
+        #     self.plot_next_track()
 
-        else:
-            for temp_id in self.tids:
-                self.current_track = self.df_c[self.df_c["id"] == temp_id]
-                if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
-                    continue
-                self.count_2 = self.count_2 + 1
-                self.current_track["moi"] = 2
-                self.tracks_df.append(self.current_track)
-            self.label_2.setText(str(self.count_2))
-            self.plot_next_cluster()
-        # self.count_2 = self.count_2 + 1
-        # self.label_2.setText(str(self.count_2))
-        # self.current_track['moi'] = 2
+        # else:
+        #     for temp_id in self.tids:
+        #         self.current_track = self.df[self.df["id"] == temp_id]
+        #         if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
+        #             continue
+        #         self.count_2 = self.count_2 + 1
+        #         self.current_track["moi"] = 2
+        #         self.tracks_df.append(self.current_track)
+        #     self.label_2.setText(str(self.count_2))
+        #     self.plot_next_cluster()
         # a = self.current_track['trajectory'].values
         # a = self.track_resample(a[0])
         # self.current_track['trajectory'] = [a]
-        # self.tracks_df.append(self.current_track)
+        self.update_moi(2)
+        self.update_moi_labels()
         # self.tracks['2'].append(self.current_track)
         # self.typical_gt['2'].append(list(self.current_track['trajectory'])[0])
-        # self.plot_next_track()
+        self.plot_next_track()
 
     def c_pushButton_3(self):
-        if not self.cluster_mode:
-            self.count_3 = self.count_3 + 1
-            self.current_track["moi"] = 3
-            self.tracks_df.append(self.current_track)
-            self.label_3.setText(str(self.count_3))
-            self.plot_next_track()
+        # if not self.track_mode:
+        #     self.count_3 = self.count_3 + 1
+        #     self.current_track["moi"] = 3
+        #     self.tracks_df.append(self.current_track)
+        #     self.label_3.setText(str(self.count_3))
+        #     self.plot_next_track()
 
-        else:
-            for temp_id in self.tids:
-                self.current_track = self.df_c[self.df_c["id"] == temp_id]
-                if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
-                    continue
-                self.count_3 = self.count_3 + 1
-                self.current_track["moi"] = 3
-                self.tracks_df.append(self.current_track)
-            self.label_3.setText(str(self.count_3))
-            self.plot_next_cluster()
-        # self.count_3 = self.count_3 + 1
-        # self.label_3.setText(str(self.count_3))
-        # self.current_track['moi'] = 3
+        # else:
+        #     for temp_id in self.tids:
+        #         self.current_track = self.df[self.df["id"] == temp_id]
+        #         if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
+        #             continue
+        #         self.count_3 = self.count_3 + 1
+        #         self.current_track["moi"] = 3
+        #         self.tracks_df.append(self.current_track)
+        #     self.label_3.setText(str(self.count_3))
+        #     self.plot_next_cluster()
         # a = self.current_track['trajectory'].values
         # a = self.track_resample(a[0])
         # self.current_track['trajectory'] = [a]
-        # self.tracks_df.append(self.current_track)
+        self.update_moi(3)
+        self.update_moi_labels()
         # self.tracks['3'].append(self.current_track)
         # self.typical_gt['3'].append(list(self.current_track['trajectory'])[0])
-        # self.plot_next_track()
+        self.plot_next_track()
 
     def c_pushButton_4(self):
-        if not self.cluster_mode:
-            self.count_4 = self.count_4 + 1
-            self.current_track["moi"] = 4
-            self.tracks_df.append(self.current_track)
-            self.label_4.setText(str(self.count_4))
-            self.plot_next_track()
+        # if not self.track_mode:
+        #     self.count_4 = self.count_4 + 1
+        #     self.current_track["moi"] = 4
+        #     self.tracks_df.append(self.current_track)
+        #     self.label_4.setText(str(self.count_4))
+        #     self.plot_next_track()
 
-        else:
-            for temp_id in self.tids:
-                self.current_track = self.df_c[self.df_c["id"] == temp_id]
-                if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
-                    continue
-                self.count_4 = self.count_4 + 1
-                self.current_track["moi"] = 4
-                self.tracks_df.append(self.current_track)
-            self.label_4.setText(str(self.count_4))
-            self.plot_next_cluster()
-        # self.count_4 = self.count_4 + 1
-        # self.label_4.setText(str(self.count_4))
-        # self.current_track['moi'] = 4
+        # else:
+        #     for temp_id in self.tids:
+        #         self.current_track = self.df[self.df["id"] == temp_id]
+        #         if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
+        #             continue
+        #         self.count_4 = self.count_4 + 1
+        #         self.current_track["moi"] = 4
+        #         self.tracks_df.append(self.current_track)
+        #     self.label_4.setText(str(self.count_4))
+        #     self.plot_next_cluster()
         # a = self.current_track['trajectory'].values
         # a = self.track_resample(a[0])
         # self.current_track['trajectory'] = [a]
-        # self.tracks_df.append(self.current_track)
+        self.update_moi(4)
+        self.update_moi_labels()
         # self.tracks['4'].append(self.current_track)
         # self.typical_gt['4'].append(list(self.current_track['trajectory'])[0])
-        # self.plot_next_track()
+        self.plot_next_track()
 
     def c_pushButton_5(self):
-        if not self.cluster_mode:
-            self.count_5 = self.count_5 + 1
-            self.current_track["moi"] = 5
-            self.tracks_df.append(self.current_track)
-            self.label_5.setText(str(self.count_5))
-            self.plot_next_track()
+        # if not self.track_mode:
+        #     self.count_5 = self.count_5 + 1
+        #     self.current_track["moi"] = 5
+        #     self.tracks_df.append(self.current_track)
+        #     self.label_5.setText(str(self.count_5))
+        #     self.plot_next_track()
 
-        else:
-            for temp_id in self.tids:
-                self.current_track = self.df_c[self.df_c["id"] == temp_id]
-                if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
-                    continue
-                self.count_5 = self.count_5 + 1
-                self.current_track["moi"] = 5
-                self.tracks_df.append(self.current_track)
-            self.label_5.setText(str(self.count_5))
-            self.plot_next_cluster()
-        # self.count_5 = self.count_5 + 1
-        # self.label_5.setText(str(self.count_5))
-        # self.current_track['moi'] = 5
+        # else:
+        #     for temp_id in self.tids:
+        #         self.current_track = self.df[self.df["id"] == temp_id]
+        #         if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
+        #             continue
+        #         self.count_5 = self.count_5 + 1
+        #         self.current_track["moi"] = 5
+        #         self.tracks_df.append(self.current_track)
+        #     self.label_5.setText(str(self.count_5))
+        #     self.plot_next_cluster()
         # a = self.current_track['trajectory'].values
         # a = self.track_resample(a[0])
         # self.current_track['trajectory'] = [a]
-        # self.tracks_df.append(self.current_track)
+        self.update_moi(5)
+        self.update_moi_labels()
         # self.tracks['5'].append(self.current_track)
         # self.typical_gt['5'].append(list(self.current_track['trajectory'])[0])
-        # self.plot_next_track()
+        self.plot_next_track()
 
     def c_pushButton_6(self):
-        if not self.cluster_mode:
-            self.count_6 = self.count_6 + 1
-            self.current_track["moi"] = 6
-            self.tracks_df.append(self.current_track)
-            self.label_6.setText(str(self.count_6))
-            self.plot_next_track()
+        # if not self.track_mode:
+        #     self.count_6 = self.count_6 + 1
+        #     self.current_track["moi"] = 6
+        #     self.tracks_df.append(self.current_track)
+        #     self.label_6.setText(str(self.count_6))
+        #     self.plot_next_track()
 
-        else:
-            for temp_id in self.tids:
-                self.current_track = self.df_c[self.df_c["id"] == temp_id]
-                if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
-                    continue
-                self.count_6 = self.count_6 + 1
-                self.current_track["moi"] = 6
-                self.tracks_df.append(self.current_track)
-            self.label_6.setText(str(self.count_6))
-            self.plot_next_cluster()
-        # self.count_6 = self.count_6 + 1
-        # self.label_6.setText(str(self.count_6))
-        # self.current_track['moi'] = 6
+        # else:
+        #     for temp_id in self.tids:
+        #         self.current_track = self.df[self.df["id"] == temp_id]
+        #         if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
+        #             continue
+        #         self.count_6 = self.count_6 + 1
+        #         self.current_track["moi"] = 6
+        #         self.tracks_df.append(self.current_track)
+        #     self.label_6.setText(str(self.count_6))
+        #     self.plot_next_cluster()
         # a = self.current_track['trajectory'].values
         # a = self.track_resample(a[0])
         # self.current_track['trajectory'] = [a]
-        # self.tracks_df.append(self.current_track)
+        self.update_moi(6)
+        self.update_moi_labels()
         # self.tracks['6'].append(self.current_track)
         # self.typical_gt['6'].append(list(self.current_track['trajectory'])[0])
-        # self.plot_next_track()
+        self.plot_next_track()
 
     def c_pushButton_7(self):
-        if not self.cluster_mode:
-            self.count_7 = self.count_7 + 1
-            self.current_track["moi"] = 7
-            self.tracks_df.append(self.current_track)
-            self.label_7.setText(str(self.count_7))
-            self.plot_next_track()
+        # if not self.track_mode:
+        #     self.count_7 = self.count_7 + 1
+        #     self.current_track["moi"] = 7
+        #     self.tracks_df.append(self.current_track)
+        #     self.label_7.setText(str(self.count_7))
+        #     self.plot_next_track()
 
-        else:
-            for temp_id in self.tids:
-                self.current_track = self.df_c[self.df_c["id"] == temp_id]
-                if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
-                    continue
-                self.count_7 = self.count_7 + 1
-                self.current_track["moi"] = 7
-                self.tracks_df.append(self.current_track)
-            self.label_7.setText(str(self.count_7))
-            self.plot_next_cluster()
-        # self.count_7 = self.count_7 + 1
-        # self.label_7.setText(str(self.count_7))
-        # self.current_track['moi'] = 7
+        # else:
+        #     for temp_id in self.tids:
+        #         self.current_track = self.df[self.df["id"] == temp_id]
+        #         if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
+        #             continue
+        #         self.count_7 = self.count_7 + 1
+        #         self.current_track["moi"] = 7
+        #         self.tracks_df.append(self.current_track)
+        #     self.label_7.setText(str(self.count_7))
+        #     self.plot_next_cluster()
         # a = self.current_track['trajectory'].values
         # a = self.track_resample(a[0])
         # self.current_track['trajectory'] = [a]
-        # self.tracks_df.append(self.current_track)
+        self.update_moi(7)
+        self.update_moi_labels()
         # self.tracks['7'].append(self.current_track)
         # self.typical_gt['7'].append(list(self.current_track['trajectory'])[0])
-        # self.plot_next_track()
+        self.plot_next_track()
 
     def c_pushButton_8(self):
-        if not self.cluster_mode:
-            self.count_8 = self.count_8 + 1
-            self.current_track["moi"] = 8
-            self.tracks_df.append(self.current_track)
-            self.label_8.setText(str(self.count_8))
-            self.plot_next_track()
+        # if not self.track_mode:
+        #     self.count_8 = self.count_8 + 1
+        #     self.current_track["moi"] = 8
+        #     self.tracks_df.append(self.current_track)
+        #     self.label_8.setText(str(self.count_8))
+        #     self.plot_next_track()
 
-        else:
-            for temp_id in self.tids:
-                self.current_track = self.df_c[self.df_c["id"] == temp_id]
-                if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
-                    continue
-                self.count_8 = self.count_8 + 1
-                self.current_track["moi"] = 8
-                self.tracks_df.append(self.current_track)
-            self.label_8.setText(str(self.count_8))
-            self.plot_next_cluster()
-        # self.count_8 = self.count_8 + 1
-        # self.label_8.setText(str(self.count_8))
-        # self.current_track['moi'] = 8
+        # else:
+        #     for temp_id in self.tids:
+        #         self.current_track = self.df[self.df["id"] == temp_id]
+        #         if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
+        #             continue
+        #         self.count_8 = self.count_8 + 1
+        #         self.current_track["moi"] = 8
+        #         self.tracks_df.append(self.current_track)
+        #     self.label_8.setText(str(self.count_8))
+        #     self.plot_next_cluster()
         # a = self.current_track['trajectory'].values
         # a = self.track_resample(a[0])
         # self.current_track['trajectory'] = [a]
-        # self.tracks_df.append(self.current_track)
+        self.update_moi(8)
+        self.update_moi_labels()
         # self.tracks['8'].append(self.current_track)
         # self.typical_gt['8'].append(list(self.current_track['trajectory'])[0])
-        # self.plot_next_track()
+        self.plot_next_track()
 
     def c_pushButton_9(self):
-        if not self.cluster_mode:
-            self.count_9 = self.count_9 + 1
-            self.current_track["moi"] = 9
-            self.tracks_df.append(self.current_track)
-            self.label_9.setText(str(self.count_9))
-            self.plot_next_track()
+        # if not self.track_mode:
+        #     self.count_9 = self.count_9 + 1
+        #     self.current_track["moi"] = 9
+        #     self.tracks_df.append(self.current_track)
+        #     self.label_9.setText(str(self.count_9))
+        #     self.plot_next_track()
 
-        else:
-            for temp_id in self.tids:
-                self.current_track = self.df_c[self.df_c["id"] == temp_id]
-                if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
-                    continue
-                self.count_9 = self.count_9 + 1
-                self.current_track["moi"] = 9
-                self.tracks_df.append(self.current_track)
-            self.label_9.setText(str(self.count_9))
-            self.plot_next_cluster()
-        # self.count_9 = self.count_9 + 1
-        # self.label_9.setText(str(self.count_9))
-        # self.current_track['moi'] = 9
+        # else:
+        #     for temp_id in self.tids:
+        #         self.current_track = self.df[self.df["id"] == temp_id]
+        #         if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
+        #             continue
+        #         self.count_9 = self.count_9 + 1
+        #         self.current_track["moi"] = 9
+        #         self.tracks_df.append(self.current_track)
+        #     self.label_9.setText(str(self.count_9))
+        #     self.plot_next_cluster()
         # a = self.current_track['trajectory'].values
         # a = self.track_resample(a[0])
         # self.current_track['trajectory'] = [a]
-        # self.tracks_df.append(self.current_track)
+        self.update_moi(9)
+        self.update_moi_labels()
         # self.tracks['9'].append(self.current_track)
         # self.typical_gt['9'].append(list(self.current_track['trajectory'])[0])
-        # self.plot_next_track()
+        self.plot_next_track()
 
     def c_pushButton_10(self):
-        if not self.cluster_mode:
-            self.count_10 = self.count_10 + 1
-            self.current_track["moi"] = 10
-            self.tracks_df.append(self.current_track)
-            self.label_10.setText(str(self.count_10))
-            self.plot_next_track()
+        # if not self.track_mode:
+        #     self.count_10 = self.count_10 + 1
+        #     self.current_track["moi"] = 10
+        #     self.tracks_df.append(self.current_track)
+        #     self.label_10.setText(str(self.count_10))
+        #     self.plot_next_track()
 
-        else:
-            for temp_id in self.tids:
-                self.current_track = self.df_c[self.df_c["id"] == temp_id]
-                if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
-                    continue
-                self.count_10 = self.count_10 + 1
-                self.current_track["moi"] = 10
-                self.tracks_df.append(self.current_track)
-            self.label_10.setText(str(self.count_10))
-            self.plot_next_cluster()
-        # self.count_10 = self.count_10 + 1
-        # self.label_10.setText(str(self.count_10))
-        # self.current_track['moi'] = 10
+        # else:
+        #     for temp_id in self.tids:
+        #         self.current_track = self.df[self.df["id"] == temp_id]
+        #         if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
+        #             continue
+        #         self.count_10 = self.count_10 + 1
+        #         self.current_track["moi"] = 10
+        #         self.tracks_df.append(self.current_track)
+        #     self.label_10.setText(str(self.count_10))
+        #     self.plot_next_cluster()
         # a = self.current_track['trajectory'].values
         # a = self.track_resample(a[0])
         # self.current_track['trajectory'] = [a]
-        # self.tracks_df.append(self.current_track)
+        self.update_moi(10)
+        self.update_moi_labels()
         # self.tracks['10'].append(self.current_track)
         # self.typical_gt['10'].append(list(self.current_track['trajectory'])[0])
-        # self.plot_next_track()
+        self.plot_next_track()
 
     def c_pushButton_11(self):
-        if not self.cluster_mode:
-            self.count_11 = self.count_11 + 1
-            self.current_track["moi"] = 11
-            self.tracks_df.append(self.current_track)
-            self.label_11.setText(str(self.count_11))
-            self.plot_next_track()
+        # if not self.track_mode:
+        #     self.count_11 = self.count_11 + 1
+        #     self.current_track["moi"] = 11
+        #     self.tracks_df.append(self.current_track)
+        #     self.label_11.setText(str(self.count_11))
+        #     self.plot_next_track()
 
-        else:
-            for temp_id in self.tids:
-                self.current_track = self.df_c[self.df_c["id"] == temp_id]
-                if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
-                    continue
-                self.count_11 = self.count_11 + 1
-                self.current_track["moi"] = 11
-                self.tracks_df.append(self.current_track)
-            self.label_11.setText(str(self.count_11))
-            self.plot_next_cluster()
-        # self.count_11 = self.count_11 + 1
-        # self.label_11.setText(str(self.count_11))
-        # self.current_track['moi'] = 11
+        # else:
+        #     for temp_id in self.tids:
+        #         self.current_track = self.df[self.df["id"] == temp_id]
+        #         if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
+        #             continue
+        #         self.count_11 = self.count_11 + 1
+        #         self.current_track["moi"] = 11
+        #         self.tracks_df.append(self.current_track)
+        #     self.label_11.setText(str(self.count_11))
+        #     self.plot_next_cluster()
         # a = self.current_track['trajectory'].values
         # a = self.track_resample(a[0])
         # self.current_track['trajectory'] = [a]
-        # self.tracks_df.append(self.current_track)
+        self.update_moi(11)
+        self.update_moi_labels()
         # self.tracks['11'].append(self.current_track)
         # self.typical_gt['11'].append(list(self.current_track['trajectory'])[0])
-        # self.plot_next_track()
+        self.plot_next_track()
 
     def c_pushButton_12(self):
-        if not self.cluster_mode:
-            self.count_12 = self.count_12 + 1
-            self.current_track["moi"] = 12
-            self.tracks_df.append(self.current_track)
-            self.label_12.setText(str(self.count_12))
-            self.plot_next_track()
+        # if not self.track_mode:
+        #     self.count_12 = self.count_12 + 1
+        #     self.current_track["moi"] = 12
+        #     self.tracks_df.append(self.current_track)
+        #     self.label_12.setText(str(self.count_12))
+        #     self.plot_next_track()
 
-        else:
-            for temp_id in self.tids:
-                self.current_track = self.df_c[self.df_c["id"] == temp_id]
-                if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
-                    continue
-                self.count_12 = self.count_12 + 1
-                self.current_track["moi"] = 12
-                self.tracks_df.append(self.current_track)
-            self.label_12.setText(str(self.count_12))
-            self.plot_next_cluster()
+        # else:
+        #     for temp_id in self.tids:
+        #         self.current_track = self.df[self.df["id"] == temp_id]
+        #         if len(list(self.current_track["trajectory"])[0]) < MIN_PTS_IN_TRACK:
+        #             continue
+        #         self.count_12 = self.count_12 + 1
+        #         self.current_track["moi"] = 12
+        #         self.tracks_df.append(self.current_track)
+        #     self.label_12.setText(str(self.count_12))
+        #     self.plot_next_cluster()
 
+        self.update_moi(12)
+        self.update_moi_labels()
+        self.plot_next_track()
         # a = self.current_track['trajectory'].values
         # a = self.track_resample(a[0])
         # self.current_track['trajectory'] = [a]
@@ -939,6 +984,11 @@ class ui_func(QMainWindow):
 
         # self.tracks['12'].append(self.current_track)
         # self.typical_gt['12'].append(list(self.current_track['trajectory'])[0])
+
+    def c_pushButton_skip(self):
+        self.update_moi(-1)
+        self.update_moi_labels()
+        self.plot_next_track()
 
     def delete_last_trajectory(self):
         while len(self.tracks_df) > 1:
@@ -951,19 +1001,23 @@ class ui_func(QMainWindow):
         # fname = self.tracks_file.replace(".txt",".csv")
         fname = self.export_path
         print(self.tracks_df)
-        if len(self.tracks_df) > 0:
-            writedf = pd.concat(self.tracks_df)
-            writedf.to_pickle(fname)
+        if self.tracks_df.shape[0] > 0:
+            # writedf = pd.concat(self.tracks_df)
+            self.tracks_df.to_pickle(fname)
             # with open(fname, 'w') as f:
             #     # using csv.writer method from CSV package
             #     write = csv.writer(f)
             #     write.writerows(self.tracks)
             QMessageBox.information(self, "File saved", "Exported to " + fname)
 
-    def c_pushButton_skip(self):
-        self.cluster_mode = True
-        self.plot_next_cluster()
+    # def c_pushButton_skip(self):
+    #     self.track_mode = True
+    #     self.plot_next_cluster()
 
     def c_pushButton_next(self):
-        self.cluster_mode = False
+        self.track_mode = False
         self.plot_next_track()
+
+    def c_pushButton_prev(self):
+        self.track_mode = False
+        self.plot_previous_track()

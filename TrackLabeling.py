@@ -11,8 +11,8 @@ def tracklabelinggui(args):
     export_path = os.path.abspath(args.TrackLabellingExportPth)
     # topview = os.path.abspath(args.HomographyTopView)
     cam_image = os.path.abspath(args.HomographyStreetView)
-    clusterspath = os.path.abspath(args.ReprojectedPklCluster)
-    # clusterspath = os.path.abspath(args.GTCluster)
+    # clusterspath = os.path.abspath(args.ReprojectedPklCluster)
+    clusterspath = os.path.abspath(args.GTTrack)
 
     cwd = os.getcwd()
     os.chdir(r"./cluster_labelling_gui/")

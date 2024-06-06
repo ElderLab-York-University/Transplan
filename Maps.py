@@ -42,8 +42,12 @@ def pix2meter(args):
     # 2. labeled trackes: args.TrackLabellingExportPth -> args.TrackLabellingExportPthMeter
     if os.path.exists(args.TrackLabellingExportPth):
         df = pd.read_pickle(args.TrackLabellingExportPth)
-        scale_function = lambda x: np.array([[r * xi[0], r * xi[1]] for xi in x])
-        df["trajectory"] = df["trajectory"].apply(scale_function)
+        # scale_function = lambda x: np.array([[r * xi[0], r * xi[1]] for xi in x])
+        scale_function = lambda x: r * x
+        df["x1"] = df["x1"].apply(scale_function)
+        df["x2"] = df["x2"].apply(scale_function)
+        df["y1"] = df["y1"].apply(scale_function)
+        df["y2"] = df["y2"].apply(scale_function)
         df.to_pickle(args.TrackLabellingExportPthMeter)
 
     # # show the scale with roi

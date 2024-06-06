@@ -1265,12 +1265,21 @@ def add_count_path_to_args(args):
     return args
 
 
-def get_gt_cluster_pkl(args):
+def get_gt_track_pkl(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = os.path.basename(file_name)
     return os.path.join(
         args.Dataset,
-        r"Results\Tracking\seg_01_sc1_b3s_anon_und.tracking.GTHW7.GTHW7.pkl",
+        r"Results\Tracking",
+        file_name
+        + Puncuations.Dot
+        + SubTaskMarker.Tracking
+        + Puncuations.Dot
+        + SubTaskMarker.GT
+        + Puncuations.Dot
+        + SubTaskMarker.GT
+        + Puncuations.Dot
+        + SubTaskExt.Pkl,
     )
 
 
@@ -1377,15 +1386,14 @@ def get_vis_clustering_path(args):
 
 
 def add_clustering_related_pth_to_args(args):
-    gt_cluster = get_gt_cluster_pkl(args)
+    gt_track = get_gt_track_pkl(args)
     meter_clustered = get_reprojected_meter_cluster_pkl(args)
     reg_clustered = get_reprojected_reg_cluster_pkl(args)
     distance_matrix = get_distance_matrix_pth(args)
     vis_path = get_vis_clustering_path(args)
-    args.GTCluster = gt_cluster
+    args.GTTrack = gt_track
     args.ReprojectedPklMeterCluster = meter_clustered
     args.ReprojectedPklCluster = reg_clustered
-    print(reg_clustered)
     args.ClusteringDistanceMatrix = distance_matrix
     args.ClusteringVis = vis_path
     return args
