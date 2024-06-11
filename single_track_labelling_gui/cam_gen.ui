@@ -39,7 +39,7 @@
     <item>
      <widget class="QPushButton" name="pushButton_opentrk">
       <property name="text">
-       <string>Open Clusters</string>
+       <string>Open Tracks</string>
       </property>
      </widget>
     </item>
@@ -317,17 +317,39 @@
           </item>
          </layout>
         </item>
+
         <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_15">
+          <item>
+           <widget class="QPushButton" name="pushButton_skip">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Skip</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="count_skip">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <!-- <item>
          <widget class="QPushButton" name="pushButton_skip">
           <property name="text">
            <string>Next Cluster</string>
           </property>
          </widget>
-        </item>
+        </item> -->
         <item>
-         <widget class="QPushButton" name="pushButton_undo">
+         <widget class="QPushButton" name="pushButton_prev">
           <property name="text">
-           <string>Undo</string>
+           <string>Previous Track</string>
           </property>
          </widget>
         </item>

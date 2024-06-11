@@ -41,6 +41,7 @@ from Homography import (
 )
 from TrackLabeling import (
     tracklabelinggui,
+    singletracklabelinggui,
     vis_labelled_tracks,
     extract_common_tracks,
     extract_common_tracks_multi,
@@ -197,6 +198,15 @@ def TrackLabelingGUI(args):
         log = tracklabelinggui(args)
         log_temp = pix2meter(args)
         print(log_temp)
+        return log
+    else:
+        return WarningLog("skipped track labelling subtask")
+
+
+def SingleTrackLabelingGUI(args):
+    if args.SingleTrackLabelingGUI:
+        print(ProcLog("Single Track Labeling GUI in Process"))
+        log = singletracklabelinggui(args)
         return log
     else:
         return WarningLog("skipped track labelling subtask")
@@ -599,6 +609,7 @@ def main(args):
         Cluster,
         ExtractCommonTracks,
         TrackLabelingGUI,
+        SingleTrackLabelingGUI,
         VisLabelledTrajectories,
         Count,
         EvalCount,
@@ -701,6 +712,9 @@ def get_parser():
     )
     parser.add_argument(
         "--TrackLabelingGUI", help="If pop-up Track Labeling GUI", action="store_true"
+    )
+    parser.add_argument(
+        "--SingleTrackLabelingGUI", help="If pop-up Single Track Labeling GUI", action="store_true"
     )
     parser.add_argument(
         "--Homography",

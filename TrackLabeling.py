@@ -9,15 +9,32 @@ import DSM
 
 def tracklabelinggui(args):
     export_path = os.path.abspath(args.TrackLabellingExportPth)
-    # topview = os.path.abspath(args.HomographyTopView)
-    cam_image = os.path.abspath(args.HomographyStreetView)
-    # clusterspath = os.path.abspath(args.ReprojectedPklCluster)
-    clusterspath = os.path.abspath(args.GTTrack)
+    topview = os.path.abspath(args.HomographyTopView)
+    # cam_image = os.path.abspath(args.HomographyStreetView)
+    clusterspath = os.path.abspath(args.ReprojectedPklCluster)
+    # clusterspath = os.path.abspath(args.GTTrack)
 
     cwd = os.getcwd()
     os.chdir(r"./cluster_labelling_gui/")
     ret = os.system(
-        f"python cam_gen.py --Export='{export_path}' --TopView='{cam_image}' --ClustersPath='{clusterspath}'"
+        f"python cam_gen.py --Export='{export_path}' --TopView='{topview}' --ClustersPath='{clusterspath}'"
+    )
+    os.chdir(cwd)
+
+    if ret == 0:
+        return SucLog("track labelling executed successfully")
+    return FailLog("track labelling ended with non-zero return value")
+
+
+def singletracklabelinggui(args):
+    export_path = os.path.abspath(args.SingleTrackLabellingExportPthPKL)
+    cam_image = os.path.abspath(args.StreetView)
+    trackingpath = os.path.abspath(args.TrackingPthPKL)
+
+    cwd = os.getcwd()
+    os.chdir(r"./single_track_labelling_gui/")
+    ret = os.system(
+        f"python cam_gen.py --Export='{export_path}' --CamImage='{cam_image}' --TracksPath='{trackingpath}'"
     )
     os.chdir(cwd)
 

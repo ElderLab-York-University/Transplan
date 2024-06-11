@@ -365,19 +365,29 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     ########################################################
     # 8. Run the track labelling GUI / go to 9.
     ########################################################
+    # for det in detectors:
+    #     for tra in trackers:
+    #         os.system(
+    #             f"python main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+    #             --TrackLabelingGUI\
+    #             --BackprojectSource=tracks --TopView={tp_view}\
+    #             --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}\
+    #             --ClusteringAlgo={gt_clt_method} --ClusterMetric={gt_clt_met}"
+    #         )
+
+    ########################################################
+    # 9. Run the single track labelling GUI / go to 9.
+    ########################################################
     for det in detectors:
         for tra in trackers:
             os.system(
                 f"python main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
-                --TrackLabelingGUI\
-                --BackprojectSource=tracks --TopView={tp_view}\
-                --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}\
-                --ClusteringAlgo={gt_clt_method} --ClusterMetric={gt_clt_met}"
+                --SingleTrackLabelingGUI"
             )
 
     ########################################################
     # @ TODO
-    # 9. Run automated track extraction and labelling
+    # 10. Run automated track extraction and labelling
     # python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
     #                 --ExtractCommonTracks --VisLabelledTrajectories --ResampleTH={resamp_th}\
     #                 --BackprojectSource=tracks --TopView={tp_view}\
@@ -394,7 +404,7 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #                    ")
 
     ########################################################
-    # 10. Run the classification(counting) part
+    # 11. Run the classification(counting) part
     # @ TODO
     # os.system(f"python3 main.py --Dataset={src} --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
     #  --Count --EvalCount --CountMetric={metric}\
@@ -416,7 +426,7 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #                         --OSR=10")
 
     ########################################################
-    # 11. Visualizing the results on a video including track label and track id
+    # 12. Visualizing the results on a video including track label and track id
     # can be used to monitor the pipeline in detail
     ########################################################
     # for det in detectors:

@@ -78,7 +78,6 @@ class SubTaskMarker:
     MCTrackDis = "MCTrackDist"
     Pose = "Pose"
     PoseVis = "PoseVis"
-    GT = "GTHW7"
 
 
 class Puncuations:
@@ -317,6 +316,23 @@ def get_tracking_path_from_args(args):
         + SubTaskExt.Tracking,
     )
 
+def get_tracking_path_pkl_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = os.path.basename(file_name)
+    return os.path.join(
+        args.Dataset,
+        "Results/Tracking",
+        file_name
+        + Puncuations.Dot
+        + SubTaskMarker.Tracking
+        + Puncuations.Dot
+        + args.Detector
+        + Puncuations.Dot
+        + args.Tracker
+        + Puncuations.Dot
+        + SubTaskExt.Pkl,
+    )
+
 
 def get_tracking_pkl_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
@@ -468,7 +484,7 @@ def get_vis_labelled_tracks_path_image(args):
     )
 
 
-def get_homography_streetview_path(args):
+def get_streetview_path(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = os.path.basename(file_name)
     return os.path.join(
@@ -626,6 +642,50 @@ def get_tracklabelling_export_pth(args):
         + "labelled"
         + Puncuations.Dot
         + SubTaskExt.Pkl,
+    )
+
+
+def get_singletracklabelling_export_pth_pkl(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = os.path.basename(file_name)
+    return os.path.join(
+        args.Dataset,
+        "Results/Annotation",
+        file_name
+        + Puncuations.Dot
+        + SubTaskMarker.Tracking
+        + Puncuations.Dot
+        + args.Detector
+        + Puncuations.Dot
+        + args.Tracker
+        + Puncuations.Dot
+        + "singletracks"
+        + Puncuations.Dot
+        + "labelled"
+        + Puncuations.Dot
+        + SubTaskExt.Pkl,
+    )
+
+
+def get_singletracklabelling_export_pth_csv(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = os.path.basename(file_name)
+    return os.path.join(
+        args.Dataset,
+        "Results/Annotation",
+        file_name
+        + Puncuations.Dot
+        + SubTaskMarker.Tracking
+        + Puncuations.Dot
+        + args.Detector
+        + Puncuations.Dot
+        + args.Tracker
+        + Puncuations.Dot
+        + "singletracks"
+        + Puncuations.Dot
+        + "labelled"
+        + Puncuations.Dot
+        + SubTaskExt.Csv,
     )
 
 
@@ -1042,7 +1102,9 @@ def add_videos_to_args(args):
 
 def add_tracking_path_to_args(args):
     tracking_path = get_tracking_path_from_args(args)
+    tracking_path_pkl = get_tracking_path_pkl_from_args(args)
     args.TrackingPth = tracking_path
+    args.TrackingPthPKL = tracking_path_pkl
     return args
 
 
@@ -1095,16 +1157,20 @@ def get_track_eval_save_path(args):
 
 
 def add_homographygui_related_path_to_args(args):
-    streetview = get_homography_streetview_path(args)
     topview = get_homography_topview_path(args)
     txt = get_homography_txt_path(args)
     npy = get_homography_npy_path(args)
     csv = get_homography_csv_path(args)
-    args.HomographyStreetView = streetview
     args.HomographyTopView = topview
     args.HomographyTXT = txt
     args.HomographyNPY = npy
     args.HomographyCSV = csv
+    return args
+
+
+def add_streetview_path_to_args(args):
+    streetview = get_streetview_path(args)
+    args.StreetView = streetview
     return args
 
 
@@ -1154,6 +1220,14 @@ def add_tracklabelling_export_to_args(args):
     export_pth_image = get_tracklabelling_export_pth_image(args)
     args.TrackLabellingExportPth = export_pth
     args.TrackLabellingExportPthImage = export_pth_image
+    return args
+
+
+def add_singletracklabelling_export_to_args(args):
+    export_pth_pkl = get_singletracklabelling_export_pth_pkl(args)
+    export_pth_csv = get_singletracklabelling_export_pth_csv(args)
+    args.SingleTrackLabellingExportPthPKL = export_pth_pkl
+    args.SingleTrackLabellingExportPthCSV = export_pth_csv
     return args
 
 
@@ -1265,24 +1339,6 @@ def add_count_path_to_args(args):
     return args
 
 
-def get_gt_track_pkl(args):
-    file_name, file_ext = os.path.splitext(args.Video)
-    file_name = os.path.basename(file_name)
-    return os.path.join(
-        args.Dataset,
-        r"Results\Tracking",
-        file_name
-        + Puncuations.Dot
-        + SubTaskMarker.Tracking
-        + Puncuations.Dot
-        + SubTaskMarker.GT
-        + Puncuations.Dot
-        + SubTaskMarker.GT
-        + Puncuations.Dot
-        + SubTaskExt.Pkl,
-    )
-
-
 def get_reprojected_meter_cluster_pkl(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -1386,12 +1442,10 @@ def get_vis_clustering_path(args):
 
 
 def add_clustering_related_pth_to_args(args):
-    gt_track = get_gt_track_pkl(args)
     meter_clustered = get_reprojected_meter_cluster_pkl(args)
     reg_clustered = get_reprojected_reg_cluster_pkl(args)
     distance_matrix = get_distance_matrix_pth(args)
     vis_path = get_vis_clustering_path(args)
-    args.GTTrack = gt_track
     args.ReprojectedPklMeterCluster = meter_clustered
     args.ReprojectedPklCluster = reg_clustered
     args.ClusteringDistanceMatrix = distance_matrix
@@ -1955,6 +2009,12 @@ def complete_args(args):
         or args.EvalCount
     ):
         args = add_tracklabelling_export_to_args(args)
+
+    if args.SingleTrackLabelingGUI:
+        args = add_singletracklabelling_export_to_args(args)
+
+    if args.SingleTrackLabelingGUI:
+        args = add_streetview_path_to_args(args)
 
     if args.VisTrajectories:
         args = add_plot_all_traj_pth_to_args(args)
