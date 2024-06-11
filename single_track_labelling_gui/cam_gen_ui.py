@@ -41,10 +41,11 @@ cam_mois = [4, 4, 4, 12, 12, 12, 12, 6, 12, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2]
 
 
 class ui_func(QMainWindow):
-    def __init__(self, export_path, cam_image, tracks_path):
+    def __init__(self, export_path_pkl, export_path_csv, cam_image, tracks_path):
         super(ui_func, self).__init__()
         # should be a pickle path
-        self.export_path = export_path
+        self.export_path_pkl = export_path_pkl
+        self.export_path_csv = export_path_csv
         self.cam_image = cam_image
         self.tracks_path = tracks_path
 
@@ -507,17 +508,15 @@ class ui_func(QMainWindow):
         self.plot_next_track()
 
     def c_pushButton_export(self):
-        # fname = self.tracks_file.replace(".txt",".csv")
-        fname = self.export_path
         print(self.tracks_df)
         if self.tracks_df.shape[0] > 0:
-            # writedf = pd.concat(self.tracks_df)
-            self.tracks_df.to_pickle(fname)
-            # with open(fname, 'w') as f:
-            #     # using csv.writer method from CSV package
-            #     write = csv.writer(f)
-            #     write.writerows(self.tracks)
-            QMessageBox.information(self, "File saved", "Exported to " + fname)
+            self.tracks_df.to_pickle(self.export_path_pkl)
+            self.tracks_df[["id", "moi"]].to_csv(self.export_path_csv, index=False)
+            QMessageBox.information(
+                self,
+                "Results saved",
+                f"Exported to {self.export_path_pkl} and {self.export_path_csv}",
+            )
 
     def c_pushButton_next(self):
         self.track_mode = False

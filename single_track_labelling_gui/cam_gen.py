@@ -20,7 +20,10 @@ import cam_gen_ui as tui
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--Export", help="pkl path for exporting common trajectories", type=str
+        "--ExportPKL", help="pkl path for exporting common trajectories", type=str
+    )
+    parser.add_argument(
+        "--ExportCSV", help="pkl path for exporting common trajectories", type=str
     )
     parser.add_argument(
         "--CamImage", help="path to topview intersection image", type=str
@@ -29,16 +32,19 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print(args)
-    export_path = args.Export.strip("'")
+    export_path_pkl = args.ExportPKL.strip("'")
+    export_path_csv = args.ExportCSV.strip("'")
     cam_image = args.CamImage.strip("'")
     tracks_path = args.TracksPath.strip("'")
-    #     export_path = os.path.abspath(args.Export)
-    #     topview = os.path.abspath(args.TopView)
-    #     clusterspath = os.path.abspath(args.ClustersPath)
 
     app = QApplication(sys.argv)
 
-    myapp = tui.ui_func(export_path, cam_image, tracks_path)
+    myapp = tui.ui_func(
+        export_path_pkl=export_path_pkl,
+        export_path_csv=export_path_csv,
+        cam_image=cam_image,
+        tracks_path=tracks_path,
+    )
     # myapp.setupUi(self)
     # myapp.showMaximized()
     myapp.show()

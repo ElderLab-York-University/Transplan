@@ -27,14 +27,15 @@ def tracklabelinggui(args):
 
 
 def singletracklabelinggui(args):
-    export_path = os.path.abspath(args.SingleTrackLabellingExportPthPKL)
+    export_path_pkl = os.path.abspath(args.SingleTrackLabellingExportPthPKL)
+    export_path_csv = os.path.abspath(args.SingleTrackLabellingExportPthCSV)
     cam_image = os.path.abspath(args.StreetView)
-    trackingpath = os.path.abspath(args.TrackingPthPKL)
+    tracking_path = os.path.abspath(args.TrackingPthPKL)
 
     cwd = os.getcwd()
     os.chdir(r"./single_track_labelling_gui/")
     ret = os.system(
-        f"python cam_gen.py --Export='{export_path}' --CamImage='{cam_image}' --TracksPath='{trackingpath}'"
+        f"python cam_gen.py --ExportPKL='{export_path_pkl}' --ExportCSV='{export_path_csv}' --CamImage='{cam_image}' --TracksPath='{tracking_path}'"
     )
     os.chdir(cwd)
 
