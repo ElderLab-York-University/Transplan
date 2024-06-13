@@ -511,7 +511,9 @@ class ui_func(QMainWindow):
         print(self.tracks_df)
         if self.tracks_df.shape[0] > 0:
             self.tracks_df.to_pickle(self.export_path_pkl)
-            self.tracks_df[["id", "moi"]].to_csv(self.export_path_csv, index=False)
+            self.tracks_df[["id", "moi"]].drop_duplicates(subset="id").to_csv(
+                self.export_path_csv, index=False
+            )
             QMessageBox.information(
                 self,
                 "Results saved",
