@@ -244,7 +244,7 @@ class ui_func(QMainWindow):
         self.tracks_file = fileName
         self.df = df_from_pickle(self.tracks_file)
 
-        self.tids = np.unique(self.df["id"].tolist())
+        self.tids = np.sort(np.unique(self.df["id"].tolist()))
 
         self.id_index = 0
 
@@ -360,7 +360,7 @@ class ui_func(QMainWindow):
             self.id_index = self.id_index + 1
 
     def plot_previous_track(self):
-        if self.id_index == 1:
+        if self.id_index <= 1:
             print("There is no previous track")
             return
 
@@ -369,14 +369,14 @@ class ui_func(QMainWindow):
         self.current_id = self.tids[self.id_index - 1]
         self.current_track = self.df[self.df["id"] == self.current_id]
 
-        while self.id_index > 0 and self.current_track.shape[0] < MIN_PTS_IN_TRACK:
+        while self.id_index > 1 and self.current_track.shape[0] < MIN_PTS_IN_TRACK:
             # print(self.current_id)
             # print(len(list(self.current_track['trajectory'])[0]))
             self.id_index -= 1
-            self.current_id = self.tids[self.id_index]
+            self.current_id = self.tids[self.id_index - 1]
             self.current_track = self.df[self.df["id"] == self.current_id]
 
-        if self.id_index < len(self.tids) and self.id_index > 0:
+        if self.id_index < len(self.tids) and self.id_index >= 0:
             # print(self.current_id)
             self.temp_img = self.draw_track_on_image(self.img, self.current_track)
             self.update_moi_button(self.current_id)

@@ -316,6 +316,7 @@ def get_tracking_path_from_args(args):
         + SubTaskExt.Tracking,
     )
 
+
 def get_tracking_path_pkl_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = os.path.basename(file_name)
@@ -1102,7 +1103,8 @@ def add_videos_to_args(args):
 
 def add_tracking_path_to_args(args):
     tracking_path = get_tracking_path_from_args(args)
-    tracking_path_pkl = get_tracking_path_pkl_from_args(args)
+    # tracking_path_pkl = get_tracking_path_pkl_from_args(args)
+    tracking_path_pkl = get_tracking_pkl_bu_from_args(args)
     args.TrackingPth = tracking_path
     args.TrackingPthPKL = tracking_path_pkl
     return args
