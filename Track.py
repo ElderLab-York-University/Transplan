@@ -71,7 +71,9 @@ def zoom_at(img, zoom=1, angle=0, coord=None):
 def vistrack(args):
     # current_tracker = trackers[args.Tracker]
     # df = current_tracker.df(args)
-    df = pd.read_pickle(args.TrackingPkl)
+    df = pd.read_pickle(args.TrackingPklBackUp)
+    # ids_to_vis=[36,37]
+    # df= df['id'].isin(ids_to_vis)
     if(args.BackprojectionMethod is not None and args.BackprojectionMethod=="Homography"):
         reprojected_df=pd.read_pickle(args.ReprojectedPklMeter)
     elif(args.BackprojectionMethod is not None and args.BackprojectionMethod=="DSM"):
@@ -95,6 +97,7 @@ def vistrack(args):
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     print(frame_height, frame_width)
+    print(annotated_video_path)
     out_cap = cv2.VideoWriter(annotated_video_path,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
     if(args.CalcDistance):
         out_cap2 = cv2.VideoWriter(args.CalculateDistanceVisPth,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))        
@@ -134,12 +137,17 @@ def vistrack(args):
         5:["Bus",(255,255,255)],
         7:["Truck",(0,0,255)]
     }
-    unique_classes=np.unique(df['class'])
     legends=[]
-    for c in unique_classes:
-        legends.append(color_strs[c])
+    if("class" in df.columns):
+        unique_classes=np.unique(df['class'])
+        print(unique_classes)  
+        for c in unique_classes:
+            if(c in color_strs):
+                legends.append(color_strs[c])
+            else:
+                legends.append(["Other", (0,0,0)])
+        
     print(legends)  
-    print(unique_classes)  
     print(args.VisTrackingPth)
     if not args.ForNFrames is None:
         frames = args.ForNFrames
@@ -210,9 +218,16 @@ def vistrack(args):
                     stop_lines = args.MetaData["StopLines"]
                 if(args.CalcDistance):
                     for line in stop_lines:
-                        p1 = tuple(line[0])
-                        p2 = tuple(line[1])
-                        cv2.line(fr, p1, p2, (128, 128, 0), 25)
+                        if(len(line)==2):
+                            p1 = tuple(line[0])
+                            p2 = tuple(line[1])
+                            cv2.line(fr, p1, p2, (128, 128, 0), 25)
+                        else:
+                            for i in range(len(line)-1):
+                                p1=tuple(line[i])
+                                p2=tuple(line[i+1])
+                                cv2.line(fr, p1, p2, (128, 128, 0), 25)
+                                
                 if(args.CalcSpeed):
                     speed=track.speed
                     cv2.rectangle(fr2, (x1, y1), (x2, y2), (0,0,0), 2)
@@ -429,10 +444,12 @@ def find_lanes(args, input_reprojected=None, input_normal=None):
                 roi=roi_arr[r]
                 poly_paths.append(mplPath.Path(np.array(roi)))
                 label2.append(int(q+1))
-    intersection_roi=args.MetaData["StoplineROI"] if "StoplineROI" in args.MetaData else args["roi"]
+    intersection_roi=args.MetaData["StoplineROI"] if "StoplineROI" in args.MetaData else args.MetaData["roi"]
     intersection_roi_rep=[]
     homography_path = args.HomographyNPY
-    if(args.BackprojectionMethod=="Homograpy"):
+    print(label1)
+    print(label2)
+    if(args.BackprojectionMethod=="Homography"):
         M = np.load(homography_path, allow_pickle=True)[0]
         r = meter_per_pixel(args.MetaData['center'])     
         
@@ -452,9 +469,8 @@ def find_lanes(args, input_reprojected=None, input_normal=None):
     for p in intersection_roi:
         if(args.BackprojectionMethod=="Homography"):
             new_point = reproj_point(args, p[0], p[1], "Homography", M=M)
-            new_point=[(int(r*new_point[0]), int(r*new_point[1]))]
+            new_point=(int(r*new_point[0]), int(r*new_point[1]))
         elif(args.BackprojectionMethod=="DSM"):
-
             new_point = reproj_point(args, p[0], p[1], "DSM", GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
         intersection_roi_rep.append((new_point[0], new_point[1]))
     poly_path_roi = mplPath.Path(np.array(intersection_roi_rep))
@@ -1022,10 +1038,10 @@ def trackpostproc(args):
         print(ProcLog("updating txt, pkl, reprojected, and meter files for tracking"))
         trackers[args.Tracker].df_txt(df, args.TrackingPth)
         store_df_pickle(args)
-        Homography.reproject(args, method=args.BackprojectionMethod,
-                            source = args.BackprojectSource, from_back_up=False)
+        # Homography.reproject(args, method=args.BackprojectionMethod,
+        #                     source = args.BackprojectSource, from_back_up=False)
         
-        Maps.pix2meter(args)
+        # Maps.pix2meter(args)
 
     # restore original tracks in txt and pkl
     print(ProcLog("recover tracking from backup"))

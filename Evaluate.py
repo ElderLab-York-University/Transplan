@@ -118,7 +118,7 @@ def evaluate_tracking(base_args, nested_args):
     # print(strsummary_mc)
 
 
-
+    print(base_args.TrackEvalPth)
     with open(base_args.TrackEvalPth, "w") as f:
         f.write(strsummary)
         # f.write("\n")
@@ -127,32 +127,32 @@ def evaluate_tracking(base_args, nested_args):
     dfs_gt   = []
     dfs_ids  = []
     
-    flat_args = flatten_args(nested_args)
-    for args in flat_args:
-        args_gt = get_args_gt(args)
+    # flat_args = flatten_args(nested_args)
+    # for args in flat_args:
+    #     args_gt = get_args_gt(args)
 
-        df_gt   = pd.read_pickle(args_gt.TrackingPkl)
-        df_pred = pd.read_pickle(args.TrackingPkl)
-        df_id   = args.SubID
+    #     df_gt   = pd.read_pickle(args_gt.TrackingPkl)
+    #     df_pred = pd.read_pickle(args.TrackingPkl)
+    #     df_id   = args.SubID
 
-        dfs_gt.append(df_gt)
-        dfs_pred.append(df_pred)
-        dfs_ids.append(df_id)
+    #     dfs_gt.append(df_gt)
+    #     dfs_pred.append(df_pred)
+    #     dfs_ids.append(df_id)
     
     # prepare dfs for mot metrics(transfer from local format to mot format)
-    gt_dfs = prepare_df_for_motmetric(dfs_gt, dfs_ids)
-    pred_dfs = prepare_df_for_motmetric(dfs_pred, dfs_ids)
+    # gt_dfs = prepare_df_for_motmetric(dfs_gt, dfs_ids)
+    # pred_dfs = prepare_df_for_motmetric(dfs_pred, dfs_ids)
 
-    accs, names = compare_dataframes(gt_dfs, pred_dfs)
-    mh = mm.metrics.create()
-    summary = mh.compute_many(accs, names=names, metrics=mm.metrics.motchallenge_metrics, generate_overall=True)
+    # accs, names = compare_dataframes(gt_dfs, pred_dfs)
+    # mh = mm.metrics.create()
+    # summary = mh.compute_many(accs, names=names, metrics=mm.metrics.motchallenge_metrics, generate_overall=True)
 
-    strsummary = mm.io.render_summary(
-        summary,
-        formatters=mh.formatters,
-        namemap=mm.io.motchallenge_metric_names
-    )
-    print(strsummary)
+    # strsummary = mm.io.render_summary(
+    #     summary,
+    #     formatters=mh.formatters,
+    #     namemap=mm.io.motchallenge_metric_names
+    # )
+    # print(strsummary)
     return SucLog("Track Evaluation Successful")
 
 import seaborn as sns
@@ -443,10 +443,18 @@ def cvpr(base_args, nested_args):
     # tikzplotlib.save("Sup_traversal_direction.tex")
     # plt.close("all")
 
+''''
+nuscenes classes:   ('car', 'truck', 'trailer', 'bus', 'construction_vehicle', 'bicycle',
+                    'motorcycle', 'pedestrian', 'traffic_cone', 'barrier'),
+
+'''
 def convert_classes(args, df_gt, df_pred):
     if(args.DetectorVersion=="kitti"):
         classes_map={0:1, 1:2, 2:0, 5:0,7:0}
-        df_gt['class']=df_gt['class'].map(classes_map)        
+        df_gt['class']=df_gt['class'].map(classes_map)     
+    elif(args.DetectorVersion=="nuscenes"):
+        classes_map={0:2,1:7,2:7,3:5,4:7,5:1,6:4,7:0, 8:81,9:81}
+        df_pred['class']=df_pred['class'].map(classes_map)
     return df_gt, df_pred
     
 def evaluate_detection(base_args, nested_args):
@@ -494,7 +502,6 @@ def evaluate_detection(base_args, nested_args):
                 
             df_gt   = pd.read_pickle(args_gt.DetectionPkl)
             # if(os.path.exists(args.DetectionPkl)):
-            print(args.Dataset)
             if(args.Rois is not None):
                 df_pred=pd.read_pickle(args.DetectionPkl)
             else:
@@ -615,11 +622,13 @@ def evaluate_detection(base_args, nested_args):
         
         print("After removing medium and large bboxes: preds: "+ str(len(dfs_pred_small)))
         
-        result, total_tp, total_fp, total_gt=compare_dfs(dfs_gt_small,dfs_pred_small) 
+        result, total_tp, total_fp, total_gt, aps=compare_dfs(dfs_gt_small,dfs_pred_small)    
+        print(base_args.DetectEvalPth)
         with open(base_args.DetectEvalPthSmall, "w") as f:
             f.write("Camera ID                AP \n")
             f.write(str("Camera") + ": " +str(result)  +'\n')
             f.write("Average AP: " + str(np.mean(result))+ '\n')
+            f.write("APs(50:95):" + str(aps)+"\n")
             f.write("Total TP :" + str(total_tp)+'\n')
             f.write("Total_FP :"+ str(total_fp) + '\n')
             f.write("Total GT :" + str(total_gt  ))    
@@ -633,8 +642,8 @@ def evaluate_detection(base_args, nested_args):
         gt_areas=(gt_x2-gt_x1) *(gt_y2-gt_y1)
         print("Before removing small and large bboxes: gt: "+ str(len(dfs_gt)))
         mask=(gt_areas>lower_area) & (gt_areas<upper_area)
-        dfs_gt_small=dfs_gt[mask]
-        print("After removing small and large bboxes: gt: "+ str(len(dfs_gt_small)))
+        dfs_gt_medium=dfs_gt[mask]
+        print("After removing small and large bboxes: gt: "+ str(len(dfs_gt_medium)))
         
         
         pred_x1=dfs_pred['x1']
@@ -644,16 +653,18 @@ def evaluate_detection(base_args, nested_args):
         print("Before removing small and large bboxes: preds: "+  str(len(dfs_pred)))
         pred_areas=(pred_x2-pred_x1) *(pred_y2-pred_y1)
         mask=(pred_areas>lower_area) & (pred_areas<upper_area)
-        dfs_pred_small=dfs_pred[mask]
+        dfs_pred_medium=dfs_pred[mask]
         
         
-        print("After removing small and large bboxes: preds: "+ str(len(dfs_pred_small)))
+        print("After removing small and large bboxes: preds: "+ str(len(dfs_pred_medium)))
         
-        result, total_tp, total_fp, total_gt=compare_dfs(dfs_gt_small,dfs_pred_small) 
+        result, total_tp, total_fp, total_gt,aps=compare_dfs(dfs_gt_medium,dfs_pred_medium) 
         with open(base_args.DetectEvalPthMedium, "w") as f:
             f.write("Camera ID                AP \n")
             f.write(str("Camera") + ": " +str(result)  +'\n')
             f.write("Average AP: " + str(np.mean(result))+ '\n')
+            f.write("APs(50:95):" + str(aps)+"\n")
+            
             f.write("Total TP :" + str(total_tp)+'\n')
             f.write("Total_FP :"+ str(total_fp) + '\n')
             f.write("Total GT :" + str(total_gt  ))    
@@ -668,8 +679,8 @@ def evaluate_detection(base_args, nested_args):
         gt_areas=(gt_x2-gt_x1) *(gt_y2-gt_y1)
         print("Before removing small and medium bboxes: gt: "+ str(len(dfs_gt)))
         mask=(gt_areas>lower_area) & (gt_areas<upper_area)
-        dfs_gt_small=dfs_gt[mask]
-        print("After removing small and medium bboxes: gt: "+ str(len(dfs_gt_small)))
+        dfs_gt_large=dfs_gt[mask]
+        print("After removing small and medium bboxes: gt: "+ str(len(dfs_gt_large)))
         
         
         pred_x1=dfs_pred['x1']
@@ -679,17 +690,17 @@ def evaluate_detection(base_args, nested_args):
         print("Before removing small and medium bboxes: preds: "+  str(len(dfs_pred)))
         pred_areas=(pred_x2-pred_x1) *(pred_y2-pred_y1)
         mask=(pred_areas>lower_area) & (pred_areas<upper_area)
-        dfs_pred_small=dfs_pred[mask]
+        dfs_pred_large=dfs_pred[mask]
         
         
-        print("After removing small and medium bboxes: preds: "+ str(len(dfs_pred_small)))
+        print("After removing small and medium bboxes: preds: "+ str(len(dfs_pred_large)))
         
-        result, total_tp, total_fp, total_gt=compare_dfs(dfs_gt_small,dfs_pred_small) 
+        result, total_tp, total_fp, total_gt,aps=compare_dfs(dfs_gt_large,dfs_pred_large) 
         with open(base_args.DetectEvalPthLarge, "w") as f:
             f.write("Camera ID                AP \n")
             f.write(str("Camera") + ": " +str(result)  +'\n')
             f.write("Average AP: " + str(np.mean(result))+ '\n')
-            f.write("APs(50:95):" + str(result)+"\n")            
+            f.write("APs(50:95):" + str(aps)+"\n")
             f.write("Total TP :" + str(total_tp)+'\n')
             f.write("Total_FP :"+ str(total_fp) + '\n')
             f.write("Total GT :" + str(total_gt  ))    

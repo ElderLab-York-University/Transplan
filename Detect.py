@@ -439,7 +439,7 @@ def visdetect_2d(args):
         return FailLog("To interpret detections you should specify detector")
     # parse detection df using detector module
     detection_df = pd.read_pickle(args.DetectionPkl)
-    
+    # detection_df=detection_df.iloc[[2,15,28,41]]
     # open the original video and process it
     cap = cv2.VideoCapture(args.Video)
 
