@@ -276,8 +276,8 @@ class ui_func(QMainWindow):
         prevpt = []
 
         for _, track in current_track.iterrows():
-            x_track = int((track["x1"] + track["x2"]) / 2)
-            y_track = int(track["y2"])
+            x_track = int((track["x1"] + track["x2"]) / (2 * self.scaleFactor))
+            y_track = int(track["y2"] / self.scaleFactor)
             pt = [x_track, y_track]
             lastpt = pt
             rgba_color = newcolors[index]  # cm.rainbow(norm(i),bytes=True)[0:3]
