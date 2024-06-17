@@ -44,30 +44,49 @@ def track(args, detectors):
                         id_counter=id_counter+1
                     c = 0 if "Pedestrian" in gt['label'] else 7 if 'Truck' in gt['label'] else 5 if 'Buses' in gt['label'] else 2 if 'Small' in gt['label'] else 1 if 'Unpowered' in gt['label'] else 3
                     id=uuid_to_id[gt['cuboid_uuid']]
+                    uuid= gt['cuboid_uuid']
                     x1=gt['left']
                     x2=x1+gt['width']
                     y1=gt['top']
                     y2=y1+gt['height']
                     # detections.append([start+int(skip*i), c, 1.0,x1,y1,x2,y2])
-                    detections.append([start+int(skip*i), id, x1,y1,x2,y2,c])
+                    detections.append([start+int(skip*i), id, x1,y1,x2,y2, c, uuid])
                     # mot.append([start+int(skip*i), id, x1,y1, gt['width'], gt['height'], 1, c, 1])
                 i=i+1
     detections= np.asarray(detections)
-    df=pd.DataFrame(detections,columns=['fn','id','x1','y1','x2','y2','class'])
+    df=pd.DataFrame(detections,columns=['fn','id','x1','y1','x2','y2','class','uuid'])
     df=df.sort_values('fn').reset_index(drop=True)
     df.to_csv(args.TrackingPth, header=None, index=None, sep=',')
 
 def df(args):
     data = {}
-    tracks_path = args.TrackingPth
-    tracks = np.loadtxt(tracks_path, delimiter=',')
-    data["fn"]    = tracks[:, 0]
-    data["id"]    = tracks[:, 1]
-    data["x1"]    = tracks[:, 2]
-    data["y1"]    = tracks[:, 3]
-    data["x2"]    = tracks[:, 4]
-    data["y2"]    = tracks[:, 5]
-    data["class"] = tracks[:, 6]
+    file_path= args.TrackingPth
+    data["fn"], data["id"],  data["x1"], data["y1"], data["x2"], data["y2"], data["class"], data["uuid"] = [], [], [], [], [], [], [], []
+
+    # tracks = np.loadtxt(tracks_path, delimiter=',')
+    # data["fn"]    = tracks[:, 0]
+    # data["id"]    = tracks[:, 1]
+    # data["x1"]    = tracks[:, 2]
+    # data["y1"]    = tracks[:, 3]
+    # data["x2"]    = tracks[:, 4]
+    # data["y2"]    = tracks[:, 5]
+    # data['uuid']  = tracks[:, 6]
+    # data["class"] = tracks[:, 7]
+    with open(file_path, "r+") as f:
+        lines = f.readlines()
+        for line in lines:
+            splits = line.split(",")
+            fn , id, x1, y1, x2, y2, clss, uuid = float(splits[0]), float(splits[1]), float(splits[2]), float(splits[3]),\
+                                                        float(splits[4]), float(splits[5]), int(splits[6]), str(splits[7])
+            data["fn"   ].append(fn)
+            data["id"].append(id)
+            data["x1"   ].append(x1)
+            data["y1"   ].append(y1)
+            data["x2"   ].append(x2)
+            data["y2"   ].append(y2)
+            data["uuid" ].append(uuid)
+            data["class"   ].append(clss)
+
     return pd.DataFrame.from_dict(data)
 
 def df_txt(df, out_path):
