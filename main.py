@@ -714,7 +714,9 @@ def get_parser():
         "--TrackLabelingGUI", help="If pop-up Track Labeling GUI", action="store_true"
     )
     parser.add_argument(
-        "--SingleTrackLabelingGUI", help="If pop-up Single Track Labeling GUI", action="store_true"
+        "--SingleTrackLabelingGUI",
+        help="If pop-up Single Track Labeling GUI",
+        action="store_true",
     )
     parser.add_argument(
         "--Homography",
@@ -1157,6 +1159,12 @@ def get_parser():
         help="set the threshold for checkpoints in a pose to be used",
         type=float,
         default=0.3,
+    )
+    parser.add_argument(
+        "--ListClassIdsToConsider",
+        type=int,
+        nargs="+",
+        help="A list of class ids to consider in single track labeling gui",
     )
 
     return parser

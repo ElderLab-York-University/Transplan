@@ -28,6 +28,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--CamImage", help="path to topview intersection image", type=str
     )
+    parser.add_argument(
+        "--ListClassIdsToConsider",
+        type=int,
+        nargs="+",
+        help="A list of class ids to consider in single track labeling gui",
+    )
+
     parser.add_argument("--TracksPath", help="path to clustering pkl", type=str)
     args = parser.parse_args()
 
@@ -36,6 +43,7 @@ if __name__ == "__main__":
     export_path_csv = args.ExportCSV.strip("'")
     cam_image = args.CamImage.strip("'")
     tracks_path = args.TracksPath.strip("'")
+    list_class_ids_to_consider = args.ListClassIdsToConsider
 
     app = QApplication(sys.argv)
 
@@ -44,6 +52,7 @@ if __name__ == "__main__":
         export_path_csv=export_path_csv,
         cam_image=cam_image,
         tracks_path=tracks_path,
+        list_class_ids_to_consider=list_class_ids_to_consider,
     )
     # myapp.setupUi(self)
     # myapp.showMaximized()

@@ -41,13 +41,21 @@ cam_mois = [4, 4, 4, 12, 12, 12, 12, 6, 12, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2]
 
 
 class ui_func(QMainWindow):
-    def __init__(self, export_path_pkl, export_path_csv, cam_image, tracks_path):
+    def __init__(
+        self,
+        export_path_pkl,
+        export_path_csv,
+        cam_image,
+        tracks_path,
+        list_class_ids_to_consider,
+    ):
         super(ui_func, self).__init__()
         # should be a pickle path
         self.export_path_pkl = export_path_pkl
         self.export_path_csv = export_path_csv
         self.cam_image = cam_image
         self.tracks_path = tracks_path
+        self.list_class_ids_to_consider = list_class_ids_to_consider
 
         uic.loadUi("cam_gen.ui", self)
         # self.Cnt = Counting()
@@ -243,6 +251,12 @@ class ui_func(QMainWindow):
         fileName = self.tracks_path
         self.tracks_file = fileName
         self.df = df_from_pickle(self.tracks_file)
+        non_considered_tracks = self.df[
+            ~self.df["class"].isin(self.list_class_ids_to_consider)
+        ]
+        non_considered_tracks["moi"] = -1
+        self.tracks_df = non_considered_tracks
+        self.df = self.df[self.df["class"].isin(self.list_class_ids_to_consider)]
 
         self.tids = np.sort(np.unique(self.df["id"].tolist()))
 
@@ -511,7 +525,7 @@ class ui_func(QMainWindow):
         print(self.tracks_df)
         if self.tracks_df.shape[0] > 0:
             self.tracks_df.to_pickle(self.export_path_pkl)
-            self.tracks_df[["id", "moi"]].drop_duplicates(subset="id").to_csv(
+            self.tracks_df[["id", "uuid", "moi"]].drop_duplicates(subset="id").to_csv(
                 self.export_path_csv, index=False
             )
             QMessageBox.information(

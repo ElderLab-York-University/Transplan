@@ -283,10 +283,12 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     # --BackprojectionMethod=[Homography/DSM] --ContactPoint=[BottomPoint/Center/BottomSeg/LineSeg]
     # --Meter")
     ########################################################
-    # for det in detectors:
-    #     for tra in trackers:
-    #         print(f"tracking ---> src:{src} det:{det} tra:{tra}")
-    #         # os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra} --Track")
+    for det in detectors:
+        for tra in trackers:
+            print(f"tracking ---> src:{src} det:{det} tra:{tra}")
+            os.system(
+                f"python main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra} --Track"
+            )
     #         os.system(f"python3 main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra} --Homography --Meter\
     #              --BackprojectSource=tracks --TopView={tp_view} --BackprojectionMethod={bp_method} --ContactPoint={gt_cp_method}")
 
@@ -376,12 +378,12 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
     #         )
 
     ########################################################
-    # 9. Run the single track labelling GUI / go to 9.
+    # 9. Run the single track labelling GUI / go to 10.
     ########################################################
     for det in detectors:
         for tra in trackers:
             os.system(
-                f"python main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra}\
+                f"python main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra} --ListClassIdsToConsider 2 5 7\
                 --SingleTrackLabelingGUI"
             )
 
