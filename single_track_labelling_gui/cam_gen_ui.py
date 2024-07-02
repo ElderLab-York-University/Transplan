@@ -48,6 +48,7 @@ class ui_func(QMainWindow):
         cam_image,
         tracks_path,
         list_class_ids_to_consider,
+        load_existing_annotations=False,
     ):
         super(ui_func, self).__init__()
         # should be a pickle path
@@ -56,6 +57,7 @@ class ui_func(QMainWindow):
         self.cam_image = cam_image
         self.tracks_path = tracks_path
         self.list_class_ids_to_consider = list_class_ids_to_consider
+        self.load_existing_annotations = load_existing_annotations
 
         uic.loadUi("cam_gen.ui", self)
         # self.Cnt = Counting()
@@ -251,11 +253,30 @@ class ui_func(QMainWindow):
         fileName = self.tracks_path
         self.tracks_file = fileName
         self.df = df_from_pickle(self.tracks_file)
-        non_considered_tracks = self.df[
-            ~self.df["class"].isin(self.list_class_ids_to_consider)
-        ]
-        non_considered_tracks["moi"] = -1
-        self.tracks_df = non_considered_tracks
+        load_file_exists = os.path.isfile(self.export_path_pkl)
+
+        if self.load_existing_annotations and load_file_exists:
+            existing_df = df_from_pickle(self.export_path_pkl)
+            existing_df.loc[
+                ~existing_df["class"].isin(self.list_class_ids_to_consider), "moi"
+            ] = -1
+            self.tracks_df = existing_df
+
+            # updating moi counts
+            existing_df_unique = existing_df.drop_duplicates(subset="id")
+            moi_value_counts = existing_df_unique["moi"].value_counts()
+            for moi, count in moi_value_counts.items():
+                if moi == -1:
+                    self.counts[-1] = count
+                else:
+                    self.counts[moi - 1] = count
+            self.update_moi_labels()
+        else:
+            non_considered_tracks = self.df[
+                ~self.df["class"].isin(self.list_class_ids_to_consider)
+            ]
+            non_considered_tracks["moi"] = -1
+            self.tracks_df = non_considered_tracks
         self.df = self.df[self.df["class"].isin(self.list_class_ids_to_consider)]
 
         self.tids = np.sort(np.unique(self.df["id"].tolist()))

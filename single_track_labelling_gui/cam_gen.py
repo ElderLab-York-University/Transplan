@@ -34,6 +34,11 @@ if __name__ == "__main__":
         nargs="+",
         help="A list of class ids to consider in single track labeling gui",
     )
+    parser.add_argument(
+        "--LoadExistingAnnotations",
+        help="flag to load existing annotations for single track labelling gui",
+        action="store_true",
+    )
 
     parser.add_argument("--TracksPath", help="path to clustering pkl", type=str)
     args = parser.parse_args()
@@ -53,6 +58,7 @@ if __name__ == "__main__":
         cam_image=cam_image,
         tracks_path=tracks_path,
         list_class_ids_to_consider=list_class_ids_to_consider,
+        load_existing_annotations=args.LoadExistingAnnotations,
     )
     # myapp.setupUi(self)
     # myapp.showMaximized()

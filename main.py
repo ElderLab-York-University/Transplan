@@ -1160,11 +1160,18 @@ def get_parser():
         type=float,
         default=0.3,
     )
+
     parser.add_argument(
         "--ListClassIdsToConsider",
         type=int,
         nargs="+",
         help="A list of class ids to consider in single track labeling gui",
+    )
+
+    parser.add_argument(
+        "--LoadExistingAnnotations",
+        help="flag to load existing annotations for single track labelling gui",
+        action="store_true",
     )
 
     return parser

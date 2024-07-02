@@ -384,7 +384,7 @@ for src, cached_cnt_pth in zip(sources, cached_sources):
         for tra in trackers:
             os.system(
                 f"python main.py --Dataset={src}  --Detector={det} --DetectorVersion={det_v} --Tracker={tra} --ListClassIdsToConsider 2 5 7\
-                --SingleTrackLabelingGUI"
+                --SingleTrackLabelingGUI --LoadExistingAnnotations"
             )
 
     ########################################################

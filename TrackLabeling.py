@@ -32,11 +32,16 @@ def singletracklabelinggui(args):
     cam_image = os.path.abspath(args.StreetView)
     tracking_path = os.path.abspath(args.TrackingPthPKL)
     list_class_ids_to_consider = args.ListClassIdsToConsider
+
     cwd = os.getcwd()
     os.chdir(r"./single_track_labelling_gui/")
+    load_existing_annotations_str = ""
+    if args.LoadExistingAnnotations:
+        load_existing_annotations_str = " --LoadExistingAnnotations"
     ret = os.system(
         f"python cam_gen.py --ExportPKL='{export_path_pkl}' --ExportCSV='{export_path_csv}' --CamImage='{cam_image}' --TracksPath='{tracking_path}' --ListClassIdsToConsider "
         + " ".join([str(i) for i in list_class_ids_to_consider])
+        + load_existing_annotations_str
     )
     os.chdir(cwd)
 
