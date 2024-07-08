@@ -23,7 +23,7 @@ from counting.counting import find_opt_bw, eval_count, eval_count_multi, eval_co
 from Clustering import cluster
 from CountingMC import AverageCountsMC, IntegrateCounts
 from Segment import segment, vis_segment, SegmentPostProc
-from Pose import extract_pose, vis_pose, vis_detect_top_mc
+# from Pose import extract_pose, vis_pose, vis_detect_top_mc
 
 def ExtractPose(args):
     if args.ExtractPose:
