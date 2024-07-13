@@ -2,6 +2,7 @@ from Libs import *
 from Utils import *
 from Detectors.MMDet3D.detect import setup as mm_setup
 from Detectors.MMDet3D.detect import df as mm_df
+from Detectors.MMDet3D.detect import df_3D as mm_df_3d 
 from Detectors.MMDet3D.detect import df_txt as mm_df_txt
 # from Detectors.MMDet3D.detect import fine_tune as mm_fine_tune
 # from Detectors.MMDet3D.detect import modify_train_config as mm_modify_train_config
@@ -19,7 +20,8 @@ def detect(args, *oargs):
 
 def df(args):
     return mm_df(args)
-
+def df_3D(args):
+    return mm_df_3d(args)
 def df_txt(df,text_result_path):
     return mm_df_txt(df,text_result_path)
 

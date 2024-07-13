@@ -54,6 +54,41 @@ def df(args):
       data["y2"].append(y2)
   return pd.DataFrame.from_dict(data)
 
+def df_3D(args):
+  file_path = args.Detection3DPath
+  data = {}
+  data["fn"], data["class"], data["score"], data["x1"], data["y1"], data["x2"], data["y2"], \
+  data["x3"], data["y3"], data["x4"], data["y4"], \
+  data["x5"], data["y5"], data["x6"], data["y6"], \
+  data["x7"], data["y7"], data["x8"], data["y8"], = [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []
+  with open(file_path, "r+") as f:
+    lines = f.readlines()
+    for line in lines:
+      splits = line.split()
+      fn , clss, score, x1, y1, x2, y2, x3,y3, x4,y4, x5,y5,x6,y6,x7,y7,x8,y8 = float(splits[0]), float(splits[1]), float(splits[2]), float(splits[3]), float(splits[4]), float(splits[5]), float(splits[6]), float(splits[7]) , float(splits[8]) , float(splits[9]) ,float(splits[10]), float(splits[11]) ,float(splits[12]), float(splits[13]), float(splits[14]), float(splits[15]), float(splits[16]), float(splits[17]), float(splits[18])
+      data["fn"].append(fn)
+      data["class"].append(clss)
+      data["score"].append(score)
+      data["x1"].append(x1)
+      data["y1"].append(y1)
+      data["x2"].append(x2)
+      data["y2"].append(y2)
+      data["x3"].append(x3)
+      data["y3"].append(y3)
+      data["x4"].append(x4)
+      data["y4"].append(y4)
+      data["x5"].append(x5)
+      data["y5"].append(y5)
+      data["x6"].append(x6)
+      data["y6"].append(y6)
+      data["x7"].append(x7)
+      data["y7"].append(y7)
+      data["x8"].append(x8)
+      data["y8"].append(y8)
+
+
+  return pd.DataFrame.from_dict(data)
+
 def df_txt(df,text_result_path):
   # store a modified version of detection df to the same txt file
   # used in the post processig part of the detection

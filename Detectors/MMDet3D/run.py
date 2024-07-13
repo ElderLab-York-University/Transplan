@@ -13,6 +13,8 @@ from mmengine.dataset import Compose, pseudo_collate
 from mmengine.registry import init_default_scope
 from mmengine.runner import load_checkpoint
 
+from mmdet3d.structures import points_cam2img
+
 from mmdet3d.registry import DATASETS, MODELS
 from mmdet3d.structures import Box3DMode, Det3DDataSample, get_box_type
 from mmdet3d.structures.det3d_data_sample import SampleList
@@ -32,10 +34,14 @@ import mmcv
 def get_full_frame_result(frame, model, test_pipeline):
     data = []
     # replace the img_path in data_info with img
-    cam2img = [[721.5377, 0.0, 609.5593, 44.85728],
-               [0.0, 721.5377, 172.854, 0.2163791],
-               [0.0, 0.0, 1.0, 0.002745884],
-               [0.0, 0.0, 0.0, 1.0]]
+    camera_name=args['Dataset'].split("/")[-1][-3:]    
+    intrinsic_file=args['INTRINSICS_PATH']
+    with open(intrinsic_file,'r') as f:
+      intrinsic_data=json.load(f)
+      intrinsic_mat=np.array(intrinsic_data[camera_name]['intrinsic_matrix'])
+      intrinsic_mat=intrinsic_mat[0:3,0:3]
+
+    cam2img = torch.tensor(intrinsic_mat, dtype=torch.float)
     data_ = {"img":frame, "cam2img":cam2img}
     data_ = test_pipeline(data_)
     data.append(data_)
@@ -47,10 +53,47 @@ def get_full_frame_result(frame, model, test_pipeline):
 def preds_2D_from_result(result):
     if 'pred_instances' in result:
         instances = result.pred_instances
-        scores = instances.scores
-        bboxes = instances.bboxes # x1, y1, x2, y2
-        labels = instances.labels
+        exists=True
+        try:
+            instances.scores
+        except Exception as e:
+            exists=False
+        if(exists):
+            scores = instances.scores
+            bboxes = instances.bboxes # x1, y1, x2, y2
+            labels = instances.labels
+        else:
+            return None, None, None
     return bboxes, labels, scores
+def preds_3D_from_result(result):
+    if 'pred_instances_3d' in result:
+        instances = result.pred_instances_3d
+        scores = instances.scores_3d
+        bboxes = instances.bboxes_3d # x1, y1, x2, y2
+        labels = instances.labels_3d
+        corners = bboxes.corners.reshape(-1, 3)
+
+    return bboxes, labels, scores, corners
+
+
+def transform_box(box, corner ):
+    corners_3d = corner
+    num_bbox = box.shape[0]
+    points_3d = corners_3d.reshape(-1, 3)
+    camera_name=args['Dataset'].split("/")[-1][-3:]    
+    intrinsic_file=args['INTRINSICS_PATH']
+    with open(intrinsic_file,'r') as f:
+      intrinsic_data=json.load(f)
+      intrinsic_mat=np.array(intrinsic_data[camera_name]['intrinsic_matrix'])
+      intrinsic_mat=intrinsic_mat[0:3,0:3]
+
+    cam2img = torch.tensor(intrinsic_mat, device="cuda:0", dtype=torch.float)
+
+    uv_origin = points_cam2img(points_3d, cam2img)
+    uv_origin = (uv_origin - 1).round()
+    transformed_corners=(uv_origin[..., :2].reshape(num_bbox,16))
+
+    return transformed_corners
 
 if __name__ == "__main__":
     args = json.loads(sys.argv[-1])
@@ -78,12 +121,34 @@ if __name__ == "__main__":
     # process frame by frame
     video_reader = mmcv.VideoReader(video_path)
     fn=0
-    with open (text_result_path,"w") as f: 
-        for frame in tqdm(video_reader):
-            if(fn%args['FrameRate']==0):
-                result = get_full_frame_result(frame, model, test_pipeline)
-                bboxes, labels, scores = preds_2D_from_result(result)
-                for box, label, score in zip(bboxes,labels, scores):
-                        r=box
-                        f.write(f"{fn} {label} {score} {box[0]} {box[1]} {box[2]} {box[3]}\n")
-            fn+=1
+    if(args['Detect3D']):
+
+        with open (text_result_path,"w") as f, open(args['Detection3DPath'], 'w') as b: 
+            print(args['Detection3DPath'])
+            for frame in tqdm(video_reader):
+                if(fn%args['FrameRate']==0):
+                    result = get_full_frame_result(frame, model, test_pipeline)
+                    bboxes, labels, scores = preds_2D_from_result(result)
+                    if(bboxes is not None):
+                        for box, label, score in zip(bboxes,labels, scores):
+                                r=box
+                                f.write(f"{fn} {label} {score} {box[0]} {box[1]} {box[2]} {box[3]}\n")
+                    bboxes_3d, labels_3d, scores_3d, corners = preds_3D_from_result(result)
+                    transformed_boxes_3d=transform_box(bboxes_3d, corners)
+
+                    for box, label, score, corner in zip(transformed_boxes_3d,labels_3d, scores_3d, corners):
+                            r=box
+                            b.write(f"{fn} {label} {score} {box[0]} {box[1]} {box[2]} {box[3]} {box[4]} {box[5]} {box[6]} {box[7]} {box[8]} {box[9]} {box[10]} {box[11]} {box[12]} {box[13]} {box[14]} {box[15]}    \n")
+
+                fn+=1
+    else:
+        with open (text_result_path,"w") as f: 
+            for frame in tqdm(video_reader):
+                if(fn%args['FrameRate']==0):
+                    result = get_full_frame_result(frame, model, test_pipeline)
+                    bboxes, labels, scores = preds_2D_from_result(result)
+                    for box, label, score in zip(bboxes,labels, scores):
+                            r=box
+                            f.write(f"{fn} {label} {score} {box[0]} {box[1]} {box[2]} {box[3]}\n")
+                fn+=1
+

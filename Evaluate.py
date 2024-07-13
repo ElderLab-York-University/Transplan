@@ -457,7 +457,57 @@ def convert_classes(args, df_gt, df_pred):
         df_pred['class']=df_pred['class'].map(classes_map)
     return df_gt, df_pred
     
-def evaluate_detection(base_args, nested_args):
+
+def evaluate_detection_3d(base_args,nested_args):
+    dfs_pred = []
+    dfs_gt   = []
+    dfs_ids  = []
+    q=0
+    flat_args = flatten_args(nested_args)
+    for args in flat_args:
+        args_gt = get_args_gt(args)
+        df_gt   = pd.read_pickle(args_gt.DetectionPkl)
+        df_pred=pd.read_pickle(args.Detection3DPkl)
+        df_id   = args.SubID
+        gt_frames=np.unique(df_gt['fn'])
+        df_pred=df_pred[df_pred['fn'].isin(gt_frames)]
+        # print(np.unique(df_pred['class']))            
+        # df_pred=df_pred.replace({"class":class_dict})
+        # print(np.unique(df_pred['class']))
+        # print(df_gt)
+        # print(args_gt.DetectionPkl)
+        # input()
+        df_gt['df_id']=q
+        df_pred['df_id']=q
+        df_pred= df_pred.loc[df_pred['fn'].isin(np.unique(df_gt['fn']))]
+        dfs_gt.append(df_gt)
+        dfs_pred.append(df_pred)
+        q=q+1
+    dfs_gt=pd.concat(dfs_gt)
+    dfs_pred=pd.concat(dfs_pred)
+    dfs_gt, dfs_pred= convert_classes(args, dfs_gt,dfs_pred)
+    print(np.unique(dfs_pred['class']))
+    print('Starting')
+    result, total_tp, total_fp, total_gt,aps=compare_dfs_3d(dfs_gt,dfs_pred) 
+    print(base_args.DetectEvalPth)
+    with open(base_args.DetectEvalPth, "w") as f:
+        f.write("Camera ID                AP \n")
+        f.write(str("Camera") + ": " +str(result)  +'\n')
+        f.write("Average AP: " + str(np.mean(result))+ '\n')
+        f.write("APs(50:95):" + str(aps)+"\n")
+        
+        f.write("Total TP :" + str(total_tp)+'\n')
+        f.write("Total_FP :"+ str(total_fp) + '\n')
+        f.write("Total GT :" + str(total_gt  ))    
+
+
+    
+def evaluate_detection(base_args,nested_args):
+    if(base_args.Detect3D):
+        evaluate_detection_3d(base_args,nested_args)
+    else:
+        evaluate_detection_2d(base_args,nested_args)
+def evaluate_detection_2d(base_args, nested_args):
     dfs_pred = []
     dfs_gt   = []
     dfs_ids  = []
@@ -800,9 +850,95 @@ def CalculateAveragePrecision(rec, prec):
         ap = ap + np.sum((mrec[i] - mrec[i - 1]) * mpre[i])
     # return [ap, mpre[1:len(mpre)-1], mrec[1:len(mpre)-1], ii]
     return [ap, mpre[0:len(mpre) - 1], mrec[0:len(mpre) - 1], ii]
-def compare_difs(dfs_np, pred_np):
-    thresholds= np.asarray([ x/100.0 for x in range(50,105,5)])
-    print(dfs_np,pred_np)    
+
+def calculate_distance(pred,gt):
+    pred_mid= np.array([(pred[0]+pred[12])/2, (pred[1]+pred[13])/2])
+    gt_mid= np.array([(gt[0]+gt[12])/2, (gt[1]+gt[13])/2])
+    return np.linalg.norm(pred_mid-gt_mid)
+def compare_dfs_3d(dfs_gts, pred_dfs):
+    thresholds= np.asarray([0.5, 1.0, 2.0, 4.0],)
+    classes=np.unique(dfs_gts['class'])
+
+    class_aps=[]
+    total_tp=0
+    total_fp=0
+    total_gt=0
+    class_aps=[]
+    class_counts=[]
+    aps_threshold=[]
+    print(thresholds)
+    for c in classes:
+        print(c)
+        aps=[]    
+        gt=dfs_gts[dfs_gts['class']==c]
+        pred=pred_dfs[pred_dfs['class']==c]
+        gt.insert(0, 'index', range(0, len(gt)))
+        # gt_byframe=dict(tuple(gt.groupby('fn')))
+        pred_bboxes=sorted(np.asarray(pred), key=lambda x:x[2], reverse=True)
+
+        TP= np.zeros((len(pred_bboxes), len(thresholds)))
+        FP= np.zeros((len(pred_bboxes), len(thresholds)))
+        n_gt=len(gt)
+        n_pred=len(pred)
+        used_ids=np.zeros((len(gt), len(thresholds)) , dtype=bool)
+        for i in range(len(pred_bboxes)):
+            pred_bbox=pred_bboxes[i]
+            g_= gt[gt['df_id']==pred_bbox[-1]]
+            gts=np.asarray(g_[(g_['fn']==pred_bbox[0])])
+            
+            distance_min=999999999999999999999999
+            p=pred_bbox[3:-1]
+            distance_idx=-1         
+               
+            for k, gt_bbox in enumerate(gts):
+                g=gt_bbox[5:21]    
+                distance=calculate_distance(p,g)
+                if distance<distance_min:
+                    distance_min=distance
+                    distance_idx=int(gt_bbox[0])
+            distance_eval=distance_min<thresholds
+            if(distance_idx!=-1):
+                TP[i]= ~used_ids[distance_idx] &  distance_eval
+                FP[i]= 1-(TP[i])
+                used_ids[distance_idx]= used_ids[distance_idx] | distance_eval                    
+            else:
+                FP[i]=np.ones((len(thresholds)))
+                TP[i]=1-FP[i]
+        tp_s= np.sum(TP, axis=0)
+        fp_s= np.sum(FP, axis=0)
+        tp_cs=np.cumsum(TP,axis=0)
+        fp_cs=np.cumsum(FP,axis=0)     
+        total_tp+=tp_s
+        total_fp+=fp_s
+        total_gt+=n_gt
+        recall=tp_cs/n_gt
+        precision=np.divide(tp_cs,(tp_cs+fp_cs))
+        recall_thresholds = np.linspace(0.0,
+                                        1.00,
+                                        int(np.round((1.00 - 0.0) / 0.01)) + 1,
+                                        endpoint=True)            
+    
+        for rec, prec in zip(recall.T,precision.T):
+            i_pr = np.maximum.accumulate(prec[::-1])[::-1]   
+            rec_idx = np.searchsorted(rec, recall_thresholds, side="left")      
+            n_recalls = len(recall_thresholds)             
+            i_pr = np.array([i_pr[r] if r < len(i_pr) else 0 for r in rec_idx])  
+            [ap, mpre, mrec, ii]=CalculateAveragePrecision(rec,prec)
+            print(np.mean(i_pr), ap)
+            aps.append(np.mean(i_pr))
+        if n_gt>0:
+            class_aps.append(np.mean(aps))
+            aps_threshold.append(aps)
+            print("class ", c, " n_gt ", n_gt, "n_pred ", n_pred, ' ap ', np.mean(aps))
+        class_counts.append(n_pred)
+    mAP=np.average(class_aps)
+    aps_threshold=np.average(np.array(aps_threshold),axis=0)
+    print(total_tp, total_fp, total_gt)
+    print(class_aps)
+    print(aps_threshold)
+    return mAP, total_tp, total_fp, total_gt, aps_threshold
+
+
 def compare_dfs(dfs_gts, pred_dfs):
     thresholds= np.asarray([ x/100.0 for x in range(50,100,5)])
     # classes=[ 0,1, 2,3, 5, 7]

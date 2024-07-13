@@ -242,6 +242,13 @@ def get_vis_detection_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisDetection + Puncuations.Dot + args.Detector + Puncuations.Dot +SubTaskExt.VisDetection)
+
+def get_vis_detection_3d_path_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Visualization",file_name + Puncuations.Dot + SubTaskMarker.VisDetection + Puncuations.Dot + args.Detector+Puncuations.Dot+ "3D" + Puncuations.Dot +SubTaskExt.VisDetection)
+
+
 def get_vis_detection_roi_path_from_args(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -461,18 +468,49 @@ def get_to_ground_raster_path(args):
     file_name = file_name.split("/")[-1]
     return os.path.join(args.Dataset, "Results/DSM/" + Puncuations.Dot + "ToGroundRaster" + Puncuations.Dot + "pkl")
 
+def get_3D_detection_path_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector+ Puncuations.Dot+ "3D" + Puncuations.Dot +SubTaskExt.Detection)
+
+def get_3D_detection_pkl_from_args(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector+ Puncuations.Dot+ "3D" + Puncuations.Dot +SubTaskExt.Pkl)
+def get_3D_detection_pkl_back_up(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + SubTaskMarker.Detection + Puncuations.Dot + args.Detector+ Puncuations.Dot+ "3D" + Puncuations.Dot + "backup" + Puncuations.Dot +SubTaskExt.Pkl)
+
+
 def add_detection_pathes_to_args(args):
     d_path = get_detection_path_from_args(args)
     d_d_path = get_detection_path_with_detector_from_args(args)
     d_pkl = get_detection_pkl(args)
     d_pkl_bu = get_detection_pkl_back_up(args)
+
+
+    
     args.DetectionPath = d_path
     args.DetectionDetectorPath = d_d_path
     args.DetectionPkl = d_pkl
     args.DetectionPklBackUp = d_pkl_bu
     args.DetectionCOCO = get_detection_coco(args)
     return args
+def add_3D_detection_paths_to_args(args):
+    d_3d_path=get_3D_detection_path_from_args(args)
+    d_3d_pkl=get_3D_detection_pkl_from_args(args)
+    d_3d_pkl_bu= get_3D_detection_pkl_back_up(args)
+    vis_detection_3d_path = get_vis_detection_3d_path_from_args(args)
+    detection_eval_path= get_detect_eval_3d_save_path(args)
 
+    args.DetectEval3DPth = detection_eval_path
+    args.VisDetection3dPth = vis_detection_3d_path
+
+    args.Detection3DPath=d_3d_path
+    args.Detection3DPkl=d_3d_pkl
+    args.Detection3DPklBackUp= d_3d_pkl_bu
+    return args
 def add_vis_detection_path_to_args(args):
     vis_detection_path = get_vis_detection_path_from_args(args)
     args.VisDetectionPth = vis_detection_path
@@ -534,6 +572,20 @@ def get_detect_eval_save_path(args):
         return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+ Puncuations.Dot+roistr+"txt")
     else:
         return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+Puncuations.Dot+ "".join((args.Camera)) + Puncuations.Dot+roistr+"txt")
+    
+
+def get_detect_eval_3d_save_path(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    if(args.Rois is not None):
+        roistr="".join([str(args.Rois[i]+args.Rois[i+1]) for i in range(0, len(args.Rois),2)])+ Puncuations.Dot
+    else:
+        roistr=""
+    if(args.Camera is None):
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+ Puncuations.Dot+args.DetectorVersion+ Puncuations.Dot+ "3D"+Puncuations.Dot+roistr+"txt")
+    else:
+        return os.path.join(args.Dataset, "Results/Detection",file_name + Puncuations.Dot + "EvaluateDetection" + Puncuations.Dot + args.GTDetector+ Puncuations.Dot + args.Detector+ Puncuations.Dot+args.DetectorVersion+ Puncuations.Dot+ "3D"+ Puncuations.Dot+ "".join((args.Camera)) + Puncuations.Dot+roistr+"txt")
+
 def get_detect_eval_save_path_small(args):
     file_name, file_ext = os.path.splitext(args.Video)
     file_name = file_name.split("/")[-1]
@@ -1184,7 +1236,8 @@ def complete_args(args):
         args.FineTune:
         args = add_detection_pathes_to_args(args)
         args = add_vis_detection_path_to_args(args)
-        
+    if (args.Detect3D):
+        args=add_3D_detection_paths_to_args(args)
     if not args.Tracker is None:
         args = add_tracking_path_to_args(args)
         args = add_vis_tracking_path_to_args(args)

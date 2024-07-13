@@ -20,6 +20,7 @@ import Detectors.DeformableDETR.detect
 import Detectors.CenterNet.detect
 import Detectors.pgd2D.detect
 import Detectors.Petr2D.detect
+import Detectors.Fcos3D.detect
 # --------------------------
 detectors = {}
 detectors["detectron2"]     = Detectors.detectron2.detect
@@ -43,18 +44,28 @@ detectors["GTHW7FG"]        = Detectors.GTHW7FG.detect
 detectors["GTHW73D"]        = Detectors.GTHW73D.detect
 detectors["pgd2D"]          = Detectors.pgd2D.detect
 detectors["Petr2D"]         = Detectors.Petr2D.detect
-
+detectors['Fcos3D'] = Detectors.Fcos3D.detect
 def detect(args):
     # check if detector names is valid
     if args.Detector not in os.listdir("./Detectors/"):
         return FailLog("Detector not recognized in ./Detectors/")
     current_detector = detectors[args.Detector]
     current_detector.detect(args)
-    
+    if(args.Detect3D):
+        store_df_3d_pickle(args)
+        store_df_3d_pickle_backup(args)
     store_df_pickle(args)
     store_df_pickle_backup(args)
     return SucLog("Detection files stored")
-    
+
+
+def store_df_3d_pickle_backup(args):
+    df= detectors[args.Detector].df_3D(args)
+    df.to_pickle(args.Detection3DPklBackUp, protocol=4)
+
+def store_df_3d_pickle(args):
+    df= detectors[args.Detector].df_3D(args)
+    df.to_pickle(args.Detection3DPkl, protocol=4)
 def store_df_pickle_backup(args):
     df = detectors[args.Detector].df(args)
     df.to_pickle(args.DetectionPklBackUp, protocol=4)
@@ -87,7 +98,7 @@ def remove_inside_of_ROI(df,roi):
 def visdetect(args):
     if args.Detector is None:
         return FailLog("To interpret detections you should specify detector")    
-    if(args.Detector == "GTHW73D"):
+    if((args.Detector == "GTHW73D") | args.Detect3D):
         visdetect_3d(args)
     else:
         visdetect_2d(args)
@@ -442,7 +453,7 @@ def visdetect_2d(args):
     # detection_df=detection_df.iloc[[2,15,28,41]]
     # open the original video and process it
     cap = cv2.VideoCapture(args.Video)
-
+    # detection_df=detection_df.iloc[[9, 43, 69, 94, 125, 152, 183, 208, 242, 264, 289, 312, 338, 367, 397, 428, 458, 486, 516, 544, 572, 601, 629, 658, 688, 719, 748, 777, 805, 834, 863, 889, 919, 948, 976, 1003, 1030, 1055, 1085, 1113, 1140, 1169, 1197, 1225, 1252, 1284, 1310, 1337, 1367, 1395, 1433, 1460, 1493, 1525, 1556, 1584, 1614, 1644, 1677, 1707, 1738, 1765, 1797, 1823, 1854, 1885, 1913, 1941, 1974, 1998, 2031, 2063, 2100, 2130, 2161, 2190, 2218, 2248, 2277, 2306, 2335, 2365, 2393, 2420, 2445, 2479, 2511, 2540, 2571, 2604, 2636, 2670, 2702, 2732, 2758, 2789, 2819, 2850, 2883, 2915, 2944, 2973, 3005, 3034, 3064, 3097, 3123, 3155, 3184, 3213, 3242, 3273, 3302, 3333, 3361, 3390, 3420, 3452, 3481, 3512, 3542, 3568, 3598, 3631, 3659, 3686, 3718, 3749, 3782, 3814, 3844, 3875, 3907, 3937, 3967, 3994, 4022, 4053, 4081, 4113, 4146, 4178, 4208, 4242, 4270, 4304, 4336, 4367, 4400, 4434, 4469, 4501, 4531, 4568, 4598, 4631, 4661, 4691, 4721, 4753, 4784, 4793, 4824, 4854, 4884, 4913, 4941, 4972, 5002, 5031, 5060, 5089, 5118, 5149, 5178, 5209, 5241, 5273, 5305, 5336, 5368, 5400, 5431, 5463, 5495, 5527, 5557, 5590, 5621, 5653, 5684, 5715, 5747, 5781, 5815, 5849, 5884, 5917, 5950, 5984, 6016, 6050, 6084, 6118, 6153, 6186, 6219, 6251, 6284, 6317, 6349]]
     if (cap.isOpened()== False): 
         return FailLog("Error opening video stream or file")
     frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -473,7 +484,11 @@ def visdetect_3d(args):
     if args.Detector is None:
         return FailLog("To interpret detections you should specify detector")
     # parse detection df using detector module
-    detection_df = pd.read_pickle(args.DetectionPkl)
+    if(args.Detect3D):
+        detection_df = pd.read_pickle(args.Detection3DPkl)
+        # detection_df=  detection_df[detection_df['score']>0.3]
+    else:
+        detection_df = pd.read_pickle(args.DetectionPkl)
     # open the original video and process it
     cap = cv2.VideoCapture(args.Video)
     if (cap.isOpened()== False): 
@@ -482,7 +497,12 @@ def visdetect_3d(args):
     fps = int(cap.get(cv2.CAP_PROP_FPS))
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    out_cap = cv2.VideoWriter(args.VisDetectionPth,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
+    if(args.Detect3D):
+        print(args.VisDetection3dPth)
+        out_cap = cv2.VideoWriter(args.VisDetection3dPth,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
+    else:    
+        print(args.VisDetectionPth)
+        out_cap = cv2.VideoWriter(args.VisDetectionPth,cv2.VideoWriter_fourcc(*"mp4v"), fps, (frame_width,frame_height))
     if not args.ForNFrames is None:
         frames = args.ForNFrames
     for frame_num in tqdm(range(frames)):
@@ -492,9 +512,11 @@ def visdetect_3d(args):
         if not ret: continue
         for i, row in detection_df[detection_df["fn"]==frame_num].iterrows():
             # draw 3D box
+            
             frame = draw_3Dbox_on_image(frame, row)
             # draw 2D box
-            frame = draw_box_on_image(frame, row.x2D1, row.y2D1, row.x2D2, row.y2D2, c=(0, 0, 255))
+            if(not args.Detect3D):
+                frame = draw_box_on_image(frame, row.x2D1, row.y2D1, row.x2D2, row.y2D2, c=(0, 0, 255))
             # draw object uuid on top
             # cv2.putText(frame, f'id:', (int(row.x2D1), int(row.y2D1)-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
             # cv2.putText(frame, f'{row.id}', (int(row.x2D1) + 60, int(row.y2D1)-10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 5)

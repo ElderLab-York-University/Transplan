@@ -71,7 +71,7 @@ def zoom_at(img, zoom=1, angle=0, coord=None):
 def vistrack(args):
     # current_tracker = trackers[args.Tracker]
     # df = current_tracker.df(args)
-    df = pd.read_pickle(args.TrackingPklBackUp)
+    df = pd.read_pickle(args.TrackingPkl)
     # ids_to_vis=[36,37]
     # df= df['id'].isin(ids_to_vis)
     if(args.BackprojectionMethod is not None and args.BackprojectionMethod=="Homography"):

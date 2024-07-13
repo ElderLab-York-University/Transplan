@@ -617,7 +617,7 @@ def get_parser():
     parser.add_argument("--SahiPatchOverlapRatio", help="overlap ration of sahi patches", type=float, default=0.25)
     parser.add_argument("--SahiPatchBatchSize", help="batch size of patches of sahi", type=int, default=0)
     parser.add_argument("--SahiNMSTh", help="IoU threshould for merging results when using sahi", type=float, default=0.25)
-
+    parser.add_argument("--Detect3D", help="If to run 3D detection along with 2D detection (implemented for pgd2d)", action="store_true")
     parser.add_argument("--CVPR", help="prepare CVPR stats of dataset", action='store_true')
     parser.add_argument("--OSR", help="over sampling reatio after resampling", type=int, default=10)
     parser.add_argument("--KDEBW", help="BandWidth of KDE", type=float)
