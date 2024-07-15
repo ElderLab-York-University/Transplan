@@ -502,9 +502,9 @@ def add_3D_detection_paths_to_args(args):
     d_3d_pkl=get_3D_detection_pkl_from_args(args)
     d_3d_pkl_bu= get_3D_detection_pkl_back_up(args)
     vis_detection_3d_path = get_vis_detection_3d_path_from_args(args)
-    detection_eval_path= get_detect_eval_3d_save_path(args)
-
-    args.DetectEval3DPth = detection_eval_path
+    if(args.DetectEval):
+        detection_eval_path= get_detect_eval_3d_save_path(args)
+        args.DetectEval3DPth = detection_eval_path
     args.VisDetection3dPth = vis_detection_3d_path
 
     args.Detection3DPath=d_3d_path
@@ -702,6 +702,16 @@ def add_tracklabelling_export_to_args(args):
     export_pth_image = get_tracklabelling_export_pth_image(args)
     args.TrackLabellingExportPth = export_pth
     args.TrackLabellingExportPthImage = export_pth_image
+    return args
+
+def get_cityflow_GT_txt(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    gt_path = os.path.join(args.Dataset, "gt","gt.txt")
+    return gt_path
+
+def add_cityflow_gt_to_args(args):
+    args.GTCityTxt= get_cityflow_GT_txt(args)
     return args
 
 def add_metadata_to_args(args):
@@ -1263,6 +1273,7 @@ def complete_args(args):
     args = add_GT_path_to_args(args)
     args = add_3DGT_path_to_args(args)
     args = add_GT_Json_path_to_args(args)
+    args= add_cityflow_gt_to_args(args)    
     args = add_images_folder_to_args(args)
 
     args = add_check_points_path_to_args(args)

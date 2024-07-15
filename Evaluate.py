@@ -939,7 +939,7 @@ def compare_dfs_3d(dfs_gts, pred_dfs):
     return mAP, total_tp, total_fp, total_gt, aps_threshold
 
 
-def compare_dfs(dfs_gts, pred_dfs):
+def compare_dfs(dfs_gts, pred_dfs, gtdetector="GTHW7"):
     thresholds= np.asarray([ x/100.0 for x in range(50,100,5)])
     # classes=[ 0,1, 2,3, 5, 7]
     # classes=np.unique(pred_dfs['class'])
@@ -985,12 +985,12 @@ def compare_dfs(dfs_gts, pred_dfs):
             pred_bbox=pred_bboxes[i]
             g_= gt[gt['df_id']==pred_bbox[-1]]
             gts=np.asarray(g_[(g_['fn']==pred_bbox[0])])
-            
             iou_max=0
             p=pred_bbox[3:-1]
             iou_idx=-1            
             for k, gt_bbox in enumerate(gts):
-                g=gt_bbox[[0,4,5,6,7]]    
+                if(gtdetector=="GTHW7" or gtdetector=="GTCityFlow"):
+                    g=gt_bbox[[0,4,5,6,7]]
                 # print(g)
                 iou=calculate_iou(p,g[1:])
                 if iou>iou_max:
