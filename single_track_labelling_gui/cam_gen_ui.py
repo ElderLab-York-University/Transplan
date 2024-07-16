@@ -259,23 +259,36 @@ class ui_func(QMainWindow):
             existing_df = df_from_pickle(self.export_path_pkl)
             existing_df.loc[
                 ~existing_df["class"].isin(self.list_class_ids_to_consider), "moi"
-            ] = -1
+            ] = [
+                frozenset({-1})
+                for _ in range(
+                    len(
+                        existing_df.loc[
+                            ~existing_df["class"].isin(self.list_class_ids_to_consider),
+                            "moi",
+                        ]
+                    )
+                )
+            ]
             self.tracks_df = existing_df
 
             # updating moi counts
             existing_df_unique = existing_df.drop_duplicates(subset="id")
             moi_value_counts = existing_df_unique["moi"].value_counts()
-            for moi, count in moi_value_counts.items():
-                if moi == -1:
-                    self.counts[-1] = count
-                else:
-                    self.counts[moi - 1] = count
+            for mois, count in moi_value_counts.items():
+                for moi in mois:
+                    if moi == -1:
+                        self.counts[-1] += count
+                    else:
+                        self.counts[moi - 1] += count
             self.update_moi_labels()
         else:
             non_considered_tracks = self.df[
                 ~self.df["class"].isin(self.list_class_ids_to_consider)
             ]
-            non_considered_tracks["moi"] = -1
+            non_considered_tracks["moi"] = [
+                frozenset({-1}) for _ in range(len(non_considered_tracks))
+            ]
             self.tracks_df = non_considered_tracks
         self.df = self.df[self.df["class"].isin(self.list_class_ids_to_consider)]
 
@@ -292,14 +305,15 @@ class ui_func(QMainWindow):
             self.pushButtons[i].setStyleSheet("color: black;")
 
         if (self.tracks_df["id"] == current_id).any():
-            current_moi = self.tracks_df.loc[
+            current_mois = self.tracks_df.loc[
                 self.tracks_df["id"] == current_id, "moi"
             ].unique()[0]
 
-            if current_moi == -1:
-                self.pushButtons[-1].setStyleSheet("color: green;")
-            else:
-                self.pushButtons[current_moi - 1].setStyleSheet("color: green;")
+            for current_moi in current_mois:
+                if current_moi == -1:
+                    self.pushButtons[-1].setStyleSheet("color: green;")
+                else:
+                    self.pushButtons[current_moi - 1].setStyleSheet("color: green;")
 
     def draw_track_on_image(self, image, current_track):
         temp_img = image.copy()
@@ -443,24 +457,40 @@ class ui_func(QMainWindow):
             return self.track_resample(track, threshold)
 
     def update_moi(self, moi):
-        if moi == -1:
-            self.counts[-1] += 1
-        else:
-            self.counts[moi - 1] += 1
-
         if (self.tracks_df["id"] == self.current_id).any():
-            prev_moi = self.tracks_df.loc[
+            current_moi = self.tracks_df.loc[
                 self.tracks_df["id"] == self.current_id, "moi"
             ].unique()[0]
 
-            if prev_moi == -1:
-                self.counts[-1] = max(0, self.counts[-1] - 1)
+            current_moi_mutable = set(current_moi)
+            if moi in current_moi_mutable:
+                current_moi_mutable.remove(moi)
+                if moi == -1:
+                    self.counts[-1] = max(0, self.counts[-1] - 1)
+                else:
+                    self.counts[moi - 1] = max(0, self.counts[moi - 1] - 1)
             else:
-                self.counts[prev_moi - 1] = max(0, self.counts[prev_moi - 1] - 1)
+                current_moi_mutable.add(moi)
+                if moi == -1:
+                    self.counts[-1] += 1
+                else:
+                    self.counts[moi - 1] += 1
 
-            self.tracks_df.loc[self.tracks_df["id"] == self.current_id, "moi"] = moi
+            current_moi = frozenset(current_moi_mutable)
+            self.tracks_df.loc[self.tracks_df["id"] == self.current_id, "moi"] = [
+                current_moi
+                for _ in range(
+                    len(self.tracks_df.loc[self.tracks_df["id"] == self.current_id])
+                )
+            ]
         else:
-            self.current_track["moi"] = moi
+            if moi == -1:
+                self.counts[-1] += 1
+            else:
+                self.counts[moi - 1] += 1
+            self.current_track["moi"] = [
+                frozenset({moi}) for _ in range(len(self.current_track))
+            ]
             self.tracks_df = pd.concat(
                 [self.tracks_df, self.current_track], ignore_index=True
             )
@@ -472,68 +502,67 @@ class ui_func(QMainWindow):
     def c_pushButton_1(self):
         self.update_moi(1)
         self.update_moi_labels()
-        self.plot_next_track()
+        self.update_moi_button(self.current_id)
 
     def c_pushButton_2(self):
         self.update_moi(2)
         self.update_moi_labels()
-        self.plot_next_track()
+        self.update_moi_button(self.current_id)
 
     def c_pushButton_3(self):
         self.update_moi(3)
         self.update_moi_labels()
-        self.plot_next_track()
+        self.update_moi_button(self.current_id)
 
     def c_pushButton_4(self):
         self.update_moi(4)
         self.update_moi_labels()
-        self.plot_next_track()
+        self.update_moi_button(self.current_id)
 
     def c_pushButton_5(self):
         self.update_moi(5)
         self.update_moi_labels()
-        self.plot_next_track()
+        self.update_moi_button(self.current_id)
 
     def c_pushButton_6(self):
         self.update_moi(6)
         self.update_moi_labels()
-        self.plot_next_track()
+        self.update_moi_button(self.current_id)
 
     def c_pushButton_7(self):
         self.update_moi(7)
         self.update_moi_labels()
-        self.plot_next_track()
+        self.update_moi_button(self.current_id)
 
     def c_pushButton_8(self):
         self.update_moi(8)
         self.update_moi_labels()
-        self.plot_next_track()
+        self.update_moi_button(self.current_id)
 
     def c_pushButton_9(self):
         self.update_moi(9)
         self.update_moi_labels()
-        self.plot_next_track()
+        self.update_moi_button(self.current_id)
 
     def c_pushButton_10(self):
         self.update_moi(10)
         self.update_moi_labels()
-        # self.tracks['10'].append(self.current_track)
-        self.plot_next_track()
+        self.update_moi_button(self.current_id)
 
     def c_pushButton_11(self):
         self.update_moi(11)
         self.update_moi_labels()
-        self.plot_next_track()
+        self.update_moi_button(self.current_id)
 
     def c_pushButton_12(self):
         self.update_moi(12)
         self.update_moi_labels()
-        self.plot_next_track()
+        self.update_moi_button(self.current_id)
 
     def c_pushButton_skip(self):
         self.update_moi(-1)
         self.update_moi_labels()
-        self.plot_next_track()
+        self.update_moi_button(self.current_id)
 
     def delete_last_trajectory(self):
         while len(self.tracks_df) > 1:
@@ -546,9 +575,11 @@ class ui_func(QMainWindow):
         print(self.tracks_df)
         if self.tracks_df.shape[0] > 0:
             self.tracks_df.to_pickle(self.export_path_pkl)
-            self.tracks_df[["id", "uuid", "moi"]].drop_duplicates(subset="id").to_csv(
-                self.export_path_csv, index=False
+            tracks_to_write = self.tracks_df[["id", "uuid", "moi"]].drop_duplicates(
+                subset="id"
             )
+            tracks_to_write["moi"] = tracks_to_write["moi"].apply(lambda x: list(x))
+            tracks_to_write.to_csv(self.export_path_csv, index=False)
             QMessageBox.information(
                 self,
                 "Results saved",
