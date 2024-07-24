@@ -704,7 +704,12 @@ def get_GT_json_path(args):
     file_name = file_name.split("/")[-1]
     gt_path = os.path.join(args.Dataset, file_name+".gt.json")
     return gt_path
-    
+
+def get_cityflow_GT_txt(args):
+    file_name, file_ext = os.path.splitext(args.Video)
+    file_name = file_name.split("/")[-1]
+    gt_path = os.path.join(args.Dataset, "gt","gt.txt")
+    return gt_path
     
 def add_GT_path_to_args(args):
     args.GT = get_GT_path(args)
@@ -715,7 +720,9 @@ def add_3DGT_path_to_args(args):
     # args.INTRINSICS_PATH        = get_intrinsics_path(args)
     # args.EXTRINSICS_PATH        = get_extrinsics_path(args)    
     return args
-
+def add_cityflow_gt_to_args(args):
+    args.GTCityTxt= get_cityflow_GT_txt(args)
+    return args
 def add_GT_Json_path_to_args(args):
     args.GTJson=get_GT_json_path(args)
     return args
@@ -948,6 +955,7 @@ def complete_args(args):
     args = add_GT_path_to_args(args)
     args = add_3DGT_path_to_args(args)
     args = add_GT_Json_path_to_args(args)
+    args= add_cityflow_gt_to_args(args)
     args = add_images_folder_to_args(args)
 
     args = add_check_points_path_to_args(args)
