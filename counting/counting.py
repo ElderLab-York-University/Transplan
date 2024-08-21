@@ -992,21 +992,23 @@ class IKDE():
         for i, x in enumerate(xs):
             for j, y in enumerate(ys):
                 scores[j, i] = infer_map[(x, y)]
-
+                
+        plt.figure(figsize=(8, 6))
         plt.imshow(img)
         plt.axis("off")
         plt.contourf(xs, ys, scores, alpha=0.5, levels=100, cmap='plasma')
-        # plt.colorbar()
-        plt.title(f"prototpyes used: {self.n_prototype[moi]}")
+        plt.colorbar(format='%.0e')
+        # plt.title(f"prototpyes used: {self.n_prototype[moi]}")
         plt.savefig(vis_path+f"logdensity_{moi}.png", bbox_inches='tight')
         plt.close("all")
 
         scores = np.exp(scores)
+        plt.figure(figsize=(8, 6))
         plt.imshow(img)
         plt.axis("off")
         plt.contourf(xs, ys, scores, alpha=0.5, levels=100, cmap="plasma")
-        # plt.colorbar()
-        plt.title(f"prototpyes used: {self.n_prototype[moi]}")
+        plt.colorbar(format='%.0e')
+        # plt.title(f"prototpyes used: {self.n_prototype[moi]}")
         plt.savefig(vis_path+ f"density_{moi}.png", bbox_inches='tight')
         plt.close("all")
 
