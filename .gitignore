@@ -23,5 +23,15 @@ Thumbs.db
 *.pyc
 *__pychace__/*
 
+# Environments
+################
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
 # The Resuls file under DemoDataset
 ./DemoDataset/Split1/Segment1/Source1/Results/*
