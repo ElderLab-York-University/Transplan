@@ -1,11 +1,12 @@
 import pandas as pd
+from typing import Tuple
 
 
 def df_from_pickle(pickle_path: str) -> pd.DataFrame:
     return pd.read_pickle(pickle_path)
 
 
-def bound_point_to_bbox(x, y, x1, y1, x2, y2):
+def bound_point_to_bbox(x, y, x1, y1, x2, y2) -> Tuple:
     # Ensure x1 <= x2 and y1 <= y2 for a valid bbox
     x_min, x_max = min(x1, x2), max(x1, x2)
     y_min, y_max = min(y1, y2), max(y1, y2)

@@ -1,5 +1,5 @@
 from vehicle_localization.depth_anything_v2_inference import DepthAnythingV2Inference
-from DSM import project_to_ground, load_json_file
+from DSM import project_points_to_ground, load_json_file
 import cv2
 import numpy as np
 import joblib
@@ -7,6 +7,7 @@ import pandas as pd
 from vehicle_localization.utils import *
 import utm
 import os
+from vehicle_localization.utils import bound_point_to_bbox
 
 
 class DepthAnythingLocalizer:
@@ -17,7 +18,7 @@ class DepthAnythingLocalizer:
         self.projection_dict = load_json_file(args.EXTRINSICS_PATH)
 
     @staticmethod
-    def _load_model_and_apply_to_point_cloud(relative_depth_map, model_path):
+    def _load_model_and_apply_to_depth_map(relative_depth_map, model_path):
         # Load the model and the polynomial feature transformer
         model, poly = joblib.load(model_path)
 
@@ -83,7 +84,6 @@ class DepthAnythingLocalizer:
                 int(row["y1"]),
                 int(row["x2"]),
                 int(row["y2"]),
-                row["uuid"],
                 row["fn"],
             )
             if frame_number not in frames_dict:
@@ -93,66 +93,96 @@ class DepthAnythingLocalizer:
         cap = cv2.VideoCapture(video_path)
         frame_count = 0
         ground_points = []
+        bbox_points = []
+        frames_imgs = {}
+        frames_depth = {}
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 break
 
             if frame_count in frames_dict:
-                depth_img_relative = self.model.run_inference(frame)
-                depth_img = DepthAnythingLocalizer._load_model_and_apply_to_point_cloud(
-                    depth_img_relative,
-                    model_path=self.args.DepthScalingModelPath,
-                )
-                point_cloud_non_ground = DepthAnythingLocalizer._depth_to_point_cloud(
-                    depth_img,
-                    np.array(self.intrinsic_dict[self.args.CamKey]["intrinsic_matrix"]),
-                    np.array(
-                        self.projection_dict["T_{}_localgta".format(self.args.CamKey)]
-                    ),
-                )
-
-                frame_shape = frame.shape
-
-                bbox_infos = frames_dict[frame_count]
-                for bbox in bbox_infos:
-                    x1, y1, x2, y2, uuid, fn = bbox
-                    cent_u = int((x1 + x2) / 2)
-                    cent_v = int((y1 + y2) / 2)
-                    point_3d = (
-                        DepthAnythingLocalizer._get_3d_coordinates_from_point_cloud(
-                            cent_u,
-                            cent_v,
-                            point_cloud_non_ground,
-                            frame_shape,
-                            self.projection_dict,
-                        )
-                    )
-
-                    xy1_3d = project_to_ground(self.args, x1, y1, self.args.CamKey)[1]
-
-                    xy2_3d = project_to_ground(self.args, x2, y2, self.args.CamKey)[1]
-
-                    point_3d_corrected = bound_point_to_bbox(
-                        point_3d[0],
-                        point_3d[1],
-                        xy1_3d[0],
-                        xy1_3d[1],
-                        xy2_3d[0],
-                        xy2_3d[1],
-                    )
-
-                    latitude, longitude = utm.to_latlon(
-                        *point_3d_corrected[:2], 17, northern=True
-                    )
-                    ground_points.append([uuid, fn, latitude, longitude])
+                frames_imgs[frame_count] = frame
 
             frame_count += 1
 
         cap.release()
 
+        # run deoth anything on all frames
+        fns = list(frames_imgs.keys())
+        frames = list(frames_imgs.values())
+        batch_size = 8
+        depth_imgs_relative = []
+        for i in range(0, len(frames), batch_size):
+            batch = frames[i : i + batch_size]
+            depth_imgs_relative += self.model.run_batch_inference(batch)
+
+        frames_depth = {
+            fn: np.array(depth_img["depth"])
+            for fn, depth_img in zip(fns, depth_imgs_relative)
+        }
+
+        # create point cloud of each frame and find point coords
+        for fn, depth_img_relative in frames_depth.items():
+            # depth_img_relative = self.model.run_inference(frame)
+            depth_img = DepthAnythingLocalizer._load_model_and_apply_to_depth_map(
+                depth_img_relative,
+                model_path=self.args.DepthScalingModelPath,
+            )
+            point_cloud_non_ground = DepthAnythingLocalizer._depth_to_point_cloud(
+                depth_img,
+                np.array(self.intrinsic_dict[self.args.CamKey]["intrinsic_matrix"]),
+                np.array(
+                    self.projection_dict["T_{}_localgta".format(self.args.CamKey)]
+                ),
+            )
+
+            frame_shape = frames_imgs[fn].shape
+
+            bbox_infos = frames_dict[frame_count]
+            for bbox in bbox_infos:
+                x1, y1, x2, y2, fn = bbox
+                cent_u = int((x1 + x2) / 2)
+                cent_v = int((y1 + y2) / 2)
+                point_3d = DepthAnythingLocalizer._get_3d_coordinates_from_point_cloud(
+                    cent_u,
+                    cent_v,
+                    point_cloud_non_ground,
+                    frame_shape,
+                    self.projection_dict,
+                )
+
+                bbox_points.append([x1, y1])
+                bbox_points.append([x2, y2])
+
+                latitude, longitude = utm.to_latlon(*point_3d[:2], 17, northern=True)
+                ground_points.append([fn, latitude, longitude])
+
+        # bound points to projected bbox
+        projected_bbox_points = project_points_to_ground(
+            self.args, bbox_points, self.args.CamKey
+        )[0].tolist()
+
+        grouped_dprojected_bbox_points = [
+            projected_bbox_points[i : i + 2]
+            for i in range(0, len(projected_bbox_points), 2)
+        ]
+        corrected_ground_points = []
+        for index, bbox_points in enumerate(grouped_dprojected_bbox_points):
+            point_3d_corrected = bound_point_to_bbox(
+                ground_points[index][1],
+                ground_points[index][2],
+                bbox_points[0][0],
+                bbox_points[0][1],
+                bbox_points[1][0],
+                bbox_points[1][1],
+            )
+            corrected_ground_points.append(
+                [ground_points[index][0], point_3d_corrected[0], point_3d_corrected[1]]
+            )
+
         output_df = pd.DataFrame(
-            ground_points, columns=["uuid", "fn", "latitude", "longitude"]
+            corrected_ground_points, columns=["fn", "latitude", "longitude"]
         )
         os.makedirs(self.args.LocalizationExportPath)
         output_df.to_pickle(
