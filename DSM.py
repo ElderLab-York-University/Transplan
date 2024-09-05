@@ -244,11 +244,31 @@ def project_to_ground(args, u, v, cam_key, k=1):
     return np.array([latitude, longitude]), matched_coord
 
 
-def get_point_to_cam_angles(args, u, v, cam_key):
-    projection_dict = load_json_file(args.EXTRINSICS_PATH)
-    matched_coord = project_to_ground(args, u, v, cam_key)[1]
-    point_coord = matched_coord + np.array(projection_dict["T_localgta_gta"])[:-1, -1]
+def project_points_to_ground(args, points, cam_key, k=1):
+    if not os.path.exists(args.ToGroundRaster):
+        coords = load_dsm_points(args)
+        intrinsic_dict = load_json_file(args.INTRINSICS_PATH)
+        projection_dict = load_json_file(args.EXTRINSICS_PATH)
+        create_raster(args, cam_key, coords, projection_dict, intrinsic_dict)
 
+    with open(args.ToGroundRaster, "rb") as f:
+        img_ground_raster = pickle.load(f)
+
+    matched_coords = []
+    lat_longs = []
+    for u, v in points:
+        u_int, v_int = int(u), int(v)
+        matched_coord = img_ground_raster[v_int, u_int]
+        latitude, longitude = utm.to_latlon(*matched_coord[:2], 17, northern=True)
+
+        matched_coords.append(matched_coord)
+        lat_longs.append([latitude, longitude])
+
+    return np.array(lat_longs), np.array(matched_coords)
+
+
+def get_points_to_cam_angles(args, points, cam_key):
+    projection_dict = load_json_file(args.EXTRINSICS_PATH)
     extrinsics = np.array(projection_dict["T_{}_localgta".format(cam_key)])
     R = extrinsics[:3, :3]
     t = extrinsics[:3, 3]
@@ -256,29 +276,33 @@ def get_point_to_cam_angles(args, u, v, cam_key):
     # Compute the camera position in world coordinates
     camera_position = -np.dot(R.T, t)
 
-    V = [
-        (point_coord[0] - camera_position[0]),
-        (point_coord[1] - camera_position[1]),
-        (point_coord[2] - camera_position[2]),
-    ]
+    matched_coord = project_points_to_ground(args, points, cam_key)[1]
+    points_coord = matched_coord + np.array(projection_dict["T_localgta_gta"])[:-1, -1]
 
-    azimuth = np.arctan2(V[1], V[0])
+    angles = []
+    for point_coord in points_coord:
+        V = [
+            (point_coord[0] - camera_position[0]),
+            (point_coord[1] - camera_position[1]),
+            (point_coord[2] - camera_position[2]),
+        ]
 
-    # Elevation angle (θ)
-    elevation = np.arctan2(V[2], np.sqrt(V[0] ** 2 + V[1] ** 2))
+        azimuth = np.arctan2(V[1], V[0])
 
-    # Convert to degrees if needed
-    azimuth_deg = np.degrees(azimuth)
-    elevation_deg = np.degrees(elevation)
+        # Elevation angle (θ)
+        elevation = np.arctan2(V[2], np.sqrt(V[0] ** 2 + V[1] ** 2))
 
-    return elevation_deg, azimuth_deg
+        # Convert to degrees if needed
+        azimuth_deg = np.degrees(azimuth)
+        elevation_deg = np.degrees(elevation)
+
+        angles.append([elevation_deg, azimuth_deg])
+
+    return np.array(angles)
 
 
-def get_point_to_cam_distance(args, u, v, cam_key):
+def get_points_to_cam_distance(args, points, cam_key):
     projection_dict = load_json_file(args.EXTRINSICS_PATH)
-    matched_coord = project_to_ground(args, u, v, cam_key)[1]
-    point_coord = matched_coord + np.array(projection_dict["T_localgta_gta"])[:-1, -1]
-
     extrinsics = np.array(projection_dict["T_{}_localgta".format(cam_key)])
     R = extrinsics[:3, :3]
     t = extrinsics[:3, 3]
@@ -286,15 +310,21 @@ def get_point_to_cam_distance(args, u, v, cam_key):
     # Compute the camera position in world coordinates
     camera_position = -np.dot(R.T, t)
 
-    V = [
-        (point_coord[0] - camera_position[0]),
-        (point_coord[1] - camera_position[1]),
-        (point_coord[2] - camera_position[2]),
-    ]
+    matched_coord = project_points_to_ground(args, points, cam_key)[1]
+    points_coord = matched_coord + np.array(projection_dict["T_localgta_gta"])[:-1, -1]
 
-    distance = math.sqrt(V[0] ** 2 + V[1] ** 2 + V[2] ** 2)
+    distances = []
+    for point_coord in points_coord:
+        V = [
+            (point_coord[0] - camera_position[0]),
+            (point_coord[1] - camera_position[1]),
+            (point_coord[2] - camera_position[2]),
+        ]
 
-    return distance
+        distance = math.sqrt(V[0] ** 2 + V[1] ** 2 + V[2] ** 2)
+        distances.append(distance)
+
+    return np.array(distances)
 
 
 def measure_projection_error():
