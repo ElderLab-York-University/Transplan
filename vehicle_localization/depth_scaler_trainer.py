@@ -1,5 +1,5 @@
 from vehicle_localization.depth_anything_v2_inference import DepthAnythingV2Inference
-from DSM import get_point_to_cam_distance
+from DSM import get_points_to_cam_distance
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 import cv2
@@ -24,15 +24,10 @@ class DepthScalaerTrainer:
             [relative_depth_map[int(v), int(u)] for u, v in tupled_points]
         )
 
-        known_distances = [
-            get_point_to_cam_distance(
-                self.args, int(point[0]), int(point[1]), self.args.CamKey
-            )
-            for point in tupled_points
-        ]
-
         # Known metric depths
-        metric_depths = np.array(known_distances)
+        metric_depths = get_points_to_cam_distance(
+            self.args, tupled_points, self.args.CamKey
+        )
 
         # Create polynomial features
         poly = PolynomialFeatures(degree=2)
