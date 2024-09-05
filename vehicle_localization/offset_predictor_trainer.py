@@ -12,7 +12,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from datetime import datetime
 from sklearn.metrics import mean_squared_error, make_scorer
-from DSM import get_point_to_cam_angles
+from DSM import get_points_to_cam_angles
 from vehicle_localization.utils import *
 
 
@@ -29,6 +29,7 @@ class OffsetPredictorTrainer:
             raise ValueError("input lists should have the same size")
 
         all_data = []
+        all_angles = []
         for path_2d, path_3d in zip(dets_2d_files, dets_3d_files):
             file_name = os.path.basename(path_2d)
             cam_key = get_cam_key(file_name)
@@ -44,6 +45,7 @@ class OffsetPredictorTrainer:
             if min(df_3d["fn"].unique()) < 0:
                 fn_3d_diff = 0 - min(df_3d["fn"].unique())
 
+            points = []
             for index, row in df_2d.iterrows():
                 try:
                     uuid = row["uuid"]
@@ -83,16 +85,10 @@ class OffsetPredictorTrainer:
                         row["y2"],
                     )
 
-                    proj_angles = get_point_to_cam_angles(
-                        args=args,
-                        u=x_cent_bbox,
-                        v=y_cent_bbox,
-                        cam_key=cam_key,
-                    )
+                    points.append([x_cent_bbox, y_cent_bbox])
+
                     all_data.append(
                         [
-                            proj_angles[0],
-                            proj_angles[1],
                             fn + fn_2d_diff,
                             row["class"],
                             row["x1"],
@@ -105,11 +101,18 @@ class OffsetPredictorTrainer:
                     )
                 except:
                     continue
-        data = pd.DataFrame(
+
+            proj_angles = get_points_to_cam_angles(
+                args=args,
+                points=points,
+                cam_key=cam_key,
+            )
+            all_angles += proj_angles.tolist()
+
+        data_angles = pd.DataFrame(all_angles, columns=["elevation", "azimuth"])
+        data_other = pd.DataFrame(
             all_data,
             columns=[
-                "elevation",
-                "azimuth",
                 "fn",
                 "class",
                 "x1",
@@ -119,6 +122,11 @@ class OffsetPredictorTrainer:
                 "gt_x_cent_corrected",
                 "gt_y_cent_corrected",
             ],
+        )
+
+        data = pd.concat(
+            [data_angles, data_other],
+            axis=1,
         )
 
         data["width"] = data["x2"] - data["x1"]
