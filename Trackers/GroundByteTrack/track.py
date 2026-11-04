@@ -134,24 +134,40 @@ def track(args, *unused):
         detections["fn"] = frame_values.astype(int)
         # Unrelated observations outside the requested range are ignored.
         detections = detections[(detections.fn >= 0) & (detections.fn < frames)]
+
+    # GroundByteTracker.update() always discards scores below low_thresh.
+    # Drop them *before* creating contact points, homography projections,
+    # and Python objects. This does not change any accepted associations.
+    detections = detections.loc[detections["score"] >= config.low_thresh].copy()
+
+    # Project the remaining detections once, in a vectorized batch, before
+    # running the sequential tracker. In particular this avoids doing a
+    # separate Pandas/NumPy conversion for each frame.
+    if len(detections):
+        xy_ground = _project(_contact_points(detections, args), h, scale)
+        detections["__ground_x"] = xy_ground[:, 0]
+        detections["__ground_y"] = xy_ground[:, 1]
+
     grouped = {int(fn): group for fn, group in detections.groupby("fn", sort=False)}
     output = []
     for fn in tqdm(range(frames), desc="GroundByteTrack", unit="frame"):
         group = grouped.get(fn)
         frame_dets = []
         if group is not None and len(group):
-            xy_image = _contact_points(group, args)
-            xy_ground = _project(xy_image, h, scale)
-            for n, (_, row) in enumerate(group.iterrows()):
-                box = np.array([row.x1, row.y1, row.x2, row.y2], dtype=float)
-                score = float(row.score)
-                if (not np.isfinite(box).all() or box[2] <= box[0] or
-                    box[3] <= box[1] or not np.isfinite(xy_ground[n]).all() or
-                    not np.isfinite(score)):
-                    continue
-                cls = row["class"] if "class" in group else -1
-                cls = -1 if pd.isna(cls) else int(cls)
-                frame_dets.append(GroundDetection(xy_ground[n], box, score, cls))
+            boxes = group[["x1", "y1", "x2", "y2"]].to_numpy(dtype=float)
+            scores = group["score"].to_numpy(dtype=float)
+            projected = group[["__ground_x", "__ground_y"]].to_numpy(dtype=float)
+            classes = (group["class"].to_numpy() if "class" in group
+                       else np.full(len(group), -1))
+            valid = (np.isfinite(boxes).all(axis=1) &
+                     (boxes[:, 2] > boxes[:, 0]) &
+                     (boxes[:, 3] > boxes[:, 1]) &
+                     np.isfinite(projected).all(axis=1) &
+                     np.isfinite(scores))
+            for n in np.flatnonzero(valid):
+                cls = -1 if pd.isna(classes[n]) else int(classes[n])
+                frame_dets.append(GroundDetection(
+                    projected[n], boxes[n].copy(), float(scores[n]), cls))
         for t in tracker.update(frame_dets, fn):
             output.append((fn, t.track_id, t.score, *t.box, t.cls))
 
