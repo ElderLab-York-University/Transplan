@@ -468,6 +468,11 @@ def get_parser():
     parser.add_argument("--HomographyGUI", help="If pop-up homography GUI", action="store_true")
     parser.add_argument("--Frame", help="visualize the N first frame instead of all of them", type=int, default=10)
     parser.add_argument("--VisHomographyGUI", help="to visualize homography-gui results", action="store_true")
+    parser.add_argument("--HomographyIntrinsics", type=str, default=None,
+                        help="Override the default <video>.intrinsic_calibration.json (args.INTRINSICS_PATH); OpenCV pinhole/fisheye JSON")
+    parser.add_argument("--HomographyCalibrationCamera", type=str, default=None,
+                        help="Camera key for a per-camera HomographyIntrinsics JSON")
+    parser.add_argument("--HomographyVisDPI", help="DPI of the three-panel homography visualization (full-resolution overlay is unaffected)", type=int, default=220)
     parser.add_argument("--TrackLabelingGUI", help="If pop-up Track Labeling GUI", action="store_true")
     parser.add_argument("--Homography", help="If perform backkprojection using homography matrix", action="store_true")
     parser.add_argument("--VisTrajectories", help="If plot all the tracks", action="store_true")

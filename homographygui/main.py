@@ -1,31 +1,28 @@
-import sys
-from PyQt5.QtCore import *#QDir, Qt, QUrl
-from PyQt5.QtMultimedia import *#QMediaContent, QMediaPlayer
-from PyQt5.QtMultimediaWidgets import *#QVideoWidget
-from PyQt5.QtWidgets import *#(QApplication, QFileDialog, QHBoxLayout, QLabel,
-        #QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout, QWidget)
-from PyQt5 import uic
-
-import OpenGL.GL as gl        # python wrapping of OpenGL
-from OpenGL import GLU        # OpenGL Utility Library, extends OpenGL functionality
-
+"""Standalone entry point for Transplan's editable homography GUI."""
 import argparse
+import sys
+
+from PyQt5.QtWidgets import QApplication
+from tabbed_ui_func import tabbed_ui_func
 
 
-import tabbed_ui_func as tui
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--StreetView", required=True, help="Original street-view image")
+    parser.add_argument("--TopView", required=True, help="Original top-view image")
+    parser.add_argument("--Txt", required=True, help="Output homography text path")
+    parser.add_argument("--Npy", required=True, help="Output homography NumPy path")
+    parser.add_argument("--Csv", required=True, help="Correspondence CSV path (auto-loaded if present)")
+    parser.add_argument("--Intrinsics", default=None, help="OpenCV pinhole/fisheye calibration JSON (optional)")
+    parser.add_argument("--CalibrationCamera", default=None, help="Camera key for a per-camera calibration JSON")
+    args = parser.parse_args()
+
+    app = QApplication(sys.argv)
+    window = tabbed_ui_func(args.StreetView, args.TopView, args.Txt, args.Npy, args.Csv,
+                            calibration_path=args.Intrinsics, calibration_camera=args.CalibrationCamera)
+    window.showMaximized()
+    return app.exec_()
+
 
 if __name__ == "__main__":
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--StreetView", help="path to streetview intersection image", type=str)
-        parser.add_argument("--TopView", help="path to topview intersection image", type=str)
-        parser.add_argument("--Txt", help="path to topview intersection image", type=str)
-        parser.add_argument("--Npy", help="path to topview intersection image", type=str)
-        parser.add_argument("--Csv", help="path to topview intersection image", type=str)
-        args = parser.parse_args()
-
-        app = QApplication(sys.argv)
-
-        myapp = tui.tabbed_ui_func(args.StreetView, args.TopView, args.Txt, args.Npy, args.Csv)
-        #myapp.setupUi(self)
-        myapp.showMaximized()
-        sys.exit(app.exec_())
+    sys.exit(main())

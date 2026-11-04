@@ -5,6 +5,8 @@ import Maps
 import DSM
 import Segment
 import Detect
+from homography_calibration import (read_metadata, undistort_points, distort_points,
+                                    undistort_image, resolve_homography_calibration)
 # import homographygui.tabbed_ui_func as tui
 
 #hints the vars set for homography are 
@@ -44,15 +46,33 @@ def download_top_view_image(args):
         print("automatic download only supported for GoogleMap topview")
 
 def lunch_homographygui(args):
-    street = os.path.abspath(args.HomographyStreetView)
-    top = os.path.abspath(args.HomographyTopView)
-    txt = os.path.abspath(args.HomographyTXT)
-    npy = os.path.abspath(args.HomographyNPY)
-    csv = os.path.abspath(args.HomographyCSV)
-    cwd = os.getcwd()
-    os.chdir("./homographygui/")
-    os.system(f"python3 main.py --StreetView='{street}' --TopView='{top}' --Txt='{txt}' --Npy='{npy}' --Csv='{csv}'")
-    os.chdir(cwd)
+    """Launch the editor with robust argument quoting and no cwd side-effects."""
+    import subprocess
+    import sys
+
+    gui_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "homographygui")
+    cmd = [
+        sys.executable, "main.py",
+        "--StreetView", os.path.abspath(args.HomographyStreetView),
+        "--TopView", os.path.abspath(args.HomographyTopView),
+        "--Txt", os.path.abspath(args.HomographyTXT),
+        "--Npy", os.path.abspath(args.HomographyNPY),
+        "--Csv", os.path.abspath(args.HomographyCSV),
+    ]
+    # Prefer an explicit override; otherwise use Transplan's existing
+    # args.INTRINSICS_PATH (<dataset>/<video>.intrinsic_calibration.json).
+    # The .npy's embedded calibration remains the fallback when absent.
+    calibration_path, camera = resolve_homography_calibration(args)
+    if calibration_path:
+        print("Homography lens calibration: {} (camera: {})".format(
+            calibration_path, camera or "auto/single"))
+        cmd.extend(["--Intrinsics", calibration_path])
+        if camera:
+            cmd.extend(["--CalibrationCamera", str(camera)])
+    else:
+        print("No per-video homography calibration file found; "
+              "reusing embedded calibration if present, otherwise legacy uncalibrated mode")
+    subprocess.run(cmd, cwd=gui_dir, check=True)
 
 def iou(det_row, mask_row):
     box1 = det_row
@@ -191,7 +211,7 @@ def get_contact_point(row, args):
 
 def reproj_point(args, x, y, method, **kwargs):
     if method == "Homography":
-        return reproj_point_homography(x, y, kwargs["M"])
+        return reproj_point_homography(x, y, kwargs["M"], kwargs.get("calibration"))
         
     elif method == "DSM":
         return reproj_point_dsm(x, y, kwargs["GroundRaster"], kwargs["TifObj"])
@@ -200,7 +220,7 @@ def reproj_point(args, x, y, method, **kwargs):
 
 def project_point(args, x, y, method, **kwargs):
     if method == "Homography":
-        return project_point_homography(x, y, kwargs["M"])
+        return project_point_homography(x, y, kwargs["M"], kwargs.get("calibration"))
         
     elif method == "DSM":
         raise NotImplementedError
@@ -208,17 +228,22 @@ def project_point(args, x, y, method, **kwargs):
     
     else: raise NotImplemented
 
-def reproj_point_homography(x, y, M):
+def reproj_point_homography(x, y, M, calibration=None):
+    # The calibrated H expects pixels in undistorted K coordinates.
+    if calibration is not None:
+        x, y = undistort_points([[x, y]], calibration)[0]
     point = np.array([x, y, 1])
     new_point = M.dot(point)
     new_point /= new_point[2]
     return new_point
 
-def project_point_homography(x, y, M):
+def project_point_homography(x, y, M, calibration=None):
     point = np.array([x, y, 1])
     Minv = np.linalg.inv(M)
-    new_point  = Minv.dot(point)
+    new_point = Minv.dot(point)
     new_point /= new_point[2]
+    if calibration is not None:
+        new_point[:2] = distort_points([new_point[:2]], calibration)[0]
     return new_point
 
 def reproj_point_dsm(x, y, img_ground_raster, orthophoto_win_tif_obj):
@@ -235,12 +260,17 @@ def project_point_dsm(x, y, img_ground_raster, orthophoto_win_tif_obj):
 def reproject_df(args, df, out_path, method):
     # we will load M and Raster here and pass it on to speed up the projection
     M = None
+    calibration = None
     GroundRaster = None
     orthophoto_win_tif_obj = None
 
     if method == "Homography":
         homography_path = args.HomographyNPY
         M = np.load(homography_path, allow_pickle=True)[0]
+        calibration = read_metadata(homography_path)
+        if getattr(args, "HomographyIntrinsics", None) and calibration is None:
+            raise ValueError("--HomographyIntrinsics was supplied, but this homography has no calibration metadata. "
+                             "Recompute it with --HomographyGUI and the same --HomographyIntrinsics first.")
 
     elif method == "DSM":
         # load OrthophotoTiffile
@@ -260,7 +290,7 @@ def reproject_df(args, df, out_path, method):
             # select contact point
             x, y = get_contact_point(row, args)
             # reproject contact point
-            new_point = reproj_point(args, x, y, method, M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
+            new_point = reproj_point(args, x, y, method, M=M, calibration=calibration, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
             # complete the new entry
             new_entry = ""
             for col in df.columns:
@@ -355,47 +385,27 @@ def vishomographygui(args):
     if not os.path.exists(args.HomographyTopView):
         print(ProcLog("intersection topview is not given; will fetch from gmaps"))
         download_top_view_image(args)
-        
+
     if not os.path.exists(args.HomographyStreetView):
         print(ProcLog("intersection streetview is not given; will choose videos first frame"))
         save_frame_from_video(args)
 
-    first_image_path = args.HomographyStreetView
-    second_image_path = args.HomographyTopView
-    homography_path = args.HomographyNPY
-    save_path = args.VisHomographyPth
+    from homography_visualization import save_homography_visualizations
 
-    img1 = cv.imread(first_image_path)
-    img2 = cv.imread(second_image_path)
-    rows1, cols1, dim1 = img1.shape
-    rows2, cols2, dim2 = img2.shape
-    
-
-    M = np.load(homography_path, allow_pickle=True)[0]
-
-    img12 = cv.warpPerspective(img1, M, (cols2, rows2))
-
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(16, 5))
-
-    ax1.imshow(cv.cvtColor(img1, cv.COLOR_BGR2RGB))
-    ax1.set_title("camera view")
-    ax2.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB))
-    ax2.set_title("top view")
-
-    ax3.imshow(cv.cvtColor(img12, cv.COLOR_BGR2RGB))
-    ax3.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB), alpha=0.3)
-    ax3.set_title("camera view reprojected on top view")
-    plt.savefig(save_path, bbox_inches='tight')
-
-    plt.close("all")
-    # save projected pixels seperately. 
-    projection_save_path = save_path[:-3] + "allpix.png"
-    plt.imshow(cv.cvtColor(img12, cv.COLOR_BGR2RGB))
-    plt.imshow(cv.cvtColor(img2, cv.COLOR_BGR2RGB), alpha=0.3)
-    plt.axis("off")
-    plt.savefig(projection_save_path, bbox_inches='tight')
-
-    return SucLog("Vis Homography executed successfully") 
+    # Matrix is always [0]; calibrated files additionally embed camera metadata [2].
+    M = np.load(args.HomographyNPY, allow_pickle=True)[0]
+    dpi = getattr(args, "HomographyVisDPI", 220)
+    figure_path, overlay_path = save_homography_visualizations(
+        args.HomographyStreetView,
+        args.HomographyTopView,
+        M,
+        args.VisHomographyPth,
+        dpi=dpi,
+        calibration=read_metadata(args.HomographyNPY),
+    )
+    print("Homography figure: {}".format(figure_path))
+    print("Full-resolution overlay: {}".format(overlay_path))
+    return SucLog("Vis Homography executed successfully")
 
 def vis_reprojected_tracks(args):
     first_image_path = args.HomographyStreetView
@@ -418,7 +428,8 @@ def vis_reprojected_tracks(args):
 
     alpha=0.6
     M = np.load(args.HomographyNPY, allow_pickle=True)[0]
-    img12 = cv.warpPerspective(img1, M, (cols2, rows2))
+    img1_rectified = undistort_image(img1, read_metadata(args.HomographyNPY))
+    img12 = cv.warpPerspective(img1_rectified, M, (cols2, rows2))
     img2 = cv.addWeighted(img2, alpha, img12, 1 - alpha, 0)
 
     unique_track_ids = np.unique(cam_df['id'])

@@ -3,7 +3,7 @@ import os.path
 try:
     from PyQt5.QtCore import Qt, QRectF, pyqtSignal, QT_VERSION_STR
     from PyQt5.QtGui import QImage, QPixmap, QPainterPath
-    from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QFileDialog
+    from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem, QFileDialog
 except ImportError:
     try:
         from PyQt4.QtCore import Qt, QRectF, pyqtSignal, QT_VERSION_STR
@@ -155,6 +155,15 @@ class QtImageViewer(QGraphicsView):
         """
         scenePos = self.mapToScene(event.pos())
         if event.button() == Qt.LeftButton:
+            # Movable numbered correspondence markers must be draggable,
+            # not interpreted as clicks that create another point.
+            item = self.itemAt(event.pos())
+            while item is not None:
+                if item.flags() & QGraphicsItem.ItemIsMovable:
+                    self.setDragMode(QGraphicsView.NoDrag)
+                    QGraphicsView.mousePressEvent(self, event)
+                    return
+                item = item.parentItem()
             if self.canPan:
                 self.setDragMode(QGraphicsView.ScrollHandDrag)
             self.leftMouseButtonPressed.emit(scenePos.x(), scenePos.y())
