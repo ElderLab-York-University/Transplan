@@ -1,0 +1,6 @@
+# Standalone GroundByteTrack requirements (Transplan may already provide these)
+numpy
+scipy
+pandas
+opencv-python
+# pytest (only for tests)

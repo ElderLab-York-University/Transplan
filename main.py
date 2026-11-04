@@ -431,7 +431,7 @@ def main_mp(args, args_mp, args_mss, args_mcs):
 def get_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--Dataset", help="Path to a rep containing video files", type=str)
-    parser.add_argument("--Video", help="a list of video pathes in one repo", type=list)
+    parser.add_argument("--Video", help="a list of video pathes in one repo", type=str)
     parser.add_argument("--Preprocess", help="If preprocess inputs first", action="store_true")
     parser.add_argument("--Detector", help="Name of detector to be used", type=str)
     parser.add_argument("--Tracker", help="Name of tracker to be used", type=str)
@@ -439,6 +439,31 @@ def get_parser():
     parser.add_argument("--DetectorVersion", help="select detector version to load. Each version corresponds to a checkpoint file.", type=str, default="")
     parser.add_argument("--VisDetect", help="If create video of detections", action="store_true")
     parser.add_argument("--Track", help="If perform tracking", action="store_true")
+    # Opt-in controlled-comparison switches for the original ByteTrack wrapper.
+    # Without these flags the original ByteTrack baseline is unchanged.
+    parser.add_argument("--BTFullTimeline", action="store_true",
+                        help="Advance ByteTrack once per actual video frame, including frames without detections")
+    parser.add_argument("--BTCorrectClasses", action="store_true",
+                        help="Fix frame-local detection/class assignment in ByteTrack's exported tracking file")
+    # GroundByteTrack-specific options (ignored by existing trackers).
+    parser.add_argument("--GPMetersPerPixel", type=float, default=None,
+                        help="Ground distance in metres per top-view pixel; required for custom/ortho top views")
+    parser.add_argument("--GPMapZoom", type=int, default=19,
+                        help="GoogleMap zoom, used only for automatic metre/pixel scale")
+    parser.add_argument("--GPHighThresh", type=float, default=0.5)
+    parser.add_argument("--GPLowThresh", type=float, default=0.1)
+    parser.add_argument("--GPNewTrackThresh", type=float, default=0.6)
+    parser.add_argument("--GPMatchDistance", type=float, default=3.0,
+                        help="First-stage ground-plane association gate, in metres")
+    parser.add_argument("--GPSecondMatchDistance", type=float, default=2.0,
+                        help="Low-score second-stage association gate, in metres")
+    parser.add_argument("--GPTrackBuffer", type=int, default=90,
+                        help="Maximum missed frames before deleting a track")
+    parser.add_argument("--GPMinHits", type=int, default=1,
+                        help="Detections needed before returning a new track")
+    parser.add_argument("--GPClassAgnostic", action="store_true",
+                        help="Permit ground-plane matches across detector classes")
+
     parser.add_argument("--VisTrack", help="If create video visualization of tracking", action="store_true")
     parser.add_argument("--HomographyGUI", help="If pop-up homography GUI", action="store_true")
     parser.add_argument("--Frame", help="visualize the N first frame instead of all of them", type=int, default=10)
@@ -541,7 +566,8 @@ def get_parser():
     parser.add_argument("--NumWorkers", help="number of workers for dataloader", type=int)
     parser.add_argument("--Epochs", help="number of epochs", type=int)
     parser.add_argument("--ValInterval", help="frequency of validation step(every x epochs)", type=int)
-    parser.add_argument("--CalcDistance", help="Calculate distance from tracking result to intersection", action="store_true")    parser.add_argument("--Intersection", help='If to evaluate within the intersection', action='store_true')
+    parser.add_argument("--CalcDistance", help="Calculate distance from tracking result to intersection", action="store_true")    
+    parser.add_argument("--Intersection", help='If to evaluate within the intersection', action='store_true')
     parser.add_argument("--NotIntersection", help='If to evaluate outside the intersection', action='store_true')
     parser.add_argument("--MaskDetections", help="Use mask to mask detections during post-proc", action='store_true')
     parser.add_argument("--SAHI", help="run detection with SAHI", action='store_true')

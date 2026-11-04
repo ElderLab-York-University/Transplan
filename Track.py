@@ -20,6 +20,7 @@ import Trackers.ByteTrack.track
 import Trackers.gsort.track
 import Trackers.OCSort.track
 import Trackers.GByteTrack.track
+import Trackers.GroundByteTrack.track
 import Trackers.GDeepSort.track
 # import Trackers.BOTSort.track
 import Trackers.StrongSort.track
@@ -33,6 +34,7 @@ trackers["ByteTrack"] = Trackers.ByteTrack.track
 trackers["gsort"] = Trackers.gsort.track
 trackers["OCSort"] = Trackers.OCSort.track
 trackers["GByteTrack"] = Trackers.GByteTrack.track
+trackers["GroundByteTrack"] = Trackers.GroundByteTrack.track
 trackers["GDeepSort"] = Trackers.GDeepSort.track
 # trackers["BOTSort"] = Trackers.BOTSort.track
 trackers["StrongSort"] = Trackers.StrongSort.track
@@ -40,7 +42,7 @@ trackers["GTHW7"] = Trackers.GTHW7.track
 # --------------------------
 
 def track(args):
-    if args.Tracker not in os.listdir("./Trackers/"):
+    if args.Tracker not in trackers:
         return FailLog("Tracker not recognized in ./Trackers/")
 
     current_tracker = trackers[args.Tracker]

@@ -6,7 +6,10 @@ def track(args, *oargs):
     env_name = args.Tracker
     exec_path = "./Trackers/ByteTrack/run.py"
     conda_pyrun(env_name, exec_path, args)
-    match_classes(args)
+    if getattr(args, "BTCorrectClasses", False):
+        match_classes_frame_local(args)
+    else:
+        match_classes(args)  # preserve legacy output for reproducibility
 
 def df(args):
     data = {}
@@ -29,6 +32,52 @@ def df_txt(df, out_path):
             print('%d,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%d'%(fn, idd, score, x1, y1, x2, y2, clss),file=out_file)
     # df = pd.read_pickle(args.TrackingPkl)
     # out_path = args.TrackingPth 
+
+def match_classes_frame_local(args):
+    """Assign detection classes to tracks within each actual frame.
+
+    The legacy matcher accidentally indexes the *full* detection table with
+    indices from a *single-frame* assignment; this opt-in replacement fixes
+    that for class-sensitive evaluation and downstream MoI analysis.
+    """
+    from scipy.optimize import linear_sum_assignment
+
+    cols = ["fn", "id", "score", "x1", "y1", "x2", "y2"]
+    try:
+        tracks = pd.read_csv(args.TrackingPth, header=None, names=cols)
+    except pd.errors.EmptyDataError:
+        tracks = pd.DataFrame(columns=cols)
+    if tracks.empty:
+        tracks["class"] = pd.Series(dtype=int)
+        df_txt(tracks, args.TrackingPth)
+        return
+
+    dets = pd.read_pickle(args.DetectionPkl)
+    labels = np.full(len(tracks), -1, dtype=int)
+    for fn, tframe in tracks.groupby("fn", sort=False):
+        dframe = dets.loc[dets["fn"] == fn]
+        if dframe.empty:
+            continue
+        a = tframe[["x1", "y1", "x2", "y2"]].to_numpy(dtype=float)
+        b = dframe[["x1", "y1", "x2", "y2"]].to_numpy(dtype=float)
+        x_left = np.maximum(a[:, None, 0], b[None, :, 0])
+        y_top = np.maximum(a[:, None, 1], b[None, :, 1])
+        x_right = np.minimum(a[:, None, 2], b[None, :, 2])
+        y_bottom = np.minimum(a[:, None, 3], b[None, :, 3])
+        intersection = np.maximum(x_right - x_left, 0) * np.maximum(y_bottom - y_top, 0)
+        a_area = np.maximum(a[:, 2] - a[:, 0], 0) * np.maximum(a[:, 3] - a[:, 1], 0)
+        b_area = np.maximum(b[:, 2] - b[:, 0], 0) * np.maximum(b[:, 3] - b[:, 1], 0)
+        union = a_area[:, None] + b_area[None, :] - intersection
+        iou = np.divide(intersection, union, out=np.zeros_like(intersection), where=union > 0)
+        rows, columns = linear_sum_assignment(1 - iou)
+        valid = iou[rows, columns] > 0
+        labels[tframe.index.to_numpy()[rows[valid]]] = (
+            dframe["class"].to_numpy()[columns[valid]].astype(int)
+        )
+
+    tracks["class"] = labels
+    df_txt(tracks, args.TrackingPth)
+
 
 def match_classes(args):
     '''
