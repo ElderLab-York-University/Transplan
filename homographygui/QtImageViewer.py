@@ -42,9 +42,8 @@ class QtImageViewer(QGraphicsView):
         QGraphicsView.__init__(self, uWidget)
 
         # Image is displayed as a QPixmap in a QGraphicsScene attached to this QGraphicsView.
-        self.scene = QGraphicsScene()
+        self.scene = QGraphicsScene(self)
         self.setScene(self.scene)
-
         # Store a local handle to the scene's current image pixmap.
         self._pixmapHandle = None
 

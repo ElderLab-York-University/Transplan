@@ -329,3 +329,9 @@ class tabbed_ui_func(QMainWindow):
         layout.addWidget(viewer)
         dialog.show()
         self._preview_dialog = dialog
+    def closeEvent(self, event):
+        if self._preview_dialog is not None:
+            self._preview_dialog.close()
+            self._preview_dialog = None
+
+        super().closeEvent(event)
