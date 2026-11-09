@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
 
+from homography_calibration import check_image_size, read_metadata, undistort_points
+
 from .core import GroundByteTrackConfig, GroundByteTracker, GroundDetection
 
 TRACK_COLUMNS = ["fn", "id", "score", "x1", "y1", "x2", "y2", "class"]
@@ -90,6 +92,13 @@ def track(args, *unused):
             "DSM tracking requires a ground-metric coordinate adapter."
         )
     h = _load_homography(args.HomographyNPY)
+    # The updated homography GUI stores the same camera calibration it used
+    # to fit H directly in the .npy. Legacy H files return None here.
+    calibration = read_metadata(args.HomographyNPY)
+    if calibration is None:
+        print("GroundByteTrack: legacy homography (raw camera coordinates; no lens correction)")
+    else:
+        print("GroundByteTrack: calibrated homography (undistort raw contact points with P=K)")
     scale = _meters_per_pixel(args)
     config = GroundByteTrackConfig(
         high_thresh=getattr(args, "GPHighThresh", 0.5),
@@ -113,12 +122,16 @@ def track(args, *unused):
     try:
         frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = float(cap.get(cv2.CAP_PROP_FPS))
+        video_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        video_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     finally:
         cap.release()
     if fps <= 0 or not np.isfinite(fps):
         raise ValueError(f"Invalid video FPS: {fps}")
     if frames <= 0:
         raise ValueError(f"Video has no frames: {args.Video}")
+    if calibration is not None:
+        check_image_size(calibration, (video_height, video_width))
     limit = getattr(args, "ForNFrames", None)
     if limit is not None:
         frames = min(frames, int(limit))
@@ -144,7 +157,11 @@ def track(args, *unused):
     # running the sequential tracker. In particular this avoids doing a
     # separate Pandas/NumPy conversion for each frame.
     if len(detections):
-        xy_ground = _project(_contact_points(detections, args), h, scale)
+        xy_image = _contact_points(detections, args)
+        # Fit in the same undistorted K-coordinate system as the GUI.
+        # This remains vectorized and is performed once before tracking.
+        xy_for_homography = undistort_points(xy_image, calibration)
+        xy_ground = _project(xy_for_homography, h, scale)
         detections["__ground_x"] = xy_ground[:, 0]
         detections["__ground_y"] = xy_ground[:, 1]
 

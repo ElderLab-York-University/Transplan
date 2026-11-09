@@ -5,6 +5,9 @@ import Maps
 import DSM
 import Segment
 import Detect
+
+# Shared with the updated GUI: calibrated H expects undistorted K-frame pixels.
+from homography_calibration import read_metadata, undistort_points, distort_points
 # import homographygui.tabbed_ui_func as tui
 
 #hints the vars set for homography are 
@@ -191,7 +194,7 @@ def get_contact_point(row, args):
 
 def reproj_point(args, x, y, method, **kwargs):
     if method == "Homography":
-        return reproj_point_homography(x, y, kwargs["M"])
+        return reproj_point_homography(x, y, kwargs["M"], kwargs.get("calibration"))
         
     elif method == "DSM":
         return reproj_point_dsm(x, y, kwargs["GroundRaster"], kwargs["TifObj"])
@@ -200,7 +203,7 @@ def reproj_point(args, x, y, method, **kwargs):
 
 def project_point(args, x, y, method, **kwargs):
     if method == "Homography":
-        return project_point_homography(x, y, kwargs["M"])
+        return project_point_homography(x, y, kwargs["M"], kwargs.get("calibration"))
         
     elif method == "DSM":
         raise NotImplementedError
@@ -208,17 +211,21 @@ def project_point(args, x, y, method, **kwargs):
     
     else: raise NotImplemented
 
-def reproj_point_homography(x, y, M):
+def reproj_point_homography(x, y, M, calibration=None):
+    if calibration is not None:
+        x, y = undistort_points([[x, y]], calibration)[0]
     point = np.array([x, y, 1])
     new_point = M.dot(point)
     new_point /= new_point[2]
     return new_point
 
-def project_point_homography(x, y, M):
+def project_point_homography(x, y, M, calibration=None):
     point = np.array([x, y, 1])
     Minv = np.linalg.inv(M)
-    new_point  = Minv.dot(point)
+    new_point = Minv.dot(point)
     new_point /= new_point[2]
+    if calibration is not None:
+        new_point[:2] = distort_points([new_point[:2]], calibration)[0]
     return new_point
 
 def reproj_point_dsm(x, y, img_ground_raster, orthophoto_win_tif_obj):
@@ -235,12 +242,14 @@ def project_point_dsm(x, y, img_ground_raster, orthophoto_win_tif_obj):
 def reproject_df(args, df, out_path, method):
     # we will load M and Raster here and pass it on to speed up the projection
     M = None
+    calibration = None
     GroundRaster = None
     orthophoto_win_tif_obj = None
 
     if method == "Homography":
         homography_path = args.HomographyNPY
         M = np.load(homography_path, allow_pickle=True)[0]
+        calibration = read_metadata(homography_path)
 
     elif method == "DSM":
         # load OrthophotoTiffile
@@ -260,7 +269,8 @@ def reproject_df(args, df, out_path, method):
             # select contact point
             x, y = get_contact_point(row, args)
             # reproject contact point
-            new_point = reproj_point(args, x, y, method, M=M, GroundRaster=GroundRaster, TifObj = orthophoto_win_tif_obj)
+            new_point = reproj_point(args, x, y, method, M=M, calibration=calibration,
+                                     GroundRaster=GroundRaster, TifObj=orthophoto_win_tif_obj)
             # complete the new entry
             new_entry = ""
             for col in df.columns:
